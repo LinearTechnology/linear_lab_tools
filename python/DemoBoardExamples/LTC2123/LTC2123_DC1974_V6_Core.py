@@ -132,7 +132,7 @@ while((runs < 1 or continuous == True) and runs_with_errors < 100000):
     ################################################
     
     with comm.Controller(device_info) as device:
-        device.set_bit_mode(comm.HS_BIT_MODE_MPSSE)
+        device.hs_set_bit_mode(comm.HS_BIT_MODE_MPSSE)
         if do_reset:
             device.hs_fpga_toggle_reset()
         ################################################
@@ -140,7 +140,7 @@ while((runs < 1 or continuous == True) and runs_with_errors < 100000):
         # Check ID and Clock Status register
         ################################################
 
-        id = device.fpga_read_data_at_address(ID_REG) # Read FPGA ID register
+        id = device.hs_fpga_read_data_at_address(ID_REG) # Read FPGA ID register
         if(verbose != 0):
             bitfile_id_warning(bitfile_id, id)            
             

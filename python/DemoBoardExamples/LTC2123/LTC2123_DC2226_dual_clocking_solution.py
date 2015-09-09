@@ -139,7 +139,7 @@ while((runs < 1 or continuous == 1) and runs_with_errors < 100000):
     # MPSSE Mode, Issue Reset Pulse
     ################################################
     with comm.Controller(device_info) as device:
-        device.set_bit_mode(comm.HS_BIT_MODE_MPSSE)
+        device.hs_set_bit_mode(comm.HS_BIT_MODE_MPSSE)
         if do_reset:
             device.hs_fpga_toggle_reset()
 
@@ -175,7 +175,7 @@ while((runs < 1 or continuous == 1) and runs_with_errors < 100000):
         ################################################
         if(verbose != 0):
             print "Reading Clock Status register; should be 0x16 (or at least 0x04 bit set)"
-            data = device.fpga_read_data_at_address(CLOCK_STATUS_REG)
+            data = device.hs_fpga_read_data_at_address(CLOCK_STATUS_REG)
             print "Register 6   (Clock status): 0x{:04X}".format(data)
             sleep(sleeptime)
     

@@ -114,7 +114,7 @@ NumSamp128K = NumSamp(0xA0, 128 * 1024)
 
 
 def reset_fpga(device):
-    device.set_bit_mode(comm.HS_BIT_MODE_MPSSE)
+    device.hs_set_bit_mode(comm.HS_BIT_MODE_MPSSE)
     device.hs_fpga_toggle_reset()
     time.sleep(.01)
 
@@ -136,7 +136,7 @@ def read_jesd204b_reg(device, address):
     device.hs_fpga_write_data_at_address(JESD204B_R2INDEX_REG, (address & 0xFC0)>>6) # Upper 6 bits of AXI reg address
     device.hs_fpga_write_data_at_address(JESD204B_CHECK_REG, ((address & 0x3F)<<2 | 0x02)) # Lower 6 bits address of JESD204B Check Register
 
-    if device.fpga_read_data() & 0x01 == 0:
+    if device.hs_fpga_read_data() & 0x01 == 0:
         raise RuntimeError("Got bad FPGA status in read_jedec_reg")
 
     b3 = device.hs_fpga_read_data_at_address(JESD204B_RB3_REG)
@@ -172,7 +172,7 @@ def next_pbrs(data):
     return next_pbrs
 
 def dump_ADC_registers(device):
-    device.set_bit_mode(lths.BIT_MODE_MPSSE)
+    device.hs_set_bit_mode(comm.HS_BIT_MODE_MPSSE)
     print "LTC2124 Register Dump: " 
     print "Register 1: 0x{:02X}".format(device.spi_receive_byte_at_address(0x81))
     print "Register 2: 0x{:02X}".format(device.spi_receive_byte_at_address(0x82))
@@ -207,7 +207,7 @@ def load_ltc212x(device, cs_control=0, verbose=0, did=0xEF, bid=0x00, lanes=2, K
         dump_ADC_registers(device)
 
 def capture2(device, n, dumpdata, dump_pscope_data, verbose):
-    device.hs_set_bit_mode(comm.BIT_MODE_MPSSE)
+    device.hs_set_bit_mode(comm.HS_BIT_MODE_MPSSE)
     dec = 0
 
     device.hs_fpga_write_data_at_address(CAPTURE_CONFIG_REG, n.MemSize | 0x08) # Both Channels active
@@ -299,14 +299,14 @@ def capture4(device, n, dumpdata, dump_pscope_data, verbose):
 
 #Set endian-ness
     device.data_set_low_byte_first()
-    #device.fifo_set_high_byte_first()
+    #device.data_set_high_byte_first()
 
 # Step 29
     device.hs_set_bit_mode(comm.HS_BIT_MODE_FIFO)
     sleep(0.1)
 # Step 30
     throwaway = 3
-    #nSampsRead, data01 = device.fifo_receive_bytes(end = (n.BuffSize*2 + 100))
+    #nSampsRead, data01 = device.data_receive_bytes(end = (n.BuffSize*2 + 100))
     nSampsRead, data01 = device.data_receive_uint16_values(end = (n.BuffSize))
     if(throwaway != 0):
         device.data_receive_bytes(end = throwaway)
@@ -328,7 +328,7 @@ def capture4(device, n, dumpdata, dump_pscope_data, verbose):
     device.hs_fpga_write_data_at_address(CAPTURE_CONTROL_REG, 0x03)  #Start!! With FETONLY as 1
     sleep(1) #wait for capture
 # Step 35
-    capturestat = device.fpga_read_data_at_address(CAPTURE_STATUS_REG)
+    capturestat = device.hs_fpga_read_data_at_address(CAPTURE_STATUS_REG)
     syncErr = (capturestat & 0x04) != 0
     if (verbose != 0):
         print "Reading capture status, should be 0xF1 (CH0, CH1, CH2, CH3 valid, Capture  IS done, data not fetched)"
