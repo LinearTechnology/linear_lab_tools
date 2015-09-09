@@ -21,12 +21,6 @@
         }
         "Entry"
         {
-        "MsmKey" = "8:_0C351598338A4A0EBD6584288D81E57E"
-        "OwnerKey" = "8:_UNDEFINED"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
         "MsmKey" = "8:_12AFF9E5F01C42E3ADEE4C904153B84D"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
@@ -124,12 +118,6 @@
         "Entry"
         {
         "MsmKey" = "8:_465ECF1F03174FFAB3CA154058E5124C"
-        "OwnerKey" = "8:_UNDEFINED"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_46C0A2DD28F44F18862F65F0F0E8459F"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -237,12 +225,6 @@
         }
         "Entry"
         {
-        "MsmKey" = "8:_932490D0D2EE4F33A97D0277706CF620"
-        "OwnerKey" = "8:_UNDEFINED"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
         "MsmKey" = "8:_965896335F0E4FE18FE5C85C9573BF47"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
@@ -250,12 +232,6 @@
         "Entry"
         {
         "MsmKey" = "8:_9988817EFA754A849D688DED488B6586"
-        "OwnerKey" = "8:_UNDEFINED"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_9A628B6841E74DECA6E6D8E632C8A7C7"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -399,12 +375,6 @@
         }
         "Entry"
         {
-        "MsmKey" = "8:_E463DE8D72164EF18E58D53630C89679"
-        "OwnerKey" = "8:_UNDEFINED"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
         "MsmKey" = "8:_E747F088CD0B48EB9130D7977737272A"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
@@ -476,6 +446,19 @@
             "PrerequisitesLocation" = "2:1"
             "Url" = "8:"
             "ComponentsUrl" = "8:"
+                "Items"
+                {
+                    "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:.NETFramework,Version=v4.0,Profile=Client"
+                    {
+                    "Name" = "8:Microsoft .NET Framework 4 Client Profile (x86 and x64)"
+                    "ProductCode" = "8:.NETFramework,Version=v4.0,Profile=Client"
+                    }
+                    "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:Microsoft.Windows.Installer.3.1"
+                    {
+                    "Name" = "8:Windows Installer 3.1"
+                    "ProductCode" = "8:Microsoft.Windows.Installer.3.1"
+                    }
+                }
             }
         }
         "Release"
@@ -541,26 +524,6 @@
             "TargetName" = "8:ftdi.cpp"
             "Tag" = "8:"
             "Folder" = "8:_3E20FEC4A1EC4C3A837F005ACC21E2CA"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:FALSE"
-            "IsDependency" = "11:FALSE"
-            "IsolateTo" = "8:"
-            }
-            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_0C351598338A4A0EBD6584288D81E57E"
-            {
-            "SourcePath" = "8:..\\..\\python\\ltc_high_speed_comm_2.py"
-            "TargetName" = "8:ltc_high_speed_comm_2.py"
-            "Tag" = "8:"
-            "Folder" = "8:_26F80019235244078CE9031699A68ACC"
             "Condition" = "8:"
             "Transitive" = "11:FALSE"
             "Vital" = "11:TRUE"
@@ -915,26 +878,6 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
-            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_46C0A2DD28F44F18862F65F0F0E8459F"
-            {
-            "SourcePath" = "8:..\\..\\python\\test_ltc_high_speed_comm.py"
-            "TargetName" = "8:test_ltc_high_speed_comm.py"
-            "Tag" = "8:"
-            "Folder" = "8:_26F80019235244078CE9031699A68ACC"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:FALSE"
-            "IsDependency" = "11:FALSE"
-            "IsolateTo" = "8:"
-            }
             "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_4F49246044324A8994811B49727FB0B6"
             {
             "SourcePath" = "8:..\\..\\source\\ltc_controller_comm\\ftdi_adc.cpp"
@@ -1275,26 +1218,6 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
-            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_932490D0D2EE4F33A97D0277706CF620"
-            {
-            "SourcePath" = "8:..\\..\\python\\DemoBoardExamples\\LTC2000\\dacdata.csv"
-            "TargetName" = "8:dacdata.csv"
-            "Tag" = "8:"
-            "Folder" = "8:_F39FC047551E484B9920689036219179"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:FALSE"
-            "IsDependency" = "11:FALSE"
-            "IsolateTo" = "8:"
-            }
             "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_965896335F0E4FE18FE5C85C9573BF47"
             {
             "SourcePath" = "8:..\\..\\source\\ltc_controller_comm\\high_speed.cpp"
@@ -1321,26 +1244,6 @@
             "TargetName" = "8:ltc_controller_comm.vcxproj.filters"
             "Tag" = "8:"
             "Folder" = "8:_3E20FEC4A1EC4C3A837F005ACC21E2CA"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:FALSE"
-            "IsDependency" = "11:FALSE"
-            "IsolateTo" = "8:"
-            }
-            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_9A628B6841E74DECA6E6D8E632C8A7C7"
-            {
-            "SourcePath" = "8:..\\..\\python\\ltc_controller_comm.pyc"
-            "TargetName" = "8:ltc_controller_comm.pyc"
-            "Tag" = "8:"
-            "Folder" = "8:_26F80019235244078CE9031699A68ACC"
             "Condition" = "8:"
             "Transitive" = "11:FALSE"
             "Vital" = "11:TRUE"
@@ -1801,26 +1704,6 @@
             "TargetName" = "8:LTC6951_DC2226A_U13.txt"
             "Tag" = "8:"
             "Folder" = "8:_997B3A65FAB64355B0CD135661CCAEB5"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:FALSE"
-            "IsDependency" = "11:FALSE"
-            "IsolateTo" = "8:"
-            }
-            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_E463DE8D72164EF18E58D53630C89679"
-            {
-            "SourcePath" = "8:..\\..\\python\\LtcHighSpeedComm.dll"
-            "TargetName" = "8:LtcHighSpeedComm.dll"
-            "Tag" = "8:"
-            "Folder" = "8:_26F80019235244078CE9031699A68ACC"
             "Condition" = "8:"
             "Transitive" = "11:FALSE"
             "Vital" = "11:TRUE"
