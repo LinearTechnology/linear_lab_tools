@@ -60,33 +60,33 @@ end
 [lt2k] = ltc2000Constants();
 
 % Returns the object in the class constructor
-lths = LtcHighSpeedComm();
+controller = LtcControllerComm();
 
-deviceInfoList = lths.ListDevices();
-deviceInfo = [];
-for info = deviceInfoList
+controllerInfoList = controller.ListControllers();
+controllerInfo = [];
+for info = controllerInfoList
    if strcmp(info.description(1:7), 'LTC2000')
-       deviceInfo = info;
+       controllerInfo = info;
    end
 end
 
-if isempty(deviceInfo)
-    error('TestLtcHighSpeedComm:noDevice', 'No LTC200 demo board detected');
+if isempty(controllerInfo)
+    error('TestLtcControllerComm:noDevice', 'No LTC200 demo board detected');
 end
 
 fprintf('Found LTC2000 demo board:\n');
-fprintf('Description: %s\n', deviceInfo.description);
-fprintf('Serial Number: %s\n', deviceInfo.serialNumber);
+fprintf('Description: %s\n', controllerInfo.description);
+fprintf('Serial Number: %s\n', controllerInfo.serialNumber);
 
 % init a device and get an id
-did = lths.Init(deviceInfo);
+did = controller.Init(controllerInfo);
 
-lths.SetBitMode(did, lths.BIT_MODE_MPSSE);
-lths.FpgaToggleReset(did);
+controller.HsSetBitMode(did, controller.BIT_MODE_MPSSE);
+controller.HsFpgaToggleReset(did);
 
-fprintf('FPGA ID is %X\n', lths.FpgaReadDataAtAddress(did, lt2k.FPGA_ID_REG));
+fprintf('FPGA ID is %X\n', controller.FpgaReadDataAtAddress(did, lt2k.FPGA_ID_REG));
 
-lths.FpgaWriteDataAtAddress(did, lt2k.FPGA_DAC_PD, 1);
+controller.HsFpgaWriteDataAtAddress(did, lt2k.FPGA_DAC_PD, 1);
       
 pause(SLEEP_TIME);
 
@@ -119,7 +119,7 @@ if VERBOSE
     end
 end
 
-lths.FpgaWriteDataAtAddress(did, lt2k.FPGA_CONTROL_REG, 32);
+controller.HsFpgaWriteDataAtAddress(did, lt2k.FPGA_CONTROL_REG, 32);
 
 pause(SLEEP_TIME);
 
@@ -154,19 +154,19 @@ end
 fclose(infile);
 fprintf('\ndone reading!')
 
-lths.SetBitMode(did, lths.BIT_MODE_FIFO);
+controller.HsSetBitMode(did, controller.BIT_MODE_FIFO);
 % DAC should start running here!
-numBytesSent = lths.FifoSendUint16Values(did, indata);
+numBytesSent = controller.DataSendUint16Values(did, indata);
 fprintf('numBytesSent (should be %d) = %d\n', NUM_SAMPLES * 2, ...
     numBytesSent);
 
 
 function SpiWrite(address, value)
-        lths.SpiSendByteAtAddress(did, bitor(address, lt2k.SPI_WRITE), value);
+        controller.SpiSendByteAtAddress(did, bitor(address, lt2k.SPI_WRITE), value);
     end
 
     function value = SpiRead(address)
-        value = lths.SpiReceiveByteAtAddress(did, bitor(address, lt2k.SPI_READ));
+        value = controller.SpiReceiveByteAtAddress(did, bitor(address, lt2k.SPI_READ));
     end
 
 end
