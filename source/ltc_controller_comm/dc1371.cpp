@@ -357,7 +357,7 @@ namespace linear {
         return FpgaGetIsLoaded(load_id);
     }
 
-    void Dc1371::FpgaLoadFile(const string& fpga_filename) {
+    int Dc1371::FpgaLoadFileChunked(const string& fpga_filename) {
         auto load_id = GetFpgaLoadIdFromFile(fpga_filename);
         auto fpga_path = Path(ToUtf16(fpga_filename));
         auto fpga_path_string = fpga_path.Fullpath();
@@ -422,9 +422,10 @@ namespace linear {
             sleep_for(milliseconds(50));
             FpgaGetIsLoaded(load_id);
         }
+        return 0;
     }
 
-    void Dc1371::DataStartCollect(int total_bytes, Trigger trigger) {
+    void Dc1371::DataStartCollect(int total_samples, Trigger trigger) {
         BYTE trigger_value = LCC_TRIGGER_NONE;
         switch (trigger) {
         case Trigger::NONE:
@@ -443,7 +444,7 @@ namespace linear {
                 "trigger must be NONE, START_ON_POSITIVE_EDGE or DC1371_STOP_ON_NEGATIVE_EDGE.");
         }
 
-        auto total_samples = total_bytes / SAMPLE_SIZE;
+        auto total_bytes = total_samples * SAMPLE_SIZE;
 
         MUST_NOT_BE_SMALLER(total_samples, KILOSAMPLES);
         MUST_NOT_BE_LARGER(total_samples, MAX_TOTAL_SAMPLES);
@@ -494,16 +495,14 @@ namespace linear {
         MUST_BE_POSITIVE(total_bytes);
         MUST_NOT_BE_LARGER(total_bytes, 2 * MAX_TOTAL_SAMPLES);
 
-        thread_local BYTE raw_bytes[BLOCK_SIZE * MAX_BLOCKS];
-
         CommandFile command_file(drive_letter);
         BlockFile block_file(drive_letter);
         Command command(Opcode::READ_SRAM);
         command.header.byte_param = initialize_ram ? 0x01 : 0x00;
+        initialize_ram = false;
         int bytes_read = 0;
         int total_blocks = total_bytes / BLOCK_SIZE;
         int bytes_in_extra_block = total_bytes - (total_blocks * BLOCK_SIZE);
-        auto data_pointer = reinterpret_cast<BYTE*>(data);
         while (total_blocks > 0) {
             if (abort_read) {
                 return LCC_ERROR_ABORTED;
@@ -513,12 +512,10 @@ namespace linear {
             command.header.word_param = num_blocks;
             command_file.Write(command);
             command.header.byte_param = 0x00;
-            block_file.Read(raw_bytes, block_bytes);
-            total_blocks -= num_blocks;
+            block_file.Read(data, block_bytes);
 
-            memcpy_s(data_pointer, total_bytes, raw_bytes, block_bytes);
-            data_pointer += block_bytes;
-            total_bytes -= block_bytes;
+            total_blocks -= num_blocks;
+            data += block_bytes;
             bytes_read += block_bytes;
         }
         if (bytes_in_extra_block > 0) {
@@ -530,8 +527,10 @@ namespace linear {
             // data.
             command.header.word_param = 1;
             command_file.Write(command);
-            block_file.Read(raw_bytes, BLOCK_SIZE);
-            memcpy_s(data_pointer, bytes_in_extra_block, raw_bytes, bytes_in_extra_block);
+            uint8_t last_block[BLOCK_SIZE];
+            block_file.Read(last_block, BLOCK_SIZE);
+            memcpy_s(data, bytes_in_extra_block, last_block, bytes_in_extra_block);
+
             bytes_read += bytes_in_extra_block;
         }
         return bytes_read;

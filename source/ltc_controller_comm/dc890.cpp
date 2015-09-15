@@ -76,9 +76,23 @@ namespace linear {
     class PageBuffer {
     public:
         static const int FPGA_SIZE = NUM_FPGA_PAGES * FPGA_PAGE_SIZE;
-        PageBuffer(wstring path) : file(path, std::ios::binary | std::ios::beg) { }
+        PageBuffer() = default;
+        ~PageBuffer() {
+            delete file;
+        }
+        void Reset(wstring path) {
+            file = new ifstream(path, std::ios::binary | std::ios::beg);
+            if (file->bad()) {
+                delete file;
+                file = nullptr;
+            }
+        }
+        explicit operator bool() {
+            return file != nullptr;
+        }
         bool GetPage(char data[FPGA_PAGE_SIZE]) {
-            while (file.get(byte)) {
+            char byte;
+            while (file->get(byte)) {
                 if (total_bytes == FPGA_SIZE) {
                     throw runtime_error("Expanded file too large (bad or corrupted squeeze file?)");
                 }
@@ -86,7 +100,7 @@ namespace linear {
                 ++page_bytes;
                 ++total_bytes;
                 if (byte == 0) {
-                    if (!file.get(byte)) {
+                    if (!file->get(byte)) {
                         throw runtime_error("Error reading squeeze file (bad or corrupted?)");
                     }
                     uint8_t count = byte - 1;
@@ -116,39 +130,50 @@ namespace linear {
             return false;
         }
     private:
-        ifstream file;
+        ifstream* file = nullptr;
         int total_bytes = 0;
         int page_bytes = 0;
         char buffer[2 * FPGA_PAGE_SIZE];
-        char byte;
     };
 
-    void Dc890::FpgaFileToFlash(wstring filename) {
-        const int BANK_ID = 3;
+    int Dc890::FpgaFileToFlashChunked(const wstring& filename) {
+        static int progress = NUM_FPGA_PAGES;
+        static int page_index = 0;
+        static PageBuffer page_buffer;
         char page_data[FPGA_PAGE_SIZE];
 
-        Write("E 3", 3);
-        auto timeouts = GetTimeouts();
-        const int MAX_ERASE_TIME = 6000;
-        SetTimeouts(MAX_ERASE_TIME, timeouts.second);
+        if (!fpga_load_started) {
+            fpga_load_started = true;
+            page_index = 0;
+            progress = NUM_FPGA_PAGES;
+            Write("E 3", 3);
+            auto timeouts = GetTimeouts();
+            const int MAX_ERASE_TIME = 6000;
+            SetTimeouts(MAX_ERASE_TIME, timeouts.second);
 
-        try {
-            Read(page_data, 4);
-        } catch (HardwareError&) {
             try {
-                SetTimeouts(timeouts.first, timeouts.second);
-            } catch (...) { }
-            throw;
-        }
-        SetTimeouts(timeouts.first, timeouts.second);
+                Read(page_data, 4);
+            } catch (HardwareError&) {
+                try {
+                    SetTimeouts(timeouts.first, timeouts.second);
+                } catch (...) { }
+                throw;
+            }
+            SetTimeouts(timeouts.first, timeouts.second);
 
-        if (page_data[0] != 'A') {
-            throw HardwareError("Did not receive ACK on SRAM erase.");
+            if (page_data[0] != 'A') {
+                throw HardwareError("Did not receive ACK on SRAM erase.");
+            }
+
+            page_buffer.Reset(filename);
         }
 
-        PageBuffer page_buffer(filename);
-        int page_index = 0;
-        while (page_buffer.GetPage(page_data)) {
+        if (!page_buffer) {
+            throw runtime_error("Unable to open file " + ToUtf8(filename));
+        }
+
+        const int BANK_ID = 3;
+        if (page_buffer.GetPage(page_data)) {
             auto header = string("F ") + ToHex(uint16_t(BANK_ID * NUM_FPGA_PAGES + page_index));
             Write(header.c_str(), header.size());
             Write(page_data, FPGA_PAGE_SIZE);
@@ -157,6 +182,10 @@ namespace linear {
                 throw HardwareError("Did not receive ACK on SRAM write.");
             }
             ++page_index;
+            --progress;
+            return progress;
+        } else {
+            return 0;
         }
     }
 
@@ -247,25 +276,34 @@ namespace linear {
         throw new invalid_argument("Invalid load file name.");
     }
 
-    void Dc890::FpgaLoadFile(const string& fpga_filename) {
-        auto load = GetFpgaLoadIdFromFile(fpga_filename);
-        auto flash_result = FpgaFlashToLoaded(load.load_id, load.revision);
+    int Dc890::FpgaLoadFileChunked(const string& fpga_filename) {
+        if (!fpga_load_started) {
 
-        if ((load.load_id == 1 || load.load_id == 2) && !flash_result) {
-            Close();
-            throw HardwareError(
-                "Load routine did not report error, but couldn't find built in load.");
+            auto load = GetFpgaLoadIdFromFile(fpga_filename);
+            auto flash_result = FpgaFlashToLoaded(load.load_id, load.revision);
+
+            if ((load.load_id == 1 || load.load_id == 2) && !flash_result) {
+                Close();
+                throw HardwareError(
+                    "Load routine did not report error, but couldn't find built in load.");
+            }
+
+            if (flash_result) {
+                return 0;
+            }
         }
-
-        if (!flash_result) {
-            auto fpga_path = FpgaGetPath(fpga_filename);
-            FpgaFileToFlash(fpga_path);
+        auto fpga_path = FpgaGetPath(fpga_filename);
+        auto progress = FpgaFileToFlashChunked(fpga_path);
+        if (progress == 0) {
+            fpga_load_started = false;
+            auto load = GetFpgaLoadIdFromFile(fpga_filename);
             bool is_loaded = FpgaFlashToLoaded(load.load_id, load.revision);
             if (!is_loaded) {
                 Close();
                 throw HardwareError("Load routine did not report error, but couldn't find load.");
             }
         }
+        return progress;
     }
 
     void Dc890::GpioSendByte(uint8_t byte) {

@@ -947,10 +947,17 @@ int main() {
 #endif
 
 #ifdef DC890_BATTERY_1
+
+    // DC1369A-A LTC2261
+
     LccHandle handle = nullptr;
     LccControllerInfo controller_info;
     CHECK(LccGetControllerList(LCC_TYPE_DC890, &controller_info, 1), __LINE__);
     CHECK(LccInitController(&handle, controller_info), __LINE__);
+
+    char eeprom_id[50];
+    CHECK(LccEepromReadString(handle, eeprom_id, 50), __LINE__);
+    cout << "id string is " << eeprom_id << "\n";
 
     CHECK(Lcc890GpioSetByte(handle, 0xF8), __LINE__);
     CHECK(Lcc890GpioSpiSetBits(handle, 3, 0, 1), __LINE__);
@@ -971,7 +978,8 @@ int main() {
         CHECK(LccFpgaLoadFile(handle, "DLVDS"), __LINE__);
     }
 
-    CHECK(LccDataSetCharacteristics(handle, true, false, true), __LINE__);
+    const int SAMPLE_BYTES = 2;
+    CHECK(LccDataSetCharacteristics(handle, true, SAMPLE_BYTES, true), __LINE__);
 
     uint16_t data[NUM_ADC_SAMPLES];
     CHECK(LccDataStartCollect(handle, NUM_ADC_SAMPLES, LCC_TRIGGER_NONE), __LINE__);

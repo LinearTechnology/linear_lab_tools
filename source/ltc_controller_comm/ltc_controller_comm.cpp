@@ -248,9 +248,9 @@ LTC_CONTROLLER_COMM_API int LccDataSetLowByteFirst(LccHandle handle) {
 }
 
 LTC_CONTROLLER_COMM_API int LccDataSetCharacteristics(LccHandle handle, bool is_multichannel,
-    bool is_wide_samples, bool is_positive_clock) {
+        int sample_bytes, bool is_positive_clock) {
     GET(handle, controller, FtdiAdc, error_string);
-    CALL(controller, error_string, DataSetCharacteristics, is_multichannel, is_wide_samples,
+    CALL(controller, error_string, DataSetCharacteristics, is_multichannel, sample_bytes,
         is_positive_clock);
 }
 
@@ -300,9 +300,10 @@ LTC_CONTROLLER_COMM_API int LccDataCancelReceive(LccHandle handle) {
     CALL(controller, error_string, DataCancelReceive);
 }
 
-LTC_CONTROLLER_COMM_API int LccDataStartCollect(LccHandle handle, int total_bytes, int trigger) {
+LTC_CONTROLLER_COMM_API int LccDataStartCollect(LccHandle handle, int total_samples,
+        int trigger) {
     GET(handle, controller, ICollect, error_string);
-    CALL(controller, error_string, DataStartCollect, total_bytes, ICollect::Trigger(trigger));
+    CALL(controller, error_string, DataStartCollect, total_samples, ICollect::Trigger(trigger));
 }
 LTC_CONTROLLER_COMM_API int LccDataIsCollectDone(LccHandle handle, bool* is_done) {
     GET(handle, controller, ICollect, error_string);
@@ -388,6 +389,17 @@ LTC_CONTROLLER_COMM_API int LccFpgaGetIsLoaded(LccHandle handle, const char* fpg
 LTC_CONTROLLER_COMM_API int LccFpgaLoadFile(LccHandle handle, const char* fpga_filename) {
     GET(handle, controller, IFpgaLoad, error_string);
     CALL(controller, error_string, FpgaLoadFile, fpga_filename);
+}
+
+LTC_CONTROLLER_COMM_API int LccFpgaLoadFileChunked(LccHandle handle, const char* fpga_filename,
+        int* progress) {
+    GET(handle, controller, IFpgaLoad, error_string);
+    CALL_VAL(controller, error_string, progress, FpgaLoadFileChunked, fpga_filename);
+}
+
+LTC_CONTROLLER_COMM_API int LccFpgaCancelLoad(LccHandle handle) {
+    GET(handle, controller, IFpgaLoad, error_string);
+    CALL(controller, error_string, FpgaCancelLoad);
 }
 
 LTC_CONTROLLER_COMM_API int LccEepromReadString(LccHandle handle, char* buffer,

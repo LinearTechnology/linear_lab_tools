@@ -18,10 +18,12 @@ namespace linear {
         Type GetType() override { return FtdiAdc::GetType(); }
         string GetDescription() override { return FtdiAdc::GetDescription(); }
         string GetSerialNumber() override { return FtdiAdc::GetSerialNumber(); }
-        void EepromReadString(char* buffer, int buffer_size) override { EepromReadString(buffer, buffer_size); }
-
+        void EepromReadString(char* buffer, int buffer_size) override { 
+            return FtdiAdc::EepromReadString(buffer, buffer_size);
+        }
         bool FpgaGetIsLoaded(const string& fpga_filename) override;
-        void FpgaLoadFile(const string& fpga_filename) override;
+        int FpgaLoadFileChunked(const string& fpga_filename) override;
+        void FpgaCancelLoad() override { fpga_load_started = false; Reset(); }
 
         void GpioSetByte(uint8_t byte) {
             base_byte = byte;
@@ -51,7 +53,7 @@ namespace linear {
             uint8_t revision;
             FpgaLoad(uint16_t load_id = 0, uint8_t revision = 0) : load_id(load_id), revision(revision) { }
         };
-        void FpgaFileToFlash(wstring path);
+        int FpgaFileToFlashChunked(const wstring& path);
         bool FpgaFlashToLoaded(uint16_t load_id, uint8_t revision);
         wstring FpgaGetPath(const string& load_filename);
         FpgaLoad GetFpgaLoadIdFromFile(const string& fpga_filename);
@@ -60,5 +62,6 @@ namespace linear {
         uint8_t cs_bit_mask = 0;
         uint8_t sck_bit_mask = 0;
         uint8_t sdi_bit_mask = 0;
+        bool fpga_load_started = false;
     };
 }

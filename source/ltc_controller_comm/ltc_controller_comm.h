@@ -175,6 +175,8 @@ extern "C" {
     LTC_CONTROLLER_COMM_API int LccDataSendBytes(LccHandle handle, uint8_t* values, int num_values,
         int* num_sent);
 
+    LTC_CONTROLLER_COMM_API int LccDataStartReceive(LccHandle handle, int total_bytes);
+
     LTC_CONTROLLER_COMM_API int LccDataReceiveBytes(LccHandle handle, uint8_t* values,
         int num_values, int* num_received);
 
@@ -201,7 +203,8 @@ extern "C" {
     LTC_CONTROLLER_COMM_API int LccDataCancelReceive(LccHandle handle);
 
     // ADC collection functions for DC1371, DC890, DC718
-    LTC_CONTROLLER_COMM_API int LccDataStartCollect(LccHandle handle, int total_bytes, int trigger);
+    LTC_CONTROLLER_COMM_API int LccDataStartCollect(LccHandle handle, int total_samples,
+        int trigger);
 
     LTC_CONTROLLER_COMM_API int LccDataIsCollectDone(LccHandle handle, bool* is_done);
     
@@ -209,7 +212,7 @@ extern "C" {
 
     // ADC collection characteristics for DC718 and DC890
     LTC_CONTROLLER_COMM_API int LccDataSetCharacteristics(LccHandle handle, bool is_multichannel,
-        bool is_wide_samples, bool is_positive_clock);
+        int sample_bytes, bool is_positive_clock);
 
     // SPI functions
     // The next three functions lower chip select, perform their function, and raise chip select.
@@ -262,9 +265,15 @@ extern "C" {
 
     // Fpga functions
 
-    LTC_CONTROLLER_COMM_API int LccFpgaGetIsLoaded(LccHandle, const char* fpga_filename, bool* is_loaded);
+    LTC_CONTROLLER_COMM_API int LccFpgaGetIsLoaded(LccHandle handle, const char* fpga_filename,
+        bool* is_loaded);
 
-    LTC_CONTROLLER_COMM_API int LccFpgaLoadFile(LccHandle, const char* fpga_filename);
+    LTC_CONTROLLER_COMM_API int LccFpgaLoadFile(LccHandle handle, const char* fpga_filename);
+
+    LTC_CONTROLLER_COMM_API int LccFpgaLoadFileChunked(LccHandle handle, const char* fpga_filename,
+        int* progress);
+
+    LTC_CONTROLLER_COMM_API int LccFpgaCancelLoad(LccHandle handle);
 
     // Read the demo-board EEPROM via bit-banged I2C over FPGA registers
 

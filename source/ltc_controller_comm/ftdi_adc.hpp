@@ -21,30 +21,31 @@ namespace linear {
         FtdiAdc(const Ftdi& ftdi, const LccControllerInfo& info) : ftdi(ftdi), 
             description(info.description), serial_number(info.serial_number), index(info.id),
             type(Controller::Type(info.type)) { }
-        virtual ~FtdiAdc() { }
+        virtual ~FtdiAdc() { Close(); }
 
         Type GetType() override { return type; }
 
         string GetDescription() override { return description; }
         string GetSerialNumber() override { return serial_number; }
 
-        void DataSetCharacteristics(bool is_multichannel_, bool is_wide_samples_, 
+        void DataSetCharacteristics(bool is_multiple_channels, int bytes_per_sample, 
                 bool is_positive_clock) { 
-            is_multichannel = is_multichannel_;
-            is_wide_samples = is_wide_samples_;
+            is_multichannel = is_multiple_channels;
+            sample_bytes = bytes_per_sample;
             is_sampled_on_positive_edge = is_positive_clock;
         }
-        void DataStartCollect(int total_bytes, Trigger trigger) override;
+        void DataStartCollect(int total_samples, Trigger trigger) override;
         bool DataIsCollectDone() override;
         void DataCancelCollect() override;
         void DataSetHighByteFirst() override { swap_bytes = true; }
         void DataSetLowByteFirst() override { swap_bytes = false; }
-        int  DataReceive(uint8_t data[], int total_bytes) override { return ReadBytes(data, total_bytes); }
-        int  DataReceive(uint16_t data[], int total_values) override {
-            return Controller::DataRead(*this, swap_bytes, data, total_values);
+        
+        int  DataReceive(uint8_t data[], int num_bytes) override { return ReadBytes(data, num_bytes); }
+        int  DataReceive(uint16_t data[], int num_values) override {
+            return Controller::DataRead(*this, swap_bytes, data, num_values);
         }
-        int DataReceive(uint32_t data[], int total_values) override {
-            return Controller::DataRead(*this, swap_bytes, data, total_values);
+        int DataReceive(uint32_t data[], int num_values) override {
+            return Controller::DataRead(*this, swap_bytes, data, num_values);
         }
         void DataCancelReceive() override;
 
@@ -94,10 +95,11 @@ namespace linear {
         FT_HANDLE handle = nullptr;
         bool swap_bytes = true;
         bool is_sampled_on_positive_edge = true;
-        bool is_wide_samples = false;
+        int sample_bytes = 2;
         bool is_multichannel = false;
         ULONG saved_read_timeout = 100;
         ULONG saved_write_timeout = 50;
+        bool collect_was_read = true;
         // We are making two assumptions here that are not guaranteed by the standard:
         // 1. Reads and writes are atomic on bool (true "everywhere" in C++)
         // 2. 'volatile' makes cache coherency issues go away (true on all versions of Windows)

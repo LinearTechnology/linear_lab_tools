@@ -11,15 +11,24 @@ namespace linear {
     const int MAX_CONTROLLER_BYTES_PER_CHANNEL = 128 * 1024;
     const int MAX_CONTROLLER_BYTES = 2 * MAX_CONTROLLER_BYTES_PER_CHANNEL;
 
-    void FtdiAdc::DataStartCollect(int total_bytes, Trigger trigger) {
-        MUST_NOT_BE_SMALLER(total_bytes, 1024);
+    void FtdiAdc::DataStartCollect(int total_samples, Trigger trigger) {
+        MUST_NOT_BE_SMALLER(sample_bytes, 2);
+        int sample_multiplier = 1;
+        if (GetType() == Type::DC718) {
+            MUST_NOT_BE_LARGER(sample_bytes, 3);
+        } else {
+            MUST_NOT_BE_LARGER(sample_bytes, 8);
+            sample_multiplier = sample_bytes / 2;
+        }
+        MUST_NOT_BE_SMALLER(total_samples, 1024);
+        auto total_bytes = sample_bytes * total_samples;
         if (is_multichannel) {
             MUST_NOT_BE_LARGER(total_bytes, MAX_CONTROLLER_BYTES);
         } else {
             MUST_NOT_BE_LARGER(total_bytes, MAX_CONTROLLER_BYTES_PER_CHANNEL);
         }
-        if (total_bytes % 1024 != 0) {
-            throw invalid_argument("total_bytes must be a multiple of 1024");
+        if (total_samples % 1024 != 0) {
+            throw invalid_argument("total_samples must be a multiple of 1024");
         }
         int trigger_value;
         switch (trigger) {
@@ -38,10 +47,11 @@ namespace linear {
         }
 
         char buffer[100];
-        sprintf_s(buffer, "T %d\nL %d\nD %d\nW %c\nH %d\nC\n", trigger_value, total_bytes,
-            is_wide_samples ? 2 : 1, is_sampled_on_positive_edge ? '+' : '-',
-            is_multichannel ? 1 : 0);
+        sprintf_s(buffer, "T %d\nL %d\nD %d\nW %c\nH %d\nC\n", trigger_value, 
+            total_samples * sample_multiplier, sample_bytes > 2 ? 2 : 1,
+            is_sampled_on_positive_edge ? '+' : '-', is_multichannel ? 1 : 0);
         Write(buffer, strlen(buffer));
+        collect_was_read = false;
     }
     bool FtdiAdc::DataIsCollectDone() {
         char buffer[4] = "\0\0\0";
@@ -73,6 +83,7 @@ namespace linear {
     }
 
     void FtdiAdc::Reset() {
+        collect_was_read = true;
         OpenIfNeeded();
         try {
             // don't use the public SetTimeouts because we want to preserve the saved timeout values
@@ -134,30 +145,32 @@ namespace linear {
     void FtdiAdc::DataCancelCollect() {
         Reset();
     }
-    
-    int FtdiAdc::ReadBytes(uint8_t data[], int total_bytes) {
-        const char* read_command = is_multichannel ? "S 1\n" : "R 0\n";
-        Write(read_command, strlen(read_command));
 
-        const int MAX_BYTES_READ = 2 * 1024;
-        static BYTE buffer[MAX_BYTES_READ];
+   
+    int FtdiAdc::ReadBytes(uint8_t data[], int num_bytes) {
+        const int MAX_BYTES_READ = 4 * 1024;
+
+        if (!collect_was_read) {
+            collect_was_read = true;
+            const char* read_command = is_multichannel ? "S 1\n" : "R 0\n";
+            Write(read_command, strlen(read_command));
+        }
 
         // set timeout, but remember saved timeout
         auto timeout = saved_read_timeout;
         SetTimeouts(1000, saved_write_timeout);
         saved_read_timeout = timeout;
         int total_read = 0;
-        while (total_bytes > 0) {
-            auto num_bytes = Min(MAX_BYTES_READ, total_bytes);
-            auto num_read = Read(buffer, num_bytes);
-            if (num_read != num_bytes) {
-                throw HardwareError("Tried to read " + std::to_string(num_bytes) + " bytes, got " +
+        while (num_bytes > 0) {
+            auto chunk_bytes = Min(MAX_BYTES_READ, num_bytes);
+            auto num_read = Read(data, chunk_bytes);
+            if (num_read != chunk_bytes) {
+                throw HardwareError("Tried to read " + std::to_string(chunk_bytes) + " bytes, got " +
                     std::to_string(num_read) + ".");
             }
-            memcpy_s(data, total_bytes, buffer, num_bytes);
-            data += num_bytes;
-            total_read += num_bytes;
-            total_bytes -= num_bytes;
+            data += chunk_bytes;
+            total_read += chunk_bytes;
+            num_bytes -= chunk_bytes;
         }
 
         SetTimeouts(saved_read_timeout, saved_write_timeout);

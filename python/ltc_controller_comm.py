@@ -52,7 +52,7 @@ TYPE_DC590 = 0x00000010
 TYPE_DC2026 = 0x00000020
 TYPE_UNKNOWN = 0xFFFFFFFF
 
-SPI_CS_STATE_LOW  = 0
+SPI_CS_STATE_LOW = 0
 SPI_CS_STATE_HIGH = 1
 
 TRIGGER_NONE = 0
@@ -145,14 +145,16 @@ else:
 _dll = ct.CDLL(_dll_file)
 
 
-def list_controllers(type):
+def list_controllers(controller_type):
     num_controllers = ct.c_int()
-    if _dll.LccGetNumControllers(ct.c_int(type), ct.c_int(100), ct.byref(num_controllers)) != 0:
+    if _dll.LccGetNumControllers(ct.c_int(controller_type), ct.c_int(100),
+                                 ct.byref(num_controllers)) != 0:
         raise HardwareError("Could not create controller info list")
     if num_controllers == 0:
         return None
     controller_info_list = (ControllerInfo * num_controllers.value)()
-    if _dll.LccGetControllerList(ct.c_int(type), controller_info_list, num_controllers) != 0:
+    if _dll.LccGetControllerList(ct.c_int(controller_type), controller_info_list,
+                                 num_controllers) != 0:
         raise HardwareError("Could not get device info list, or no device found")
     return controller_info_list
 
@@ -384,13 +386,13 @@ class Controller(object):
         """
         self._raise_on_error(self.dll.LccDataCancelReceive(self._handle))
 
-    def data_start_collect(self, total_bytes, trigger):
+    def data_start_collect(self, total_samples, trigger):
         """
         Start an ADC collect into memory.
-        :param total_bytes: Number of bytes to collect
+        :param total_samples: Number of samples to collect
         :param trigger: Trigger type
         """
-        self._raise_on_error(self.dll.LccDataStartCollect(self._handle, ct.c_int(total_bytes),
+        self._raise_on_error(self.dll.LccDataStartCollect(self._handle, ct.c_int(total_samples),
                                                           ct.c_int(trigger)))
 
     def data_is_collect_done(self):
@@ -398,25 +400,28 @@ class Controller(object):
         Check if an ADC collect is done
         :return: True if collect done, False otherwise
         """
-        is_done = False
-        self._raise_on_error(self.dll.LccDataIsCollectDone(ct.byref(ct.c_bool(is_done))))
-        return is_done
+        is_done = ct.c_bool()
+        self._raise_on_error(self.dll.LccDataIsCollectDone(self._handle,
+                                                           ct.byref(is_done)))
+        return is_done.value
 
     def data_cancel_collect(self):
         """Cancel any ADC collect"""
         self._raise_on_error(self.dll.LccDataCancelCollect(self._handle))
 
-    def data_set_characteristics(self, is_multichannel, is_wide_samples, is_positive_clock):
+    def data_set_characteristics(self, is_multichannel, sample_bytes, is_positive_clock):
         """
         ADC collection characteristics for DC718 and DC890
         :param is_multichannel: True if the ADC has 2 or more channels
-        :param is_wide_samples: True if samples are larger than 16-bits
-        :param is_positive_clock: True if data is sampled on positive (rising) clock edges
+        :param sample_bytes: The total number of bytes occupied by a sample including
+                             alignment and meta data
+        :param is_positive_clock: True if data is sampled on positive (rising)
+                                  clock edges
         """
         self._raise_on_error(
             self.dll.LccDataSetCharacteristics(self._handle,
                                                ct.c_bool(is_multichannel),
-                                               ct.c_bool(is_wide_samples),
+                                               ct.c_int(sample_bytes),
                                                ct.c_bool(is_positive_clock)))
 
     def spi_send_bytes(self, values, start=0, end=-1):
@@ -738,16 +743,16 @@ class Controller(object):
         or revision info, for instance 'DLVDS' or 'S2175', case insensitive.
         :return: True if the requested load is loaded, False otherwise.
         """
-        is_loaded = False
+        is_loaded = ct.c_bool()
         self._raise_on_error(
             self.dll.LccFpgaGetIsLoaded(self._handle, ct.c_char_p(fpga_filename),
                                         ct.byref(is_loaded)))
-        return is_loaded
+        return is_loaded.value
 
     def eeprom_read_string(self, num_chars):
         """Receive an EEPROM string over bit-banged I2C via FPGA register."""
         c_string = ct.create_string_buffer(num_chars)
-        self._raise_on_error(self.dll.LccFpgaEepromReadString(self._handle, c_string, num_chars))
+        self._raise_on_error(self.dll.LccEepromReadString(self._handle, c_string, num_chars))
         return c_string.value
 
     def hs_set_bit_mode(self, mode):
@@ -784,14 +789,14 @@ class Controller(object):
         c_address = ct.c_ubyte(address)
         c_value = ct.c_ubyte(value)
         self._raise_on_error(self.dll.LccHsFpgaWriteDataAtAddress(self._handle, c_address,
-                                                                c_value))
+                                                                  c_value))
 
     def hs_fpga_read_data_at_address(self, address):
         """Set the current address and read a value from it."""
         c_address = ct.c_ubyte(address)
         c_value = ct.c_ubyte()
         self._raise_on_error(self.dll.LccHsFpgaReadDataAtAddress(self._handle, c_address,
-                                                               ct.byref(c_value)))
+                                                                 ct.byref(c_value)))
         return c_value.value
 
     def hs_gpio_write_high_byte(self, value):
@@ -823,7 +828,7 @@ class Controller(object):
         """
         c_register_address = ct.c_ubyte(register_address)
         self._raise_on_error(self.dll.LccHsFpgaEepromSetBitBangRegister(self._handle,
-                                                                      c_register_address))
+                                                                        c_register_address))
 
     def dc1371_set_generic_config(self, generic_config):
         """
@@ -845,3 +850,45 @@ class Controller(object):
         """
         self._raise_on_error(self.dll.Lcc1371SetGenericConfig(self._handle,
                                                               ct.c_uint32(demo_config)))
+
+    def dc1371_spi_choose_chip_select(self, new_chip_select):
+        """
+        Set the chip select to use in future spi commands, 1 (default) is
+        correct for most situations, rarely 2 is needed.
+        :param new_chip_select: 1 (usually) or 2
+        :return: nothing
+        """
+        self._raise_on_error(self.dll.Lcc1371SpiChooseChipSelect(self._handle,
+                                                                 ct.c_int(new_chip_select)))
+
+    def dc890_gpio_set_byte(self, byte):
+        """
+        Set the IO expander GPIO lines to byte, all spi transaction use this as
+        a base value, or can be used to bit bang lines
+        :param byte: The bits of byte correcspond to the output lines of the IO
+                     expander.
+        :return: Nothing
+        """
+        self._raise_on_error(self.dll.Lcc890GpioSetByte(self._handle, ct.c_uint8(byte)))
+
+    def dc890_gpio_spi_set_bits(self, cs_bit, sck_bit, sdi_bit):
+        """
+        Set the bits used for SPI transactions, which are performed by
+        bit-banging the IO expander on demo-boards that have one. This function
+        must be called before doing any spi transactions with the DC890
+
+        :param cs_bit: the bit used as chip select
+        :param sck_bit: the bit used as sck
+        :param sdi_bit: the bit used as sdi
+        :return: nothing
+        """
+        self._raise_on_error(self.dll.Lcc890GpioSpiSetBits(self._handle, ct.c_int(cs_bit),
+                                                           ct.c_int(sck_bit), ct.c_int(sdi_bit)))
+
+    def dc890_flush(self):
+        """
+        Causes the DC890 to terminate any I2C (or GPIO or SPI) transactions then
+        purges the buffers.
+        :return: nothing
+        """
+        self._raise_on_error(self.dll.Lcc890Flush(self._handle))

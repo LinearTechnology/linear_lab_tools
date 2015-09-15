@@ -79,7 +79,8 @@ namespace linear {
         void Reset() override;
 
 		bool FpgaGetIsLoaded(const string& fpga_filename) override;
-        void FpgaLoadFile(const string& fpga_filename) override;
+        int  FpgaLoadFileChunked(const string& fpga_filename) override;
+        void FpgaCancelLoad() override { fpga_load_started = false; }
 
 		void SetGenericConfig(uint32_t generic_config) {
             this->generic_config = SwapBytes(generic_config);
@@ -88,7 +89,7 @@ namespace linear {
 
         void DataSetHighByteFirst() override { swap_bytes = true; }
         void DataSetLowByteFirst() override { swap_bytes = false; }
-		void DataStartCollect (int total_bytes, Trigger trigger) override;
+		void DataStartCollect (int total_samples, Trigger trigger) override;
         bool DataIsCollectDone() override;
         void DataCancelCollect() override;
         int DataReceive(uint8_t data[], int total_bytes) override {
@@ -162,6 +163,7 @@ namespace linear {
         ChipSelect chip_select = ChipSelect::ONE;
         uint8_t eeprom_address = 0x50;
         bool swap_bytes = true;
+        bool fpga_load_started = false;
         // We are making two assumptions here that are not guaranteed by the standard:
         // 1. Reads and writes are atomic for bools (true "everywhere" in C++)
         // 2. 'volatile' makes cache coherency issues go away (true on all versions of Windows)

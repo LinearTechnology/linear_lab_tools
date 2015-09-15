@@ -51,6 +51,7 @@ namespace linear {
         // Data functions
         void DataSetHighByteFirst() override { swap_bytes = true; }
         void DataSetLowByteFirst() override { swap_bytes = false; }
+
         int DataReceive(uint8_t data[], int total_bytes) override {
             return ReadBytes(data, total_bytes);
         }
