@@ -72,6 +72,7 @@ DATA_ALTERNATING = 0x38
 test_data_reg = DATA_CHECKERBOARD
 
 NUM_ADC_SAMPLES = 64 * 1024
+NUM_ADC_SAMPLES_X2 = 2 * NUM_ADC_SAMPLES
 SAMPLE_BYTES = 2
 
 # find demo board with correct ID
@@ -114,15 +115,15 @@ with comm.Controller(device_info) as controller:
 
     if verbose:
         print 'Starting data collect'
-    # Due to a quirk of the DC890 and the DDR LVDS load, we have to claim this
+    # Due to a quirk of the DC1369 and the DDR LVDS load, we have to claim this
     # is a 2 channel part and then throw away the data from the second channel
     # this means we only get half of what we ask for.
     controller.data_set_characteristics(True, SAMPLE_BYTES, True)
-    controller.data_start_collect(2*NUM_ADC_SAMPLES, comm.TRIGGER_NONE)
+    controller.data_start_collect(NUM_ADC_SAMPLES_X2, comm.TRIGGER_NONE)
 
     for i in range(10):
         is_done = controller.data_is_collect_done()
-        if (is_done):
+        if is_done:
             break
         sleep(0.2)
 
@@ -136,7 +137,7 @@ with comm.Controller(device_info) as controller:
 
     if verbose:
         print 'Reading data'
-    num_bytes, data = controller.data_receive_uint16_values(end=2*NUM_ADC_SAMPLES)
+    num_bytes, data = controller.data_receive_uint16_values(end=NUM_ADC_SAMPLES_X2)
     if verbose:
         print 'Data read done'
 
