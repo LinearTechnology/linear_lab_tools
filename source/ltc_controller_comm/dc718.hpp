@@ -9,5 +9,17 @@ namespace linear {
         Dc718(const Ftdi& ftdi, const LccControllerInfo& info) : 
             FtdiAdc(ftdi, info) { }
         ~Dc718() { }
+
+        const char* DC718_ID_STRING = "QUDATS,PIC,03,00,DC,DC718,CPLD,04---------------\n";
+        bool VerifyId() {
+            Write("i\n", 2);
+            char buffer[Ftdi::EEPROM_ID_STRING_SIZE];
+            auto num_read = Read(buffer, Ftdi::EEPROM_ID_STRING_SIZE);
+            if (num_read != Ftdi::EEPROM_ID_STRING_SIZE) {
+                Close();
+                throw HardwareError("Not all EEPROM bytes received.");
+            }
+            return strcmp(DC718_ID_STRING, buffer) == 0;
+        }
     };
 }

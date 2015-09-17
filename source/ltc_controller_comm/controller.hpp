@@ -14,8 +14,6 @@ namespace linear {
             DC718      = LCC_TYPE_DC718,
             DC890      = LCC_TYPE_DC890,
             HIGH_SPEED = LCC_TYPE_HIGH_SPEED,
-            DC590      = LCC_TYPE_DC590,
-            DC2026     = LCC_TYPE_DC2026,
             UNKNOWN    = LCC_TYPE_UNKNOWN
         };
 

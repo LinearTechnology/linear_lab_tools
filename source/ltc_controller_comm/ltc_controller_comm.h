@@ -62,8 +62,6 @@ const int LCC_TYPE_DC1371     = 0x00000001;
 const int LCC_TYPE_DC718      = 0x00000002;
 const int LCC_TYPE_DC890      = 0x00000004;
 const int LCC_TYPE_HIGH_SPEED = 0x00000008;
-const int LCC_TYPE_DC590      = 0x00000010;
-const int LCC_TYPE_DC2026     = 0x00000020;
 const int LCC_TYPE_UNKNOWN    = 0xFFFFFFFF;
 
 const int LCC_SPI_CS_STATE_LOW  = 0;

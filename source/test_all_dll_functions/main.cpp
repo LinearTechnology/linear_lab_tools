@@ -216,7 +216,8 @@ bool CheckPrbs(const uint16_t* data, int size) {
 //#define HIGH_SPEED_BATTERY_2
 //#define HIGH_SPEED_BATTERY_3
 //#define DC1371_BATTERY_1
-#define DC890_BATTERY_1
+//#define DC890_BATTERY_1
+#define DC718_BATTERY_1
 
 int main() {
 
@@ -225,7 +226,9 @@ int main() {
 #ifdef HIGH_SPEED_BATTERY_3
 #ifdef DC1371_BATTERY_1
 #ifdef DC890_BATTERY_1
+#ifdef DC718_BATTERY_1
 #define ALL_TESTS
+#endif
 #endif
 #endif
 #endif
@@ -997,6 +1000,61 @@ int main() {
     int total_bytes_received;
     CHECK(LccDataReceiveUint16Values(handle, data, NUM_ADC_SAMPLES, &total_bytes_received), __LINE__);
     
+    if (total_bytes_received != 2 * NUM_ADC_SAMPLES) {
+        FAIL("Not all bytes received\n", __LINE__);
+    }
+
+    for (int i = 0; i < NUM_ADC_SAMPLES; ++i) {
+        data[i] &= 0x3FFF;
+    }
+
+    uint16_t codes[] = { 0x2AAA, 0x1555 };
+    int code_index = 1;
+    if ((data[0] & 0x3FFF) == codes[0]) {
+        code_index = 0;
+    }
+    for (int i = 0; i < NUM_ADC_SAMPLES; i += 2) {
+        if ((data[i] & 0x3FFF) != codes[code_index]) {
+            FAIL("Data values not correct\n", __LINE__);
+        }
+        code_index ^= 1;
+    }
+
+    LccCleanup(&handle);
+
+#endif
+
+
+#ifdef DC718_BATTERY_1
+
+    // DC1369A-A LTC2261
+
+    LccHandle handle = nullptr;
+    LccControllerInfo controller_info;
+    CHECK(LccGetControllerList(LCC_TYPE_DC718, &controller_info, 1), __LINE__);
+    CHECK(LccInitController(&handle, controller_info), __LINE__);
+
+    char eeprom_id[50];
+    CHECK(LccEepromReadString(handle, eeprom_id, 50), __LINE__);
+    cout << "id string is " << eeprom_id << "\n";
+
+    const int SAMPLE_BYTES = 2;
+    CHECK(LccDataSetCharacteristics(handle, true, SAMPLE_BYTES, true), __LINE__);
+
+    uint16_t data[NUM_ADC_SAMPLES];
+    CHECK(LccDataStartCollect(handle, NUM_ADC_SAMPLES, LCC_TRIGGER_NONE), __LINE__);
+    bool is_done = false;
+    for (int i = 0; i < 10; ++i) {
+        CHECK(LccDataIsCollectDone(handle, &is_done), __LINE__);
+        if (is_done) {
+            break;
+        }
+        sleep_for(milliseconds(200));
+    }
+
+    int total_bytes_received;
+    CHECK(LccDataReceiveUint16Values(handle, data, NUM_ADC_SAMPLES, &total_bytes_received), __LINE__);
+
     if (total_bytes_received != 2 * NUM_ADC_SAMPLES) {
         FAIL("Not all bytes received\n", __LINE__);
     }

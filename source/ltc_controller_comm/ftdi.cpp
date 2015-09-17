@@ -1,6 +1,6 @@
 #include <unordered_map>
 #include "ftdi.hpp"
-#include "ftdi_adc.hpp"
+#include "dc718.hpp"
 
 namespace linear {
 
@@ -13,11 +13,8 @@ namespace linear {
     ENUM_DECLARATION;
 
     const char* DC890_DESCRIPTION = "DC890 FastDAACS CNTLR";
-    const char* DC890_ID_STRING = "FSDACS,PIC,02,01,DC,DC890B-A,-------------------";
     const char* DC718_DESCRIPTION = "USB SERIAL CONTROLLER";
-    const char* DC718_ID_STRING = "QUDATS,PIC,02,00,DC,DC718,CPLD,03---------------";
     const char* DC590_DESCRIPTION = DC718_DESCRIPTION;
-    const char* DC590_ID_STRING = "USBSPI,PIC,01,01,DC,DC590,----------------------";
 
     int Ftdi::GetNumControllers(int search_type, int max_controllers) const {
         DWORD num_devices = 0;
@@ -33,35 +30,19 @@ namespace linear {
         for (WORD i = 0; i < num_devices; ++i) {
             auto ftdi_info = ftdi_info_list[i];
             if (ftdi_info.Type == FT_DEVICE_BM) {
-                if ((search_type & LCC_TYPE_DC890) && ftdi_info.Description == string(DC890_DESCRIPTION)) {
+                if ((search_type & LCC_TYPE_DC890) &&
+                        ftdi_info.Description == string(DC890_DESCRIPTION)) {
                     ++num_controllers;
-                } else if ((search_type & LCC_TYPE_DC718) & (search_type & LCC_TYPE_DC590)) {
-                    // if we are looking for both we don't have to descriminate
-                    if (ftdi_info.Description == string(DC718_DESCRIPTION)) {
+                } else if ((search_type & LCC_TYPE_DC718) && 
+                        ftdi_info.Description == string(DC718_DESCRIPTION)) {
+                    // DC718 and DC590 have same description, so need to open and query device
+                    auto controller_info = 
+                        Controller::MakeControllerInfo(Controller::Type::DC718, 
+                        ftdi_info.Description, ftdi_info.SerialNumber, i);
+                    Dc718 controller(*this, controller_info);
+                    if (controller.VerifyId()) {
                         ++num_controllers;
                     }
-                } else if ((search_type & LCC_TYPE_DC718) | (search_type & LCC_TYPE_DC590)) {
-                    if (ftdi_info.Description == string(DC718_DESCRIPTION)) {
-                        // DC718 and DC590 have same description, so need to open and query device
-                        auto controller_info = 
-                            Controller::MakeControllerInfo(Controller::Type::DC718, 
-                            ftdi_info.Description, ftdi_info.SerialNumber, i);
-                        FtdiAdc controller(*this, controller_info);
-                        char buffer[EEPROM_ID_STRING_SIZE];
-                        controller.EepromReadString(buffer, EEPROM_ID_STRING_SIZE);
-                        
-                        if ((search_type & LCC_TYPE_DC718) && 
-                                strcmp(buffer, DC718_ID_STRING) == 0) {
-                            ++num_controllers;
-                        } else if ((search_type & LCC_TYPE_DC590) && 
-                                strcmp(buffer, DC590_ID_STRING) == 0) {
-                            ++num_controllers;
-                        }
-                    }
-                }
-            } else if (ftdi_info.Type == FT_DEVICE_232R && (search_type & LCC_TYPE_DC2026)) {
-                if (ftdi_info.Description == string(DC590_DESCRIPTION)) {
-                    ++num_controllers;
                 }
             } else if (ftdi_info.Type == FT_DEVICE_2232H && (search_type & LCC_TYPE_HIGH_SPEED)) {
                 // The 2232H is actually two devices, we only count channel A
@@ -94,37 +75,22 @@ namespace linear {
         for (WORD i = 0; i < num_devices; ++i) {
             auto ftdi_info = ftdi_info_list[i];
             if (ftdi_info.Type == FT_DEVICE_BM) {
-                if ((search_type & LCC_TYPE_DC890) && ftdi_info.Description == string(DC890_DESCRIPTION)) {
-                    auto controller_info = Controller::MakeControllerInfo(Controller::Type::DC890, ftdi_info.Description,
-                        ftdi_info.SerialNumber, i);
-                    controller_info_list.push_back(controller_info);
-                } else if ((search_type & LCC_TYPE_DC718) || (search_type & LCC_TYPE_DC590)) {
-                    if (ftdi_info.Description == string(DC718_DESCRIPTION)) {
-                        // DC718 and DC590 have same description, so need to open and query device
-                        auto controller_info =
-                            Controller::MakeControllerInfo(Controller::Type::DC718,
-                            ftdi_info.Description, ftdi_info.SerialNumber, i);
-                        FtdiAdc controller(*this, controller_info);
-                        char buffer[EEPROM_ID_STRING_SIZE];
-                        controller.EepromReadString(buffer, EEPROM_ID_STRING_SIZE);
-                        
-                        if (strcmp(buffer, DC718_ID_STRING) == 0) {
-                            auto controller_info = Controller::MakeControllerInfo(Controller::Type::DC718,
-                                ftdi_info.Description, ftdi_info.SerialNumber, i);
-                            controller_info_list.push_back(controller_info);
-                        } else if (strcmp(buffer, DC590_ID_STRING) == 0) {
-                            auto controller_info = Controller::MakeControllerInfo(Controller::Type::DC590,
-                                ftdi_info.Description, ftdi_info.SerialNumber, i);
-                            controller_info_list.push_back(controller_info);
-                        }
-                    }
-                }          
-            } else if (ftdi_info.Type == FT_DEVICE_232R && (search_type & LCC_TYPE_DC2026)) {
-                if (ftdi_info.Description == string(DC590_DESCRIPTION)) {
-                    auto controller_info = Controller::MakeControllerInfo(Controller::Type::DC2026,
+                if ((search_type & LCC_TYPE_DC890) &&
+                        ftdi_info.Description == string(DC890_DESCRIPTION)) {
+                    auto controller_info = Controller::MakeControllerInfo(Controller::Type::DC890,
                         ftdi_info.Description, ftdi_info.SerialNumber, i);
                     controller_info_list.push_back(controller_info);
-                }
+                } else if ((search_type & LCC_TYPE_DC718) &&
+                        ftdi_info.Description == string(DC718_DESCRIPTION)) {
+                    // DC718 and DC590 have same description, so need to open and query device
+                    auto controller_info =
+                        Controller::MakeControllerInfo(Controller::Type::DC718,
+                        ftdi_info.Description, ftdi_info.SerialNumber, i);
+                    Dc718 controller(*this, controller_info);
+                    if (controller.VerifyId()) {
+                        controller_info_list.push_back(controller_info);
+                    }
+                }          
             } else if (ftdi_info.Type == FT_DEVICE_2232H && (search_type & LCC_TYPE_HIGH_SPEED)) {
                 // The 2232H is actually two devices, so we need two indices to open it, they might
                 // not be next to each other either.
