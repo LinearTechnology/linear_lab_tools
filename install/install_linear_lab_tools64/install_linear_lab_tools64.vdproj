@@ -62,6 +62,19 @@
             "PrerequisitesLocation" = "2:1"
             "Url" = "8:"
             "ComponentsUrl" = "8:"
+                "Items"
+                {
+                    "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:.NETFramework,Version=v4.0,Profile=Client"
+                    {
+                    "Name" = "8:Microsoft .NET Framework 4 Client Profile (x86 and x64)"
+                    "ProductCode" = "8:.NETFramework,Version=v4.0,Profile=Client"
+                    }
+                    "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:Microsoft.Windows.Installer.3.1"
+                    {
+                    "Name" = "8:Windows Installer 3.1"
+                    "ProductCode" = "8:Microsoft.Windows.Installer.3.1"
+                    }
+                }
             }
         }
         "Release"
@@ -268,15 +281,15 @@
         {
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:linear_lab_tools64"
-        "ProductCode" = "8:{E4E68051-F19A-4F93-9B05-30677E559A4C}"
-        "PackageCode" = "8:{2E9897BF-F25E-4A2E-AA45-E463955AAC11}"
+        "ProductCode" = "8:{F46E9A7F-6074-441F-9108-295FE340A3B6}"
+        "PackageCode" = "8:{53172AE9-892C-4BC6-B2B2-A4E81D0E12B4}"
         "UpgradeCode" = "8:{34C9E896-F9F8-4563-A1D3-FB0FE69C2B22}"
         "AspNetVersion" = "8:4.0.30319.0"
         "RestartWWWService" = "11:FALSE"
         "RemovePreviousVersions" = "11:TRUE"
         "DetectNewerInstalledVersion" = "11:TRUE"
         "InstallAllUsers" = "11:FALSE"
-        "ProductVersion" = "8:1.0.1"
+        "ProductVersion" = "8:1.0.2"
         "Manufacturer" = "8:Linear Technology"
         "ARPHELPTELEPHONE" = "8:"
         "ARPHELPLINK" = "8:"
