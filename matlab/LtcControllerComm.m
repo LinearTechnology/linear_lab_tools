@@ -47,8 +47,6 @@ classdef LtcControllerComm < handle
         TYPE_DC718 = uint32(2)
         TYPE_DC890 = uint32(4)
         TYPE_HIGH_SPEED = uint32(8)
-        TYPE_DC590 = uint32(16)
-        TYPE_DC2026 = uint32(32)
         TYPE_UNKNOWN = uint32(4294967295)
         
         TRIGGER_NONE = 0

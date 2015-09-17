@@ -48,8 +48,6 @@ TYPE_DC1371 = 0x00000001
 TYPE_DC718 = 0x00000002
 TYPE_DC890 = 0x00000004
 TYPE_HIGH_SPEED = 0x00000008
-TYPE_DC590 = 0x00000010
-TYPE_DC2026 = 0x00000020
 TYPE_UNKNOWN = 0xFFFFFFFF
 
 SPI_CS_STATE_LOW = 0
@@ -150,9 +148,10 @@ def list_controllers(controller_type):
     if _dll.LccGetNumControllers(ct.c_int(controller_type), ct.c_int(100),
                                  ct.byref(num_controllers)) != 0:
         raise HardwareError("Could not create controller info list")
+    num_controllers = num_controllers.value
     if num_controllers == 0:
         return None
-    controller_info_list = (ControllerInfo * num_controllers.value)()
+    controller_info_list = (ControllerInfo * num_controllers)()
     if _dll.LccGetControllerList(ct.c_int(controller_type), controller_info_list,
                                  num_controllers) != 0:
         raise HardwareError("Could not get device info list, or no device found")
