@@ -757,7 +757,7 @@ class Controller(object):
             :return: True if the requested load is loaded, False otherwise.
         """
         self._raise_on_error(
-            self.dll.LccFpgaLoadFile(self._handle, ct.c_char_p(fpga_filename))
+            self.dll.LccFpgaLoadFile(self._handle, ct.c_char_p(fpga_filename)))
 
     def eeprom_read_string(self, num_chars):
         """Receive an EEPROM string over bit-banged I2C via FPGA register."""
