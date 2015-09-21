@@ -55,9 +55,9 @@ function TestLtcHighSpeedComm
     input('Test battery 1\nUse an LTC2000 setup and a scope.\nPress enter when ready.\n');
 
     % loads library and lets user init devices to get an id
-    lths = LtcHighSpeedComm();
+    lths = LtcControllerComm();
     
-    deviceInfoList = lths.ListDevices();
+    deviceInfoList = lths.ListControllers();
     deviceInfo = [];
     for info = deviceInfoList
        if strcmp(info.description(1:7), 'LTC2000')
@@ -76,12 +76,12 @@ function TestLtcHighSpeedComm
     % init a device and get an id
     did = lths.Init(deviceInfo);
     
-    lths.SetBitMode(did, lths.BIT_MODE_MPSSE);
-    lths.FpgaToggleReset(did);
+    lths.HsSetBitMode(did, lths.HS_BIT_MODE_MPSSE);
+    lths.HsFpgaToggleReset(did);
 
-    fprintf('FPGA ID is %X\n', lths.FpgaReadDataAtAddress(did, FPGA_ID_REG));
+    fprintf('FPGA ID is %X\n', lths.HsFpgaReadDataAtAddress(did, FPGA_ID_REG));
 
-    lths.FpgaWriteDataAtAddress(did, FPGA_DAC_PD, 1);
+    lths.HsFpgaWriteDataAtAddress(did, FPGA_DAC_PD, 1);
 
     SpiWrite(REG_RESET_PD, 0);
     SpiWrite(REG_CLK_PHASE, 5);
@@ -122,12 +122,12 @@ function TestLtcHighSpeedComm
         error('TestLtcHighSpeedComm:badRegDacGain', 'Expected a 32');
     end
 
-    lths.FpgaWriteDataAtAddress(did, FPGA_CONTROL_REG, 32);
+    lths.HsFpgaWriteDataAtAddress(did, FPGA_CONTROL_REG, 32);
 
     time = 1:NUM_DAC_SAMPLES;
     data = floor(AMPLITUDE * sin((NUM_CYCLES_1 * TWO_PI * time) / NUM_DAC_SAMPLES));
 
-    lths.SetBitMode(did, lths.BIT_MODE_FIFO);
+    lths.HsSetBitMode(did, lths.BIT_MODE_FIFO);
 
     lths.FifoSendUint16Values(did, data);
 
@@ -167,7 +167,7 @@ function TestLtcHighSpeedComm
     pause(0.1);
     data = swapbytes(int16(floor(AMPLITUDE * sin((NUM_CYCLES_3 * TWO_PI * time) / NUM_DAC_SAMPLES))));
     data32 = swapbytes(typecast(data, 'uint32'));
-    lths.FifoSendUint32Values(did, data32);
+    lths.DataSendUint32Values(did, data32);
 
     fprintf('Basic test finished, do you see a sine wave in the scope with ');
     fprintf('frequency = clockFrequency / %f?\n', NUM_DAC_SAMPLES / NUM_CYCLES_3);
@@ -177,12 +177,12 @@ function TestLtcHighSpeedComm
     end
     fprintf('FifoSenUint32Values is OK\n');
 
-    lths.SetBitMode(did, lths.BIT_MODE_MPSSE);
+    lths.HsSetBitMode(did, lths.HS_BIT_MODE_MPSSE);
 
     WRITE_LINEAR_GAIN = bitor(REG_LINEAR_GAIN, SPI_WRITE_BIT);
     READ_LINEAR_GAIN = bitor(REG_LINEAR_GAIN, SPI_READ_BIT);
 
-    lths.SpiSendBytes(did, [WRITE_LINEAR_GAIN, 2]);    
+    lths.HsSpiSendBytes(did, [WRITE_LINEAR_GAIN, 2]);    
     if SpiRead(REG_LINEAR_GAIN) ~= 2
        error('TestLtcHighSpeedComm:SpiSendBytes', 'SpiSendBytes didn''t seem to work'); 
     end
@@ -235,38 +235,38 @@ function TestLtcHighSpeedComm
     end
     fprintf('SpiTransceiveNoChipSelect is OK\n');
 
-    lths.FpgaWriteAddress(did, FPGA_ID_REG);
-    lths.FpgaWriteData(did, 92);
-    if lths.FpgaReadDataAtAddress(did, FPGA_ID_REG) ~= 92
+    lths.HsFpgaWriteAddress(did, FPGA_ID_REG);
+    lths.HsFpgaWriteData(did, 92);
+    if lths.HsFpgaReadDataAtAddress(did, FPGA_ID_REG) ~= 92
         error('TestLtcHighSpeedComm:FpgaWriteData', 'FpgaWriteAddress or FpgaWriteData didn''t seem to work');
     end
     fprintf('FpgaWriteAddress is OK\n');
     fprintf('FpgaWriteData is OK\n');
 
-    lths.FpgaWriteData(did, 37);
-    if lths.FpgaReadData(did) ~= 37
+    lths.HsFpgaWriteData(did, 37);
+    if lths.HsFpgaReadData(did) ~= 37
         error('TestLtcHighSpeedComm:FpgaReadData', 'FpgaReadData didn''t seem to work');
     end
     fprintf('FpgaReadData is OK\n');
 
-    lths.FpgaWriteAddress(did, FPGA_ID_REG);
+    lths.HsFpgaWriteAddress(did, FPGA_ID_REG);
 
-    lths.GpioWriteLowByte(did, GPIO_LOW_BASE);
-    lths.GpioWriteHighByte(did, 56);
-    lths.GpioWriteLowByte(did, bitor(GPIO_LOW_BASE, FPGA_ACTION_BIT));
-    lths.GpioWriteLowByte(did, GPIO_LOW_BASE);
-    if lths.FpgaReadData(did) ~= 56
+    lths.HsGpioWriteLowByte(did, GPIO_LOW_BASE);
+    lths.HsGpioWriteHighByte(did, 56);
+    lths.HsGpioWriteLowByte(did, bitor(GPIO_LOW_BASE, FPGA_ACTION_BIT));
+    lths.HsGpioWriteLowByte(did, GPIO_LOW_BASE);
+    if lths.HsFpgaReadData(did) ~= 56
         error('TestLtcHighSpeedComm:GpioWriteHighByte', 'GpioWriteHighByte or GpioWriteLow byte didn''t seem to work');
     end
     fprintf('GpioWriteHighByte is OK\n');
     fprintf('GpioWriteLowByte is OK\n');
 
-    lths.FpgaWriteData(did, 72);
+    lths.HsFpgaWriteData(did, 72);
 
-    lths.GpioWriteLowByte(did, bitor(GPIO_LOW_BASE, FPGA_READ_WRITE_BIT));
-    lths.GpioWriteLowByte(did, bitor(bitor(GPIO_LOW_BASE, FPGA_READ_WRITE_BIT), FPGA_ACTION_BIT));
-    ok = lths.GpioReadHighByte(did) == 72;
-    lths.GpioWriteLowByte(did, GPIO_LOW_BASE);
+    lths.HsGpioWriteLowByte(did, bitor(GPIO_LOW_BASE, FPGA_READ_WRITE_BIT));
+    lths.HsGpioWriteLowByte(did, bitor(bitor(GPIO_LOW_BASE, FPGA_READ_WRITE_BIT), FPGA_ACTION_BIT));
+    ok = lths.HsGpioReadHighByte(did) == 72;
+    lths.HsGpioWriteLowByte(did, GPIO_LOW_BASE);
     if ~ok
         error('TestLtcHighSpeedComm:GpioReadHighByte', 'GpioReadHighByte didn''t seem to work');
     end
@@ -284,7 +284,7 @@ function TestLtcHighSpeedComm
 
     lths.SetTimeouts(did, 500, 500);
     tic;
-    lths.FifoReceiveBytes(did, 1);
+    lths.DataReceiveBytes(did, 1);
     elapsed = toc;
     if elapsed < 0.450 || elapsed > 0.550
         error('TestLtcHighSpeedComm:SetTimeouts', 'SetTimeouts didn''t seem to work');
@@ -292,7 +292,7 @@ function TestLtcHighSpeedComm
 
     lths.SetTimeouts(did, 3000, 3000);
     tic;
-    lths.FifoReceiveBytes(did, 1);
+    lths.DataReceiveBytes(did, 1);
     elapsed = toc;
     if elapsed < 2.75 || elapsed > 3.25
         error('TestLtcHighSpeedComm:SetTimeouts', 'SetTimeouts didn''t seem to work');
@@ -300,8 +300,8 @@ function TestLtcHighSpeedComm
     fprintf('SetTimeouts is OK\n');
 
     lths.FifoSendBytes(did, 128);
-    lths.PurgeIo(did);
-    result = lths.FifoReceiveBytes(did, 1);
+    lths.HsPurgeIo(did);
+    result = lths.DataReceiveBytes(did, 1);
     if ~isempty(result)
         error('TestLtcHighSpeedComm:PurgeIo', 'PurgeIo didn''t seem to work');
     end
@@ -310,11 +310,11 @@ function TestLtcHighSpeedComm
     lths.Close(did);
     stolenId = lths.Init(deviceInfo);
 
-    lths.FpgaReadDataAtAddress(stolenId, FPGA_ID_REG);
+    lths.HsFpgaReadDataAtAddress(stolenId, FPGA_ID_REG);
     closeOk = false;
     errorInfoOk = false;
     try
-        lths.FpgaReadDataAtAddress(did, FPGA_ID_REG);
+        lths.HsFpgaReadDataAtAddress(did, FPGA_ID_REG);
     catch ex
         closeOk = true;
         if strcmp(ex.message, 'Error opening the device.')
@@ -332,7 +332,7 @@ function TestLtcHighSpeedComm
     lths.Cleanup(stolenId);
     clear stolenId;
 
-    lths.FpgaReadDataAtAddress(did, FPGA_ID_REG);
+    lths.HsFpgaReadDataAtAddress(did, FPGA_ID_REG);
 
     fprintf('Cleanup is OK\n');
     
@@ -358,14 +358,14 @@ function TestLtcHighSpeedComm
     fprintf('Serial Number: %s\n', deviceInfo.serialNumber);
 
     did = lths.Init(deviceInfo);
-    lths.SetBitMode(did, lths.BIT_MODE_MPSSE);
-    lths.FpgaToggleReset(did);
-    lths.FifoSetLowByteFirst(did);
+    lths.HsSetBitMode(did, lths.HS_BIT_MODE_MPSSE);
+    lths.HsFpgaToggleReset(did);
+    lths.DataSetLowByteFirst(did);
 
     InitAdc();
 
-    lths.SetBitMode(did, lths.BIT_MODE_FIFO);
-    [data16, nBytes] = lths.FifoReceiveUint16Values(did, NUM_ADC_SAMPLES);
+    lths.HsSetBitMode(did, lths.BIT_MODE_FIFO);
+    [data16, nBytes] = lths.DataReceiveUint16Values(did, NUM_ADC_SAMPLES);
     if (nBytes ~= NUM_ADC_SAMPLES * 2)
         error('TestHighSpeedComm:FifoReceiveUint16Values', ...
             'FifoReceiveUint16Values didn''t seem to work');
@@ -389,8 +389,8 @@ function TestLtcHighSpeedComm
     fprintf('FifoReceiveUint16Values is OK\n');
 
     InitAdc();
-    lths.SetBitMode(did, lths.BIT_MODE_FIFO);
-    [data32, nBytes] = lths.FifoReceiveUint32Values(did, NUM_ADC_SAMPLES / 2);
+    lths.HsSetBitMode(did, lths.BIT_MODE_FIFO);
+    [data32, nBytes] = lths.DataReceiveUint32Values(did, NUM_ADC_SAMPLES / 2);
 
     if (nBytes ~= NUM_ADC_SAMPLES * 2)
         error('TestHighSpeedComm:FifoReceiveUint32Values', ...
@@ -410,8 +410,8 @@ function TestLtcHighSpeedComm
     fprintf('FifoReceiveUint32Values is OK\n');
 
     InitAdc();
-    lths.SetBitMode(did, lths.BIT_MODE_FIFO);
-    data8 = uint8(lths.FifoReceiveBytes(did, NUM_ADC_SAMPLES * 2));
+    lths.HsSetBitMode(did, lths.BIT_MODE_FIFO);
+    data8 = uint8(lths.DataReceiveBytes(did, NUM_ADC_SAMPLES * 2));
     data16 = typecast(data8, 'uint16');
     channelA(1:2:end) = data16(1:4:end);
     channelA(2:2:end) = data16(2:4:end);
@@ -427,10 +427,10 @@ function TestLtcHighSpeedComm
     end
     fprintf('FifoReceiveBytes is OK\n');
 
-    lths.SetBitMode(did, lths.BIT_MODE_MPSSE);
-    lths.FpgaToggleReset(did);
+    lths.HsSetBitMode(did, lths.HS_BIT_MODE_MPSSE);
+    lths.HsFpgaToggleReset(did);
 
-    string = lths.FpgaEepromReadString(did, MAX_EEPROM_CHARS);
+    string = lths.EepromReadString(did, MAX_EEPROM_CHARS);
 
     if ~strncmp(LTC2123_ID_STRING, string, length(LTC2123_ID_STRING))
         error('TestLtcHighSpeedComm:FpgaEepromReceiveString', ...
@@ -438,14 +438,14 @@ function TestLtcHighSpeedComm
     end
     fprintf('FpgaEepromReceiveString is OK\n');
 
-    lths.FpgaWriteDataAtAddress(did, 0, 0);
-    lths.FpgaEepromSetBitBangRegister(did, 0);
+    lths.HsFpgaWriteDataAtAddress(did, 0, 0);
+    lths.HsFpgaEepromSetBitBangRegister(did, 0);
     try
-        lths.FpgaEepromReadString(did, 1);
+        lths.EepromReadString(did, 1);
     catch %#ok we are just checking that an error gets thrown
         % errors out because there is no lths to ACK
     end
-    if lths.FpgaReadDataAtAddress(did, 0) == 0
+    if lths.HsFpgaReadDataAtAddress(did, 0) == 0
         error('TestLtcHighSpeedComm:FpgaI2cSetBitBangRegister', ...
             'FpgaEepromSetBitBangRegister didn''t seem to work');
     end
@@ -475,26 +475,26 @@ function TestLtcHighSpeedComm
 
     did = lths.Init(deviceInfo);
 
-    lths.SetBitMode(did, lths.BIT_MODE_MPSSE);
-    lths.GpioWriteHighByte(did, 1);
+    lths.HsSetBitMode(did, lths.HS_BIT_MODE_MPSSE);
+    lths.HsGpioWriteHighByte(did, 1);
     if lths.SpiReceiveBytes(did, 1) ~= 255
         error('TestLtcHighSpeedComm:SpiReciveBytes', ...
             'SpiReceiveBytes didn''t seem to work');
     end  
-    lths.GpioWriteHighByte(did, 0);
+    lths.HsGpioWriteHighByte(did, 0);
     if lths.SpiReceiveBytes(did, 1) ~= 0
         error('TestLtcHighSpeedComm:SpiReciveBytes', ...
             'SpiReceiveBytes didn''t seem to work');
     end 
     fprintf('SpiReceiveBytes is OK\n');
 
-    lths.GpioWriteHighByte(did, 1);
-    if bitand(lths.GpioReadLowByte(did), 4) == 0
+    lths.HsGpioWriteHighByte(did, 1);
+    if bitand(lths.HsGpioReadLowByte(did), 4) == 0
         error('TestLtcHighSpeedComm:GpioReadLowByte', ...
             'GpioReadLowByte didn''t seem to work');
     end
-    lths.GpioWriteHighByte(did, 0);
-    if bitand(lths.GpioReadLowByte(did), 4) ~= 0
+    lths.HsGpioWriteHighByte(did, 0);
+    if bitand(lths.HsGpioReadLowByte(did), 4) ~= 0
         error('TestLtcHighSpeedComm:GpioReadLowByte', ...
             'GpioReadLowByte didn''t seem to work');
     end
@@ -503,14 +503,14 @@ function TestLtcHighSpeedComm
     fprintf('All tests passed!\n');
 
     function ResetFpga
-       lths.SetBitMode(did, lths.BIT_MODE_MPSSE);
-       lths.FpgaToggleReset(did);
+       lths.HsSetBitMode(did, lths.HS_BIT_MODE_MPSSE);
+       lths.HsFpgaToggleReset(did);
        pause(0.01);
-       lths.FpgaWriteDataAtAddress(did, FPGA_DAC_PD, 1);
+       lths.HsFpgaWriteDataAtAddress(did, FPGA_DAC_PD, 1);
        pause(0.01);
-       lths.FpgaWriteDataAtAddress(did, FPGA_CONTROL_REG, 32);
+       lths.HsFpgaWriteDataAtAddress(did, FPGA_CONTROL_REG, 32);
        pause(0.01);
-       lths.SetBitMode(did, lths.BIT_MODE_FIFO);
+       lths.HsSetBitMode(did, lths.BIT_MODE_FIFO);
     end
 
     function SpiWrite(address, value)
@@ -522,21 +522,21 @@ function TestLtcHighSpeedComm
     end
 
     function WriteJedecReg(address, b3, b2, b1, b0)
-       lths.FpgaWriteDataAtAddress(did, JESD204B_WB3_REG, b3); 
-       lths.FpgaWriteDataAtAddress(did, JESD204B_WB2_REG, b2);
-       lths.FpgaWriteDataAtAddress(did, JESD204B_WB1_REG, b1);
-       lths.FpgaWriteDataAtAddress(did, JESD204B_WB0_REG, b0);
-       lths.FpgaWriteDataAtAddress(did, JESD204B_CONFIG_REG, ...
+       lths.HsFpgaWriteDataAtAddress(did, JESD204B_WB3_REG, b3); 
+       lths.HsFpgaWriteDataAtAddress(did, JESD204B_WB2_REG, b2);
+       lths.HsFpgaWriteDataAtAddress(did, JESD204B_WB1_REG, b1);
+       lths.HsFpgaWriteDataAtAddress(did, JESD204B_WB0_REG, b0);
+       lths.HsFpgaWriteDataAtAddress(did, JESD204B_CONFIG_REG, ...
            bitor(bitshift(address, 2), 2));
-       if bitand(lths.FpgaReadData(did), 1) == 0
+       if bitand(lths.HsFpgaReadData(did), 1) == 0
            error('TestLtcHighSpeedComm:WriteJedecReg', 'Got bad status');
        end
     end
 
     function InitAdc()
         lths.Close(did);
-        lths.SetBitMode(did, lths.BIT_MODE_MPSSE);
-        lths.FpgaToggleReset(did);
+        lths.HsSetBitMode(did, lths.HS_BIT_MODE_MPSSE);
+        lths.HsFpgaToggleReset(did);
         SpiWrite(1, 0);
         SpiWrite(2, 0);
         SpiWrite(3, 171);
@@ -552,15 +552,15 @@ function TestLtcHighSpeedComm
         WriteJedecReg(3, 0, 0, 0, 23);
         WriteJedecReg(0, 0, 0, 1, 2);
 
-        if lths.FpgaReadDataAtAddress(did, CLOCK_STATUS_REG) ~= 30
+        if lths.HsFpgaReadDataAtAddress(did, CLOCK_STATUS_REG) ~= 30
             error('TestLtcHighSpeedComm:InitDac', 'Bad clock status');
         end
 
-        lths.FpgaWriteDataAtAddress(did, CAPTURE_CONFIG_REG, 120);
-        lths.FpgaWriteDataAtAddress(did, CAPTURE_RESET_REG, 1);
-        lths.FpgaWriteDataAtAddress(did, CAPTURE_CONTROL_REG, 1);
+        lths.HsFpgaWriteDataAtAddress(did, CAPTURE_CONFIG_REG, 120);
+        lths.HsFpgaWriteDataAtAddress(did, CAPTURE_RESET_REG, 1);
+        lths.HsFpgaWriteDataAtAddress(did, CAPTURE_CONTROL_REG, 1);
         pause(0.05);
-        if bitand(lths.FpgaReadDataAtAddress(did, CAPTURE_STATUS_REG), 49) ~= 49
+        if bitand(lths.HsFpgaReadDataAtAddress(did, CAPTURE_STATUS_REG), 49) ~= 49
             error('TestLtcHighSpeedComm:initDac', 'Bad capture status');
         end
     end

@@ -22,15 +22,15 @@ functions.LHS{iFunction} = 'int32';
 functions.RHS{iFunction} = {'int32', 'int32', 'int32Ptr'};
 iFunction = iFunction+1;
 
-% int LccGetControllerList(LccDeviceInfo * device_info_list, 
-% int num_devices); 
+% int LccGetControllerList(int controller_types,
+%        LccControllerInfo* controller_info_list, int num_controllers)
 functions.name{iFunction} = 'LccGetControllerList';
 functions.calltype{iFunction} = 'cdecl';
 functions.LHS{iFunction} = 'int32';
 functions.RHS{iFunction} = {'int32', 'uint8Ptr', 'int32'};
 iFunction = iFunction+1;
 
-% int LccInitController(LccHandle * handle, LccDeviceInfo device_info); 
+% int LccInitController(LccHandle * handle, LccDeviceInfo controller_info); 
 functions.name{iFunction} = 'LccInitController';
 functions.calltype{iFunction} = 'cdecl';
 functions.LHS{iFunction} = 'int32';
@@ -92,7 +92,7 @@ functions.RHS{iFunction} = {'voidPtr', 'cstring', 'int32'};
 iFunction = iFunction+1;
 
 % int LccDataSetHighByteFirst(LccHandle handle)
-functions.name{iFunction} = 'LccDatraSetHighByteFirst';
+functions.name{iFunction} = 'LccDataSetHighByteFirst';
 functions.calltype{iFunction} = 'cdecl';
 functions.LHS{iFunction} = 'int32';
 functions.RHS{iFunction} = {'voidPtr'};
@@ -189,11 +189,11 @@ functions.RHS{iFunction} = {'voidPtr'};
 iFunction = iFunction+1;
 
 % int LccDataSetCharacteristics(LccHandle handle, bool is_multichannel,
-%        bool is_wide_samples, bool is_positive_clock);
+%        int sample_bytes, bool is_positive_clock);
 functions.name{iFunction} = 'LccDataSetCharacteristics';
 functions.calltype{iFunction} = 'cdecl';
 functions.LHS{iFunction} = 'int32';
-functions.RHS{iFunction} = {'voidPtr', 'int8', 'int8', 'int8'};
+functions.RHS{iFunction} = {'voidPtr', 'int8', 'uint32', 'int8'};
 iFunction = iFunction+1;
 
 % int LccSpiSendBytes(LccHandle handle, uint8_t * values,
@@ -225,7 +225,7 @@ iFunction = iFunction+1;
 functions.name{iFunction} = 'LccSpiSendByteAtAddress';
 functions.calltype{iFunction} = 'cdecl';
 functions.LHS{iFunction} = 'int32';
-functions.RHS{iFunction} = {'voidPtr', 'uint32', 'uint8'};
+functions.RHS{iFunction} = {'voidPtr', 'uint8', 'uint8'};
 iFunction = iFunction+1;
 
 % int LccSpiSendBytesAtAddress(LccHandle handle, uint32_t address,
@@ -233,7 +233,7 @@ iFunction = iFunction+1;
 functions.name{iFunction} = 'LccSpiSendBytesAtAddress';
 functions.calltype{iFunction} = 'cdecl';
 functions.LHS{iFunction} = 'int32';
-functions.RHS{iFunction} = {'voidPtr', 'uint32', ...
+functions.RHS{iFunction} = {'voidPtr', 'uint8', ...
     'uint8Ptr', 'int32'};
 iFunction = iFunction+1;
 
@@ -242,7 +242,7 @@ iFunction = iFunction+1;
 functions.name{iFunction} = 'LccSpiReceiveByteAtAddress';
 functions.calltype{iFunction} = 'cdecl';
 functions.LHS{iFunction} = 'int32';
-functions.RHS{iFunction} = {'voidPtr', 'uint32', 'uint8Ptr'};
+functions.RHS{iFunction} = {'voidPtr', 'uint8', 'uint8Ptr'};
 iFunction = iFunction+1;
 
 % int LccSpiReceiveBytesAtAddress(LccHandle handle, uint32_t address,
@@ -250,7 +250,7 @@ iFunction = iFunction+1;
 functions.name{iFunction} = 'LccSpiReceiveBytesAtAddress';
 functions.calltype{iFunction} = 'cdecl';
 functions.LHS{iFunction} = 'int32';
-functions.RHS{iFunction} = {'voidPtr', 'uint32', ...
+functions.RHS{iFunction} = {'voidPtr', 'uint8', ...
     'uint8Ptr', 'int32'};
 iFunction = iFunction+1;
 
@@ -290,14 +290,14 @@ iFunction = iFunction+1;
 functions.name{iFunction} = 'LccFpgaGetIsLoaded';
 functions.calltype{iFunction} = 'cdecl';
 functions.LHS{iFunction} = 'int32';
-functions.RHS{iFunction} = {'voidPtr', 'uint8Ptr', 'cstring', 'int8Ptr'};
+functions.RHS{iFunction} = {'voidPtr', 'cstring', 'int8Ptr'};
 iFunction = iFunction+1;
 
 % int LccFpgaLoadFile(LccHandle, const char* fpga_filename);
 functions.name{iFunction} = 'LccFpgaLoadFile';
 functions.calltype{iFunction} = 'cdecl';
 functions.LHS{iFunction} = 'int32';
-functions.RHS{iFunction} = {'voidPtr', 'uint8Ptr', 'cstring'};
+functions.RHS{iFunction} = {'voidPtr', 'cstring'};
 iFunction = iFunction+1;
 
 % int LccEepromReadString(LccHandle handle,
@@ -435,7 +435,7 @@ functions.calltype{iFunction} = 'cdecl';
 functions.LHS{iFunction} = 'int32';
 functions.RHS{iFunction} = {'voidPtr'};
 
-structs.LccControllerInfo.members = struct('indices', 'ulong#2', ...
-    'serial_number', 'int8#16', 'description', 'int8#64');
+structs.LccControllerInfo.members = struct('type', 'int32', ...
+    'description', 'int8#64','serial_number', 'int8#16','id','uint32' );
 
 methodInfo =  functions;

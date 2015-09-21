@@ -230,6 +230,7 @@ classdef LtcControllerComm < handle
         function Reset(self, did)
             % Reset the device, only works for DC1371A, DC890 and DC718
             self.CallWithStatus(did, 'LccReset');
+        end
         
         function Close(self, did)
             % Close the device, but keep the handle, device will be
@@ -297,6 +298,43 @@ classdef LtcControllerComm < handle
             values = values(1:ceil(nBytes/4), 1);
         end
         
+        
+        
+        % FIX THESE %
+        
+        function DataCancelSend(self, did)
+            % todo
+            self.Call(did, 'LccDataCancelSend');
+        end
+        
+        function DataCancelReceive(self, did)
+            % todo
+            self.Call(did, 'LccDataCancelReceive');
+        end
+       
+        function DataStartCollect(self, did, total_bytes, trigger)
+            % todo
+            self.Call(did, 'LccDataStartCollect', int(total_bytes),...
+                int(trigger));
+        end
+        
+        function IsDone = DataIsCollectDone(self, did)
+            % todo
+            checkIsDone = false;
+            IsDone = self.Call(did, 'LccDataIsCollectDone', checkIsDone);
+        end
+        
+        function DataCancelCollect(self, did)
+            % todo
+            self.Call(did, 'LccDataCancelCollect');
+        end
+        
+        function DataSetCharacteristics(self, did, is_multichannel,...
+                is_wide_samples, is_positive_clock)
+            % todo
+            self.Call(did, 'LccDataSetCharacteristics', is_multichannel,...
+                is_wide_samples, is_positive_clock);
+        end
         % TODO %
         
 %     // Since the send calls block, they must be started in a separate thread to be cancelled
@@ -514,6 +552,31 @@ classdef LtcControllerComm < handle
       
         % TODO %
         
+        function DC1371SetGenericConfig(self, did, generic_config)
+            % todo
+            self.Call(did, 'Lcc1371SetGenericConfig', generic_config);
+        end
+        
+        function DC1371SetDemoConfig(self, did, demo_config)
+            % todo
+            self.Call(did, 'Lcc1371SetDemoConfig', demo_config);
+        end
+        
+        function DC890GpioSetByte(self, did, byte)
+            % todo
+            self.Call(did, 'Lcc890GpioSetByte', byte);
+        end
+        
+        function DC890GpioSpiSetBits(self, did, cs_bit, sck_bit, sdi_bit)
+            % todo
+            self.Call(did, 'Lcc890GpioSpiSetBits', cs_bit, sck_bit, sdi_bit);
+        end
+        
+        function DC890Flush(self, did)
+            % todo
+            self.Call(did, 'Lcc890Flush');
+        end
+            
 %     LTC_CONTROLLER_COMM_API int Lcc1371SetGenericConfig(LccHandle handle, uint32_t generic_config);
 % 
 %     LTC_CONTROLLER_COMM_API int Lcc1371SetDemoConfig(LccHandle handle, uint32_t demo_config);
