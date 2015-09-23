@@ -47,6 +47,10 @@ function Ltc2123_dc1974_v6_core
 
     clear all;
     
+    
+    % fix this
+    %addpath C:\Users\Msajikumar\Documents\linear_technology\linear_lab_tools\matlab
+    
     % Initialize script operation parameters
     bitfile_id = 190; % Bitfile ID
     continuous = false;            % Run continuously or once
@@ -155,14 +159,14 @@ function Ltc2123_dc1974_v6_core
             fprintf('***\n***\n***\n*** UNCAUGHT error count: %s !\n***\n***\n***\n',runs_with_uncaught_errors);
         end
         
-        lths.SetBitMode(cId, lths.BIT_MODE_MPSSE);
+        lths.HsSetBitMode(cId, lths.HS_BIT_MODE_MPSSE);
         if do_reset
-            lths.FpgaToggleReset(cId);
+            lths.HsFpgaToggleReset(cId);
         end
 
-        fprintf('FPGA ID is %X\n', lths.FpgaReadDataAtAddress(cId, lt2k.ID_REG));
-        fprintf('Register 4 (capture status) is %X\n', lths.FpgaReadDataAtAddress(cId, lt2k.CAPTURE_STATUS_REG));
-        fprintf('Register 6   (Clock status) is %X\n', lths.FpgaReadDataAtAddress(cId, lt2k.CLOCK_STATUS_REG));
+        fprintf('FPGA ID is %X\n', lths.HsFpgaReadDataAtAddress(cId, lt2k.ID_REG));
+        fprintf('Register 4 (capture status) is %X\n', lths.HsFpgaReadDataAtAddress(cId, lt2k.CAPTURE_STATUS_REG));
+        fprintf('Register 6   (Clock status) is %X\n', lths.HsFpgaReadDataAtAddress(cId, lt2k.CLOCK_STATUS_REG));
 
 
         if VERBOSE
@@ -192,7 +196,7 @@ function Ltc2123_dc1974_v6_core
             write_jesd204b_reg(4, 0, 0, 0, 1);  %  Reset core
         end
 
-        data = lths.FpgaReadDataAtAddress(cId, lt2k.CLOCK_STATUS_REG);
+        data = lths.HsFpgaReadDataAtAddress(cId, lt2k.CLOCK_STATUS_REG);
         fprintf('Double-checking clock status after JESD204B configuration:');
         fprintf('\nRegister 6   (Clock status): 0x%s', dec2hex(data, 4));
 
@@ -260,12 +264,12 @@ function Ltc2123_dc1974_v6_core
 %         x = bitor(x, 2);
 %         fprintf('\n             address : %d', address);
 %         fprintf('\n writing ro checkreg : %d', bitor(bitsll(bitand(address, 63), 2), 2));
-        byte3 = lths.FpgaReadDataAtAddress(cId, lt2k.JESD204B_RB3_REG);
-        byte2 = lths.FpgaReadDataAtAddress(cId, lt2k.JESD204B_RB2_REG);
-        byte1 = lths.FpgaReadDataAtAddress(cId, lt2k.JESD204B_RB1_REG);
-        byte0 = lths.FpgaReadDataAtAddress(cId, lt2k.JESD204B_RB0_REG); 
-        lths.FpgaWriteDataAtAddress(cId, lt2k.JESD204B_R2INDEX_REG, bitsra(bitand(address,4032), 6));  % Upper 6 bits of AXI reg address
-        lths.FpgaWriteDataAtAddress(cId, lt2k.JESD204B_CHECK_REG, (bitor(bitsll(bitand(address, 63), 2), 2)));  % Lower 6 bits address of JESD204B Check Register
+        byte3 = lths.HsFpgaReadDataAtAddress(cId, lt2k.JESD204B_RB3_REG);
+        byte2 = lths.HsFpgaReadDataAtAddress(cId, lt2k.JESD204B_RB2_REG);
+        byte1 = lths.HsFpgaReadDataAtAddress(cId, lt2k.JESD204B_RB1_REG);
+        byte0 = lths.HsFpgaReadDataAtAddress(cId, lt2k.JESD204B_RB0_REG); 
+        lths.HsFpgaWriteDataAtAddress(cId, lt2k.JESD204B_R2INDEX_REG, bitshift(bitand(address,4032), -6));  % Upper 6 bits of AXI reg address
+        lths.HsFpgaWriteDataAtAddress(cId, lt2k.JESD204B_CHECK_REG, (bitor(bitshift(bitand(address, 63), 2), 2)));  % Lower 6 bits address of JESD204B Check Register
         
 %         if device.fpga_read_data() & 1 == 0
 %             raise RuntimeError("Got bad FPGA status in read_jedec_reg")
@@ -302,9 +306,9 @@ function Ltc2123_dc1974_v6_core
     end
 
     function dump_ADC_registers(device)
-        device.SetBitMode(cId, device.BIT_MODE_MPSSE);
+        device.HsSetBitMode(cId, device.HS_BIT_MODE_MPSSE);
         fprintf('LTC2124 Register Dump: '); 
-        fprintf('Register 4 (capture status) is %X\n', lths.FpgaReadDataAtAddress(cId, lt2k.CAPTURE_STATUS_REG));
+        fprintf('Register 4 (capture status) is %X\n', lths.HsFpgaReadDataAtAddress(cId, lt2k.CAPTURE_STATUS_REG));
         fprintf('Register 1: %X\n',SpiRead(129));
         fprintf('Register 2: %X\n',SpiRead(130));
         fprintf('Register 3: %X\n',SpiRead(131));
@@ -321,7 +325,7 @@ function Ltc2123_dc1974_v6_core
         if(verbose)
             fprintf('Configuring ADCs over SPI:');
         end
-        lths.FpgaWriteDataAtAddress(cId, lt2k.SPI_CONFIG_REG, cs_control);
+        lths.HsFpgaWriteDataAtAddress(cId, lt2k.SPI_CONFIG_REG, cs_control);
         SpiWrite(3, cId); % Device ID to 0xAB
         SpiWrite(4, bid); % Bank ID to 0x01
         SpiWrite(5, lanes-1); % 2 lane mode (default)
@@ -336,30 +340,30 @@ function Ltc2123_dc1974_v6_core
     % doesn't break anything with V4 FPGA loads,
     % as we'd be writing to undefined registers.
     function write_jesd204b_reg(address, b3, b2, b1, b0)
-        lths.FpgaWriteDataAtAddress(cId, lt2k.JESD204B_WB3_REG, b3);
-        lths.FpgaWriteDataAtAddress(cId, lt2k.JESD204B_WB2_REG, b2);
-        lths.FpgaWriteDataAtAddress(cId, lt2k.JESD204B_WB1_REG, b1);
-        lths.FpgaWriteDataAtAddress(cId, lt2k.JESD204B_WB0_REG, b0);
-        lths.FpgaWriteDataAtAddress(cId, lt2k.JESD204B_W2INDEX_REG, (bitand(address, 4032) / 6)); % Upper 6 bits of AXI reg address
-        lths.FpgaWriteDataAtAddress(cId, lt2k.JESD204B_CONFIG_REG, (bitor((bitand(address, 63) * 4), 2)));
-        x = lths.FpgaReadDataAtAddress(cId, lt2k.JESD204B_CONFIG_REG);
+        lths.HsFpgaWriteDataAtAddress(cId, lt2k.JESD204B_WB3_REG, b3);
+        lths.HsFpgaWriteDataAtAddress(cId, lt2k.JESD204B_WB2_REG, b2);
+        lths.HsFpgaWriteDataAtAddress(cId, lt2k.JESD204B_WB1_REG, b1);
+        lths.HsFpgaWriteDataAtAddress(cId, lt2k.JESD204B_WB0_REG, b0);
+        lths.HsFpgaWriteDataAtAddress(cId, lt2k.JESD204B_W2INDEX_REG, (bitand(address, 4032) / 6)); % Upper 6 bits of AXI reg address
+        lths.HsFpgaWriteDataAtAddress(cId, lt2k.JESD204B_CONFIG_REG, (bitor((bitand(address, 63) * 4), 2)));
+        x = lths.HsFpgaReadDataAtAddress(cId, lt2k.JESD204B_CONFIG_REG);
         if (bitand(x, 1) == 0)
             error('Got bad FPGA status in write_jedec_reg');
         end
     end 
 
     function channel_data = capture2(device, memSize, buffSize, dumpdata, dump_pscope_data, verbose, data)
-        device.SetBitMode(cId, device.BIT_MODE_MPSSE);
+        device.HsSetBitMode(cId, device.HS_BIT_MODE_MPSSE);
         dec = 0;
 
-        device.FpgaWriteDataAtAddress(cId, lt2k.CAPTURE_CONFIG_REG, uint8(bitor(memSize, 8))); % Both Channels active
+        device.HsFpgaWriteDataAtAddress(cId, lt2k.CAPTURE_CONFIG_REG, uint8(bitor(memSize, 8))); % Both Channels active
 
-        device.FpgaWriteDataAtAddress(cId, lt2k.CAPTURE_RESET_REG, 1); % Reset
-        device.FpgaWriteDataAtAddress(cId, lt2k.CAPTURE_CONTROL_REG, 1);  % Start!!
+        device.HsFpgaWriteDataAtAddress(cId, lt2k.CAPTURE_RESET_REG, 1); % Reset
+        device.HsFpgaWriteDataAtAddress(cId, lt2k.CAPTURE_CONTROL_REG, 1);  % Start!!
         
         pause(1);  % wait for capture
 
-        data = device.FpgaReadDataAtAddress(cId, lt2k.CAPTURE_STATUS_REG);
+        data = device.HsFpgaReadDataAtAddress(cId, lt2k.CAPTURE_STATUS_REG);
         if(bitand(data, 4) ~= 0)
             syncErr = 1;
         else
@@ -371,14 +375,14 @@ function Ltc2123_dc1974_v6_core
             fprintf('\nAnd it is... 0x%s', dec2hex(data, 4));
         end
         % sleep(sleeptime)
-        device.FifoSetLowByteFirst(cId); % Set endian-ness
-        device.SetBitMode(cId, device.BIT_MODE_FIFO);
+        device.DataSetLowByteFirst(cId); % Set endian-ness
+        device.HsSetBitMode(cId, device.HS_BIT_MODE_FIFO);
         
         pause(0.1);
-        [data, nSampsRead] = device.FifoReceiveUint16Values(cId, buffSize + 100);
+        [data, nSampsRead] = device.DataReceiveUint16Values(cId, buffSize + 100);
 
     %    extrabytecount, extrabytes = device.fifo_receive_bytes(end = 100)
-        device.SetBitMode(cId, device.BIT_MODE_MPSSE);
+        device.HsSetBitMode(cId, device.HS_BIT_MODE_MPSSE);
 
         %sleep(sleeptime)
 

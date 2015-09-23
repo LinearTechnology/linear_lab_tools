@@ -103,12 +103,12 @@ classdef LtcControllerComm < handle
             location = winqueryreg('HKEY_LOCAL_MACHINE', ...
                 'SOFTWARE\\Linear Technology\\LinearLabTools', 'Location');
             if strcmp(archStr((end-1):end), '64')
-                self.libraryName = [location, 'ltc_controller_comm64.dll'];
+                self.libraryName = 'ltc_controller_comm64';
             else
-                self.libraryName = [location, 'ltc_controller_comm.dll'];
+                self.libraryName = 'ltc_controller_comm';
             end
             
-            loadlibrary(self.libraryName, @LtcControllerCommProto);
+            loadlibrary([location, self.libraryName, '.dll'], @LtcControllerCommProto);
             self.handles = {};
             self.nextIndex = 1;
         end
@@ -150,26 +150,26 @@ classdef LtcControllerComm < handle
             end
             
             deviceList = struct('type', cell(1, nDevices), ...
-                'serialNumber', cell(1, nDevices), ...
                 'description', cell(1, nDevices), ...
+                'serialNumber', cell(1, nDevices), ...
                 'id', cell(1, nDevices));
             byteIndex = 1;
             for i = 1:nDevices
                 deviceList(i).type = typecast(...
                     controllerStructArray(byteIndex:byteIndex+3), 'int32');
                 byteIndex = byteIndex + 4;
-                               
-                serialNumber = controllerStructArray(byteIndex:(byteIndex+11));
-                serialNumber = serialNumber(1:(find(serialNumber == 0, 1, 'first')-1));
-                deviceList(i).serialNumber = char(serialNumber);
-                byteIndex = byteIndex + 16;
                 
                 description = controllerStructArray(byteIndex:(byteIndex+63));
                 description = description(1:(find(description == 0, 1, 'first')-1));
                 deviceList(i).description = char(description);
-                byteIndex = byteIndex + 64;
+                byteIndex = byteIndex + 64;               
                 
-                deviceList(i).type = typecast(...
+                serialNumber = controllerStructArray(byteIndex:(byteIndex+15));
+                serialNumber = serialNumber(1:(find(serialNumber == 0, 1, 'first')-1));
+                deviceList(i).serialNumber = char(serialNumber);
+                byteIndex = byteIndex + 16;
+                
+                deviceList(i).id = typecast(...
                     controllerStructArray(byteIndex:byteIndex+3), 'uint32');
                 byteIndex = byteIndex + 4;
             end
@@ -182,7 +182,7 @@ classdef LtcControllerComm < handle
                 'type', int32(deviceInfo.type), ...
                 'serial_number', uint8(zeros(1, 16)), ...
                 'description', uint8(zeros(1,64)), ...
-                'id', uint32(deviceInfo.indices));
+                'id', uint32(deviceInfo.id));
             n = length(deviceInfo.serialNumber);
             deviceStruct.serial_number(1:n) = deviceInfo.serialNumber;
             n = length(deviceInfo.description);

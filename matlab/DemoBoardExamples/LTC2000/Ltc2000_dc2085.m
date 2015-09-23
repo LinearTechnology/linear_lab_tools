@@ -62,7 +62,7 @@ end
 % Returns the object in the class constructor
 lths = LtcControllerComm();
 
-deviceInfoList = lths.ListControllers(LCC_TYPE_HIGH_SPEED, 2);
+deviceInfoList = lths.ListControllers(lths.TYPE_HIGH_SPEED, 2);
 deviceInfo = [];
 for info = deviceInfoList
    if strcmp(info.description(1:7), 'LTC2000')
@@ -81,12 +81,12 @@ fprintf('Serial Number: %s\n', deviceInfo.serialNumber);
 % init a device and get an id
 did = lths.Init(deviceInfo);
 
-lths.SetBitMode(did, lths.BIT_MODE_MPSSE);
-lths.FpgaToggleReset(did);
+lths.HsSetBitMode(did, lths.HS_BIT_MODE_MPSSE);
+lths.HsFpgaToggleReset(did);
 
-fprintf('FPGA ID is %X\n', lths.FpgaReadDataAtAddress(did, lt2k.FPGA_ID_REG));
+fprintf('FPGA ID is %X\n', lths.HsFpgaReadDataAtAddress(did, lt2k.FPGA_ID_REG));
 
-lths.FpgaWriteDataAtAddress(did, lt2k.FPGA_DAC_PD, 1);
+lths.HsFpgaWriteDataAtAddress(did, lt2k.FPGA_DAC_PD, 1);
       
 pause(SLEEP_TIME);
 
@@ -119,7 +119,7 @@ if VERBOSE
     end
 end
 
-lths.FpgaWriteDataAtAddress(did, lt2k.FPGA_CONTROL_REG, 32);
+lths.HsFpgaWriteDataAtAddress(did, lt2k.FPGA_CONTROL_REG, 32);
 
 pause(SLEEP_TIME);
 
@@ -154,9 +154,9 @@ end
 fclose(infile);
 fprintf('\ndone reading!')
 
-lths.SetBitMode(did, lths.BIT_MODE_FIFO);
+lths.HsSetBitMode(did, lths.HS_BIT_MODE_FIFO);
 % DAC should start running here!
-numBytesSent = lths.FifoSendUint16Values(did, indata);
+numBytesSent = lths.DataSendUint16Values(did, indata);
 fprintf('numBytesSent (should be %d) = %d\n', NUM_SAMPLES * 2, ...
     numBytesSent);
 
