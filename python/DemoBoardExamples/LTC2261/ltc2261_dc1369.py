@@ -57,11 +57,18 @@ from time import sleep
 # Import communication library
 import sys
 sys.path.append("../../")
-print sys.path
+#print sys.path
 import ltc_controller_comm as comm
+
+from matplotlib import pyplot as plt
+import numpy as np
 
 # Print extra information to console
 verbose = True
+# Plot data to screen
+plot_data = True
+#Write data out to a text file
+write_to_file = True
 
 # set test_data_reg to one of these constants
 DATA_REAL = 0x00
@@ -69,10 +76,12 @@ DATA_ALL_ZEROS = 0x08
 DATA_ALL_ONES = 0x18
 DATA_CHECKERBOARD = 0x28
 DATA_ALTERNATING = 0x38
-test_data_reg = DATA_CHECKERBOARD
+#test_data_reg = DATA_CHECKERBOARD
+test_data_reg = DATA_REAL
 
 NUM_ADC_SAMPLES = 64 * 1024
-NUM_ADC_SAMPLES_X2 = 2 * NUM_ADC_SAMPLES
+NUM_ADC_SAMPLES_PER_CH = NUM_ADC_SAMPLES / 2
+NUM_ADC_SAMPLES_X2 = NUM_ADC_SAMPLES * 2
 SAMPLE_BYTES = 2
 
 # find demo board with correct ID
@@ -141,16 +150,47 @@ with comm.Controller(device_info) as controller:
     if verbose:
         print 'Data read done'
 
+# Split data into two channels
+    data_ch1 = [0] * (NUM_ADC_SAMPLES_PER_CH)
+    
+    for i in range(NUM_ADC_SAMPLES_PER_CH):
+        data_ch1[i] = data[2*i] & 0x3FFF
+
     # write the data to a file
-    if verbose:
-        print 'Writing data to file'
-    f = open('data.txt', 'w')
-    for i, item in enumerate(data):
-        if i % 2 == 0:
-            # remember we have an extra fake channel so we write every other sample
-            f.write(str(item & 0x3FFF) + '\n')
-    f.close()
-    print 'File write done.'
+    if write_to_file == True:
+        if verbose:
+            print 'Writing data to file'
+        with open('data.txt', 'w') as f:
+            for i, item in enumerate(data):
+                if i % 2 == 0:
+                    # remember we have an extra fake channel so we write every other sample
+                    f.write(str(item & 0x3FFF) + '\n')
+    
+        print 'File write done.'
+
+# Plot data if not running pattern check
+    if(plot_data == True):
+        plt.figure(1)
+        plt.plot(data_ch1)
+        plt.title('Time Domain Data')
+
+        plt.show()
+
+        adc_amplitude = 16384.0 / 2.0
+
+        windowscale = (NUM_ADC_SAMPLES/2) / sum(np.blackman(NUM_ADC_SAMPLES/2))
+        print("Window scaling factor: " + str(windowscale))
+
+        windowed_data_ch1 = data_ch1 * np.blackman(NUM_ADC_SAMPLES/2) * windowscale # Apply Blackman window
+        freq_domain_ch1 = np.fft.fft(windowed_data_ch1)/(NUM_ADC_SAMPLES_PER_CH) # FFT
+        freq_domain_magnitude_ch1 = np.abs(freq_domain_ch1) # Extract magnitude
+        freq_domain_magnitude_db_ch1 = 20 * np.log10(freq_domain_magnitude_ch1/adc_amplitude)
+
+        plt.figure(2)
+        plt.title('Frequency Domain')
+        plt.plot(freq_domain_magnitude_db_ch1)
+
+        plt.show()
 
     print 'All finished!'
 
