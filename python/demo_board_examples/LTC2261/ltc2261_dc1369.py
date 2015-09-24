@@ -150,23 +150,21 @@ with comm.Controller(device_info) as controller:
     if verbose:
         print 'Data read done'
 
-# Split data into two channels
+    # Split data into two channels
     data_ch1 = [0] * (NUM_ADC_SAMPLES_PER_CH)
     
     for i in range(NUM_ADC_SAMPLES_PER_CH):
         data_ch1[i] = data[2*i] & 0x3FFF
 
     # write the data to a file
-    if write_to_file == True:
-        if verbose:
-            print 'Writing data to file'
-        with open('data.txt', 'w') as f:
-            for i, item in enumerate(data):
-                if i % 2 == 0:
-                    # remember we have an extra fake channel so we write every other sample
-                    f.write(str(item & 0x3FFF) + '\n')
-    
-        print 'File write done.'
+    if verbose:
+        print 'Writing data to file'
+    with open('data.txt', 'w') as f:
+        for i, item in enumerate(data):
+            # remember we have an extra fake channel so we write every other sample
+            if i % 2 == 0:
+                f.write(str(item & 0x3FFF) + '\n')
+    print 'File write done.'
 
 # Plot data if not running pattern check
     if(plot_data == True):
