@@ -55,19 +55,24 @@ namespace linear {
 
     protected:
         int Write(const BYTE* data, DWORD data_length) {
+            OpenIfNeeded();
             return ftdi.Write(handle, data, data_length);
         }
         int Write(const char* data, DWORD data_length) {
+            OpenIfNeeded();
             return ftdi.Write(handle, data, data_length);
         }
         int Read(BYTE* buffer, DWORD buffer_length) {
+            OpenIfNeeded();
             return ftdi.Read(handle, buffer, buffer_length);
         }
         int Read(char* buffer, DWORD buffer_length) {
+            OpenIfNeeded();
             return ftdi.Read(handle, buffer, buffer_length);
         }
         void SetTimeouts(ULONG read_timeout = DEFAULT_READ_TIMEOUT,
                 ULONG write_timeout = DEFAULT_WRITE_TIMEOUT) {
+            OpenIfNeeded();
             ftdi.SetTimeouts(handle, read_timeout, write_timeout);
         }
     private:
