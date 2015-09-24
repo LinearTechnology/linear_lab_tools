@@ -23,7 +23,7 @@ from matplotlib import pyplot as plt
 w, h = signal.freqz(sinc4_w_rev, 1, 16385)
 fresp = log(abs(h))
 plt.plot(fresp, zorder=1)
-plt.title('sinc4 frequency domain response')
+plt.title('Congratulations! Python is installed properly!')
 plt.xlabel('freq.')
 plt.ylabel('log Amplitude')
 plt.axis([0, 2000, 0, 23])
