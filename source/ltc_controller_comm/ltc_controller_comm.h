@@ -57,6 +57,7 @@
 #define LTC_CONTROLLER_COMM_API __declspec(dllimport)
 #endif
 
+// Controller types
 const int LCC_TYPE_NONE       = 0x00000000;
 const int LCC_TYPE_DC1371     = 0x00000001;
 const int LCC_TYPE_DC718      = 0x00000002;
@@ -64,25 +65,28 @@ const int LCC_TYPE_DC890      = 0x00000004;
 const int LCC_TYPE_HIGH_SPEED = 0x00000008;
 const int LCC_TYPE_UNKNOWN    = 0xFFFFFFFF;
 
+// SPI Chip select state
 const int LCC_SPI_CS_STATE_LOW  = 0;
 const int LCC_SPI_CS_STATE_HIGH = 1;
 
+// Trigger modes
 const int LCC_TRIGGER_NONE                      = 0;
 const int LCC_TRIGGER_START_POSITIVE_EDGE       = 1;
 const int LCC_TRIGGER_DC890_START_NEGATIVE_EDGE = 2;
 const int LCC_TRIGGER_DC1371_STOP_NEGATIVE_EDGE = 3;
 
+// Convenient constants for buffer sizes
 const int LCC_MAX_DESCRIPTION_SIZE   = 64;
 const int LCC_MAX_SERIAL_NUMBER_SIZE = 16;
 
-const int LCC_ERROR_OK            = 0;  // No error.
+// Possible error return values, use LccGetErrorInfo for specific information.
+const int LCC_ERROR_OK            =  0; // No error.
 const int LCC_ERROR_HARDWARE      = -1; // A hardware error (controller I/O, maybe unplugged or no
                                         // power?) this may have a device specific error code.
-const int LCC_ERROR_INVALID_ARG   = -2; // User passed in an invalid argument.
+const int LCC_ERROR_INVALID_ARG   = -2; // User passed in an invalid argument or did something bad.
 const int LCC_ERROR_LOGIC         = -3; // The DLL did something wrong.
 const int LCC_ERROR_NOT_SUPPORTED = -4; // The particular device does not support the operation.
-const int LCC_ERROR_ABORTED       = -5; // User manually aborted a collect.
-const int LCC_ERROR_UNKNOWN       = -6; // Caught an unexpected exception.
+const int LCC_ERROR_UNKNOWN       = -5; // Caught an unexpected exception.
 
 // For high speed FPGA demo-board based controllers only.
 // mode argument to set_mode. For FIFO communication use BIT_MODE_FIFO, for
@@ -95,6 +99,7 @@ const int LCC_HS_BIT_MODE_FIFO  = 0x40;
 const int LCC_1371_CHIP_SELECT_ONE = 1;
 const int LCC_1371_CHIP_SELECT_TWO = 2;
 
+// Info for a found controller
 struct LccControllerInfo {
     int type;
     char description[LCC_MAX_DESCRIPTION_SIZE];
@@ -102,7 +107,7 @@ struct LccControllerInfo {
     unsigned long id;
 };
 
-// opaque handle to High Speed Comm interface
+// Opaque handle to High Speed Comm interface
 typedef void* LccHandle;
 
 #ifdef __cplusplus
@@ -120,7 +125,7 @@ extern "C" {
     // LccGetNumDevices; if you know you want the first device, just create a single
     // LccDeviceInfo structure and pass a pointer to it into the the function and use 1 for
     // num_devices, otherwise make an array of at least as many structures as you have devices
-    // plugged in. (100 structures only takes 880 bytes and is way more than any practical system.)
+    // plugged in.
     LTC_CONTROLLER_COMM_API int LccGetControllerList(int controller_types,
         LccControllerInfo* controller_info_list, int num_controllers);
 
@@ -135,20 +140,21 @@ extern "C" {
     // It takes a pointer to the handle and zeros the handle to help prevent accidental reuse.
     LTC_CONTROLLER_COMM_API int LccCleanup(LccHandle* handle);
 
+    // Get controller description
     LTC_CONTROLLER_COMM_API int LccGetDescription(LccHandle handle, char* description_buffer,
         int description_buffer_size);
 
+    // Get controller serial number
     LTC_CONTROLLER_COMM_API int LccGetSerialNumber(LccHandle handle, char* serial_number_buffer,
         int serial_number_buffer_size);
 
-    LTC_CONTROLLER_COMM_API int LccSetTimeouts(LccHandle handle, unsigned long read_timeout,
-        unsigned long write_timeout);
-
     // Reset the controller
+    // Not used with HighSpeed Controllers
     LTC_CONTROLLER_COMM_API int LccReset(LccHandle handle);
 
     // Close the device but keep the handle valid; if a function is called that requires the device
     // to be open, it will be opened automatically.
+    // Not used with DC1371
     LTC_CONTROLLER_COMM_API int LccClose(LccHandle handle);
 
     // Call with buffer_size == 0 and message_buffer == NULL to cause this function to return the
@@ -166,60 +172,68 @@ extern "C" {
     LTC_CONTROLLER_COMM_API int LccDataSetHighByteFirst(LccHandle handle);
 
     // Disables byte swapping on data send and receive functions so that data that is transferred
-    // Least Significant Byte first is stored correctly. (Default) Note that this assumes a
-    // little-endian machine (which currently includes all Windows desktops.)
+    // Least Significant Byte first is stored correctly. Note that this assumes a little-endian 
+    // machine (which currently includes all Windows desktops.)
     LTC_CONTROLLER_COMM_API int LccDataSetLowByteFirst(LccHandle handle);
 
+    // Send a stream of bytes.
+    // Only used with HighSpeed controllers.
     LTC_CONTROLLER_COMM_API int LccDataSendBytes(LccHandle handle, uint8_t* values, int num_values,
         int* num_sent);
 
-    LTC_CONTROLLER_COMM_API int LccDataStartReceive(LccHandle handle, int total_bytes);
-
+    // Receive a stream of bytes.
     LTC_CONTROLLER_COMM_API int LccDataReceiveBytes(LccHandle handle, uint8_t* values,
         int num_values, int* num_received);
 
+    // Send a stream of 16 bit values.
+    // Only used with HighSpeed controllers.
     LTC_CONTROLLER_COMM_API int LccDataSendUint16Values(LccHandle handle, uint16_t* values,
         int num_values, int* num_bytes_sent);
 
+    // Receive a stream of 16 bit values.
     LTC_CONTROLLER_COMM_API int LccDataReceiveUint16Values(LccHandle handle, uint16_t* values,
         int num_values, int* num_bytes_received);
 
+    // Send a stream of 32 bit values.
+    // Only used with HighSpeed controllers.
     LTC_CONTROLLER_COMM_API int LccDataSendUint32Values(LccHandle handle, uint32_t* values,
         int num_values, int* num_bytes_sent);
 
+    // Receive a stream of 32 bit values.
     LTC_CONTROLLER_COMM_API int LccDataReceiveUint32Values(LccHandle handle, uint32_t* values,
         int num_values, int* num_bytes_received);
 
-    // Since the send calls block, they must be started in a separate thread to be cancelled
-    // This is the only instance where calling functions from this library from separate threads
-    // is safe.
-    LTC_CONTROLLER_COMM_API int LccDataCancelSend(LccHandle handle);
-
-    // Since the receive calls block, they must be started in a separate thread to be cancelled
-    // This is the only instance where calling functions from this library from separate threads
-    // is safe.
-    LTC_CONTROLLER_COMM_API int LccDataCancelReceive(LccHandle handle);
-
-    // ADC collection functions for DC1371, DC890, DC718
+    // Start an ADC collection, works with DC1371, DC890, DC718
     LTC_CONTROLLER_COMM_API int LccDataStartCollect(LccHandle handle, int total_samples,
         int trigger);
 
+    // Check if the ADC collection (DC1371, DC890, DC718)
+    // returns an error if you didn't call LccDataStartCollect first
     LTC_CONTROLLER_COMM_API int LccDataIsCollectDone(LccHandle handle, bool* is_done);
     
+    // Cancel a pending collection, note this function must be called to cancel a pending collect
+    // OR if a collect has finished but you do not read the full collection of data.
     LTC_CONTROLLER_COMM_API int LccDataCancelCollect(LccHandle handle);
 
-    // ADC collection characteristics for DC718 and DC890
+    // ADC collection characteristics (DC718 and DC890 only)
     LTC_CONTROLLER_COMM_API int LccDataSetCharacteristics(LccHandle handle, bool is_multichannel,
         int sample_bytes, bool is_positive_clock);
 
     // SPI functions
     // The next three functions lower chip select, perform their function, and raise chip select.
 
+    // Send arbitrary bytes over SPI
+    // Not used with DC718. Will cause a bunch of ineffective I2C traffic on a DC890 if the
+    // demo-board does not have an I/O expander.
     LTC_CONTROLLER_COMM_API int LccSpiSendBytes(LccHandle handle, uint8_t* values, int num_values);
 
+    // Receive arbitrary bytes over SPI
+    // Not used with DC718 or DC890.
     LTC_CONTROLLER_COMM_API int LccSpiReceiveBytes(LccHandle handle, uint8_t* values,
         int num_values);
 
+    // Transceive arbitrary bytes over SPI
+    // Not used with DC718 or DC890.
     LTC_CONTROLLER_COMM_API int LccSpiTransceiveBytes(LccHandle handle, uint8_t* send_values,
         uint8_t* receive_values, int num_values);
 
@@ -234,15 +248,26 @@ extern "C" {
     // for specific parts make new functions that do the masking of the address bytes and then 
     // delegate to these functions. These functions also handle chip select at the begining and 
     // end of the transaction.
+
+    // Send an address byte and data byte over SPI
+    // Not used with DC718. Will cause a bunch of ineffective I2C traffic on a DC890 if the
+    // demo-board does not have an I/O expander.
     LTC_CONTROLLER_COMM_API int LccSpiSendByteAtAddress(LccHandle handle, uint8_t address,
         uint8_t value);
 
+    // Send an address byte and multiple data bytes over SPI
+    // Not used with DC718. Will cause a bunch of ineffective I2C traffic on a DC890 if the
+    // demo-board does not have an I/O expander.
     LTC_CONTROLLER_COMM_API int LccSpiSendBytesAtAddress(LccHandle handle, uint8_t address,
         uint8_t* values, int num_values);
 
+    // Send an address byte and receive a data byte over SPI
+    // Not used with DC718 or DC890
     LTC_CONTROLLER_COMM_API int LccSpiReceiveByteAtAddress(LccHandle handle, uint8_t address,
         uint8_t* value);
 
+    // Send an address byte and receive multiple data bytes over SPI
+    // Not used with DC718 or DC890
     LTC_CONTROLLER_COMM_API int LccSpiReceiveBytesAtAddress(LccHandle handle, uint8_t address,
         uint8_t* values, int num_values);
 
@@ -250,31 +275,53 @@ extern "C" {
     // All the above SPI functions are built on top of these three functions, they allow full
     // control over chip select, independent of the transactions.
 
+    // Set the SPI chip select high or low
+    // Not used with DC718. Will cause a bunch of ineffective I2C traffic on a DC890 if the
+    // demo-board does not have an I/O expander.
     LTC_CONTROLLER_COMM_API int LccSpiSetCsState(LccHandle handle, int chip_select_state);
 
+    // Send arbitrary bytes over SPI
+    // Not used with DC718. Will cause a bunch of ineffective I2C traffic on a DC890 if the
+    // demo-board does not have an I/O expander.
     LTC_CONTROLLER_COMM_API int LccSpiSendNoChipSelect(LccHandle handle, uint8_t* values,
         int num_values);
 
+    // Receive arbitrary bytes over SPI
+    // Not used with DC718 or DC890.
     LTC_CONTROLLER_COMM_API int LccSpiReceiveNoChipSelect(LccHandle handle, uint8_t* values,
         int num_values);
 
+    // Transceive arbitrary bytes over SPI
+    // Not used with DC718 or DC890.
     LTC_CONTROLLER_COMM_API int LccSpiTransceiveNoChipSelect(LccHandle handle,
         uint8_t * send_values, uint8_t* receive_values, int num_values);
 
     // Fpga functions
 
+    // Check if a particular FPGA file is loaded. fpga_filename is the base name, without extension
+    // and without a revision ('r' followed by a number) so it ends up being something like 'DCMOS'
+    // or 'S2175' (case insensitive)
+    // Not used with HighSpeed controllers or DC718
     LTC_CONTROLLER_COMM_API int LccFpgaGetIsLoaded(LccHandle handle, const char* fpga_filename,
         bool* is_loaded);
 
+    // Load a particular FPGA file. fpga_filename is the base name, without extension
+    // and without a revision ('r' followed by a number) so it ends up being something like 'DCMOS'
+    // or 'S2175' (case insensitive)
     LTC_CONTROLLER_COMM_API int LccFpgaLoadFile(LccHandle handle, const char* fpga_filename);
 
+    // Load a particular FPGA file a chunk at a time. fpga_filename is the base name, without
+    // extension and without a revision ('r' followed by a number) so it ends up being something
+    // like 'DCMOS' or 'S2175' (case insensitive).
+    // The first call sets progress to a number, each subsequent call will cause progress to be set
+    // to a SMALLER number. The process is finished when progress is 0.
     LTC_CONTROLLER_COMM_API int LccFpgaLoadFileChunked(LccHandle handle, const char* fpga_filename,
         int* progress);
 
+    // Call this function if you abandon loading the FPGA file before all chunks are loaded.
     LTC_CONTROLLER_COMM_API int LccFpgaCancelLoad(LccHandle handle);
 
-    // Read the demo-board EEPROM via bit-banged I2C over FPGA registers
-
+    // Read the demo-board EEPROM
     LTC_CONTROLLER_COMM_API
         int LccEepromReadString(LccHandle handle, char* buffer, int buffer_size);
 
@@ -323,7 +370,7 @@ extern "C" {
 
     LTC_CONTROLLER_COMM_API int LccHsGpioReadLowByte(LccHandle handle, uint8_t* value);
 
-    // default FPGA register for the bit-banged I2C is 0x11
+    // Default FPGA register for the bit-banged I2C is 0x11 use this function to change it.
     LTC_CONTROLLER_COMM_API int LccHsFpgaEepromSetBitBangRegister(LccHandle handle,
         uint8_t register_address);
 
@@ -331,8 +378,10 @@ extern "C" {
     // Functions for DC1371A //
     ///////////////////////////
 
+    // This is always 0, so you never need to call this function
     LTC_CONTROLLER_COMM_API int Lcc1371SetGenericConfig(LccHandle handle, uint32_t generic_config);
 
+    // The value for demo_config is demo-board dependent.
     LTC_CONTROLLER_COMM_API int Lcc1371SetDemoConfig(LccHandle handle, uint32_t demo_config);
 
     // Set the chip select used to be LCC_1371_CHIP_SELECT_ONE or LCC_1371_CHIP_SELECT_TWO
@@ -343,12 +392,17 @@ extern "C" {
     // Functions for DC890 //
     /////////////////////////
 
-    // These functions control the I2C I/O expander present on some DC890 compatible demo0boards
+    // These functions control the I2C I/O expander present on some DC890 compatible demo-boards
     // They are used to set certain lines, and the SPI functions use them under the hood to do
-    // bit-banged SPI. (The DC890 doesn't have a SPI interface.)
+    // bit-banged SPI. (The DC890 doesn't actually have a SPI interface.)
 
+    // Set the base-byte. This can be used to set the GPIO outputs and is also used by the
+    // bit-banged SPI commands, all bits besides CS, SCK and SDI are set according to this byte
+    // at all times during the SPI transaction.
     LTC_CONTROLLER_COMM_API int Lcc890GpioSetByte(LccHandle handle, uint8_t byte);
 
+    // Tells the bit-banged SPI routine which bit to use for CS, SCK and SDI. This MUST be called
+    // before any SPI routines are called when using the DC890.
     LTC_CONTROLLER_COMM_API int Lcc890GpioSpiSetBits(LccHandle handle, int cs_bit, 
         int sck_bit, int sdi_bit);
 

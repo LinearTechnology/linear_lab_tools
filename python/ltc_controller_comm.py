@@ -144,6 +144,10 @@ _dll = ct.CDLL(_dll_file)
 
 
 def list_controllers(controller_type):
+    """Returns a list of ControllerInfo structures
+    Looks for all attached controllers matching controller_type and puts their info in the list
+    controller_type can be a bitwise OR combination of TYPE_* values
+    """
     num_controllers = ct.c_int()
     if _dll.LccGetNumControllers(ct.c_int(controller_type), ct.c_int(100),
                                  ct.byref(num_controllers)) != 0:
@@ -165,24 +169,22 @@ class Controller(object):
     functions available as methods.
     """
 
-    def __init__(self, device_info):
-        """Initialize fields and find first available high-speed device.
-        
-        Note that this function will find any FT2232H based device, it may be
-        necessary to query the device for more information to determine if it
-        is the desired device.
+    def __init__(self, controller_info):
+        """Initialize the controller described by controller_info
         """
         self._handle = ct.c_void_p(None)
         self._c_error_buffer = ct.create_string_buffer(ERROR_BUFFER_SIZE)
         self._c_array = None
         self._c_array_type = "none"
         self.dll = _dll
-        if self.dll.LccInitController(ct.byref(self._handle), device_info) != 0:
+        if self.dll.LccInitController(ct.byref(self._handle), controller_info) != 0:
             raise HardwareError("Error initializing the device")
 
+    # support "with" semantics
     def __enter__(self):
         return self
 
+    # support "with" semantics
     def __exit__(self, vtype, value, traceback):
         del vtype
         del value
@@ -211,36 +213,37 @@ class Controller(object):
             self._handle = None
 
     def get_serial_number(self):
-        """Return the current device's serial number."""
+        """Return the current controller's serial number."""
         c_serial_number = ct.create_string_buffer(SERIAL_NUMBER_BUFFER_SIZE)
         self._raise_on_error(self.dll.LccGetSerialNumber(self._handle, c_serial_number,
                                                          SERIAL_NUMBER_BUFFER_SIZE))
         return c_serial_number.value
 
     def get_description(self):
-        """Return the current device's description."""
+        """Return the current controller's description."""
         c_description = ct.create_string_buffer(DESCRIPTION_BUFFER_SIZE)
         self._raise_on_error(self.dll.LccGetDescription(self._handle, c_description,
                                                         DESCRIPTION_BUFFER_SIZE))
         return c_description.value
-
-    def set_timeouts(self, read_timeout, write_timeout):
-        """Set read and write time-outs."""
-        c_read_timeout = ct.c_int(read_timeout)
-        c_write_timeout = ct.c_int(write_timeout)
-        self._raise_on_error(self.dll.LccSetTimeouts(self._handle, c_read_timeout,
-                                                     c_write_timeout))
 
     def close(self):
         """Close device. Device will be automatically re-opened when needed."""
         self._raise_on_error(self.dll.LccClose(self._handle))
 
     def data_set_high_byte_first(self):
-        """Make calls to data_send/receive_uint16/32_values send/receive high byte first."""
+        """Make calls to data_[send/receive]_uint[16/32]_values send/receive high byte first.
+        
+        Enables byte swapping on data send and receive functions so that data that is transferred
+        Most Significant Byte first is stored correctly. (Default) Note that this assumes a
+        little-endian machine (which currently includes all Windows desktops.)"""
         self._raise_on_error(self.dll.LccDataSetHighByteFirst(self._handle))
 
     def data_set_low_byte_first(self):
-        """Make calls to data_send/receive_uint16/32_values send/receive low byte first."""
+        """Make calls to data_[send/receive]_uint[16/32]_values send/receive low byte first.
+        Disables byte swapping on data send and receive functions so that data that is transferred
+        Least Significant Byte first is stored correctly. Note that this assumes a little-endian 
+        machine (which currently includes all Windows desktops.)
+        """
         self._raise_on_error(self.dll.LccDataSetLowByteFirst(self._handle))
 
     # send data of various types
@@ -282,6 +285,7 @@ class Controller(object):
     def data_send_bytes(self, values, start=0, end=-1):
         """Send elements of values[start:end] as bytes.
         
+        Only used with high_speed controllers.
         Defaults for start and end and interpretation of negative values is
         the same as for slices.
         """
@@ -290,6 +294,7 @@ class Controller(object):
     def data_send_uint16_values(self, values, start=0, end=-1):
         """Send elements of values[start:end] as 16-bit values.
         
+        Only used with high_speed controllers.
         Defaults for start and end and interpretation of negative values is
         the same as for slices.
         """
@@ -298,16 +303,11 @@ class Controller(object):
     def data_send_uint32_values(self, values, start=0, end=-1):
         """Send elements of values[start:end] as 32-bit values.
         
+        Only used with high_speed controllers.
         Defaults for start and end and interpretation of negative values is
         the same as for slices.
         """
         return self._data_send_by_type("uint32", values, start, end)
-
-    def data_cancel_send(self):
-        """
-        Cancel any pending send operations.
-        """
-        self._raise_on_error(self.dll.LccDataCancelSend(self._handle))
 
     # receive FIFO data of various types
     def _data_receive_by_type(self, ctype, values, start, end):
@@ -379,24 +379,18 @@ class Controller(object):
         """
         return self._data_receive_by_type("uint32", values, start, end)
 
-    def data_cancel_receive(self):
-        """
-        Cancel any pending receive operations.
-        """
-        self._raise_on_error(self.dll.LccDataCancelReceive(self._handle))
-
     def data_start_collect(self, total_samples, trigger):
         """
-        Start an ADC collect into memory.
-        :param total_samples: Number of samples to collect
-        :param trigger: Trigger type
+        Start an ADC collect into memory, works with DC1371, DC890, DC718.
+        total_samples -- Number of samples to collect
+        trigger -- Trigger type
         """
         self._raise_on_error(self.dll.LccDataStartCollect(self._handle, ct.c_int(total_samples),
                                                           ct.c_int(trigger)))
 
     def data_is_collect_done(self):
         """
-        Check if an ADC collect is done
+        Check if an ADC collect is done, works with DC1371, DC890, DC718
         :return: True if collect done, False otherwise
         """
         is_done = ct.c_bool()
@@ -405,17 +399,19 @@ class Controller(object):
         return is_done.value
 
     def data_cancel_collect(self):
-        """Cancel any ADC collect"""
+        """Cancel any ADC collect, works with DC1371, DC890, DC718
+        Note this function must be called to cancel a pending collect
+        OR if a collect has finished but you do not read the full collection of data.
+        """
         self._raise_on_error(self.dll.LccDataCancelCollect(self._handle))
 
     def data_set_characteristics(self, is_multichannel, sample_bytes, is_positive_clock):
         """
         ADC collection characteristics for DC718 and DC890
-        :param is_multichannel: True if the ADC has 2 or more channels
-        :param sample_bytes: The total number of bytes occupied by a sample including
-                             alignment and meta data
-        :param is_positive_clock: True if data is sampled on positive (rising)
-                                  clock edges
+        is_multichannel -- True if the ADC has 2 or more channels
+        sample_bytes -- The total number of bytes occupied by a sample including
+                        alignment and meta data
+        is_positive_clock -- True if data is sampled on positive (rising) clock edges
         """
         self._raise_on_error(
             self.dll.LccDataSetCharacteristics(self._handle,
@@ -426,6 +422,8 @@ class Controller(object):
     def spi_send_bytes(self, values, start=0, end=-1):
         """Send elements of values[start:end] via SPI controlling chip-select.
         
+        Not used with DC718. Will cause a bunch of ineffective I2C traffic on a DC890 if the
+        demo-board does not have an I/O expander.
         Defaults for start and end and interpretation of negative values is
         the same as for slices.
         """
@@ -452,6 +450,7 @@ class Controller(object):
     def spi_receive_bytes(self, values=None, start=0, end=-1):
         """Fill values[start:end] with bytes received via SPI controlling chip-select.
         
+        Not used with DC718 or DC890.
         If values is None (default) create a new list. Defaults for start and
         end and interpretation of negative values is the same as for slices.
         Return a reference to values.
@@ -488,6 +487,7 @@ class Controller(object):
                              receive_values=None, receive_start=0):
         """Transceive bytes via SPI controlling chip-select.
         
+        Not used with DC718 or DC890.
         Simultaneously send send_values[send_start:send_end] and fill 
         receive_values[receive_start:receive_end] with bytes received via
         SPI. If receive_values is None (default) create a new list. Defaults
@@ -528,6 +528,8 @@ class Controller(object):
     def spi_send_byte_at_address(self, address, value):
         """Write an address and a value via SPI.
         
+        Not used with DC718. Will cause a bunch of ineffective I2C traffic on a DC890 if the
+        demo-board does not have an I/O expander.
         Many SPI devices adopt a convention similar to I2C addressing, where a
         byte is sent indicating which register address the rest of the data
         pertains to. Often there is a read-write bit in the address, this
@@ -542,6 +544,8 @@ class Controller(object):
     def spi_send_bytes_at_address(self, address, values, start=0, end=-1):
         """Write an address byte and values[start:end] via SPI.
         
+        Not used with DC718. Will cause a bunch of ineffective I2C traffic on a DC890 if the
+        demo-board does not have an I/O expander.
         Many SPI devices adopt a convention similar to I2C addressing, where a
         byte is sent indicating which register address the rest of the data
         pertains to. Often there is a read-write bit in the address, this
@@ -573,6 +577,7 @@ class Controller(object):
     def spi_receive_byte_at_address(self, address):
         """Write an address and receive a value via SPI; return the value.
         
+        Not used with DC718 or DC890.
         Many SPI devices adopt a convention similar to I2C addressing, where a
         byte is sent indicating which register address the rest of the data
         pertains to. Often there is a read-write bit in the address, this
@@ -590,6 +595,7 @@ class Controller(object):
                                      start=0, end=-1):
         """Fill values[start:end] with values received via SPI at an address.
         
+        Not used with DC718 or DC890.
         Many SPI devices adopt a convention similar to I2C addressing, where a
         byte is sent indicating which register address the rest of the data
         pertains to. Often there is a read-write bit in the address, this
@@ -628,12 +634,19 @@ class Controller(object):
         return values
 
     def spi_set_cs_state(self, chip_select_state):
-        """Set the SPI chip-select high or low."""
+        """Set the SPI chip-select high or low.
+        
+        Not used with DC718. Will cause a bunch of ineffective I2C traffic on a DC890 if the
+        demo-board does not have an I/O expander."""
+        
         c_chip_select = ct.c_int(chip_select_state)
         self._raise_on_error(self.dll.LccSpiSetCsState(self._handle, c_chip_select))
 
     def spi_send_no_chip_select(self, values, start=0, end=-1):
         """Send values[start:end] via SPI without controlling chip-select.
+        
+        Not used with DC718. Will cause a bunch of ineffective I2C traffic on a DC890 if the
+        demo-board does not have an I/O expander.
         Defaults for start and end and interpretation of negative values are
         the same as for slices.
         """
@@ -660,6 +673,7 @@ class Controller(object):
     def spi_receive_no_chip_select(self, values=None, start=0, end=-1):
         """Fill values[start:end] via SPI without controlling chip-select.
         
+        Not used with DC718 or DC890.
         If values is None a new list is created. Defaults for start and end
         and interpretation of negative values are the same as for slices. A
         reference to values is returned.
@@ -695,6 +709,7 @@ class Controller(object):
                                       receive_values=None, receive_start=0):
         """Transceive bytes without controlling chip-select.
         
+        Not used with DC718 or DC890.
         Simultaneously send send_values[send_start:send_end] and fill 
         receive_values[receive_start:receive_end] with bytes received via
         SPI. If receive_values is None (default) create a new list. Defaults
@@ -738,9 +753,10 @@ class Controller(object):
         """
         Check if a particular FPGA load is loaded.
 
-        :param fpga_filename: The base file name without any folder, extension
+        Not used with high_speed controllers or DC718
+        fpga_filename -- The base file name without any folder, extension
         or revision info, for instance 'DLVDS' or 'S2175', case insensitive.
-        :return: True if the requested load is loaded, False otherwise.
+        returns True if the requested load is loaded, False otherwise.
         """
         is_loaded = ct.c_bool()
         self._raise_on_error(
@@ -752,15 +768,33 @@ class Controller(object):
         """
         Loads an FPGA file
         
-        :param fpga_filename: The base file name without any folder, extension
+        Not used with high_speed controllers or DC718
+        fpga_filename -- The base file name without any folder, extension
             or revision info, for instance 'DLVDS' or 'S2175', case insensitive.
-            :return: True if the requested load is loaded, False otherwise.
+        returns True if the requested load is loaded, False otherwise.
         """
         self._raise_on_error(
             self.dll.LccFpgaLoadFile(self._handle, ct.c_char_p(fpga_filename)))
 
+    def fpga_load_file_chunked(self, fpga_filename):
+        """Load a particular FPGA file a chunk at a time. 
+        fpga_filename -- The base file name without any folder, extension
+            or revision info, for instance 'DLVDS' or 'S2175', case insensitive.
+        The first call returns a number, each subsequent call will return a
+        SMALLER number. The process is finished when it returns 0.
+        """
+        progress = ct.c_int()
+        self._raise_on_error(
+            self.dll.LccFpgaLoadFileChunked(self._handle, ct.c_char_p(fpga_filename),
+                                            ct.byref(progress)))
+        return progress.value
+        
+    def fpga_cancel_load(self):
+        """Must be called if you abandon loading the FPGA file before complete"""
+        self._raise_on_error(self.dll.LccFpgaCancelLoad(self._handle))
+            
     def eeprom_read_string(self, num_chars):
-        """Receive an EEPROM string over bit-banged I2C via FPGA register."""
+        """Receive an EEPROM string."""
         c_string = ct.create_string_buffer(num_chars)
         self._raise_on_error(self.dll.LccEepromReadString(self._handle, c_string, num_chars))
         return c_string.value
@@ -798,15 +832,15 @@ class Controller(object):
         """Set the current address and write a value to it."""
         c_address = ct.c_ubyte(address)
         c_value = ct.c_ubyte(value)
-        self._raise_on_error(self.dll.LccHsFpgaWriteDataAtAddress(self._handle, c_address,
-                                                                  c_value))
+        self._raise_on_error(
+            self.dll.LccHsFpgaWriteDataAtAddress(self._handle, c_address, c_value))
 
     def hs_fpga_read_data_at_address(self, address):
         """Set the current address and read a value from it."""
         c_address = ct.c_ubyte(address)
         c_value = ct.c_ubyte()
-        self._raise_on_error(self.dll.LccHsFpgaReadDataAtAddress(self._handle, c_address,
-                                                                 ct.byref(c_value)))
+        self._raise_on_error(
+            self.dll.LccHsFpgaReadDataAtAddress(self._handle, c_address, ct.byref(c_value)))
         return c_value.value
 
     def hs_gpio_write_high_byte(self, value):
@@ -842,11 +876,7 @@ class Controller(object):
 
     def dc1371_set_generic_config(self, generic_config):
         """
-        Set the value corresponding to the four pairs of hex digits at the end
-        of line two of the EEPROM string for a DC1371A demo-board, typically
-        00 00 00 00.
-        :param generic_config: If an ID string were to have 01 02 03 04,
-        generic_config would be 0x01020304
+        generic_config is always 0, so you never have to call this function
         """
         self._raise_on_error(self.dll.Lcc1371SetGenericConfig(self._handle,
                                                               ct.c_uint32(generic_config)))
@@ -855,18 +885,17 @@ class Controller(object):
         """
         Set the value corresponding to the four pairs of hex digits at the end
         of line three of the EEPROM string for a DC1371A demo-board.
-        :param demo_config: If an ID string were to have 01 02 03 04,
+        demo_config -- If an ID string were to have 01 02 03 04,
         demo_config would be 0x01020304
         """
-        self._raise_on_error(self.dll.Lcc1371SetGenericConfig(self._handle,
-                                                              ct.c_uint32(demo_config)))
+        self._raise_on_error(
+            self.dll.Lcc1371SetGenericConfig(self._handle, ct.c_uint32(demo_config)))
 
     def dc1371_spi_choose_chip_select(self, new_chip_select):
         """
         Set the chip select to use in future spi commands, 1 (default) is
         correct for most situations, rarely 2 is needed.
-        :param new_chip_select: 1 (usually) or 2
-        :return: nothing
+        new_chip_select -- 1 (usually) or 2
         """
         self._raise_on_error(self.dll.Lcc1371SpiChooseChipSelect(self._handle,
                                                                  ct.c_int(new_chip_select)))
@@ -875,9 +904,7 @@ class Controller(object):
         """
         Set the IO expander GPIO lines to byte, all spi transaction use this as
         a base value, or can be used to bit bang lines
-        :param byte: The bits of byte correcspond to the output lines of the IO
-                     expander.
-        :return: Nothing
+        byte -- The bits of byte correspond to the output lines of the IO expander.
         """
         self._raise_on_error(self.dll.Lcc890GpioSetByte(self._handle, ct.c_uint8(byte)))
 
@@ -887,13 +914,13 @@ class Controller(object):
         bit-banging the IO expander on demo-boards that have one. This function
         must be called before doing any spi transactions with the DC890
 
-        :param cs_bit: the bit used as chip select
-        :param sck_bit: the bit used as sck
-        :param sdi_bit: the bit used as sdi
-        :return: nothing
+        cs_bit -- the bit used as chip select
+        sck_bit -- the bit used as sck
+        sdi_bit -- the bit used as sdi
         """
-        self._raise_on_error(self.dll.Lcc890GpioSpiSetBits(self._handle, ct.c_int(cs_bit),
-                                                           ct.c_int(sck_bit), ct.c_int(sdi_bit)))
+        self._raise_on_error(
+            self.dll.Lcc890GpioSpiSetBits(
+                self._handle, ct.c_int(cs_bit), ct.c_int(sck_bit), ct.c_int(sdi_bit)))
 
     def dc890_flush(self):
         """

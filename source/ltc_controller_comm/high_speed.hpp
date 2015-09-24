@@ -3,7 +3,6 @@
 #include <string>
 #include <cstdint>
 #include "i_close.hpp"
-#include "i_timeout.hpp"
 #include "i_data_endian.hpp"
 #include "i_data_send.hpp"
 #include "i_data_receive.hpp"
@@ -16,7 +15,7 @@ namespace linear {
     using std::string;
     using std::vector;
 
-    class HighSpeed : public IClose, ITimeout, IDataEndian, IDataReceive, IDataSend, ISpi {
+    class HighSpeed : public IClose, IDataEndian, IDataReceive, IDataSend, ISpi {
     public:
         enum class BitMode : uint8_t {
             MPSSE = FT_BITMODE_MPSSE,
@@ -40,10 +39,6 @@ namespace linear {
         string GetDescription() override { return description; }
         string GetSerialNumber() override { return serial_number_a.substr(0, serial_number_a.size() - 1); }
 
-        void SetTimeouts(ULONG read_timeout, ULONG write_timeout) override;
-        std::pair<ULONG, ULONG> GetTimeouts() override {
-            return std::make_pair(read_timeout_ms, write_timeout_ms);
-        }
         void SetBitMode(BitMode mode);
         void PurgeIo();
         void Close() override;
@@ -61,7 +56,6 @@ namespace linear {
         int DataReceive(uint32_t data[], int total_values) override {
             return Controller::DataRead(*this, swap_bytes, data, total_values);
         }
-        void DataCancelReceive() override;
         int DataSend(uint8_t data[], int total_bytes) override {
             return WriteBytes(data, total_bytes);
         }
@@ -70,9 +64,7 @@ namespace linear {
         }
         int DataSend(uint32_t data[], int total_values) override {
             return Controller::DataWrite(*this, swap_bytes, data, total_values);
-        }
-        void DataCancelSend() override;
-        
+        }       
 
         // SPI functions
         void SetSpiMode(SpiMode new_spi_mode) { spi_mode = new_spi_mode; }
@@ -124,6 +116,13 @@ namespace linear {
         void EepromReadString(char* buffer, int buffer_size) override;
 
     private:
+        static const ULONG DEFAULT_READ_TIMEOUT = 3000;
+        static const ULONG DEFAULT_WRITE_TIMEOUT = 3000;
+        void SetTimeouts(ULONG read_timeout = DEFAULT_READ_TIMEOUT,
+            ULONG write_timeout = DEFAULT_WRITE_TIMEOUT) {
+            ftdi.SetTimeouts(channel_a, read_timeout, write_timeout);
+            ftdi.SetTimeouts(channel_b, read_timeout, write_timeout);
+        }
         friend class Controller;
         void OpenIfNeeded();
         int Write(FT_HANDLE handle, uint8_t* values, int num_values,
@@ -158,22 +157,10 @@ namespace linear {
         string serial_number_b;
         SpiMode spi_mode = SpiMode::MODE_0;
         uint8_t i2c_bit_bang_register = 0x11;
-        ULONG write_timeout_ms = 3000;
-        ULONG read_timeout_ms = 3000;
         FT_HANDLE channel_a = nullptr;
         FT_HANDLE channel_b = nullptr;
         uint8_t* command_buffer = nullptr;
         bool is_repeated_start = false;
         bool swap_bytes = true;
-        // We are making two assumptions here that are not guaranteed by the standard:
-        // 1. Reads and writes are atomic for bools (true "everywhere" in C++)
-        // 2. 'volatile' makes cache coherency issues go away (true on all versions of Windows)
-        // To be totally correct, we should use a mutex or interlock whenever we touch these in
-        // a multithreaded context, but practically speaking it isn't necessary so we opt out
-        // of the needed overhead.
-        volatile bool abort_read = false;
-        volatile bool abort_write = false;
-        volatile bool is_reading = false;
-        volatile bool is_writing = false;
     };
 }

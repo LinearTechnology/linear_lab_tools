@@ -16,21 +16,18 @@ using std::to_string;
 
 int main() {
     try {
-        int i;
         THROW_MUST_BE_POSITIVE(i);
     } catch (invalid_argument& e) {
         cout << "Caught: " << e.what() << "\n";
     }
 
     try {
-        int i;
         THROW_MUST_BE_SMALLER(i, 1000/10);
     } catch (invalid_argument& e) {
         cout << "Caught: " << e.what() << "\n";
     }
 
     try {
-        int i;
         THROW_MUST_NOT_BE_NULL(i);
     } catch (invalid_argument& e) {
         cout << "Caught: " << e.what() << "\n";

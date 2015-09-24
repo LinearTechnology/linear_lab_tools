@@ -81,6 +81,7 @@ namespace linear {
 
 #define CHECK_LIBRARY(function) if (function == nullptr) { throw logic_error("FTDI DLL was not loaded."); }
 #define CHECK(result, message) if (result != FtdiError::OK) { throw FtdiError(message, result); }
+#define CHECK_CLOSE(handle, result, message) if (result != FtdiError::OK) { Close(handle); throw FtdiError(message, result); }
 
         void Close(FT_HANDLE handle) const {
             // don't throw errors on close (it ends up in destructors)
@@ -100,7 +101,8 @@ namespace linear {
         }
         void GetDriverVersion(FT_HANDLE handle, LPDWORD driver_version) const {
             CHECK_LIBRARY(get_driver_version);
-            CHECK(get_driver_version(handle, driver_version), "Error getting driver version");
+            CHECK_CLOSE(handle, get_driver_version(handle, driver_version),
+                "Error getting driver version");
         }
         void GetLibraryVersion(LPDWORD library_version) const {
             CHECK_LIBRARY(get_library_version);
@@ -108,68 +110,81 @@ namespace linear {
         }
         void SetTimeouts(FT_HANDLE handle, ULONG read_timeout, ULONG write_timeout) const {
             CHECK_LIBRARY(set_timeouts);
-            CHECK(set_timeouts(handle, read_timeout, write_timeout), "Error setting timeouts");
+            CHECK_CLOSE(handle, set_timeouts(handle, read_timeout, write_timeout),
+                "Error setting timeouts");
         }
         void SetUSBParameters(FT_HANDLE handle, ULONG in_transfer_size,
                 ULONG out_transfer_size) const {
             CHECK_LIBRARY(set_usb_parameters);
-            CHECK(set_usb_parameters(handle, in_transfer_size, out_transfer_size),
+            CHECK_CLOSE(handle, set_usb_parameters(handle, in_transfer_size, out_transfer_size),
                 "Error setting USB parameters");
         }
         DWORD Write(FT_HANDLE handle, const BYTE* data, DWORD data_length) const {
             CHECK_LIBRARY(write);
             DWORD num_written;
-            CHECK(write(handle, const_cast<BYTE*>(data), data_length, &num_written),
+            CHECK_CLOSE(handle, write(handle, const_cast<BYTE*>(data), data_length, &num_written),
                 "Error writing to device");
             return num_written;
         }
         DWORD Write(FT_HANDLE handle, const char* data, DWORD data_length) const {
             CHECK_LIBRARY(write);
             DWORD num_written;
-            CHECK(write(handle, const_cast<char*>(data), data_length, &num_written),
+            CHECK_CLOSE(handle, write(handle, const_cast<char*>(data), data_length, &num_written),
                 "Error writing to device");
             return num_written;
         }
         DWORD Read(FT_HANDLE handle, BYTE* buffer, DWORD buffer_length) const {
             CHECK_LIBRARY(read);
             DWORD num_read;
-            CHECK(read(handle, buffer, buffer_length, &num_read), "Error reading from device");
+            CHECK_CLOSE(handle, read(handle, buffer, buffer_length, &num_read),
+                "Error reading from device");
             return num_read;
         }
         DWORD Read(FT_HANDLE handle, char* buffer, DWORD buffer_length) const {
             CHECK_LIBRARY(read);
             DWORD num_read;
-            CHECK(read(handle, buffer, buffer_length, &num_read), "Error reading from device");
+            CHECK_CLOSE(handle, read(handle, buffer, buffer_length, &num_read),
+                "Error reading from device");
             return num_read;
         }
         void Purge(FT_HANDLE handle, ULONG mask) const {
             CHECK_LIBRARY(purge);
-            CHECK(purge(handle, mask), "Error purging device IO");
+            CHECK_CLOSE(handle, purge(handle, mask), "Error purging device IO");
         }
         void SetBitMode(FT_HANDLE handle, BYTE mask, BYTE enable) const {
             CHECK_LIBRARY(set_bit_mode);
-            CHECK(set_bit_mode(handle, mask, enable), "Error setting bit mode");
+            CHECK_CLOSE(handle, set_bit_mode(handle, mask, enable), "Error setting bit mode");
         }
         void SetLatencyTimer(FT_HANDLE handle, BYTE latency) const {
             CHECK_LIBRARY(set_latency_timer);
-            CHECK(set_latency_timer(handle, latency), "Error setting latency timer");
+            CHECK_CLOSE(handle, set_latency_timer(handle, latency), "Error setting latency timer");
         }
         void SetFlowControl(FT_HANDLE handle, USHORT flow_control, BYTE xon, BYTE xoff) const {
             CHECK_LIBRARY(set_flow_control);
-            CHECK(set_flow_control(handle, flow_control, xon, xoff), 
+            CHECK_CLOSE(handle, set_flow_control(handle, flow_control, xon, xoff), 
                 "Error setting flow control");
         }
         void GetDeviceInfo(FT_HANDLE handle, FT_DEVICE* device_type, LPDWORD id,
                 PCHAR serial_number, PCHAR description) const {
             CHECK_LIBRARY(get_device_info);
-            CHECK(get_device_info(handle, device_type, id, serial_number,
+            CHECK_CLOSE(handle, get_device_info(handle, device_type, id, serial_number,
                 description, nullptr), "Error getting device info");
         }
         void GetStatus(FT_HANDLE handle, LPDWORD num_receive_bytes,
                 LPDWORD num_send_bytes, LPDWORD event_dword) const {
             CHECK_LIBRARY(get_status);
-            CHECK(get_status(handle, num_receive_bytes, num_send_bytes, event_dword),
+            CHECK_CLOSE(handle, get_status(handle, num_receive_bytes, num_send_bytes, event_dword),
                 "Error getting device status");
+        }
+        void EnableEventChar(FT_HANDLE handle, bool enable = true) const {
+            CHECK_LIBRARY(set_chars);
+            CHECK_CLOSE(handle, set_chars(handle, '\n', enable ? 1 : 0, '\0', 0),
+                "Error setting event char");
+        }
+        void DisableEventChar(FT_HANDLE handle) const {
+            CHECK_LIBRARY(set_chars);
+            CHECK_CLOSE(handle, set_chars(handle, '\n', 0, '\0', 0),
+                "Error setting event char");
         }
     private:
 
@@ -200,6 +215,7 @@ namespace linear {
         typedef FT_STATUS(WINAPI *SetFlowControlFunction)(FT_HANDLE, USHORT, UCHAR, UCHAR);
         typedef FT_STATUS(WINAPI *GetDeviceInfoFunction)(FT_HANDLE, FT_DEVICE*, LPDWORD, PCHAR, PCHAR, LPVOID);
         typedef FT_STATUS(WINAPI *GetStatusFunction)(FT_HANDLE, DWORD*, DWORD*, DWORD*);
+        typedef FT_STATUS(WINAPI *SetCharsFunction)(FT_HANDLE, UCHAR, UCHAR, UCHAR, UCHAR);
 
         CloseFunction                close                   = nullptr;
         CreateDeviceInfoListFunction create_device_info_list = nullptr;
@@ -218,6 +234,7 @@ namespace linear {
         SetFlowControlFunction       set_flow_control        = nullptr;
         GetDeviceInfoFunction        get_device_info         = nullptr;
         GetStatusFunction            get_status              = nullptr;
+        SetCharsFunction             set_chars               = nullptr;
         HMODULE                      ftdi                    = nullptr;
     };
 }

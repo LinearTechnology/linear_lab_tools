@@ -215,9 +215,9 @@ bool CheckPrbs(const uint16_t* data, int size) {
 //#define HIGH_SPEED_BATTERY_1
 //#define HIGH_SPEED_BATTERY_2
 //#define HIGH_SPEED_BATTERY_3
-//#define DC1371_BATTERY_1
+#define DC1371_BATTERY_1
 //#define DC890_BATTERY_1
-#define DC718_BATTERY_1
+//#define DC718_BATTERY_1
 
 int main() {
 
@@ -888,12 +888,14 @@ int main() {
     LccHandle handle = nullptr;
     int num_controllers = 0;
     CHECK(LccGetNumControllers(LCC_TYPE_DC1371, 10, &num_controllers), __LINE__);
-
     LccControllerInfo info;
-
     CHECK(LccGetControllerList(LCC_TYPE_DC1371, &info, 1), __LINE__);
-
     CHECK(LccInitController(&handle, info), __LINE__);
+
+    char id_string[200];
+    CHECK(LccEepromReadString(handle, id_string, 200), __LINE__);
+    cout << "ID string '" << id_string << "'\n";
+    CHECK(LccReset(handle), __LINE__);
 
     CHECK(LccSpiSendByteAtAddress(handle, 0x00, 0x80), __LINE__); // reset
     CHECK(LccSpiSendByteAtAddress(handle, 0x01, 0x00), __LINE__); // offset binary

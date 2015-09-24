@@ -63,9 +63,6 @@
     <ClInclude Include="i_collect.hpp">
       <Filter>Interfaces</Filter>
     </ClInclude>
-    <ClInclude Include="i_timeout.hpp">
-      <Filter>Interfaces</Filter>
-    </ClInclude>
     <ClInclude Include="i_close.hpp">
       <Filter>Interfaces</Filter>
     </ClInclude>

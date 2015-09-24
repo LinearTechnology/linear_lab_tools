@@ -196,12 +196,6 @@ LTC_CONTROLLER_COMM_API int LccGetSerialNumber(LccHandle handle, char* serial_nu
     }
 }
 
-LTC_CONTROLLER_COMM_API int LccSetTimeouts(LccHandle handle, unsigned long read_timeout,
-        unsigned long write_timeout) {
-    GET(handle, controller, ITimeout, error_string);
-    CALL(controller, error_string, SetTimeouts, read_timeout, write_timeout);
-}
-
 LTC_CONTROLLER_COMM_API int LccHsPurgeIo(LccHandle handle) {
     GET(handle, controller, HighSpeed, error_string);
     CALL(controller, error_string, PurgeIo);
@@ -221,16 +215,16 @@ LTC_CONTROLLER_COMM_API int LccGetErrorInfo(LccHandle handle, char* message_buff
         int buffer_size) {
     if (handle == nullptr) {
         string error_string = "LccHandle is null.";
-        if (int(error_string.size()) > buffer_size) {
-            return error_string.size();
+        if (Narrow<int>(error_string.size()) > buffer_size) {
+            return Narrow<int>(error_string.size());
         } else {
             strcpy_s(message_buffer, buffer_size, error_string.c_str());
         }
         return LCC_ERROR_INVALID_ARG;
     }
     GET_STRING(handle, error_string);
-    if (int(error_string->size()) > buffer_size) {
-        return error_string->size();
+    if (Narrow<int>(error_string->size()) > buffer_size) {
+        return Narrow<int>(error_string->size());
     } else {
         strcpy_s(message_buffer, buffer_size, error_string->c_str());
     }
@@ -288,16 +282,6 @@ LTC_CONTROLLER_COMM_API int LccDataReceiveUint32Values(LccHandle handle, uint32_
         int num_values, int* num_bytes_received) {
     GET(handle, controller, IDataReceive, error_string);
     CALL_VAL(controller, error_string, num_bytes_received, DataReceive, values, num_values);
-}
-
-LTC_CONTROLLER_COMM_API int LccDataCancelSend(LccHandle handle) {
-    GET(handle, controller, IDataSend, error_string);
-    CALL(controller, error_string, DataCancelSend);
-}
-
-LTC_CONTROLLER_COMM_API int LccDataCancelReceive(LccHandle handle) {
-    GET(handle, controller, IDataReceive, error_string);
-    CALL(controller, error_string, DataCancelReceive);
 }
 
 LTC_CONTROLLER_COMM_API int LccDataStartCollect(LccHandle handle, int total_samples,
@@ -495,7 +479,6 @@ LTC_CONTROLLER_COMM_API int Lcc890GpioSpiSetBits(LccHandle handle, int cs_bit,
     GET(handle, controller, Dc890, error_string);
     CALL(controller, error_string, GpioSpiSetBits, cs_bit, sck_bit, sdi_bit);
 }
-
 
 LTC_CONTROLLER_COMM_API int Lcc890Flush(LccHandle handle) {
     GET(handle, controller, Dc890, error_string);

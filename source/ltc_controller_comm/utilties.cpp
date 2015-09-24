@@ -17,7 +17,7 @@ namespace linear {
         }
 
         wstring path(MAX_PATH, L'\0');
-        DWORD size = path.size();
+        auto size = Narrow<DWORD>(path.size());
         result = RegQueryValueExW(key, key_value_name.c_str(), 0, nullptr, reinterpret_cast<BYTE*>(&path[0]), &size);
         RegCloseKey(key);
 
@@ -30,16 +30,16 @@ namespace linear {
     }
 
     string ToUtf8(const wstring& utf16) {
-        auto utf8_length = WideCharToMultiByte(CP_UTF8, 0, utf16.c_str(), utf16.size(),
+        auto utf8_length = WideCharToMultiByte(CP_UTF8, 0, utf16.c_str(), Narrow<int>(utf16.size()),
             nullptr, 0, nullptr, nullptr);
         string utf8(utf8_length, '\0');
-        WideCharToMultiByte(CP_UTF8, 0, utf16.c_str(), utf16.size(), &utf8[0], utf8_length, 0, 0);
+        WideCharToMultiByte(CP_UTF8, 0, utf16.c_str(), Narrow<int>(utf16.size()), &utf8[0], utf8_length, 0, 0);
         return utf8;
     }
     wstring ToUtf16(const string& utf8) {
-        auto utf16_length = MultiByteToWideChar(CP_UTF8, 0, utf8.c_str(), utf8.size(), nullptr, 0);
+        auto utf16_length = MultiByteToWideChar(CP_UTF8, 0, utf8.c_str(), Narrow<int>(utf8.size()), nullptr, 0);
         wstring utf16(utf16_length, '\0');
-        MultiByteToWideChar(CP_UTF8, 0, utf8.c_str(), utf8.size(), &utf16[0], utf16_length);
+        MultiByteToWideChar(CP_UTF8, 0, utf8.c_str(), Narrow<int>(utf8.size()), &utf16[0], utf16_length);
         return utf16;
     }
 
@@ -57,7 +57,7 @@ namespace linear {
         if (!GetFileSizeEx(file, &size)) {
             throw runtime_error("Could not get size of file '" + ToUtf8(file_name) + "'");
         }
-        return size_t(size.QuadPart);
+        return Narrow<size_t>(size.QuadPart);
     }
 
     bool DoesFileExist(const wstring& file_name) {

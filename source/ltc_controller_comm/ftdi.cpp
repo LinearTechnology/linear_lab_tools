@@ -170,6 +170,9 @@ namespace linear {
 
             get_device_info = reinterpret_cast<GetDeviceInfoFunction>(
                 GetProcAddress(ftdi, "FT_GetDeviceInfo"));
+
+            set_chars = reinterpret_cast<SetCharsFunction>(
+                GetProcAddress(ftdi, "FT_SetChars"));
         }
     }
 

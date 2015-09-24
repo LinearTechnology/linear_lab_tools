@@ -18,41 +18,12 @@ namespace linear {
     using std::make_pair;
     using std::this_thread::sleep_for;
     using std::chrono::milliseconds;
+    using std::make_unique;
 
-    const DWORD QUERY_SIGNATURE = 0x36644851;    // QHd6 -- query signature
     const DWORD ANSWER_SIGNTURE = 0x52446839;    // 9hDR -- answr signature
     const DWORD PASSWORD_SIGNTURE = 0x4B74694C;    // LitK -- passwd for commnds
     const char* PASSW_STRGTURE = "Litk";        // PASSW_SIGN as a string
     const DWORD PSTCH_IDLETURE = 0x1D497C11;    // idle code return
-
-    enum class Opcode : BYTE {
-        // RW suffix means read or write (depending on byte param)
-
-        NONE = 0,
-        COMMAND_RESET = 's',
-        GET_DEMO_ID = 'i',
-        ALLOW_WRITES = 'e',  // set/clear allow_writes
-        BOARD_RESET = 'b',  // board reset and other operations
-        GET_INFO = 'c',
-
-        LOAD_FPGA_RAW = 'f',
-        LOAD_FPGA = 'j',
-        COLLECT = 'g',  // capture ADC data
-        READY_FPGA = 'h', // get the FPGA ready to collect
-        READ_SRAM = 'a',
-        WRITE_SRAM = 'd',
-
-        DEMO_ID_EERPOM_RW = 'k',
-        ATMEL_EEPROM_RW = 'n',
-        ATMEL_MSD_FLASH_RW = 'o',
-        FPGA_REG_RW = 'l',
-        FPGA_LIST_RW = 'm', // Read or write a list of FPGA registers
-        TEST_RW = 'p', // test and performance commands
-        CHIT_CHAT = 'q', // "I don't know (I/O test?)"
-        SPI = 'r',
-        I2C = 't',
-        CONFIG = 'u',
-    };
 
     enum : BYTE {
         READ = 0x80,
@@ -80,160 +51,13 @@ namespace linear {
     ENUM_DECLARATION;
 
     // Other constants
-    const int BLOCK_SIZE = 512;
-    const int MAX_BLOCKS = 32;
+
     const int SAMPLE_SIZE = 2;
     const int KILOSAMPLES = 1024;
     const int MAX_TOTAL_SAMPLES = 1024 * KILOSAMPLES;
     const string Dc1371::DESCRIPTION = "DC1371A ADC Controller board";
 
 #define SPI_MUST_NOT_BE_TOO_LARGE(offset, maximum) if ((offset) > (maximum)) { throw invalid_argument("SPI transaction too large."); }
-
-    struct CommandHeader {
-        DWORD   signature;
-        Opcode  opcode;
-        BYTE    byte_param;
-        WORD    word_param;
-        union {
-            DWORD value;
-            BYTE    bytes[4];
-            struct { BYTE byte_0, byte_1, byte_2, byte_3; };
-            struct { WORD word_0, word_1; };
-        } dword_param_1;
-        union {
-            DWORD value;
-            BYTE    bytes[4];
-            struct { BYTE byte_0, byte_1, byte_2, byte_3; };
-            struct { WORD word_0, word_1; };
-        } dword_param_2;
-        CommandHeader(Opcode opcode) : signature(QUERY_SIGNATURE), opcode(opcode) { }
-        BYTE GetStatus() { return byte_param; }
-        WORD GetLength() { return word_param; }
-        void SetLength(WORD length) { word_param = length; }
-        void SetNumBlocks(WORD num_blocks) { word_param = num_blocks; }
-        void SetAddress(WORD address) { dword_param_1.word_0; }
-        void SetTail(WORD tails) { dword_param_1.word_0; }
-    };
-
-    const int COMMAND_DATA_SIZE = BLOCK_SIZE - sizeof(CommandHeader);
-    //    For commands that carry some data in the CMDB block, we limit
-    //    the max amount so that some space is available behind db[] for
-    //    various uses at the receiving end.  Also, it's convenient to
-    //    have it be the EEPROM page size, which is 16 bytes. So...
-    //
-    const int MAX_COMMAND_DATA = COMMAND_DATA_SIZE - 16;
-
-    struct Dc1371::Command {
-        CommandHeader header;
-        BYTE data[COMMAND_DATA_SIZE];
-        Command(Opcode opcode) : header(opcode) {
-            memset(data, 0, COMMAND_DATA_SIZE);
-        }
-        void Reset(Opcode opcode) {
-            memset(this, 0, sizeof(Command));
-            header.opcode = opcode;
-        }
-    };
-
-    class Dc1371::CommandFile {
-        HANDLE file = INVALID_HANDLE_VALUE;
-        CommandFile(const CommandFile& other) = delete;
-    public:
-        CommandFile(char drive_letter) {
-            char file_name[10] = " :\\pipe.0";
-            file_name[0] = drive_letter;
-            file = CreateFileA(file_name, GENERIC_READ | GENERIC_WRITE, 0, nullptr,
-                OPEN_EXISTING, FILE_FLAG_NO_BUFFERING | FILE_FLAG_WRITE_THROUGH, nullptr);
-            if (file == INVALID_HANDLE_VALUE) {
-                throw HardwareError("Error opening DC1371A command interface.");
-            }
-        }
-        CommandFile(CommandFile&& other) : file(other.file) {
-            other.file = INVALID_HANDLE_VALUE;
-        }
-        ~CommandFile() {
-            Close();
-        }
-        void Close() {
-            if (file != INVALID_HANDLE_VALUE) {
-                SetFilePointer(file, 0, nullptr, FILE_BEGIN);
-                SetEndOfFile(file);
-                CloseHandle(file);
-                file = INVALID_HANDLE_VALUE;
-            }
-        }
-
-        void Write(Command& command) {
-            SetFilePointer(file, 0, nullptr, FILE_BEGIN);
-            DWORD num_written;
-            if (!WriteFile(file, &command, BLOCK_SIZE, &num_written, nullptr)) {
-                throw HardwareError("Error writing to DC1371A command interface.");
-            }
-        }
-
-        void Read(Command& command) {
-            SetFilePointer(file, 0, nullptr, FILE_BEGIN);
-            DWORD num_read;
-            if (!ReadFile(file, &command, BLOCK_SIZE, &num_read, nullptr)) {
-                throw HardwareError("Error reading from DC1371A command interface.");
-            }
-        }
-    };
-
-    class Dc1371::BlockFile {
-        HANDLE file = INVALID_HANDLE_VALUE;
-        BlockFile(const CommandFile& other) = delete;
-    public:
-        BlockFile(char drive_letter) {
-            char file_name[10] = " :\\pipe.1";
-            file_name[0] = drive_letter;
-            file = CreateFileA(file_name, GENERIC_READ | GENERIC_WRITE, 0, nullptr,
-                OPEN_EXISTING, FILE_FLAG_NO_BUFFERING | FILE_FLAG_WRITE_THROUGH, nullptr);
-            if (file == INVALID_HANDLE_VALUE) {
-                throw HardwareError("Error opening DC1371A block interface.");
-            }
-        }
-        BlockFile(BlockFile&& other) : file(other.file) {
-            other.file = INVALID_HANDLE_VALUE;
-        }
-        ~BlockFile() {
-            Close();
-        }
-        void Close() {
-            if (file != INVALID_HANDLE_VALUE) {
-                CloseHandle(file);
-                file = INVALID_HANDLE_VALUE;
-            }
-        }
-        void Write(const BYTE data[], int num_bytes) {
-            SetFilePointer(file, 0, nullptr, FILE_BEGIN);
-            DWORD num_written;
-            if (!WriteFile(file, data, num_bytes, &num_written, nullptr)) {
-                throw HardwareError("Error writing to DC1371A block interface.");
-            }
-        }
-        void Write(const char data[], int num_chars) {
-            SetFilePointer(file, 0, nullptr, FILE_BEGIN);
-            DWORD num_written;
-            if (!WriteFile(file, data, num_chars, &num_written, nullptr)) {
-                throw HardwareError("Error writing to DC1371A block interface.");
-            }
-        }
-        void Read(BYTE data[], int num_bytes) {
-            SetFilePointer(file, 0, nullptr, FILE_BEGIN);
-            DWORD num_read;
-            if (!ReadFile(file, data, num_bytes, &num_read, nullptr)) {
-                throw HardwareError("Error reading from DC1371A block interface.");
-            }
-        }
-        void Read(char data[], int num_chars) {
-            SetFilePointer(file, 0, nullptr, FILE_BEGIN);
-            DWORD num_read;
-            if (!ReadFile(file, data, num_chars, &num_read, nullptr)) {
-                throw HardwareError("Error reading from DC1371A block interface.");
-            }
-        }
-    };
 
     int Dc1371::GetNumControllers(int max_controllers) {
         MUST_BE_POSITIVE(max_controllers);
@@ -357,72 +181,102 @@ namespace linear {
         return FpgaGetIsLoaded(load_id);
     }
 
-    int Dc1371::FpgaLoadFileChunked(const string& fpga_filename) {
+    void Dc1371::FpgaStartLoadFile(const string& fpga_filename) {
+        fpga_load_started = true;
         auto load_id = GetFpgaLoadIdFromFile(fpga_filename);
-        auto fpga_path = Path(ToUtf16(fpga_filename));
-        auto fpga_path_string = fpga_path.Fullpath();
+        auto path = Path(ToUtf16(fpga_filename));
+        auto path_string = path.Fullpath();
 
-        if (!DoesFileExist(fpga_path_string)) {
+        if (!DoesFileExist(path_string)) {
             auto location = GetPathFromRegistry(L"SOFTWARE\\Linear Technology\\LinearLabTools");
-            fpga_path = Path(location + L"fpga_loads", fpga_path.BaseName(), L".sqz");
-            if (!DoesFileExist(fpga_path.Fullpath())) {
-                throw runtime_error("Could not find file " + ToUtf8(fpga_path.Fullpath()));
+            path = Path(location + L"fpga_loads", path.BaseName(), L".sqz");
+            if (!DoesFileExist(path.Fullpath())) {
+                throw runtime_error("Could not find file " + ToUtf8(path.Fullpath()));
             }
-            fpga_path_string = fpga_path.Fullpath();
+            path_string = path.Fullpath();
         }
 
-        auto size = GetFileSize(fpga_path_string);
+        auto size = GetFileSize(path_string);
         if (size < 1) {
-            throw runtime_error("Could not read file (or is empty) " + ToUtf8(fpga_path.Fullpath()));
-        }
-        
-        ifstream fpga_file(fpga_path_string, std::ios::binary | std::ios::beg);
-        if (!fpga_file) {
-            throw runtime_error("Could not open file " + ToUtf8(fpga_path.Fullpath()));
+            throw runtime_error("Could not read file (or is empty) " + ToUtf8(path.Fullpath()));
         }
 
         // Original code calclulates a "tail" which is the last block and may be partial.
         // However the actual file read and send loop assumes the tail is a full block.
         // The implmementation of the squeeze algorithm pads to a full block so this code
         // assumes a full tail throughout.
-        auto num_blocks = WORD(size / BLOCK_SIZE);
+        auto num_blocks = Narrow<WORD>(size / BLOCK_SIZE);
 
         Command command(Opcode::LOAD_FPGA);
-        command.header.word_param = num_blocks;
+        command.header.SetNumBlocks(num_blocks);
+        command.header.SetTail(BLOCK_SIZE);
 
-        CommandFile command_file(drive_letter);
-        BlockFile block_file(drive_letter);
+        fpga_load_info = make_unique<FpgaLoadInfo>(path_string, load_id,
+            num_blocks, drive_letter);
 
-        command_file.Write(command);
+        try {
+            fpga_load_info->command_file.Write(command);
+        } catch (HardwareError&) {
+            fpga_load_info.reset();
+            throw;
+        }
+    }
 
-        std::vector<char> data(Min(MAX_BLOCKS, int(num_blocks)) * BLOCK_SIZE);
-        while (num_blocks > 0) {
-            auto send_blocks = Min(MAX_BLOCKS, int(num_blocks));
+    void Dc1371::FpgaLoadChunk() {
+        try {
+            auto send_blocks = Min(MAX_BLOCKS, fpga_load_info->num_blocks);
             auto send_bytes = send_blocks * BLOCK_SIZE;
-            if (!fpga_file.read(data.data(), send_bytes)) {
-                throw runtime_error("Error reading file " + ToUtf8(fpga_path.Fullpath()));
+            ifstream input(fpga_load_info->path, ios::binary | ios::beg);
+            if (!input.seekg(fpga_load_info->offset, ios::beg)) {
+                throw runtime_error("Error reading file " + ToUtf8(fpga_load_info->path));
             }
+            if (!input.read(fpga_load_info->data.data(), send_bytes)) {
+                throw runtime_error("Error reading file " + ToUtf8(fpga_load_info->path));
+            }
+            fpga_load_info->offset += send_bytes;
 
-            block_file.Write(data.data(), send_bytes);
-            
-            num_blocks -= send_blocks;
-            if (num_blocks == 0) {
-                CheckCommandResult(command, command_file);
+            fpga_load_info->block_file.Write(fpga_load_info->data.data(), send_bytes);
+            fpga_load_info->num_blocks -= send_blocks;
+
+            Command command(Opcode::LOAD_FPGA);
+            if (fpga_load_info->num_blocks == 0) {
+                CheckCommandResult(command, fpga_load_info->command_file);
             } else {
-                auto status = GetCommandResult(command, command_file);
+                auto status = GetCommandResult(command, fpga_load_info->command_file);
                 if (status != Dc1371Error::GOT_ACK) {
                     throw Dc1371Error("DC1371A reported an error.", status);
                 }
             }
-        }
-        command_file.Close();
-        try {
-            FpgaGetIsLoaded(load_id);
         } catch (HardwareError&) {
-            sleep_for(milliseconds(50));
-            FpgaGetIsLoaded(load_id);
+            fpga_load_info.reset();
+            throw;
         }
-        return 0;
+    }
+
+    void Dc1371::FpgaFinishLoadFile() {
+        auto load_id = fpga_load_info->load_id;
+        fpga_load_info.reset();
+        FpgaGetIsLoaded(load_id);
+        fpga_load_started = false;
+    }
+
+    int Dc1371::FpgaLoadFileChunked(const string& fpga_filename) {
+        if (!fpga_load_started) {
+            FpgaStartLoadFile(fpga_filename);
+        } else {
+            FpgaLoadChunk();
+            if (fpga_load_info->num_blocks == 0) {
+                FpgaFinishLoadFile();
+                return 0;
+            }
+        }
+        return fpga_load_info->num_blocks;
+    }
+
+    void Dc1371::FpgaCancelLoad() {
+        fpga_load_info.reset();
+        fpga_load_started = false;
+        Reset();
     }
 
     void Dc1371::DataStartCollect(int total_samples, Trigger trigger) {
@@ -459,38 +313,49 @@ namespace linear {
         command.header.dword_param_1.value = generic_config;
         command.header.dword_param_2.value = demo_config;
 
-        CommandFile command_file(drive_letter);
-        command_file.Write(command);
-        command.Reset(Opcode::COLLECT);
-        command.header.byte_param = trigger_value;
-        command.header.SetLength(total_samples / KILOSAMPLES);
-        command_file.Write(command);
+        collect_command_file = make_unique<CommandFile>(drive_letter);
+        try {
+            collect_command_file->Write(command);
+            command.Reset(Opcode::COLLECT);
+            command.header.byte_param = trigger_value;
+            command.header.SetLength(total_samples / KILOSAMPLES);
+            collect_command_file->Write(command);
+
+            collect_started = true;
+        } catch (HardwareError&) {
+            collect_command_file.reset();
+            throw;
+        }
     }
 
     bool Dc1371::DataIsCollectDone() {
-        CommandFile command_file(drive_letter);
-        Command command(Opcode::COLLECT);
-        command_file.Write(command);
-        auto status = GetCommandResult(command, command_file);
-        if (status == Dc1371Error::GOT_NAK) {
-            return false;
-        } else if (status == Dc1371Error::OK) {
-            return true;
-        } else {
-            throw Dc1371Error("The DC1371 gave an unexpected status", status);
+        if (!collect_started) {
+            throw invalid_argument("No collect was started");
+        }
+        try {
+            Command command(Opcode::COLLECT);
+            auto status = GetCommandResult(command, *(collect_command_file.get()));
+            if (status == Dc1371Error::GOT_NAK) {
+                return false;
+            } else if (status == Dc1371Error::OK) {
+                collect_command_file.reset();
+                return true;
+            } else {
+                throw Dc1371Error("The DC1371 gave an unexpected status", status);
+            }
+        } catch (HardwareError&) {
+            collect_command_file.reset();
+            throw;
         }
     }
 
     void Dc1371::DataCancelCollect() {
+        collect_started = false;
+        collect_command_file.reset();
         Reset();
     }
 
     int Dc1371::ReadBytes(uint8_t data[], int total_bytes) {
-        // guarantee the running_abortable_operation flag gets cleared on exit
-        auto& reading_flag = is_reading; // can't capture a field
-        auto raii_reading_flag = MakeRaiiCleanup([&reading_flag] { reading_flag = false; });
-        is_reading = true;
-
         MUST_NOT_BE_NULL(data);
         MUST_BE_POSITIVE(total_bytes);
         MUST_NOT_BE_LARGER(total_bytes, 2 * MAX_TOTAL_SAMPLES);
@@ -504,9 +369,6 @@ namespace linear {
         int total_blocks = total_bytes / BLOCK_SIZE;
         int bytes_in_extra_block = total_bytes - (total_blocks * BLOCK_SIZE);
         while (total_blocks > 0) {
-            if (abort_read) {
-                return LCC_ERROR_ABORTED;
-            }
             WORD num_blocks = Min(MAX_BLOCKS, total_blocks);
             int block_bytes = num_blocks * BLOCK_SIZE;
             command.header.word_param = num_blocks;
@@ -519,9 +381,6 @@ namespace linear {
             bytes_read += block_bytes;
         }
         if (bytes_in_extra_block > 0) {
-            if (abort_read) {
-                return LCC_ERROR_ABORTED;
-            }
             // this case means the user put in a data size that was smaller than the collect size
             // and not a multiple of 256 samples, so we read one block and put part of it into the
             // data.
@@ -535,36 +394,21 @@ namespace linear {
         }
         return bytes_read;
     }
-
-    void Dc1371::DataCancelReceive() {
-        abort_read = true;
-        int i;
-        for (i = 0; is_reading && i < 1000; ++i) {
-            sleep_for(milliseconds(5));
-        }
-        abort_read = false;
-        if (i == 1000) {
-            try {
-                Reset();
-            } catch (...) { }
-            throw HardwareError("Abort operation timed out.");
-        } else {
-            Reset();
-        }
-    }
     
     void Dc1371::SpiBufferLowerChipSelect(Command& command, int& offset) {
         const int CHIP_SELECT_DOWN_COMMAND_SIZE = 3;
         SPI_MUST_NOT_BE_TOO_LARGE(offset + CHIP_SELECT_DOWN_COMMAND_SIZE, MAX_COMMAND_DATA);
-        auto spi_chars = reinterpret_cast<char*>(command.data + offset);
-        sprintf_s(spi_chars, MAX_COMMAND_DATA - offset, "s%02d", int(chip_select));
+        char* spi_chars = command.data + offset;
+        sprintf_s(spi_chars, MAX_COMMAND_DATA - offset, "s%02d", Narrow<int>(chip_select));
         offset += CHIP_SELECT_DOWN_COMMAND_SIZE;
     }
 
     void  Dc1371::SpiBufferRaiseChipSelect(Command& command, int& offset) {
-        const int CHIP_SELECT_UP_COMMAND_SIZE = 1;
+        const int CHIP_SELECT_UP_COMMAND_SIZE = 2;
         SPI_MUST_NOT_BE_TOO_LARGE(offset + CHIP_SELECT_UP_COMMAND_SIZE, MAX_COMMAND_DATA);
         command.data[offset] = 'p';
+        ++offset;
+        command.data[offset] = '\0';
         ++offset;
     }
 
@@ -572,14 +416,11 @@ namespace linear {
             uint8_t send_values[], int num_values, bool is_send) {
         int command_size = 2 * num_values + 1;
         SPI_MUST_NOT_BE_TOO_LARGE(command_size, MAX_COMMAND_DATA);
-        auto spi_chars = reinterpret_cast<char*>(command.data + offset);
+        char* spi_chars = command.data + offset;
         *spi_chars = is_send ? 'w' : 't';
         ++spi_chars;
-        char hex[3];
         for (int i = 0; i < num_values; ++i) {
-            sprintf_s(hex, "%02X", send_values[i]);
-            spi_chars[0] = hex[0];
-            spi_chars[1] = hex[1];
+            sprintf_s(spi_chars, 3, "%02X", send_values[i]);
             spi_chars += 2;
         }
         offset += command_size;
@@ -588,13 +429,14 @@ namespace linear {
     void Dc1371::SpiBufferReceive(Command& command, int& offset, int num_values) {
         const int RECEIVE_COMMAND_SIZE = 3;
         SPI_MUST_NOT_BE_TOO_LARGE(offset + RECEIVE_COMMAND_SIZE, MAX_COMMAND_DATA);
-        auto spi_chars = reinterpret_cast<char*>(command.data + offset);
+        char* spi_chars = command.data + offset;
         sprintf_s(spi_chars, sizeof(command.data) - offset, "r%02X", num_values);
         offset += RECEIVE_COMMAND_SIZE;
     }
 
     void Dc1371::SpiDoTransaction(Command& command, uint8_t* receive_values, int num_values) {
         CommandFile command_file(drive_letter);
+        command.header.word_param = Narrow<WORD>(strlen(command.data));
         command_file.Write(command);
         CheckCommandResult(command, command_file, receive_values, num_values);
     }
@@ -619,12 +461,12 @@ namespace linear {
         }
         if (command.header.opcode != original_opcode) {
            throw HardwareError("DC1371A response opcode mismatch (got " +
-                std::to_string(uint8_t(command.header.opcode)) + ").");
+                std::to_string(Narrow<uint8_t>(command.header.opcode)) + ").");
         }
 
         auto result = command.header.GetStatus();
         if ((result == Dc1371Error::OK) && (data != nullptr) && (num_data > 0)) {
-            memcpy_s(data, num_data, command.data, Min(num_data, int(command.header.GetLength())));
+            memcpy_s(data, num_data, command.data, Min(num_data, Narrow<int>(command.header.GetLength())));
         }
         return result;
     }
@@ -644,7 +486,6 @@ namespace linear {
         CheckCommandResult(command, command_file);
     }
 
-    const int MAX_SPI_READ_BYTES = (MAX_COMMAND_DATA - 1) / 2;
     void Dc1371::SpiReceive(uint8_t values[], int num_values) {
         MUST_NOT_BE_NULL(values);
         MUST_BE_POSITIVE(num_values);
@@ -754,14 +595,11 @@ namespace linear {
         MUST_NOT_BE_NULL(buffer);
         MUST_BE_POSITIVE(buffer_size);
 
-        Command command(Opcode::DEMO_ID_EERPOM_RW);
-        command.header.byte_param = READ;
-        command.header.word_param = buffer_size;
-        command.header.SetAddress((eeprom_address << 1) | 0x01);
+        Command command(Opcode::GET_DEMO_ID);
         CommandFile command_file(drive_letter);
         command_file.Write(command);
-
         CheckCommandResult(command, command_file, reinterpret_cast<uint8_t*>(buffer), buffer_size);
+        buffer[Min(Narrow<int>(command.header.GetLength()), buffer_size - 1)] = '\0';
     }
 
 }

@@ -13,6 +13,7 @@ namespace linear {
     using std::pair;
     using std::vector;
     using std::invalid_argument;
+    using std::logic_error;
 
     template <typename T>
     T Min(T a, T b) {
@@ -23,6 +24,9 @@ namespace linear {
     T Max(T a, T b) {
         return a > b ? a : b;
     }
+
+    template<class T, class U>
+    T Narrow(U u) { T t = static_cast<T>(u); if (static_cast<U>(t) != u) throw logic_error("Typecast resulted in value change."); return t; }
 
     template <typename T, typename TCONTAINER>
     T Last(TCONTAINER c) {
@@ -57,12 +61,12 @@ namespace linear {
 
     inline bool StartsWithI(const wstring& full_string, const wstring& start_string) {
         if (full_string.size() < start_string.size()) { return false; }
-        return CompareI(full_string, start_string, start_string.size());
+        return CompareI(full_string, start_string, Narrow<int>(start_string.size()));
     }
 
     inline bool StartsWithI(const string& full_string, const string& start_string) {
         if (full_string.size() < start_string.size()) { return false; }
-        return CompareI(full_string, start_string, start_string.size());
+        return CompareI(full_string, start_string, Narrow<int>(start_string.size()));
     }
 
     inline void PathFixSeparator(wstring& path) {
@@ -93,7 +97,7 @@ namespace linear {
         }
         Path(wstring path) {
             size_t extension_index = path.npos;
-            int j = 0;
+            size_t j = 0;
             for (size_t i = path.size(); i > 0; --i) {
                 j = i - 1;
                 if (extension_index == path.npos && path[j] == L'.') {
@@ -171,8 +175,8 @@ namespace linear {
         }
     }
     inline uint32_t SwapBytes(uint32_t value) {
-        uint32_t high = SwapBytes(uint16_t(value >> 16));
-        uint32_t low = SwapBytes(uint16_t(value & 0xFFFF));
+        uint32_t high = SwapBytes(static_cast<uint16_t>(value >> 16));
+        uint32_t low = SwapBytes(static_cast<uint16_t>(value & 0xFFFF));
         return (low << 16) | high;
     }
 
@@ -198,7 +202,7 @@ namespace linear {
                 return -i;
             }
             ++hex;
-            data[i] = uint8_t(left << 8 | right);
+            data[i] = static_cast<uint8_t>(left << 4 | right);
         }
         return num_bytes;
     }
@@ -212,7 +216,7 @@ namespace linear {
         if (right < 0) {
             throw invalid_argument("Not a valid hex string.");
         }
-        return uint8_t(left << 4 | right);
+        return static_cast<uint8_t>(left << 4 | right);
     }
 
     inline uint16_t HexToUint16(const char hex[]) {
@@ -253,7 +257,7 @@ namespace linear {
     }
 
     inline string ToHex(uint16_t value) {
-        return ToHex(uint8_t(value >> 8)) + ToHex(uint8_t(value & 0xFF));
+        return ToHex(static_cast<uint8_t>(value >> 8)) + ToHex(static_cast<uint8_t>(value & 0xFF));
     }
 
     inline string ToHex(uint32_t value) {
@@ -261,7 +265,7 @@ namespace linear {
     }
 
     inline void CopyToBuffer(char* buffer, int buffer_size, const string& source) {
-        int num_copy = source.size() + 1;
+        int num_copy = Narrow<int>(source.size() + 1);
         if (num_copy > buffer_size) {
             num_copy = buffer_size;
         }

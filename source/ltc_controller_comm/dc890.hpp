@@ -1,4 +1,5 @@
 #pragma once
+#include <fstream>
 #include "i_spi_send_only.hpp"
 #include "i_fpga_load.hpp"
 #include "ftdi_adc.hpp"
@@ -23,7 +24,7 @@ namespace linear {
         }
         bool FpgaGetIsLoaded(const string& fpga_filename) override;
         int FpgaLoadFileChunked(const string& fpga_filename) override;
-        void FpgaCancelLoad() override { fpga_load_started = false; Reset(); }
+        void FpgaCancelLoad() override;
 
         void GpioSetByte(uint8_t byte) {
             base_byte = byte;
@@ -53,6 +54,29 @@ namespace linear {
             uint8_t revision;
             FpgaLoad(uint16_t load_id = 0, uint8_t revision = 0) : load_id(load_id), revision(revision) { }
         };
+
+        static const int FPGA_PAGE_SIZE = 256;
+        static const int NUM_FPGA_PAGES = 512;
+        class FpgaPageBuffer {
+        public:
+            static const int FPGA_SIZE = NUM_FPGA_PAGES * FPGA_PAGE_SIZE;
+            FpgaPageBuffer() = default;
+            ~FpgaPageBuffer() {
+                delete file;
+            }
+            void Reset(const wstring& path);
+            void Reset();
+            explicit operator bool() {
+                return file != nullptr;
+            }
+            bool GetPage(char data[FPGA_PAGE_SIZE]);
+        private:
+            std::ifstream* file = nullptr;
+            int total_bytes = 0;
+            int page_bytes = 0;
+            char buffer[2 * FPGA_PAGE_SIZE];
+        };
+
         int FpgaFileToFlashChunked(const wstring& path);
         bool FpgaFlashToLoaded(uint16_t load_id, uint8_t revision);
         wstring FpgaGetPath(const string& load_filename);
@@ -63,5 +87,9 @@ namespace linear {
         uint8_t sck_bit_mask = 0;
         uint8_t sdi_bit_mask = 0;
         bool fpga_load_started = false;
+        int fpga_load_progress = NUM_FPGA_PAGES;
+        int fpga_page_index = 0;
+        FpgaPageBuffer fpga_page_buffer;
+        char fpga_page_data[FPGA_PAGE_SIZE];
     };
 }

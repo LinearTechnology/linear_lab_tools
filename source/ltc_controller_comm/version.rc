@@ -3,8 +3,8 @@
 #define IDC_STATIC  -1
 #undef APSTUDIO_READONLY_SYMBOLS
 
-#define RC_FILEVERSION 1,0,2,0
-#define RC_FILEVERSION_STRING "1, 0, 2, 0\0"
+#define RC_FILEVERSION 1,0,3,0
+#define RC_FILEVERSION_STRING "1, 0, 3, 0\0"
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
@@ -15,8 +15,8 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,0,2,0
- PRODUCTVERSION 1,0,2,0
+ FILEVERSION 1,0,3,0
+ PRODUCTVERSION 1,0,3,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -33,12 +33,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Linear Technology"
             VALUE "FileDescription", "DLL for communicating with LTC controller boards"
-            VALUE "FileVersion", "1.0.2.0"
+            VALUE "FileVersion", "1.0.3.0"
             VALUE "InternalName", "ltc_controller_comm.dll"
             VALUE "LegalCopyright", "Copyright (C) Linear Technology 2015"
             VALUE "OriginalFilename", "ltc_controller_comm.dll"
             VALUE "ProductName", "LTC Controller Comm"
-            VALUE "ProductVersion", "1.0.2.0"
+            VALUE "ProductVersion", "1.0.3.0"
         END
     END
     BLOCK "VarFileInfo"

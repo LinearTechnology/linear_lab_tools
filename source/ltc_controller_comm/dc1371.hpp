@@ -2,6 +2,7 @@
 #include <vector>
 #include <string>
 #include <cstdint>
+#include <memory>
 #include "i_collect.hpp"
 #include "i_reset.hpp"
 #include "i_data_endian.hpp"
@@ -13,6 +14,7 @@
 
 using std::string;
 using std::vector;
+using std::unique_ptr;
 
 namespace linear {
 
@@ -79,8 +81,8 @@ namespace linear {
         void Reset() override;
 
 		bool FpgaGetIsLoaded(const string& fpga_filename) override;
-        int  FpgaLoadFileChunked(const string& fpga_filename) override;
-        void FpgaCancelLoad() override { fpga_load_started = false; }
+        int FpgaLoadFileChunked(const string& fpga_filename) override;
+        void FpgaCancelLoad() override;
 
 		void SetGenericConfig(uint32_t generic_config) {
             this->generic_config = SwapBytes(generic_config);
@@ -101,8 +103,6 @@ namespace linear {
         int DataReceive(uint32_t data[], int total_values) override {
             return Controller::DataRead(*this, swap_bytes, data, total_values);
         }
-        void DataCancelReceive() override;
-
         void SpiChooseChipSelect(ChipSelect new_chip_select) { chip_select = new_chip_select; }
 
         void SpiSend(uint8_t values[], int num_values) override;
@@ -139,10 +139,211 @@ namespace linear {
     private:
         friend class Controller;
         static const string DESCRIPTION;
-        struct Command;
-        class  CommandFile;
-        class  BlockFile;
 
+        enum class Opcode : BYTE {
+            // RW suffix means read or write (depending on byte param)
+
+            NONE = 0,
+            COMMAND_RESET = 's',
+            GET_DEMO_ID = 'i',
+            ALLOW_WRITES = 'e',  // set/clear allow_writes
+            BOARD_RESET = 'b',  // board reset and other operations
+            GET_INFO = 'c',
+
+            LOAD_FPGA_RAW = 'f',
+            LOAD_FPGA = 'j',
+            COLLECT = 'g',  // capture ADC data
+            READY_FPGA = 'h', // get the FPGA ready to collect
+            READ_SRAM = 'a',
+            WRITE_SRAM = 'd',
+
+            DEMO_ID_EERPOM_RW = 'k',
+            ATMEL_EEPROM_RW = 'n',
+            ATMEL_MSD_FLASH_RW = 'o',
+            FPGA_REG_RW = 'l',
+            FPGA_LIST_RW = 'm', // Read or write a list of FPGA registers
+            TEST_RW = 'p', // test and performance commands
+            CHIT_CHAT = 'q', // "I don't know (I/O test?)"
+            SPI = 'r',
+            I2C = 't',
+            CONFIG = 'u',
+        };
+
+        static const int BLOCK_SIZE = 512;
+        static const int MAX_BLOCKS = 32;
+
+        static const DWORD QUERY_SIGNATURE = 0x36644851;    // QHd6 -- query signature
+        struct CommandHeader {
+            DWORD   signature;
+            Opcode  opcode;
+            BYTE    byte_param;
+            WORD    word_param;
+            union {
+                DWORD value;
+                BYTE    bytes[4];
+                struct { BYTE byte_0, byte_1, byte_2, byte_3; };
+                struct { WORD word_0, word_1; };
+            } dword_param_1;
+            union {
+                DWORD value;
+                BYTE    bytes[4];
+                struct { BYTE byte_0, byte_1, byte_2, byte_3; };
+                struct { WORD word_0, word_1; };
+            } dword_param_2;
+            CommandHeader(Opcode opcode) : signature(QUERY_SIGNATURE), opcode(opcode),
+                byte_param(0), word_param(0) {
+                dword_param_1.value = 0;
+                dword_param_2.value = 0;
+            }
+            BYTE GetStatus() { return byte_param; }
+            WORD GetLength() { return word_param; }
+            void SetLength(WORD length) { word_param = length; }
+            void SetNumBlocks(WORD num_blocks) { word_param = num_blocks; }
+            void SetAddress(WORD address) { dword_param_1.word_0 = address; }
+            void SetTail(WORD tail) { dword_param_1.word_0 = tail; }
+        };
+
+        static const int COMMAND_DATA_SIZE = BLOCK_SIZE - sizeof(CommandHeader);
+        //    For commands that carry some data in the CMDB block, we limit
+        //    the max amount so that some space is available behind db[] for
+        //    various uses at the receiving end.  Also, it's convenient to
+        //    have it be the EEPROM page size, which is 16 bytes. So...
+        //
+        static const int MAX_COMMAND_DATA = COMMAND_DATA_SIZE - 16;
+        static const int MAX_SPI_READ_BYTES = (MAX_COMMAND_DATA - 1) / 2;
+
+        struct Command {
+            CommandHeader header;
+            char data[COMMAND_DATA_SIZE];
+            Command(Opcode opcode) : header(opcode) {
+                memset(data, 0, COMMAND_DATA_SIZE);
+            }
+            void Reset(Opcode opcode) {
+                memset(this, 0, sizeof(Command));
+                header.signature = QUERY_SIGNATURE;
+                header.opcode = opcode;
+            }
+        };
+
+        class CommandFile {
+            HANDLE file = INVALID_HANDLE_VALUE;
+            CommandFile(const CommandFile& other) = delete;
+        public:
+            CommandFile(char drive_letter) {
+                char file_name[10] = " :\\pipe.0";
+                file_name[0] = drive_letter;
+                file = CreateFileA(file_name, GENERIC_READ | GENERIC_WRITE, 0, nullptr,
+                    OPEN_EXISTING, FILE_FLAG_NO_BUFFERING | FILE_FLAG_WRITE_THROUGH, nullptr);
+                if (file == INVALID_HANDLE_VALUE) {
+                    throw HardwareError("Error opening DC1371A command interface.");
+                }
+            }
+            CommandFile(CommandFile&& other) : file(other.file) {
+                other.file = INVALID_HANDLE_VALUE;
+            }
+            ~CommandFile() {
+                Close();
+            }
+            void Close() {
+                if (file != INVALID_HANDLE_VALUE) {
+                    SetFilePointer(file, 0, nullptr, FILE_BEGIN);
+                    SetEndOfFile(file);
+                    CloseHandle(file);
+                    file = INVALID_HANDLE_VALUE;
+                }
+            }
+            void Write(Command& command) {
+                SetFilePointer(file, 0, nullptr, FILE_BEGIN);
+                DWORD num_written;
+                if (!WriteFile(file, &command, BLOCK_SIZE, &num_written, nullptr)) {
+                    throw HardwareError("Error writing to DC1371A command interface.");
+                }
+            }
+            void Read(Command& command) {
+                SetFilePointer(file, 0, nullptr, FILE_BEGIN);
+                DWORD num_read;
+                if (!ReadFile(file, &command, BLOCK_SIZE, &num_read, nullptr)) {
+                    throw HardwareError("Error reading from DC1371A command interface.");
+                }
+            }
+        };
+
+        class BlockFile {
+            HANDLE file = INVALID_HANDLE_VALUE;
+            BlockFile(const CommandFile& other) = delete;
+        public:
+            BlockFile(char drive_letter) {
+                char file_name[10] = " :\\pipe.1";
+                file_name[0] = drive_letter;
+                file = CreateFileA(file_name, GENERIC_READ | GENERIC_WRITE, 0, nullptr,
+                    OPEN_EXISTING, FILE_FLAG_NO_BUFFERING | FILE_FLAG_WRITE_THROUGH, nullptr);
+                if (file == INVALID_HANDLE_VALUE) {
+                    throw HardwareError("Error opening DC1371A block interface.");
+                }
+            }
+            BlockFile(BlockFile&& other) : file(other.file) {
+                other.file = INVALID_HANDLE_VALUE;
+            }
+            ~BlockFile() {
+                Close();
+            }
+            void Close() {
+                if (file != INVALID_HANDLE_VALUE) {
+                    CloseHandle(file);
+                    file = INVALID_HANDLE_VALUE;
+                }
+            }
+
+            void Write(const BYTE data[], int num_bytes) {
+                SetFilePointer(file, 0, nullptr, FILE_BEGIN);
+                DWORD num_written;
+                if (!WriteFile(file, data, num_bytes, &num_written, nullptr)) {
+                    throw HardwareError("Error writing to DC1371A block interface.");
+                }
+            }
+            void Write(const char data[], int num_chars) {
+                SetFilePointer(file, 0, nullptr, FILE_BEGIN);
+                DWORD num_written;
+                if (!WriteFile(file, data, num_chars, &num_written, nullptr)) {
+                    throw HardwareError("Error writing to DC1371A block interface.");
+                }
+            }
+            void Read(BYTE data[], int num_bytes) {
+                SetFilePointer(file, 0, nullptr, FILE_BEGIN);
+                DWORD num_read;
+                if (!ReadFile(file, data, num_bytes, &num_read, nullptr)) {
+                    throw HardwareError("Error reading from DC1371A block interface.");
+                }
+            }
+            void Read(char data[], int num_chars) {
+                SetFilePointer(file, 0, nullptr, FILE_BEGIN);
+                DWORD num_read;
+                if (!ReadFile(file, data, num_chars, &num_read, nullptr)) {
+                    throw HardwareError("Error reading from DC1371A block interface.");
+                }
+            }
+        };
+
+        struct FpgaLoadInfo {
+            vector<char> data;
+            wstring path;
+            uint8_t load_id;
+            int offset;
+            int num_blocks;
+            CommandFile command_file;
+            BlockFile block_file;
+            FpgaLoadInfo(wstring path, uint8_t load_id, int num_blocks, char drive_letter) :
+                data(MAX_BLOCKS * BLOCK_SIZE), path(path), load_id(load_id), offset(0),
+                num_blocks(num_blocks), command_file(drive_letter), block_file(drive_letter) { }
+            FpgaLoadInfo(FpgaLoadInfo&& other) = delete;
+            FpgaLoadInfo(const FpgaLoadInfo& other) = delete;
+            FpgaLoadInfo& operator =(const FpgaLoadInfo& other) = delete;
+            ~FpgaLoadInfo() = default;
+        };
+
+        void FpgaStartLoadFile(const string& fpga_filename);
+        void FpgaLoadChunk();
+        void FpgaFinishLoadFile();
         void SpiDoTransaction(Command& command, uint8_t* receive_values, int num_values);
         void SpiBufferLowerChipSelect(Command& command, int& offset);
         void SpiBufferRaiseChipSelect(Command& command, int& offset);
@@ -164,14 +365,10 @@ namespace linear {
         uint8_t eeprom_address = 0x50;
         bool swap_bytes = true;
         bool fpga_load_started = false;
-        // We are making two assumptions here that are not guaranteed by the standard:
-        // 1. Reads and writes are atomic for bools (true "everywhere" in C++)
-        // 2. 'volatile' makes cache coherency issues go away (true on all versions of Windows)
-        // To be totally correct, we should use a mutex or interlock whenever we touch these in
-        // a multithreaded context, but practically speaking it isn't necessary so we opt out
-        // of the needed overhead.
-        volatile bool abort_read = false;
-        volatile bool is_reading = false;
+        unique_ptr<FpgaLoadInfo> fpga_load_info;
+        bool collect_started = false;
+        unique_ptr<CommandFile> collect_command_file;
+        
     };
 
 }

@@ -55,7 +55,7 @@ namespace linear {
         Flush();
 
         sprintf_s(buffer, "Q %X%X", FPGA_LOAD_TYPE_ADDRESS, FPGA_LOAD_TYPE_SIZE);
-        Write(buffer, strlen(buffer));
+        Write(buffer, Narrow<DWORD>(strlen(buffer)));
         auto num_read = Read(buffer, NUM_CHARS);
         if (num_read != NUM_CHARS) {
             throw HardwareError("Not all bytes of the FPGA register read.");
@@ -71,119 +71,95 @@ namespace linear {
         return (load_id == load.load_id) && (load_id < 3 || revision == load.revision);
     }
 
-    const int FPGA_PAGE_SIZE = 256;
-    const int NUM_FPGA_PAGES = 512;
-    class PageBuffer {
-    public:
-        static const int FPGA_SIZE = NUM_FPGA_PAGES * FPGA_PAGE_SIZE;
-        PageBuffer() = default;
-        ~PageBuffer() {
+    void Dc890::FpgaPageBuffer::Reset(const wstring& path) {
+        delete file;
+        file = new ifstream(path, std::ios::binary | std::ios::beg);
+        if (file->bad()) {
             delete file;
+            file = nullptr;
         }
-        void Reset(wstring path) {
-            file = new ifstream(path, std::ios::binary | std::ios::beg);
-            if (file->bad()) {
-                delete file;
-                file = nullptr;
+    }
+
+    void Dc890::FpgaPageBuffer::Reset() {
+        delete file;
+        file = nullptr;
+    }
+
+    bool Dc890::FpgaPageBuffer::GetPage(char data[FPGA_PAGE_SIZE]) {
+        char byte;
+        while (file->get(byte)) {
+            if (total_bytes == FPGA_SIZE) {
+                throw runtime_error("Expanded file too large (bad or corrupted squeeze file?)");
             }
-        }
-        explicit operator bool() {
-            return file != nullptr;
-        }
-        bool GetPage(char data[FPGA_PAGE_SIZE]) {
-            char byte;
-            while (file->get(byte)) {
-                if (total_bytes == FPGA_SIZE) {
-                    throw runtime_error("Expanded file too large (bad or corrupted squeeze file?)");
+            buffer[page_bytes] = byte;
+            ++page_bytes;
+            ++total_bytes;
+            if (byte == 0) {
+                if (!file->get(byte)) {
+                    throw runtime_error("Error reading squeeze file (bad or corrupted?)");
                 }
-                buffer[page_bytes] = byte;
-                ++page_bytes;
-                ++total_bytes;
-                if (byte == 0) {
-                    if (!file->get(byte)) {
-                        throw runtime_error("Error reading squeeze file (bad or corrupted?)");
+                uint8_t count = byte - 1;
+                while (count != 0) {
+                    if (total_bytes == FPGA_SIZE) {
+                        throw runtime_error(
+                            "Expanded file too large (bad or corrupted squeeze file?)");
                     }
-                    uint8_t count = byte - 1;
-                    while (count != 0) {
-                        if (total_bytes == FPGA_SIZE) {
-                            throw runtime_error(
-                                "Expanded file too large (bad or corrupted squeeze file?)");
-                        }
-                        buffer[page_bytes] = 0;
-                        --count;
-                        ++page_bytes;
-                        ++total_bytes;
-                    }
-                }
-                if (page_bytes >= FPGA_PAGE_SIZE) {
-                    memcpy(data, buffer, FPGA_PAGE_SIZE);
-                    for (int i = FPGA_PAGE_SIZE; i < page_bytes; ++i) {
-                        buffer[i - FPGA_PAGE_SIZE] = buffer[i];
-                    }
-                    page_bytes -= FPGA_PAGE_SIZE;
-                    return true;
+                    buffer[page_bytes] = 0;
+                    --count;
+                    ++page_bytes;
+                    ++total_bytes;
                 }
             }
-            if (total_bytes != FPGA_SIZE) {
-                throw runtime_error("Expanded file too small (bad or corrupted squeeze file?)");
+            if (page_bytes >= FPGA_PAGE_SIZE) {
+                memcpy(data, buffer, FPGA_PAGE_SIZE);
+                for (int i = FPGA_PAGE_SIZE; i < page_bytes; ++i) {
+                    buffer[i - FPGA_PAGE_SIZE] = buffer[i];
+                }
+                page_bytes -= FPGA_PAGE_SIZE;
+                return true;
             }
-            return false;
         }
-    private:
-        ifstream* file = nullptr;
-        int total_bytes = 0;
-        int page_bytes = 0;
-        char buffer[2 * FPGA_PAGE_SIZE];
-    };
+        if (total_bytes != FPGA_SIZE) {
+            throw runtime_error("Expanded file too small (bad or corrupted squeeze file?)");
+        }
+        return false;
+    }
 
     int Dc890::FpgaFileToFlashChunked(const wstring& filename) {
-        static int progress = NUM_FPGA_PAGES;
-        static int page_index = 0;
-        static PageBuffer page_buffer;
-        char page_data[FPGA_PAGE_SIZE];
-
         if (!fpga_load_started) {
             fpga_load_started = true;
-            page_index = 0;
-            progress = NUM_FPGA_PAGES;
+            fpga_page_index = 0;
+            fpga_load_progress = NUM_FPGA_PAGES;
             Write("E 3", 3);
-            auto timeouts = GetTimeouts();
             const int MAX_ERASE_TIME = 6000;
-            SetTimeouts(MAX_ERASE_TIME, timeouts.second);
+            SetTimeouts(MAX_ERASE_TIME);
+            Read(fpga_page_data, 4);
+            SetTimeouts();
 
-            try {
-                Read(page_data, 4);
-            } catch (HardwareError&) {
-                try {
-                    SetTimeouts(timeouts.first, timeouts.second);
-                } catch (...) { }
-                throw;
-            }
-            SetTimeouts(timeouts.first, timeouts.second);
-
-            if (page_data[0] != 'A') {
+            if (fpga_page_data[0] != 'A') {
                 throw HardwareError("Did not receive ACK on SRAM erase.");
             }
 
-            page_buffer.Reset(filename);
+            fpga_page_buffer.Reset(filename);
         }
 
-        if (!page_buffer) {
+        if (!fpga_page_buffer) {
             throw runtime_error("Unable to open file " + ToUtf8(filename));
         }
 
         const int BANK_ID = 3;
-        if (page_buffer.GetPage(page_data)) {
-            auto header = string("F ") + ToHex(uint16_t(BANK_ID * NUM_FPGA_PAGES + page_index));
-            Write(header.c_str(), header.size());
-            Write(page_data, FPGA_PAGE_SIZE);
-            Read(page_data, 4);
-            if (page_data[0] != 'A') {
+        if (fpga_page_buffer.GetPage(fpga_page_data)) {
+            auto header = string("F ") + 
+                ToHex(Narrow<uint16_t>(BANK_ID * NUM_FPGA_PAGES + fpga_page_index));
+            Write(header.c_str(), Narrow<DWORD>(header.size()));
+            Write(fpga_page_data, FPGA_PAGE_SIZE);
+            Read(fpga_page_data, 4);
+            if (fpga_page_data[0] != 'A') {
                 throw HardwareError("Did not receive ACK on SRAM write.");
             }
-            ++page_index;
-            --progress;
-            return progress;
+            ++fpga_page_index;
+            --fpga_load_progress;
+            return fpga_load_progress;
         } else {
             return 0;
         }
@@ -236,23 +212,20 @@ namespace linear {
 
         const int FPGA_LOAD_TIMEOUT = 2000;
         // now load from FLASH into FPGA.  This is done directly with the 'e' command.
-        auto timeouts = GetTimeouts();
-        SetTimeouts(FPGA_LOAD_TIMEOUT, timeouts.second);
+        SetTimeouts(FPGA_LOAD_TIMEOUT);
         sprintf_s(buffer, "e %X\n", bank);
-        try {
-            Write(buffer, strlen(buffer));
-            auto num_read = Read(buffer, 4);
-            if (num_read != 4 || buffer[0] != 'A') {
-                throw HardwareError("Did not get an ACK when loading FPGA from flash.");
-            }
-            return true;
-        } catch (...) {
-            try {
-                SetTimeouts(timeouts.first, timeouts.second);
-            } catch (...) { }
-            Close();
-            throw;
+        Write(buffer, Narrow<DWORD>(strlen(buffer)));
+        num_read = Read(buffer, 4);
+        if (num_read != 4 || buffer[0] != 'A') {
+            throw HardwareError("Did not get an ACK when loading FPGA from flash.");
         }
+        return true;
+    }
+
+    void Dc890::FpgaCancelLoad() {
+        fpga_load_started = false;
+        fpga_page_buffer.Reset();
+        Reset();
     }
 
     wstring Dc890::FpgaGetPath(const string& load_filename) {
@@ -308,7 +281,7 @@ namespace linear {
 
     void Dc890::GpioSendByte(uint8_t byte) {
         string buffer = "MIsSFFS00sS40S" + ToHex(byte) + "p";
-        Write(buffer.c_str(), buffer.size());
+        Write(buffer.c_str(), Narrow<DWORD>(buffer.size()));
     }
 
     void Dc890::SpiSend(uint8_t* values, int num_values) {
@@ -344,10 +317,14 @@ namespace linear {
                 "Need to set SPI bits and base byte before doing SPI transactions over I2C");
         }
 
-        string sck_low_0 = ToHex(uint8_t(base_byte & ~sck_bit_mask & ~sdi_bit_mask));
-        string sck_low_1 = ToHex(uint8_t(base_byte & ~sck_bit_mask | sdi_bit_mask));
-        string sck_high_0 = ToHex(uint8_t(base_byte | sck_bit_mask & ~sdi_bit_mask));
-        string sck_high_1 = ToHex(uint8_t(base_byte | sck_bit_mask | sdi_bit_mask));
+        uint8_t value = base_byte & ~sck_bit_mask & ~sdi_bit_mask;
+        string sck_low_0 = ToHex(value);
+        value = base_byte & ~sck_bit_mask | sdi_bit_mask;
+        string sck_low_1 = ToHex(value);
+        value = base_byte | sck_bit_mask & ~sdi_bit_mask;
+        string sck_high_0 = ToHex(value);
+        value = base_byte | sck_bit_mask | sdi_bit_mask;
+        string sck_high_1 = ToHex(value);
 
         string clock_out_0 = "S" + sck_low_0 + "S" + sck_high_0 + "S" + sck_low_0;
         string clock_out_1 = "S" + sck_low_1 + "S" + sck_high_1 + "S" + sck_low_1;
@@ -361,7 +338,7 @@ namespace linear {
                 value <<= 1;
             }
             buffer += 'p';
-            Write(buffer.c_str(), buffer.size());
+            Write(buffer.c_str(), Narrow<DWORD>(buffer.size()));
         }
     }
 }

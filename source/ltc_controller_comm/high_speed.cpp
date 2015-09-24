@@ -77,8 +77,8 @@ namespace linear {
 
     HighSpeed::HighSpeed(const Ftdi& ftdi, const LccControllerInfo& info) : ftdi(ftdi),
         description(info.description), serial_number_a(string(info.serial_number) + 'A'), 
-        serial_number_b(string(info.serial_number) + 'B'), index_a(WORD(info.id & 0xFFFF)),
-        index_b(WORD(info.id >> 16)), command_buffer(new uint8_t[COMMAND_BUFFER_SIZE]) { }
+        serial_number_b(string(info.serial_number) + 'B'), index_a(Narrow<WORD>(info.id & 0xFFFF)),
+        index_b(Narrow<WORD>(info.id >> 16)), command_buffer(new uint8_t[COMMAND_BUFFER_SIZE]) { }
 
     HighSpeed::~HighSpeed() {
         Close();
@@ -137,34 +137,24 @@ namespace linear {
             throw HardwareError("Could not find controller.");
         }
 
-        SetTimeouts(read_timeout_ms, write_timeout_ms);
-
+        SetTimeouts();
+        ftdi.DisableEventChar(channel_a);
+        ftdi.EnableEventChar(channel_b);
         const int FTDI_MAX_BUFFER_SIZE = 64 * 1024;
-        try {
-            ftdi.SetUSBParameters(channel_a, FTDI_MAX_BUFFER_SIZE, 0);
-            ftdi.SetUSBParameters(channel_b, FTDI_MAX_BUFFER_SIZE, 0);
-        } catch (...) {
-            // normally only catch HardwareError, but in this case the thing didn't get fully
-            // initialized, so we force it closed on any error
-            Close();
-            throw;
-        }
+        ftdi.SetUSBParameters(channel_a, FTDI_MAX_BUFFER_SIZE, 0);
+        ftdi.SetUSBParameters(channel_b, FTDI_MAX_BUFFER_SIZE, 0);
     }
 
     int HighSpeed::Write(FT_HANDLE handle, uint8_t* values, int num_values,
             bool allow_partial_write) {
         OpenIfNeeded();
-        try {
-            auto num_written = ftdi.Write(handle, values, num_values);
-            if (!allow_partial_write && num_values != num_written) {
-                throw HardwareError(string("Expected to write " + to_string(num_values) +
-                    " bytes, but only wrote " + to_string(num_written)));
-            } else {
-                return num_written;
-            }
-        } catch (HardwareError&) {
+        auto num_written = ftdi.Write(handle, values, num_values);
+        if (!allow_partial_write && num_values != num_written) {
             Close();
-            throw;
+            throw HardwareError(string("Expected to write " + to_string(num_values) +
+                " bytes, but only wrote " + to_string(num_written)));
+        } else {
+            return num_written;
         }
     }
 
@@ -179,19 +169,6 @@ namespace linear {
             } else {
                 return num_read;
             }
-        } catch (HardwareError&) {
-            Close();
-            throw;
-        }
-    }
-
-    void HighSpeed::SetTimeouts(ULONG read_timeout, ULONG write_timeout) {
-        MUST_NOT_BE_NEGATIVE(write_timeout);
-        MUST_NOT_BE_NEGATIVE(read_timeout);
-        OpenIfNeeded();
-        try {
-            ftdi.SetTimeouts(channel_a, read_timeout, write_timeout);
-            ftdi.SetTimeouts(channel_b, read_timeout, write_timeout);
         } catch (HardwareError&) {
             Close();
             throw;
@@ -242,19 +219,11 @@ namespace linear {
     // Fast Fifo functions
 
     int HighSpeed::WriteBytes(uint8_t values[], int total_bytes) {
-        // guarantee that is_writing gets reset
-        volatile bool& write_flag = is_writing;
-        auto raii_write_flag = MakeRaiiCleanup([&write_flag] { write_flag = false; });
-        is_writing = true;
-
         MUST_BE_POSITIVE(total_bytes);
         MUST_NOT_BE_NULL(values);
         OpenIfNeeded();
         int num_bytes_sent = 0;
         while (num_bytes_sent < total_bytes) {
-            if (abort_write) {
-                return LCC_ERROR_ABORTED;
-            }
             int num_bytes = Min(total_bytes, MAX_FIFO_WRITE_SIZE);
             auto num_written = Write(channel_a, values, num_bytes, true);
             if (num_written == 0) {
@@ -267,18 +236,11 @@ namespace linear {
     }
 
     int HighSpeed::ReadBytes(uint8_t values[], int total_bytes) {
-        // guarantee that is_reading gets reset
-        volatile bool& read_flag = is_reading;
-        auto raii_read_flag = MakeRaiiCleanup([&read_flag] { read_flag = false; });
-        is_reading = true;
         MUST_BE_POSITIVE(total_bytes);
         MUST_NOT_BE_NULL(values);
         OpenIfNeeded();
         int num_bytes_received = 0;
         while (num_bytes_received < total_bytes) {
-            if (abort_read) {
-                return LCC_ERROR_ABORTED;
-            }
             int num_bytes = Min(total_bytes, MAX_FIFO_READ_SIZE);
             auto num_read = Read(channel_a, reinterpret_cast<uint8_t*>(values), num_bytes, true);
             if (num_read == 0) {
@@ -288,32 +250,6 @@ namespace linear {
             values += num_read;
         }
         return num_bytes_received;
-    }
-
-    void HighSpeed::DataCancelReceive() {
-        abort_read = true;
-        int i;
-        for (i = 0; is_reading && i < 1000; ++i) {
-            sleep_for(milliseconds(5));
-        }
-        abort_read = false;
-        Close();
-        if (i == 1000) {
-            throw HardwareError("Abort operation timed out.");
-        }
-    }
-
-    void HighSpeed::DataCancelSend() {
-        abort_write = true;
-        int i;
-        for (i = 0; is_writing && i < 1000; ++i) {
-            sleep_for(milliseconds(5));
-        }
-        abort_write = false;
-        Close();
-        if (i == 1000) {
-            throw HardwareError("Abort operation timed out.");
-        }
     }
 
     // SPI functions

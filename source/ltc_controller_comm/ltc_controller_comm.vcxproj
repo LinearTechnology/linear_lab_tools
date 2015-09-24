@@ -178,7 +178,6 @@
     <ClInclude Include="i_reset.hpp" />
     <ClInclude Include="i_spi.hpp" />
     <ClInclude Include="i_spi_send_only.hpp" />
-    <ClInclude Include="i_timeout.hpp" />
     <ClInclude Include="ltc_controller_comm.h" />
     <ClInclude Include="utilities.hpp" />
   </ItemGroup>

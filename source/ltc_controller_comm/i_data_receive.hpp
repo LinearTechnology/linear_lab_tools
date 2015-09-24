@@ -6,7 +6,6 @@ namespace linear {
         virtual int DataReceive(uint8_t data[], int total_bytes) = 0;
         virtual int DataReceive(uint16_t data[], int total_values) = 0;
         virtual int DataReceive(uint32_t data[], int total_values) = 0;
-        virtual void DataCancelReceive() = 0;
         virtual ~IDataReceive() { }
     };
 }

@@ -1,7 +1,7 @@
 #pragma once
 #include "i_spi_send_only.hpp"
 namespace linear {
-    class ISpi : public ISpiSendOnly{
+    class ISpi : public ISpiSendOnly {
     public:
         virtual void SpiReceive(uint8_t values[], int num_values) = 0;
         virtual void SpiTransceive(uint8_t send_values[], uint8_t receive_values[],
