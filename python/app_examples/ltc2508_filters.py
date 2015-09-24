@@ -185,4 +185,28 @@ plt.loglog(first_order_response)
 plt.loglog(second_order_response)
 plt.loglog(np.multiply(wide_ssinc_256_mag, second_order_response))
 
+sscinc_shifted = ssinc_256
+
+plt.figure(4)
+plt.plot(sscinc_shifted)
+sscinc_shifted = np.concatenate((np.zeros(256), sscinc_shifted ))
+plt.plot(sscinc_shifted)
+sscinc_shifted = np.concatenate((np.zeros(256), sscinc_shifted ))
+plt.plot(sscinc_shifted)
+sscinc_shifted = np.concatenate((np.zeros(256), sscinc_shifted ))
+plt.plot(sscinc_shifted)
+sscinc_shifted = np.concatenate((np.zeros(256), sscinc_shifted ))
+plt.plot(sscinc_shifted)
+sscinc_shifted = np.concatenate((np.zeros(256), sscinc_shifted ))
+plt.plot(sscinc_shifted)
+sscinc_shifted = np.concatenate((np.zeros(256), sscinc_shifted ))
+plt.plot(sscinc_shifted)
+sscinc_shifted = np.concatenate((np.zeros(256), sscinc_shifted ))
+plt.plot(sscinc_shifted)
+sscinc_shifted = np.concatenate((np.zeros(256), sscinc_shifted ))
+plt.plot(sscinc_shifted)
+plt.show()
+
+
+
 print "My program took", (time.time() - start_time), " seconds to run"
