@@ -15,6 +15,12 @@
     {
         "Entry"
         {
+        "MsmKey" = "8:_0442A0A0A0B04168A8D5252E5DF7BDE3"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
         "MsmKey" = "8:_0532A30B8A4249E3B3C734A07B7F091A"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
@@ -249,6 +255,12 @@
         }
         "Entry"
         {
+        "MsmKey" = "8:_7133903F57964F05B01CFD45C88FA746"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
         "MsmKey" = "8:_71F2040197A1443D91209C99EA3BD560"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
@@ -316,6 +328,12 @@
         "Entry"
         {
         "MsmKey" = "8:_9988817EFA754A849D688DED488B6586"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_9AAF2DDECB054D88B734315A0389479A"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -590,6 +608,26 @@
         }
         "File"
         {
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_0442A0A0A0B04168A8D5252E5DF7BDE3"
+            {
+            "SourcePath" = "8:..\\..\\python\\demo_board_examples\\ltc2387\\ltc2387_dc2290.py"
+            "TargetName" = "8:ltc2387_dc2290.py"
+            "Tag" = "8:"
+            "Folder" = "8:_23652E61B5E54C5DB4122114F7E1BDEA"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
             "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_0532A30B8A4249E3B3C734A07B7F091A"
             {
             "SourcePath" = "8:..\\..\\source\\ltc_controller_comm\\ftdi.cpp"
@@ -1370,6 +1408,26 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_7133903F57964F05B01CFD45C88FA746"
+            {
+            "SourcePath" = "8:..\\..\\python\\demo_board_examples\\ltc2268\\ltc2268_dc1532.py"
+            "TargetName" = "8:ltc2268_dc1532.py"
+            "Tag" = "8:"
+            "Folder" = "8:_715FDFA60BA14136B2BB0991BD825E3A"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
             "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_71F2040197A1443D91209C99EA3BD560"
             {
             "SourcePath" = "8:..\\..\\python\\app_examples\\ltc2508_filters.py"
@@ -1596,6 +1654,26 @@
             "TargetName" = "8:ltc_controller_comm.vcxproj.filters"
             "Tag" = "8:"
             "Folder" = "8:_3E20FEC4A1EC4C3A837F005ACC21E2CA"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_9AAF2DDECB054D88B734315A0389479A"
+            {
+            "SourcePath" = "8:..\\..\\python\\demo_board_examples\\ltc2270\\ltc2270_dc1975.py"
+            "TargetName" = "8:ltc2270_dc1975.py"
+            "Tag" = "8:"
+            "Folder" = "8:_ACD13D7122BE497DA1481E4EA5F64FA9"
             "Condition" = "8:"
             "Transitive" = "11:FALSE"
             "Vital" = "11:TRUE"
@@ -2290,6 +2368,17 @@
                             "Property" = "8:_8135A0B44BD648E192745534014CF332"
                                 "Folders"
                                 {
+                                    "{9EF0B969-E518-4E46-987F-47570745A589}:_23652E61B5E54C5DB4122114F7E1BDEA"
+                                    {
+                                    "Name" = "8:ltc2387"
+                                    "AlwaysCreate" = "11:FALSE"
+                                    "Condition" = "8:"
+                                    "Transitive" = "11:FALSE"
+                                    "Property" = "8:_E0E0B4ABE5924423A8E701C7B50365B6"
+                                        "Folders"
+                                        {
+                                        }
+                                    }
                                     "{9EF0B969-E518-4E46-987F-47570745A589}:_4045CB02CBEB44139C50761DDD440919"
                                     {
                                     "Name" = "8:ltc2123"
@@ -2323,6 +2412,28 @@
                                         {
                                         }
                                     }
+                                    "{9EF0B969-E518-4E46-987F-47570745A589}:_6F2A4A3C411F4C91B37AA1D5C157C287"
+                                    {
+                                    "Name" = "8:ltc2500"
+                                    "AlwaysCreate" = "11:FALSE"
+                                    "Condition" = "8:"
+                                    "Transitive" = "11:FALSE"
+                                    "Property" = "8:_94217E57021241EFA3003382480DC5C1"
+                                        "Folders"
+                                        {
+                                        }
+                                    }
+                                    "{9EF0B969-E518-4E46-987F-47570745A589}:_715FDFA60BA14136B2BB0991BD825E3A"
+                                    {
+                                    "Name" = "8:ltc2268"
+                                    "AlwaysCreate" = "11:FALSE"
+                                    "Condition" = "8:"
+                                    "Transitive" = "11:FALSE"
+                                    "Property" = "8:_F14F2C526A5F43A3B9141ED36BBB70F3"
+                                        "Folders"
+                                        {
+                                        }
+                                    }
                                     "{9EF0B969-E518-4E46-987F-47570745A589}:_74BB07093415403AA3181512C1A69234"
                                     {
                                     "Name" = "8:ltc2000"
@@ -2330,6 +2441,17 @@
                                     "Condition" = "8:"
                                     "Transitive" = "11:FALSE"
                                     "Property" = "8:_9BE4E52E9FA8458DAC56C44FA52E64FA"
+                                        "Folders"
+                                        {
+                                        }
+                                    }
+                                    "{9EF0B969-E518-4E46-987F-47570745A589}:_ACD13D7122BE497DA1481E4EA5F64FA9"
+                                    {
+                                    "Name" = "8:ltc2270"
+                                    "AlwaysCreate" = "11:FALSE"
+                                    "Condition" = "8:"
+                                    "Transitive" = "11:FALSE"
+                                    "Property" = "8:_745E8346EEE04CE193C4B41A8C1B5880"
                                         "Folders"
                                         {
                                         }
@@ -2345,6 +2467,17 @@
                             "Property" = "8:_A761C1C5888E434F80FF11901F36832A"
                                 "Folders"
                                 {
+                                    "{9EF0B969-E518-4E46-987F-47570745A589}:_EB368162CBF34642BBE81D52B88D3547"
+                                    {
+                                    "Name" = "8:ltc2500_family"
+                                    "AlwaysCreate" = "11:FALSE"
+                                    "Condition" = "8:"
+                                    "Transitive" = "11:FALSE"
+                                    "Property" = "8:_C1E8E9DE84E247B9A39FDF1F4A6140F7"
+                                        "Folders"
+                                        {
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -2478,7 +2611,7 @@
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:linear_lab_tools"
         "ProductCode" = "8:{080505D1-3F89-475A-BF40-CEBC0D88EFCD}"
-        "PackageCode" = "8:{B57D1BF0-12FC-483A-9575-49AA926494EF}"
+        "PackageCode" = "8:{364E4E3F-9B50-4F69-84D2-0B17A7AEFFFA}"
         "UpgradeCode" = "8:{E149E7BD-322C-441A-9954-732185D6F984}"
         "AspNetVersion" = "8:4.0.30319.0"
         "RestartWWWService" = "11:FALSE"

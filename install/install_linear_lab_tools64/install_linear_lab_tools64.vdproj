@@ -57,6 +57,12 @@
         }
         "Entry"
         {
+        "MsmKey" = "8:_1982E6AEF30E4B8AADB0C0DC74E50144"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
         "MsmKey" = "8:_1CCF83A7293544C480FA6F41A043F903"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
@@ -147,6 +153,12 @@
         }
         "Entry"
         {
+        "MsmKey" = "8:_44859B2894574723A55B42E0350C322B"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
         "MsmKey" = "8:_555EF0E6F2BD43849810005B204BD7D5"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
@@ -154,6 +166,12 @@
         "Entry"
         {
         "MsmKey" = "8:_5825116204AE4981B7EDDC41B4327895"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_58E147AC17BA4B0DAAE014D406ECDE25"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -273,6 +291,12 @@
         }
         "Entry"
         {
+        "MsmKey" = "8:_8CAA56F55FF14153908E2A21A19C9EF9"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
         "MsmKey" = "8:_8E4B33E000F7465AA05C7800282DDE55"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
@@ -291,6 +315,12 @@
         }
         "Entry"
         {
+        "MsmKey" = "8:_90F771EEA9A64794B6B6E8518C12B151"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
         "MsmKey" = "8:_9206F344B9164B38BDAEDDD7A3D1DA18"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
@@ -298,6 +328,12 @@
         "Entry"
         {
         "MsmKey" = "8:_92949932F6C04A5DA7254BAD04BAD16A"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_93654D84670C4897B9A57223545DD53B"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -718,6 +754,26 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_1982E6AEF30E4B8AADB0C0DC74E50144"
+            {
+            "SourcePath" = "8:..\\..\\python\\mem_func_client.py"
+            "TargetName" = "8:mem_func_client.py"
+            "Tag" = "8:"
+            "Folder" = "8:_BB266A198734433BACFE625C71C5ACA9"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
             "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_1CCF83A7293544C480FA6F41A043F903"
             {
             "SourcePath" = "8:..\\..\\source\\ltc_controller_comm\\error.hpp"
@@ -1018,6 +1074,26 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_44859B2894574723A55B42E0350C322B"
+            {
+            "SourcePath" = "8:..\\..\\python\\check_linear_lab_tools_install\\LinearLogo.tiff"
+            "TargetName" = "8:LinearLogo.tiff"
+            "Tag" = "8:"
+            "Folder" = "8:_BCD3C6CF9A4F4362BA3A090333BA49AA"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
             "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_555EF0E6F2BD43849810005B204BD7D5"
             {
             "SourcePath" = "8:..\\..\\matlab\\LtcControllerCommProto.m"
@@ -1044,6 +1120,26 @@
             "TargetName" = "8:ftdi.cpp"
             "Tag" = "8:"
             "Folder" = "8:_CAB66B5FC773409D8BE8F24AF8FAF4B1"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_58E147AC17BA4B0DAAE014D406ECDE25"
+            {
+            "SourcePath" = "8:..\\..\\python\\check_linear_lab_tools_install\\check_linear_lab_tools_python_install.py"
+            "TargetName" = "8:check_linear_lab_tools_python_install.py"
+            "Tag" = "8:"
+            "Folder" = "8:_BCD3C6CF9A4F4362BA3A090333BA49AA"
             "Condition" = "8:"
             "Transitive" = "11:FALSE"
             "Vital" = "11:TRUE"
@@ -1438,6 +1534,26 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_8CAA56F55FF14153908E2A21A19C9EF9"
+            {
+            "SourcePath" = "8:..\\..\\python\\demo_board_examples\\ltc2270\\ltc2270_dc1975.py"
+            "TargetName" = "8:ltc2270_dc1975.py"
+            "Tag" = "8:"
+            "Folder" = "8:_CA956E75276B47B0B9794CEDF425B450"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
             "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_8E4B33E000F7465AA05C7800282DDE55"
             {
             "SourcePath" = "8:..\\..\\source\\ltc_controller_comm\\ftdi_adc.cpp"
@@ -1498,6 +1614,26 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_90F771EEA9A64794B6B6E8518C12B151"
+            {
+            "SourcePath" = "8:..\\..\\python\\demo_board_examples\\ltc2268\\ltc2268_dc1532.py"
+            "TargetName" = "8:ltc2268_dc1532.py"
+            "Tag" = "8:"
+            "Folder" = "8:_2E521B6BFE314F37BCAC3EDABBE96CD1"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
             "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_9206F344B9164B38BDAEDDD7A3D1DA18"
             {
             "SourcePath" = "8:..\\..\\fpga_loads\\s2175.sqz"
@@ -1524,6 +1660,26 @@
             "TargetName" = "8:dac_concepts.py"
             "Tag" = "8:"
             "Folder" = "8:_4D9378EE2361449BBB7983716D915EA8"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_93654D84670C4897B9A57223545DD53B"
+            {
+            "SourcePath" = "8:..\\..\\python\\demo_board_examples\\ltc2387\\ltc2387_dc2290.py"
+            "TargetName" = "8:ltc2387_dc2290.py"
+            "Tag" = "8:"
+            "Folder" = "8:_D81FA3C60FBC43879A3D0F0E16576DE8"
             "Condition" = "8:"
             "Transitive" = "11:FALSE"
             "Vital" = "11:TRUE"
@@ -2271,6 +2427,28 @@
                             "Property" = "8:_F24B894F4ABB4E0BAB869E9CD13DF507"
                                 "Folders"
                                 {
+                                    "{9EF0B969-E518-4E46-987F-47570745A589}:_A96BDBAE27E44A93BEC00BE76819F342"
+                                    {
+                                    "Name" = "8:ltc2500_family"
+                                    "AlwaysCreate" = "11:FALSE"
+                                    "Condition" = "8:"
+                                    "Transitive" = "11:FALSE"
+                                    "Property" = "8:_8E2284C82702434DB575DE77C7B7426C"
+                                        "Folders"
+                                        {
+                                        }
+                                    }
+                                }
+                            }
+                            "{9EF0B969-E518-4E46-987F-47570745A589}:_BCD3C6CF9A4F4362BA3A090333BA49AA"
+                            {
+                            "Name" = "8:check_linear_lab_tools_install"
+                            "AlwaysCreate" = "11:FALSE"
+                            "Condition" = "8:"
+                            "Transitive" = "11:FALSE"
+                            "Property" = "8:_D4BD11B7AAEC40119EE081B6645B35CB"
+                                "Folders"
+                                {
                                 }
                             }
                             "{9EF0B969-E518-4E46-987F-47570745A589}:_D6C14440BADF4048848F5E144F740A2C"
@@ -2289,6 +2467,28 @@
                                     "Condition" = "8:"
                                     "Transitive" = "11:FALSE"
                                     "Property" = "8:_430F58CCCE4C4DAB80E752C41DF0421F"
+                                        "Folders"
+                                        {
+                                        }
+                                    }
+                                    "{9EF0B969-E518-4E46-987F-47570745A589}:_2E521B6BFE314F37BCAC3EDABBE96CD1"
+                                    {
+                                    "Name" = "8:ltc2268"
+                                    "AlwaysCreate" = "11:FALSE"
+                                    "Condition" = "8:"
+                                    "Transitive" = "11:FALSE"
+                                    "Property" = "8:_A2818BCDC17F4BD48CBD8A68B8F063BE"
+                                        "Folders"
+                                        {
+                                        }
+                                    }
+                                    "{9EF0B969-E518-4E46-987F-47570745A589}:_57E99A3AE3B340E0A1EA03756C32FBCE"
+                                    {
+                                    "Name" = "8:ltc2500"
+                                    "AlwaysCreate" = "11:FALSE"
+                                    "Condition" = "8:"
+                                    "Transitive" = "11:FALSE"
+                                    "Property" = "8:_7C8060D08CAF43C4A93987953F19E282"
                                         "Folders"
                                         {
                                         }
@@ -2313,6 +2513,28 @@
                                                 {
                                                 }
                                             }
+                                        }
+                                    }
+                                    "{9EF0B969-E518-4E46-987F-47570745A589}:_CA956E75276B47B0B9794CEDF425B450"
+                                    {
+                                    "Name" = "8:ltc2270"
+                                    "AlwaysCreate" = "11:FALSE"
+                                    "Condition" = "8:"
+                                    "Transitive" = "11:FALSE"
+                                    "Property" = "8:_73604C5DA74849AFA102982C62842F23"
+                                        "Folders"
+                                        {
+                                        }
+                                    }
+                                    "{9EF0B969-E518-4E46-987F-47570745A589}:_D81FA3C60FBC43879A3D0F0E16576DE8"
+                                    {
+                                    "Name" = "8:ltc2387"
+                                    "AlwaysCreate" = "11:FALSE"
+                                    "Condition" = "8:"
+                                    "Transitive" = "11:FALSE"
+                                    "Property" = "8:_307531D58898400599B22A615587BFFE"
+                                        "Folders"
+                                        {
                                         }
                                     }
                                     "{9EF0B969-E518-4E46-987F-47570745A589}:_DCC3EDEA64EE459D869DA686D60BF43F"
@@ -2404,7 +2626,7 @@
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:linear_lab_tools64"
         "ProductCode" = "8:{83177CAE-C162-4719-819E-E346910834B0}"
-        "PackageCode" = "8:{70183514-F6A8-426E-A0C3-B1936BBB8151}"
+        "PackageCode" = "8:{E53B4A96-86B2-4F37-93A0-9FD5CB4D8F0E}"
         "UpgradeCode" = "8:{34C9E896-F9F8-4563-A1D3-FB0FE69C2B22}"
         "AspNetVersion" = "8:4.0.30319.0"
         "RestartWWWService" = "11:FALSE"
