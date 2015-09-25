@@ -451,6 +451,7 @@ namespace linear {
         FpgaI2cSendStartCondition();
         FpgaI2cReceiveString(EEPROM_ADDRESS, buffer, buffer_size);
         FpgaI2cSendStopCondition();
+        buffer[buffer_size - 1] = '\0';
     }
 
     void HighSpeed::FpgaI2cSendStartCondition() {

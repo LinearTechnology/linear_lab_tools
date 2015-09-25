@@ -171,6 +171,7 @@ namespace linear {
         Write("I\n", 2);
         buffer_size = Min(Ftdi::EEPROM_ID_STRING_SIZE, buffer_size);
         auto num_read = Read(buffer, buffer_size);
+        buffer[Min(num_read, Ftdi::EEPROM_ID_STRING_SIZE - 1)] = '\0';
         if (num_read != buffer_size) {
             Close();
             throw HardwareError("Not all EEPROM bytes received.");

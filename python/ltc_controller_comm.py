@@ -795,8 +795,8 @@ class Controller(object):
             
     def eeprom_read_string(self, num_chars):
         """Receive an EEPROM string."""
-        c_string = ct.create_string_buffer(num_chars)
-        self._raise_on_error(self.dll.LccEepromReadString(self._handle, c_string, num_chars))
+        c_string = ct.create_string_buffer(num_chars+1)
+        self._raise_on_error(self.dll.LccEepromReadString(self._handle, c_string, num_chars+1))
         return c_string.value
 
     def hs_set_bit_mode(self, mode):
