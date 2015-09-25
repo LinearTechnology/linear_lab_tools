@@ -889,7 +889,7 @@ class Controller(object):
         demo_config would be 0x01020304
         """
         self._raise_on_error(
-            self.dll.Lcc1371SetGenericConfig(self._handle, ct.c_uint32(demo_config)))
+            self.dll.Lcc1371SetDemoConfig(self._handle, ct.c_uint32(demo_config)))
 
     def dc1371_spi_choose_chip_select(self, new_chip_select):
         """
