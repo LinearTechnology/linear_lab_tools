@@ -7,9 +7,8 @@ Created on Wed June 26 8:46:58 2015
 
 import math
 import time
-import array
 import struct
-import ltc_high_speed_comm as lths
+import ltc_controller_comm as lcc
 
 NUM_DAC_SAMPLES = 64 * 1024
 NUM_CYCLES_1 = 489
@@ -73,31 +72,31 @@ LTC2123_ID_STRING = (r"[0074 DEMO 10 DC1974A-A LTC2124-14 D2124" "\r\n"
                      r"187F]")
 
 
-def reset_fpga(device):
-    device.set_bit_mode(lths.BIT_MODE_MPSSE)
-    device.fpga_toggle_reset()
+def reset_fpga(controller):
+    controller.hs_set_bit_mode(lcc.HS_BIT_MODE_MPSSE)
+    controller.hs_fpga_toggle_reset()
     time.sleep(.01)
-    device.fpga_write_data_at_address(FPGA_DAC_PD, 1)
+    controller.hs_fpga_write_data_at_address(FPGA_DAC_PD, 1)
     time.sleep(0.01)
-    device.fpga_write_data_at_address(FPGA_CONTROL_REG, 0x20)
+    controller.hs_fpga_write_data_at_address(FPGA_CONTROL_REG, 0x20)
     time.sleep(0.01)
-    device.set_bit_mode(lths.BIT_MODE_FIFO)
+    controller.hs_set_bit_mode(lcc.HS_BIT_MODE_FIFO)
 
 
-def write_jedec_reg(device, address, b3, b2, b1, b0):
-    device.fpga_write_data_at_address(JESD204B_WB3_REG, b3)
-    device.fpga_write_data_at_address(JESD204B_WB2_REG, b2)
-    device.fpga_write_data_at_address(JESD204B_WB1_REG, b1)
-    device.fpga_write_data_at_address(JESD204B_WB0_REG, b0)
-    device.fpga_write_data_at_address(JESD204B_CONFIG_REG, (address << 2) | 0x02)
-    if device.fpga_read_data() & 0x01 == 0:
+def write_jedec_reg(controller, address, b3, b2, b1, b0):
+    controller.hs_fpga_write_data_at_address(JESD204B_WB3_REG, b3)
+    controller.hs_fpga_write_data_at_address(JESD204B_WB2_REG, b2)
+    controller.hs_fpga_write_data_at_address(JESD204B_WB1_REG, b1)
+    controller.hs_fpga_write_data_at_address(JESD204B_WB0_REG, b0)
+    controller.hs_fpga_write_data_at_address(JESD204B_CONFIG_REG, (address << 2) | 0x02)
+    if controller.hs_fpga_read_data() & 0x01 == 0:
         raise RuntimeError("Got bad FPGA status in write_jedec_reg")
 
 
-def init_adc(device, spi_write):
-    device.close()
-    device.set_bit_mode(lths.BIT_MODE_MPSSE)
-    device.fpga_toggle_reset()
+def init_adc(controller, spi_write):
+    controller.close()
+    controller.set_bit_mode(lcc.HS_BIT_MODE_MPSSE)
+    controller.fpga_toggle_reset()
     spi_write(0x01, 0x00)
     spi_write(0x02, 0x00)
     spi_write(0x03, 0xAB)
@@ -108,18 +107,18 @@ def init_adc(device, spi_write):
     spi_write(0x08, 0x00)
     spi_write(0x09, 0x04)
 
-    write_jedec_reg(device, 0x01, 0x00, 0x00, 0x00, 0x01)
-    write_jedec_reg(device, 0x02, 0x00, 0x00, 0x00, 0x01)
-    write_jedec_reg(device, 0x03, 0x00, 0x00, 0x00, 0x17)
-    write_jedec_reg(device, 0x00, 0x00, 0x00, 0x01, 0x02)
+    write_jedec_reg(controller, 0x01, 0x00, 0x00, 0x00, 0x01)
+    write_jedec_reg(controller, 0x02, 0x00, 0x00, 0x00, 0x01)
+    write_jedec_reg(controller, 0x03, 0x00, 0x00, 0x00, 0x17)
+    write_jedec_reg(controller, 0x00, 0x00, 0x00, 0x01, 0x02)
 
-    if device.fpga_read_data_at_address(CLOCK_STATUS_REG) != 0x1E:
+    if controller.hs_fpga_read_data_at_address(CLOCK_STATUS_REG) != 0x1E:
         raise RuntimeError("CLOCK_STATUS_REG value was not 0x1E")
-    device.fpga_write_data_at_address(CAPTURE_CONFIG_REG, 0x78)
-    device.fpga_write_data_at_address(CAPTURE_RESET_REG, 0x01)
-    device.fpga_write_data_at_address(CAPTURE_CONTROL_REG, 0x01)
+    controller.hs_fpga_write_data_at_address(CAPTURE_CONFIG_REG, 0x78)
+    controller.hs_fpga_write_data_at_address(CAPTURE_RESET_REG, 0x01)
+    controller.hs_fpga_write_data_at_address(CAPTURE_CONTROL_REG, 0x01)
     time.sleep(0.05)
-    if device.fpga_read_data_at_address(CAPTURE_STATUS_REG) & 0x31 != 0x31:
+    if controller.hs_fpga_read_data_at_address(CAPTURE_STATUS_REG) & 0x31 != 0x31:
         raise RuntimeError("CAPTURE_STATUS_REG was not 0x31")
 
 
@@ -140,34 +139,34 @@ def check_prbs(data):
     return True
 
 
-print 'Test battery 1'
+print 'High Speed Test battery 1'
 print 'Use an LTC2000 setup and a scope.'
 raw_input("Press Enter to continue...")
 
-device_info = None
-for info in lths.list_devices():
+controller_info = None
+for info in lcc.list_controllers(lcc.TYPE_HIGH_SPEED):
     if "LTC2000" in info.get_description():
-        device_info = info
+        controller_info = info
         break
-if device_info is None:
+if controller_info is None:
     raise Exception("could not find compatible device")
 
 print "Found LTC2000 demo board:"
-print "Description: ", device_info.get_description()
-print "Serial Number: ", device_info.get_serial_number()
+print "Description: ", controller_info.get_description()
+print "Serial Number: ", controller_info.get_serial_number()
 
 # open and use the device
-with lths.Lths(device_info) as device:
-    spi_write = lambda reg, val: device.spi_send_byte_at_address(reg | SPI_WRITE_BIT, val)
-    spi_read = lambda reg: device.spi_receive_byte_at_address(reg | SPI_READ_BIT)
+with lcc.Controller(controller_info) as controller:
+    spi_write = lambda reg, val: controller.spi_send_byte_at_address(reg | SPI_WRITE_BIT, val)
+    spi_read = lambda reg: controller.spi_receive_byte_at_address(reg | SPI_READ_BIT)
 
-    device.set_bit_mode(lths.BIT_MODE_MPSSE)
+    controller.hs_set_bit_mode(lcc.HS_BIT_MODE_MPSSE)
 
-    device.fpga_toggle_reset()
+    controller.hs_fpga_toggle_reset()
 
-    print "FPGA ID is ", format(device.fpga_read_data_at_address(FPGA_ID_REG), "2X")
+    print "FPGA ID is ", format(controller.hs_fpga_read_data_at_address(FPGA_ID_REG), "2X")
 
-    device.fpga_write_data_at_address(FPGA_DAC_PD, 1)
+    controller.hs_fpga_write_data_at_address(FPGA_DAC_PD, 1)
 
     spi_write(REG_RESET_PD, 0x00)
     spi_write(REG_RESET_PD, 0x00)
@@ -196,12 +195,14 @@ with lths.Lths(device_info) as device:
     if spi_read(REG_DAC_GAIN) != 0x20:
         raise RuntimeError("Error reading SPI register ", format(REG_DAC_GAIN, "2X"))
 
-    device.fpga_write_data_at_address(FPGA_CONTROL_REG, 0x20)
+    controller.hs_fpga_write_data_at_address(FPGA_CONTROL_REG, 0x20)
+
+    controller.data_set_high_byte_first()
 
     data = [int(AMPLITUDE * math.sin((NUM_CYCLES_1 * TWO_PI * d) / NUM_DAC_SAMPLES))
             for d in range(NUM_DAC_SAMPLES)]
-    device.set_bit_mode(lths.BIT_MODE_FIFO)
-    if device.fifo_send_uint16_values(data) != NUM_DAC_SAMPLES * 2:
+    controller.hs_set_bit_mode(lcc.HS_BIT_MODE_FIFO)
+    if controller.data_send_uint16_values(data) != NUM_DAC_SAMPLES * 2:
         raise RuntimeError("Not all samples sent")
     print "Do you see a sine wave in the scope with frequency = clock_frequency / ", \
         NUM_DAC_SAMPLES / NUM_CYCLES_1, "?"
@@ -210,25 +211,31 @@ with lths.Lths(device_info) as device:
         raise RuntimeError("User indicates output is invalid")
     print "user indicates output is valid"
 
-    print "list_devices is OK"
+    print "list_controllers is OK"
     print "constructor OK"
-    print "set_bit_mode is OK"
-    print "fpga_toggle_reset is OK"
-    print "fpga_read_data_at_address is OK"
-    print "fpga_write_data_at_address is OK"
+    print "hs_set_bit_mode is OK"
+    print "hs_fpga_toggle_reset is OK"
+    print "hs_fpga_read_data_at_address is OK"
+    print "hs_fpga_write_data_at_address is OK"
     print "spi_send_byte_at_address is OK"
     print "spi_receive_byte_at_address is OK"
-    print "fifo_send_uint16_values is OK"
+    print "data_set_high_byte_first is OK"
+    print "data_send_uint16_values is OK"
 
-    reset_fpga(device)
+    reset_fpga(controller)
     data = [AMPLITUDE * math.sin((NUM_CYCLES_2 * TWO_PI * d) / NUM_DAC_SAMPLES) \
             for d in range(NUM_DAC_SAMPLES)]
     data32 = []
     for i in xrange(NUM_DAC_SAMPLES / 2):
-        data32.append(struct.unpack('I', struct.pack('h', data[2 * i + 1]) +
-                                    struct.pack('h', data[2 * i]))[0])
-    device.set_bit_mode(lths.BIT_MODE_FIFO)
-    if device.fifo_send_uint32_values(data32) != NUM_DAC_SAMPLES * 2:
+        h1 = struct.pack('h', data[2*i])
+        h2 = struct.pack('h', data[2*i+1])
+        bytes = h2[1] + h2[0] + h2[1] + h1[0]
+        i32 = struct.unpack('I', bytes)[0]
+        data32.append(i32)
+
+    controller.data_set_low_byte_first()
+    controller.hs_set_bit_mode(lcc.HS_BIT_MODE_FIFO)
+    if controller.data_send_uint32_values(data32) != NUM_DAC_SAMPLES * 2:
         raise RuntimeError("Not all samples sent")
     print "Do you see a sine wave in the scope with frequency = clock_frequency / ", \
         NUM_DAC_SAMPLES / NUM_CYCLES_2, "?"
@@ -236,9 +243,10 @@ with lths.Lths(device_info) as device:
     if response[0] != 'y':
         raise RuntimeError("User indicates output is invalid")
     print "user indicates output is valid"
-    print "fifo_send_uint32_values is OK"
+    print "data_set_low_byte_first is OK"
+    print "data_send_uint32_values is OK"
 
-    reset_fpga(device)
+    reset_fpga(controller)
     data = [AMPLITUDE * math.sin((NUM_CYCLES_3 * TWO_PI * d) / NUM_DAC_SAMPLES) \
             for d in range(NUM_DAC_SAMPLES)]
     data8 = []
@@ -246,8 +254,8 @@ with lths.Lths(device_info) as device:
         bytes = struct.pack('h', data[i])
         data8.append(struct.unpack('B', bytes[1])[0])
         data8.append(struct.unpack('B', bytes[0])[0])
-    device.set_bit_mode(lths.BIT_MODE_FIFO)
-    if device.fifo_send_bytes(data8) != NUM_DAC_SAMPLES * 2:
+    controller.hs_set_bit_mode(lcc.HS_BIT_MODE_FIFO)
+    if controller.data_send_bytes(data8) != NUM_DAC_SAMPLES * 2:
         raise RuntimeError("Not all samples sent")
     print "Do you see a sine wave in the scope with frequency = clock_frequency / ", \
         NUM_DAC_SAMPLES / NUM_CYCLES_3, "?"
@@ -255,123 +263,109 @@ with lths.Lths(device_info) as device:
     if response[0] != 'y':
         raise RuntimeError("User indicates output is invalid")
     print "user indicates output is valid"
-    print "fifo_send_uint8_values is OK"
+    print "data_send_uint8_values is OK"
 
-    device.set_bit_mode(lths.BIT_MODE_MPSSE)
+    controller.hs_set_bit_mode(lcc.HS_BIT_MODE_MPSSE)
 
-    device.spi_send_bytes([REG_LINEAR_GAIN | SPI_WRITE_BIT, 0x02])
+    controller.spi_send_bytes([REG_LINEAR_GAIN | SPI_WRITE_BIT, 0x02])
     if spi_read(REG_LINEAR_GAIN) != 0x02:
         raise RuntimeError("spi_send_bytes didn't seem to work")
     print "spi_send_bytes is OK"
 
-    device.spi_transceive_bytes([REG_LINEAR_GAIN | SPI_WRITE_BIT, 0x04])
-    if device.spi_transceive_bytes([REG_LINEAR_GAIN | SPI_READ_BIT, 0x00])[1] != 0x04:
+    controller.spi_transceive_bytes([REG_LINEAR_GAIN | SPI_WRITE_BIT, 0x04])
+    if controller.spi_transceive_bytes([REG_LINEAR_GAIN | SPI_READ_BIT, 0x00])[1] != 0x04:
         raise RuntimeError("spi_transceive_bytes didn't seem to work")
     print "spi_transceive_bytes is OK"
 
-    device.spi_send_bytes_at_address(REG_LINEAR_GAIN | SPI_WRITE_BIT, [6])
+    controller.spi_send_bytes_at_address(REG_LINEAR_GAIN | SPI_WRITE_BIT, [6])
     if spi_read(REG_LINEAR_GAIN) != 6:
         raise RuntimeError("spi_send_bytes_at_address didn't seem to work")
     print "spi_bytes_at_address is OK"
 
-    if device.spi_receive_bytes_at_address(REG_LINEAR_GAIN | SPI_READ_BIT, end=1)[0] != 6:
+    if controller.spi_receive_bytes_at_address(REG_LINEAR_GAIN | SPI_READ_BIT, end=1)[0] != 6:
         raise RuntimeError("spi_receive_bytes_at_address didn't seem to work")
     print "spi_receive_bytes_at_address is OK"
 
-    device.spi_set_chip_select(lths.SPI_CHIP_SELECT_LOW)
-    device.spi_send_no_chip_select([REG_LINEAR_GAIN | SPI_WRITE_BIT, 0x08])
-    device.spi_set_chip_select(lths.SPI_CHIP_SELECT_HIGH)
+    controller.spi_set_cs_state(lcc.SPI_CS_STATE_LOW)
+    controller.spi_send_no_chip_select([REG_LINEAR_GAIN | SPI_WRITE_BIT, 0x08])
+    controller.spi_set_cs_state(lcc.SPI_CS_STATE_HIGH)
     if spi_read(REG_LINEAR_GAIN) != 0x08:
         raise RuntimeError("spi_set_chip_select or spi_send_no_chip_select didn't seem to work")
     print "spi_set_chip_select is OK"
     print "spi_send_no_chip_select is OK"
 
-    device.spi_set_chip_select(lths.SPI_CHIP_SELECT_LOW)
-    device.spi_send_no_chip_select([REG_LINEAR_GAIN | SPI_READ_BIT, 0])
-    value = device.spi_receive_no_chip_select(end=1)[0]
-    device.spi_set_chip_select(lths.SPI_CHIP_SELECT_HIGH)
+    controller.spi_set_cs_state(lcc.SPI_CS_STATE_LOW)
+    controller.spi_send_no_chip_select([REG_LINEAR_GAIN | SPI_READ_BIT, 0])
+    value = controller.spi_receive_no_chip_select(end=1)[0]
+    controller.spi_set_cs_state(lcc.SPI_CS_STATE_HIGH)
     if value != 0x08:
         raise RuntimeError("spi_receive_no_chip_select didn't seem to work")
     print "spi_receive_no_chip_select is OK"
 
-    device.spi_set_chip_select(lths.SPI_CHIP_SELECT_LOW)
-    device.spi_transceive_no_chip_select([REG_LINEAR_GAIN | SPI_WRITE_BIT, 0x0A])
-    device.spi_set_chip_select(lths.SPI_CHIP_SELECT_HIGH)
-    device.spi_set_chip_select(lths.SPI_CHIP_SELECT_LOW)
-    values = device.spi_transceive_no_chip_select([REG_LINEAR_GAIN | SPI_READ_BIT, 0])
-    device.spi_set_chip_select(lths.SPI_CHIP_SELECT_HIGH)
+    controller.spi_set_cs_state(lcc.SPI_CS_STATE_LOW)
+    controller.spi_transceive_no_chip_select([REG_LINEAR_GAIN | SPI_WRITE_BIT, 0x0A])
+    controller.spi_set_cs_state(lcc.SPI_CS_STATE_HIGH)
+    controller.spi_set_cs_state(lcc.SPI_CS_STATE_LOW)
+    values = controller.spi_transceive_no_chip_select([REG_LINEAR_GAIN | SPI_READ_BIT, 0])
+    controller.spi_set_cs_state(lcc.SPI_CS_STATE_HIGH)
     if values[1] != 0x0A:
         raise RuntimeError("spi_transceive_no_chip_select didn't seem to work")
     print "spi_transceive_no_chip_select is OK"
 
-    device.fpga_write_address(FPGA_ID_REG)
-    device.fpga_write_data(92)
-    if device.fpga_read_data_at_address(FPGA_ID_REG) != 92:
+    controller.hs_fpga_write_address(FPGA_ID_REG)
+    controller.hs_fpga_write_data(92)
+    if controller.hs_fpga_read_data_at_address(FPGA_ID_REG) != 92:
         raise RuntimeError("fpga_write_address or fpga_write_data didn't seem to work")
     print "fpga_write_address is OK"
     print "fpga_write_data is OK"
 
-    device.fpga_write_data(37)
-    if device.fpga_read_data() != 37:
+    controller.hs_fpga_write_data(37)
+    if controller.hs_fpga_read_data() != 37:
         raise RuntimeError("fpga_read_data didn't seem to work")
     print "fpga_read_data is OK"
 
-    device.gpio_write_low_byte(GPIO_LOW_BASE)
-    device.gpio_write_high_byte(56)
-    device.gpio_write_low_byte(GPIO_LOW_BASE | FPGA_ACTION_BIT)
-    device.gpio_write_low_byte(GPIO_LOW_BASE)
-    if device.fpga_read_data() != 56:
+    controller.hs_gpio_write_low_byte(GPIO_LOW_BASE)
+    controller.hs_gpio_write_high_byte(56)
+    controller.hs_gpio_write_low_byte(GPIO_LOW_BASE | FPGA_ACTION_BIT)
+    controller.hs_gpio_write_low_byte(GPIO_LOW_BASE)
+    if controller.hs_fpga_read_data() != 56:
         raise RuntimeError("gpio_write_low_byte or gpio_write_high_byte didn't seem to work")
     print "gpio_write_low_byte is OK"
     print "gpio_write_high_byte is OK"
 
-    device.fpga_write_data(72)
-    device.gpio_write_low_byte(GPIO_LOW_BASE | FPGA_READ_WRITE_BIT)
-    device.gpio_write_low_byte(GPIO_LOW_BASE | FPGA_READ_WRITE_BIT | FPGA_ACTION_BIT)
-    value = device.gpio_read_high_byte()
-    device.gpio_write_low_byte(GPIO_LOW_BASE)
+    controller.hs_fpga_write_data(72)
+    controller.hs_gpio_write_low_byte(GPIO_LOW_BASE | FPGA_READ_WRITE_BIT)
+    controller.hs_gpio_write_low_byte(GPIO_LOW_BASE | FPGA_READ_WRITE_BIT | FPGA_ACTION_BIT)
+    value = controller.hs_gpio_read_high_byte()
+    controller.hs_gpio_write_low_byte(GPIO_LOW_BASE)
     if value != 72:
         raise RuntimeError("gpio_read_high_byte didn't seem to work")
     print "gpio_read_high_byte is OK"
 
-    if device.get_description() != device_info.get_description():
+    if controller.get_description() != controller_info.get_description():
         raise RuntimeError("get_description didn't seem to work")
     print "get_description is OK"
 
-    if device.get_serial_number() != device_info.get_serial_number():
+    if controller.get_serial_number() != controller_info.get_serial_number():
         raise RuntimeError("get_serial_number didn't seem to work")
     print "get_serial_number is OK"
 
-    device.set_timeouts(500, 500)
-    start = time.time()
-    device.fifo_receive_bytes(end=1)
-    elapsed = time.time() - start
-    if elapsed < 0.250 or elapsed > 0.750:
-        raise RuntimeError("set_timeouts didn't seem to work")
-    device.set_timeouts(3000, 3000)
-    start = time.time()
-    device.fifo_receive_bytes(end=1)
-    elapsed = time.time() - start
-    if elapsed < 2.750 or elapsed > 3.250:
-        raise RuntimeError("set_timeouts didn't seem to work")
-    print "set_timeouts is OK"
-
-    device.fifo_send_bytes([0x80])
-    device.purge_io()
-    if device.fifo_receive_bytes(end=1)[0] != 0:
+    controller.data_send_bytes([0x80])
+    controller.hs_purge_io()
+    if controller.data_receive_bytes(end=1)[0] != 0:
         raise RuntimeError("purge_io didn't seem to work")
     print "purge_io is OK"
 
-    device.close()
-    with lths.Lths(device_info) as stolen_device:
-        stolen_device.fpga_read_data_at_address(FPGA_ID_REG)
+    controller.close()
+    with lcc.Controller(controller_info) as stolen_controller:
+        stolen_controller.hs_fpga_read_data_at_address(FPGA_ID_REG)
         close_ok = False
         error_ok = False
         try:
-            device.fpga_read_data_at_address(FPGA_ID_REG)
+            controller.hs_fpga_read_data_at_address(FPGA_ID_REG)
         except Exception as e:
             close_ok = True
-            if e.message == "Error opening the device.":
+            if e.message == "Error opening device by index (FTDI error code: DEVICE_NOT_OPENED)":
                 error_ok = True
         if not close_ok:
             raise RuntimeError("close didn't seem to work")
@@ -380,35 +374,35 @@ with lths.Lths(device_info) as device:
 
         print "close is OK"
 
-    device.fpga_read_data_at_address(FPGA_ID_REG)
+    controller.hs_fpga_read_data_at_address(FPGA_ID_REG)
     print "with cleanup is OK"
 
 print 'Test battery 2'
 print 'Use an LTC2123 setup.'
 raw_input("Press Enter to continue...")
 
-device_info = None
-for info in lths.list_devices():
+controller_info = None
+for info in lcc.list_controllers(lcc.TYPE_HIGH_SPEED):
     if info.get_description() == "LTC Communication Interface":
         device_info = info
         break
-if device_info is None:
+if controller_info is None:
     raise RuntimeError("could not find compatible device")
 
 print "Found LTC2123 demo board:"
-print "Description: ", device_info.get_description()
-print "Serial Number: ", device_info.get_serial_number()
+print "Description: ", controller_info.get_description()
+print "Serial Number: ", controller_info.get_serial_number()
 
 # open and use the device
-with lths.Lths(device_info) as device:
-    spi_write = lambda reg, val: device.spi_send_byte_at_address(reg | SPI_WRITE_BIT, val)
-    spi_read = lambda reg: device.spi_receive_byte_at_address(reg | SPI_READ_BIT)
+with lcc.Controller(controller_info) as controller:
+    spi_write = lambda reg, val: controller.spi_send_byte_at_address(reg | SPI_WRITE_BIT, val)
+    spi_read = lambda reg: controller.spi_receive_byte_at_address(reg | SPI_READ_BIT)
 
-    device.fifo_set_low_byte_first()
+    controller.data_set_low_byte_first()
 
-    init_adc(device, spi_write)
-    device.set_bit_mode(lths.BIT_MODE_FIFO)
-    num_bytes, data = device.fifo_receive_uint16_values(end=NUM_ADC_SAMPLES)
+    init_adc(controller, spi_write)
+    controller.set_bit_mode(lcc.HS_BIT_MODE_FIFO)
+    num_bytes, data = controller.data_receive_uint16_values(end=NUM_ADC_SAMPLES)
     if num_bytes != NUM_ADC_SAMPLES * 2:
         raise RuntimeError("didn't receive all bytes")
     channel_a = []
@@ -420,14 +414,14 @@ with lths.Lths(device_info) as device:
         channel_b.append(data[2 * i + 3])
 
     if not check_prbs(channel_a):
-        raise RuntimeError("fifo_receive_uint16_values didn't seem to work")
+        raise RuntimeError("data_receive_uint16_values didn't seem to work")
     if not check_prbs(channel_b):
-        raise RuntimeError("fifo_receive_uint16_values didn't seem to work")
-    print "fifo_receive_uint16_values is OK"
+        raise RuntimeError("data_receive_uint16_values didn't seem to work")
+    print "data_receive_uint16_values is OK"
 
-    init_adc(device, spi_write)
-    device.set_bit_mode(lths.BIT_MODE_FIFO)
-    num_bytes, data = device.fifo_receive_uint32_values(end=NUM_ADC_SAMPLES / 2)
+    init_adc(controller, spi_write)
+    controller.set_bit_mode(lcc.HS_BIT_MODE_FIFO)
+    num_bytes, data = controller.data_receive_uint32_values(end=NUM_ADC_SAMPLES / 2)
     if num_bytes != NUM_ADC_SAMPLES * 2:
         raise RuntimeError("didn't receive all bytes")
     channel_a = []
@@ -440,14 +434,14 @@ with lths.Lths(device_info) as device:
         channel_b.append(struct.unpack('H', two_samples[0:2])[0])
         channel_b.append(struct.unpack('H', two_samples[2:4])[0])
     if not check_prbs(channel_a):
-        raise RuntimeError("fifo_receive_uint32_values didn't seem to work")
+        raise RuntimeError("data_receive_uint32_values didn't seem to work")
     if not check_prbs(channel_b):
-        raise RuntimeError("fifo_receive_uint32_values didn't seem to work")
-    print "fifo_receive_uint32_values is OK"
+        raise RuntimeError("data_receive_uint32_values didn't seem to work")
+    print "data_receive_uint32_values is OK"
 
-    init_adc(device, spi_write)
-    device.set_bit_mode(lths.BIT_MODE_FIFO)
-    num_bytes, data = device.fifo_receive_bytes(end=NUM_ADC_SAMPLES * 2)
+    init_adc(controller, spi_write)
+    controller.set_bit_mode(lcc.HS_BIT_MODE_FIFO)
+    num_bytes, data = controller.data_receive_bytes(end=NUM_ADC_SAMPLES * 2)
     if num_bytes != NUM_ADC_SAMPLES * 2:
         raise RuntimeError("didn't receive all bytes")
     channel_a = []
@@ -459,26 +453,26 @@ with lths.Lths(device_info) as device:
         channel_b.append(struct.unpack('H', byte_array[4:6])[0])
         channel_b.append(struct.unpack('H', byte_array[6:8])[0])
     if not check_prbs(channel_a):
-        raise RuntimeError("fifo_receive_bytes didn't seem to work")
+        raise RuntimeError("data_receive_bytes didn't seem to work")
     if not check_prbs(channel_b):
-        raise RuntimeError("fifo_receive_bytes didn't seem to work")
-    print "fifo_receive_bytes is OK"
+        raise RuntimeError("data_receive_bytes didn't seem to work")
+    print "data_receive_bytes is OK"
 
-    device.set_bit_mode(lths.BIT_MODE_MPSSE)
-    device.fpga_toggle_reset()
+    controller.set_bit_mode(lcc.HS_BIT_MODE_MPSSE)
+    controller.fpga_toggle_reset()
 
-    id_str = device.fpga_eeprom_read_string(MAX_EEPROM_CHARS)
+    id_str = controller.fpga_eeprom_read_string(MAX_EEPROM_CHARS)
     if (id_str[0:len(LTC2123_ID_STRING)] != LTC2123_ID_STRING):
         raise RuntimeError("fpga_eeprom_receive_string didn't seem to work.")
     print "fpga_eeprom_receive_string is OK"
 
-    device.fpga_write_data_at_address(0x00, 0x00)
-    device.fpga_eeprom_set_bit_bang_register(0x00)
+    controller.fpga_write_data_at_address(0x00, 0x00)
+    controller.fpga_eeprom_set_bit_bang_register(0x00)
     try:
-        device.fpga_eeprom_read_string(1)
+        controller.fpga_eeprom_read_string(1)
     except:
         pass  # we expect this to throw an error
-    if device.fpga_read_data_at_address(0x00) == 0:
+    if controller.fpga_read_data_at_address(0x00) == 0:
         raise RuntimeError("fpga_eeprom_set_bitbang_register didn't seem to work")
     print "fpga_i2c_set_bitbang_register is OK"
 
@@ -489,34 +483,34 @@ print "CN3-1 connected to CN3-3"
 print "CN3-17 connected to CN3-24"
 raw_input("Press Enter to continue...")
 
-device_info = None
-for info in lths.list_devices():
+controller_info = None
+for info in lcc.list_controllers(lcc.TYPE_HIGH_SPEED):
     if info.get_description() == "LTC Communication Interface":
         device_info = info
         break
-if device_info is None:
+if controller_info is None:
     raise RuntimeError("could not find compatible device")
 
 print "Found Mini-module:"
-print "Description: ", device_info.get_description()
-print "Serial Number: ", device_info.get_serial_number()
+print "Description: ", controller_info.get_description()
+print "Serial Number: ", controller_info.get_serial_number()
 
 # open and use the device
-with lths.Lths(device_info) as device:
-    device.set_bit_mode(lths.BIT_MODE_MPSSE)
-    device.gpio_write_high_byte(0x01)
-    if device.spi_receive_bytes(end=1)[0] != 0xFF:
+with lcc.Controller(controller_info) as controller:
+    controller.set_bit_mode(lcc.HS_BIT_MODE_MPSSE)
+    controller.gpio_write_high_byte(0x01)
+    if controller.spi_receive_bytes(end=1)[0] != 0xFF:
         raise RuntimeError("spi_receive_bytes_didn't seem to work")
-    device.gpio_write_high_byte(0x00)
-    if device.spi_receive_bytes(end=1)[0] != 0x00:
+    controller.gpio_write_high_byte(0x00)
+    if controller.spi_receive_bytes(end=1)[0] != 0x00:
         raise RuntimeError("spi_receive_bytes_didn't seem to work")
     print "spi_receive_bytes is OK"
 
-    device.gpio_write_high_byte(0x01)
-    if (device.gpio_read_low_byte() & 0x04) == 0:
+    controller.gpio_write_high_byte(0x01)
+    if (controller.gpio_read_low_byte() & 0x04) == 0:
         raise RuntimeError("gpio_read_low_byte didn't seem to work")
-    device.gpio_write_high_byte(0x00)
-    if (device.gpio_read_low_byte()) & 0x04 != 0:
+    controller.gpio_write_high_byte(0x00)
+    if (controller.gpio_read_low_byte()) & 0x04 != 0:
         raise RuntimeError("gpio_read_low_byte didn't seem to work")
     print "gpio_read_low_byte is OK"
 
