@@ -815,7 +815,7 @@ class Controller(object):
     def hs_fpga_write_address(self, address):
         """Set the FPGA address to write or read."""
         c_address = ct.c_ubyte(address)
-        self._raise_on_error(self.dll.LccFpgaHsWriteAddress(self._handle, c_address))
+        self._raise_on_error(self.dll.LccHsFpgaWriteAddress(self._handle, c_address))
 
     def hs_fpga_write_data(self, value):
         """Write a value to the current FPGA address."""
