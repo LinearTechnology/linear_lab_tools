@@ -82,14 +82,15 @@ test_data_reg = DATA_REAL
 
 NUM_ADC_SAMPLES = 64 * 1024
 SAMPLE_BYTES = 2
+EEPROM_ID_SIZE = 50
 
 # find demo board with correct ID
-eeprom_id = 'LTC2270,D9002,DC1975A-A,YGG200T,CMOS,-----------'
 device_info = None
 print 'Looking for a DC890 with a DC1975A-A demoboard'
 for info in comm.list_controllers(comm.TYPE_DC890):
     with comm.Controller(info) as device:
-        if device.eeprom_read_string(len(eeprom_id)) == eeprom_id:
+        eeprom_id = device.eeprom_read_string(EEPROM_ID_SIZE)
+        if 'DC1975' in eeprom_id:
             if verbose:
                 print 'Found a DC1975A-A demoboard'
             device_info = info

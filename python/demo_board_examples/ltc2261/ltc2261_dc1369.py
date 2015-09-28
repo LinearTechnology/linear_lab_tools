@@ -95,6 +95,7 @@ for info in comm.list_controllers(comm.TYPE_DC890):
                 print 'Found a DC1369A-A demoboard'
             device_info = info
             break
+print device_info
 if device_info is None:
     raise(comm.HardwareError('Could not find a compatible device'))
 # Open communication to the demo board
