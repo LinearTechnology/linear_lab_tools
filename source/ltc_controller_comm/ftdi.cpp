@@ -171,6 +171,9 @@ namespace linear {
             get_device_info = reinterpret_cast<GetDeviceInfoFunction>(
                 GetProcAddress(ftdi, "FT_GetDeviceInfo"));
 
+            get_status = reinterpret_cast<GetStatusFunction>(
+                GetProcAddress(ftdi, "FT_GetStatus"));
+
             set_chars = reinterpret_cast<SetCharsFunction>(
                 GetProcAddress(ftdi, "FT_SetChars"));
         }
@@ -185,6 +188,7 @@ namespace linear {
         create_device_info_list = nullptr;
         get_device_info_list    = nullptr;
         open                    = nullptr;
+        open_ex                 = nullptr;
         get_driver_version      = nullptr;
         get_library_version     = nullptr;
         set_timeouts            = nullptr;
@@ -192,7 +196,11 @@ namespace linear {
         write                   = nullptr;
         read                    = nullptr;
         purge                   = nullptr;
+        set_bit_mode            = nullptr;
         set_latency_timer       = nullptr;
         set_flow_control        = nullptr;
+        get_device_info         = nullptr;
+        get_status              = nullptr;
+        set_chars               = nullptr;
     }
 }

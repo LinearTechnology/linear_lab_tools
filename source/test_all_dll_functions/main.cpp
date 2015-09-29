@@ -215,8 +215,8 @@ bool CheckPrbs(const uint16_t* data, int size) {
 //#define HIGH_SPEED_BATTERY_1
 //#define HIGH_SPEED_BATTERY_2
 //#define HIGH_SPEED_BATTERY_3
-#define DC1371_BATTERY_1
-//#define DC890_BATTERY_1
+//#define DC1371_BATTERY_1
+#define DC890_BATTERY_1
 //#define DC718_BATTERY_1
 
 int main() {
@@ -1020,6 +1020,15 @@ int main() {
             FAIL("Data values not correct\n", __LINE__);
         }
         code_index ^= 1;
+    }
+
+    int progress = 0;
+    CHECK(LccFpgaLoadFileChunked(handle, "S1407", &progress), __LINE__);
+    CHECK(LccFpgaCancelLoad(handle), __LINE__);
+    CHECK(LccFpgaLoadFile(handle, "DCMOS"), __LINE__);
+    CHECK(LccFpgaGetIsLoaded(handle, "DCMOS", &is_loaded), __LINE__);
+    if (!is_loaded) {
+        FAIL("FPGA load failed\n", __LINE__);
     }
 
     LccCleanup(&handle);

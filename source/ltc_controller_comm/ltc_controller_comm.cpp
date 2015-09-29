@@ -19,30 +19,30 @@ struct Handle {
     bool operator==(const Handle&) = delete;
 };
 
-#define C_MUST_NOT_BE_NULL(h) do {     \
-    if ((h) == nullptr) {              \
-        return LCC_ERROR_INVALID_ARG;  \
-                }                          \
+#define C_MUST_NOT_BE_NULL(h) do {    \
+    if ((h) == nullptr) {             \
+        return LCC_ERROR_INVALID_ARG; \
+    }                                 \
 } while (0)
 
-#define GET_STRING(h, es)                       \
-string* es;                                     \
-do {                                            \
-    C_MUST_NOT_BE_NULL(h);                      \
+#define GET_STRING(h, es)                        \
+string* es;                                      \
+do {                                             \
+    C_MUST_NOT_BE_NULL(h);                       \
     es = &static_cast<Handle*>(h)->error_string; \
 } while (0)
 
-#define GET(h, ctrl, type, es)                                                 \
-type* ctrl;                                                                    \
-string* es;                                                                    \
-do {                                                                           \
-    C_MUST_NOT_BE_NULL(h);                                                     \
-    es = &static_cast<Handle*>(h)->error_string;                               \
-    ctrl = dynamic_cast<type*>(reinterpret_cast<Handle*>(h)->controller);      \
-    if (ctrl == nullptr) {                                                     \
-        *es = "This operation is not supported for this controller type.";     \
-        return LCC_ERROR_NOT_SUPPORTED;                                        \
-        }                                                                      \
+#define GET(h, ctrl, type, es)                                             \
+type* ctrl;                                                                \
+string* es;                                                                \
+do {                                                                       \
+    C_MUST_NOT_BE_NULL(h);                                                 \
+    es = &static_cast<Handle*>(h)->error_string;                           \
+    ctrl = dynamic_cast<type*>(reinterpret_cast<Handle*>(h)->controller);  \
+    if (ctrl == nullptr) {                                                 \
+        *es = "This operation is not supported for this controller type."; \
+        return LCC_ERROR_NOT_SUPPORTED;                                    \
+    }                                                                      \
 } while (0)
 
 // note we are using a VS extension, __VA_ARGS__ you can pass in 0 arguments for ... (__VA_ARGS__)
@@ -118,33 +118,33 @@ LTC_CONTROLLER_COMM_API int LccGetControllerList(int controller_types,
 }
 
 LTC_CONTROLLER_COMM_API int LccInitController(LccHandle* handle,
-        LccControllerInfo device_info) {
+        LccControllerInfo controller_info) {
     auto new_handle = new Handle(nullptr);
-    switch (device_info.type) {
+    switch (controller_info.type) {
     case LCC_TYPE_DC1371:
     {
-        int code = ToErrorCode([&] { return new Dc1371(device_info); },
+        int code = ToErrorCode([&] { return new Dc1371(controller_info); },
             new_handle->controller, new_handle->error_string);
         *handle = new_handle;
         return code;
     }
     case LCC_TYPE_HIGH_SPEED:
     {
-        int code = ToErrorCode([&] { return new HighSpeed(ftdi, device_info); },
+        int code = ToErrorCode([&] { return new HighSpeed(ftdi, controller_info); },
             new_handle->controller, new_handle->error_string);
         *handle = new_handle;
         return code;
     }
     case LCC_TYPE_DC718:
     {
-        int code = ToErrorCode([&] { return new Dc718(ftdi, device_info); },
+        int code = ToErrorCode([&] { return new Dc718(ftdi, controller_info); },
             new_handle->controller, new_handle->error_string);
         *handle = new_handle;
         return code;
     }
     case LCC_TYPE_DC890:
     {
-        int code = ToErrorCode([&] {return new Dc890(ftdi, device_info); },
+        int code = ToErrorCode([&] {return new Dc890(ftdi, controller_info); },
             new_handle->controller, new_handle->error_string);
         *handle = new_handle;
         return code;
@@ -169,7 +169,7 @@ LTC_CONTROLLER_COMM_API int LccGetDescription(LccHandle handle, char* descriptio
     int code = ToErrorCode(
         [&] { return controller->GetDescription(); }, description, *error_string);
     if (code != LCC_ERROR_OK) { return code; }
-    auto string_size = static_cast<int>(description.size() + 1);
+    auto string_size = Narrow<int>(description.size() + 1);
     if (description_buffer_size < string_size || description_buffer == nullptr) {
         return string_size;
     } else {
@@ -186,7 +186,7 @@ LTC_CONTROLLER_COMM_API int LccGetSerialNumber(LccHandle handle, char* serial_nu
     int code = ToErrorCode(
         [&] { return controller->GetSerialNumber(); }, serial_number, *error_string);
     if (code != LCC_ERROR_OK) { return code; }
-    auto string_size = static_cast<int>(serial_number.size() + 1);
+    auto string_size = Narrow<int>(serial_number.size() + 1);
     if (serial_number_buffer_size < string_size || serial_number_buffer == nullptr) {
         return string_size;
     } else {

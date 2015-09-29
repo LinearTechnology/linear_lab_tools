@@ -80,12 +80,14 @@ namespace linear {
 
     void FtdiAdc::Reset() {
         collect_was_read = true;
-        OpenIfNeeded();
-        SetTimeouts(300);
 
         const int NUM_DATA = 8;
         BYTE data[NUM_DATA] = { 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, '\n' };
+        bool success = false;
         for (int i = 0; i < 3; ++i) {
+            OpenIfNeeded();
+            SetTimeouts(300);
+
             // the first time around, we send 8 chars, the second 264. This is so that the DC890
             // will respond even if reading a RAM load (256-char blocks)
             int num_sends = 1;
@@ -127,9 +129,13 @@ namespace linear {
             SetTimeouts();
 
             if (strcmp("hello\n", hello_string) != 0) {
+                success = true;
+            } else {
                 Close();
-                throw HardwareError("Reset failed");
-            }
+            }   
+        }
+        if (!success) {
+            throw HardwareError("Reset failed");
         }
     }
 

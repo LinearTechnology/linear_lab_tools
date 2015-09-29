@@ -72,6 +72,8 @@ namespace linear {
     }
 
     void Dc890::FpgaPageBuffer::Reset(const wstring& path) {
+        total_bytes = 0;
+        page_bytes = 0;
         delete file;
         file = new ifstream(path, std::ios::binary | std::ios::beg);
         if (file->bad()) {
@@ -83,6 +85,8 @@ namespace linear {
     void Dc890::FpgaPageBuffer::Reset() {
         delete file;
         file = nullptr;
+        total_bytes = 0;
+        page_bytes = 0;
     }
 
     bool Dc890::FpgaPageBuffer::GetPage(char data[FPGA_PAGE_SIZE]) {
@@ -223,9 +227,12 @@ namespace linear {
     }
 
     void Dc890::FpgaCancelLoad() {
-        fpga_load_started = false;
-        fpga_page_buffer.Reset();
         Reset();
+        fpga_load_started = false;
+        fpga_load_progress = NUM_FPGA_PAGES;
+        fpga_page_index = 0;
+        fpga_page_buffer.Reset();
+        Close();
     }
 
     wstring Dc890::FpgaGetPath(const string& load_filename) {
@@ -246,7 +253,7 @@ namespace linear {
                 }
             }
         }
-        throw new invalid_argument("Invalid load file name.");
+        throw invalid_argument("Invalid load file name.");
     }
 
     int Dc890::FpgaLoadFileChunked(const string& fpga_filename) {
@@ -280,6 +287,9 @@ namespace linear {
     }
 
     void Dc890::GpioSendByte(uint8_t byte) {
+        // some IO expander boards get into a weird sleep state when power droops, so we send
+        // 0 to 0xFF (which means the read bit is set, but oh well) just to wake it up before
+        // the real command is sent.
         string buffer = "MIsSFFS00sS40S" + ToHex(byte) + "p";
         Write(buffer.c_str(), Narrow<DWORD>(buffer.size()));
     }
