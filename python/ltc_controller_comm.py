@@ -68,12 +68,12 @@ HS_BIT_MODE_FIFO = 0x40
 
 
 # non-public method to map a type string to the appropriate c_types type
-def _ctype_from_string(ctype):
-    if ctype == "ubyte":
+def _ctype_from_string(type_string):
+    if type_string == "Bytes":
         return ct.c_ubyte
-    elif ctype == "uint16":
+    elif type_string == "Uint16Values":
         return ct.c_uint16
-    elif ctype == "uint32":
+    elif type_string == "Uint32Values":
         return ct.c_uint32
     else:
         raise ValueError("Invalid type string")
@@ -134,8 +134,8 @@ class ControllerInfo(ct.Structure):
 _reg_key = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, "SOFTWARE\\Linear Technology\\LinearLabTools")
 _dll_file, _ = _winreg.QueryValueEx(_reg_key, "Location")
 _dll_file += "\\ltc_controller_comm"
-is_64_bit = sys.maxsize > 2 ** 32
-if is_64_bit:
+_is_64_bit = sys.maxsize > 2 ** 32
+if _is_64_bit:
     _dll_file += "64.dll"
 else:
     _dll_file += ".dll"
@@ -176,8 +176,8 @@ class Controller(object):
         self._c_error_buffer = ct.create_string_buffer(ERROR_BUFFER_SIZE)
         self._c_array = None
         self._c_array_type = "none"
-        self.dll = _dll
-        if self.dll.LccInitController(ct.byref(self._handle), controller_info) != 0:
+        self._dll = _dll
+        if self._dll.LccInitController(ct.byref(self._handle), controller_info) != 0:
             raise HardwareError("Error initializing the device")
 
     # support "with" semantics
@@ -191,10 +191,12 @@ class Controller(object):
         del traceback
         self.cleanup()
 
-    # raise an exception if the return code indicates an error
-    def _raise_on_error(self, error_code):
+    # call the C function and raise an exception if the return code indicates an error
+    def _call(self, func_name, *args):
+        func = getattr(self._dll, 'Lcc' + func_name)
+        error_code = func(self._handle, *args)
         if error_code != 0:
-            self.dll.LccGetErrorInfo(self._handle, self._c_error_buffer, ERROR_BUFFER_SIZE)
+            self._dll.LccGetErrorInfo(self._handle, self._c_error_buffer, ERROR_BUFFER_SIZE)
             if error_code == -1:
                 raise HardwareError(self._c_error_buffer.value)
             elif error_code == -2:
@@ -209,26 +211,24 @@ class Controller(object):
     def cleanup(self):
         """Clean up (close and delete) all resources."""
         if self._handle is not None:
-            self.dll.LccCleanup(ct.byref(self._handle))
+            self._dll.LccCleanup(ct.byref(self._handle))
             self._handle = None
 
     def get_serial_number(self):
         """Return the current controller's serial number."""
         c_serial_number = ct.create_string_buffer(SERIAL_NUMBER_BUFFER_SIZE)
-        self._raise_on_error(self.dll.LccGetSerialNumber(self._handle, c_serial_number,
-                                                         SERIAL_NUMBER_BUFFER_SIZE))
+        self._call('GetSerialNumber', c_serial_number, SERIAL_NUMBER_BUFFER_SIZE)
         return c_serial_number.value
 
     def get_description(self):
         """Return the current controller's description."""
         c_description = ct.create_string_buffer(DESCRIPTION_BUFFER_SIZE)
-        self._raise_on_error(self.dll.LccGetDescription(self._handle, c_description,
-                                                        DESCRIPTION_BUFFER_SIZE))
+        self._call('GetDescription', c_description, DESCRIPTION_BUFFER_SIZE)
         return c_description.value
 
     def close(self):
         """Close device. Device will be automatically re-opened when needed."""
-        self._raise_on_error(self.dll.LccClose(self._handle))
+        self._call('Close')
 
     def data_set_high_byte_first(self):
         """Make calls to data_[send/receive]_uint[16/32]_values send/receive high byte first.
@@ -236,7 +236,7 @@ class Controller(object):
         Enables byte swapping on data send and receive functions so that data that is transferred
         Most Significant Byte first is stored correctly. (Default) Note that this assumes a
         little-endian machine (which currently includes all Windows desktops.)"""
-        self._raise_on_error(self.dll.LccDataSetHighByteFirst(self._handle))
+        self._call('DataSetHighByteFirst')
 
     def data_set_low_byte_first(self):
         """Make calls to data_[send/receive]_uint[16/32]_values send/receive low byte first.
@@ -244,7 +244,7 @@ class Controller(object):
         Least Significant Byte first is stored correctly. Note that this assumes a little-endian 
         machine (which currently includes all Windows desktops.)
         """
-        self._raise_on_error(self.dll.LccDataSetLowByteFirst(self._handle))
+        self._call('DataSetLowByteFirst')
 
     # send data of various types
     def _data_send_by_type(self, type_string, values, start, end):
@@ -262,23 +262,15 @@ class Controller(object):
             c_array_type = ctype * num_values
             # noinspection PyCallingNonCallable
             self._c_array = c_array_type()
+            self._c_array_type = type_string
 
         for i in xrange(0, num_values):
             self._c_array[i] = values[i + start]
 
         c_num_values = ct.c_int(num_values)
         c_num_transfered = ct.c_int()
-        if type_string == "ubyte":
-            self._raise_on_error(self.dll.LccDataSendBytes(self._handle, self._c_array,
-                                                           c_num_values, ct.byref(c_num_transfered)))
-        elif type_string == "uint16":
-            self._raise_on_error(self.dll.LccDataSendUint16Values(self._handle, self._c_array,
-                                                                  c_num_values, ct.byref(c_num_transfered)))
-        elif type_string == "uint32":
-            self._raise_on_error(self.dll.LccDataSendUint32Values(self._handle, self._c_array,
-                                                                  c_num_values, ct.byref(c_num_transfered)))
-        else:
-            raise ValueError("type string must be ubyte, uint16 or uint32")
+
+        self._call('DataSend' + type_string, self._c_array, c_num_values, ct.byref(c_num_transfered))
 
         return c_num_transfered.value
 
@@ -289,7 +281,7 @@ class Controller(object):
         Defaults for start and end and interpretation of negative values is
         the same as for slices.
         """
-        return self._data_send_by_type("ubyte", values, start, end)
+        return self._data_send_by_type("Bytes", values, start, end)
 
     def data_send_uint16_values(self, values, start=0, end=-1):
         """Send elements of values[start:end] as 16-bit values.
@@ -298,7 +290,7 @@ class Controller(object):
         Defaults for start and end and interpretation of negative values is
         the same as for slices.
         """
-        return self._data_send_by_type("uint16", values, start, end)
+        return self._data_send_by_type("Uint16Values", values, start, end)
 
     def data_send_uint32_values(self, values, start=0, end=-1):
         """Send elements of values[start:end] as 32-bit values.
@@ -307,10 +299,10 @@ class Controller(object):
         Defaults for start and end and interpretation of negative values is
         the same as for slices.
         """
-        return self._data_send_by_type("uint32", values, start, end)
+        return self._data_send_by_type("Uint32Values", values, start, end)
 
     # receive FIFO data of various types
-    def _data_receive_by_type(self, ctype, values, start, end):
+    def _data_receive_by_type(self, type_string, values, start, end):
         if values is None and end < 0:
             raise ValueError("If values is None, end cannot be negative")
         if values is None and start != 0:
@@ -324,25 +316,17 @@ class Controller(object):
 
         num_values = end - start
 
-        if self._c_array_type != type or len(self._c_array) < num_values:
+        if self._c_array_type != type_string or len(self._c_array) < num_values:
+            ctype = _ctype_from_string(type_string)
+            c_array_type = ctype * num_values
             # noinspection PyCallingNonCallable
-            self._c_array = (_ctype_from_string(ctype) * num_values)()
+            self._c_array = c_array_type()
+            self._c_array_type = type_string
 
         c_num_values = ct.c_int(num_values)
         c_num_transfered = ct.c_int()
-        if ctype == "ubyte":
-            self._raise_on_error(self.dll.LccDataReceiveBytes(self._handle, self._c_array,
-                                                              c_num_values, ct.byref(c_num_transfered)))
-        elif ctype == "uint16":
-            self._raise_on_error(self.dll.LccDataReceiveUint16Values(self._handle,
-                                                                     self._c_array, c_num_values,
-                                                                     ct.byref(c_num_transfered)))
-        elif ctype == "uint32":
-            self._raise_on_error(self.dll.LccDataReceiveUint32Values(self._handle,
-                                                                     self._c_array, c_num_values,
-                                                                     ct.byref(c_num_transfered)))
-        else:
-            raise ValueError("type string must be 'ubyte', 'uint16' or 'uint32'")
+
+        self._call('DataReceive' + type_string, self._c_array, c_num_values, ct.byref(c_num_transfered))
 
         if values is None:
             values = [self._c_array[i + start] for i in xrange(0, num_values)]
@@ -359,7 +343,7 @@ class Controller(object):
         end and interpretation of negative values is the same as for slices.
         Return a reference to values.
         """
-        return self._data_receive_by_type("ubyte", values, start, end)
+        return self._data_receive_by_type("Bytes", values, start, end)
 
     def data_receive_uint16_values(self, values=None, start=0, end=-1):
         """Fill values[start:end] with 16-bit values received.
@@ -368,7 +352,7 @@ class Controller(object):
         end and interpretation of negative values is the same as for slices.
         Return a reference to values.
         """
-        return self._data_receive_by_type("uint16", values, start, end)
+        return self._data_receive_by_type("Uint16Values", values, start, end)
 
     def data_receive_uint32_values(self, values=None, start=0, end=-1):
         """Fill values[start:end] with 32-bit values received.
@@ -377,7 +361,7 @@ class Controller(object):
         end and interpretation of negative values is the same as for slices.
         Return a reference to values.
         """
-        return self._data_receive_by_type("uint32", values, start, end)
+        return self._data_receive_by_type("Uint32Values", values, start, end)
 
     def data_start_collect(self, total_samples, trigger):
         """
@@ -385,8 +369,7 @@ class Controller(object):
         total_samples -- Number of samples to collect
         trigger -- Trigger type
         """
-        self._raise_on_error(self.dll.LccDataStartCollect(self._handle, ct.c_int(total_samples),
-                                                          ct.c_int(trigger)))
+        self._call('DataStartCollect', ct.c_int(total_samples), ct.c_int(trigger))
 
     def data_is_collect_done(self):
         """
@@ -394,8 +377,7 @@ class Controller(object):
         :return: True if collect done, False otherwise
         """
         is_done = ct.c_bool()
-        self._raise_on_error(self.dll.LccDataIsCollectDone(self._handle,
-                                                           ct.byref(is_done)))
+        self._call('DataIsCollectDone', ct.byref(is_done))
         return is_done.value
 
     def data_cancel_collect(self):
@@ -403,7 +385,7 @@ class Controller(object):
         Note this function must be called to cancel a pending collect
         OR if a collect has finished but you do not read the full collection of data.
         """
-        self._raise_on_error(self.dll.LccDataCancelCollect(self._handle))
+        self._call('DataCancelCollect')
 
     def data_set_characteristics(self, is_multichannel, sample_bytes, is_positive_clock):
         """
@@ -413,11 +395,8 @@ class Controller(object):
                         alignment and meta data
         is_positive_clock -- True if data is sampled on positive (rising) clock edges
         """
-        self._raise_on_error(
-            self.dll.LccDataSetCharacteristics(self._handle,
-                                               ct.c_bool(is_multichannel),
-                                               ct.c_int(sample_bytes),
-                                               ct.c_bool(is_positive_clock)))
+        self._call('DataSetCharacteristics', ct.c_bool(is_multichannel), ct.c_int(sample_bytes),
+                   ct.c_bool(is_positive_clock))
 
     def spi_send_bytes(self, values, start=0, end=-1):
         """Send elements of values[start:end] via SPI controlling chip-select.
@@ -444,8 +423,7 @@ class Controller(object):
             self._c_array[i] = values[i + start]
 
         c_num_values = ct.c_int(num_values)
-        self._raise_on_error(self.dll.LccSpiSendBytes(self._handle, self._c_array,
-                                                      c_num_values))
+        self._call('SpiSendBytes', self._c_array, c_num_values)
 
     def spi_receive_bytes(self, values=None, start=0, end=-1):
         """Fill values[start:end] with bytes received via SPI controlling chip-select.
@@ -473,7 +451,7 @@ class Controller(object):
             self._c_array = (ct.c_ubyte * num_values)()
 
         c_num_values = ct.c_int(num_values)
-        self._raise_on_error(self.dll.LccSpiReceiveBytes(self._handle, self._c_array, c_num_values))
+        self._call('SpiReceiveBytes', self._c_array, c_num_values)
 
         if values is None:
             values = [self._c_array[i + start] for i in xrange(0, num_values)]
@@ -514,8 +492,7 @@ class Controller(object):
             self._c_array[i] = send_values[i + send_start]
 
         c_num_values = ct.c_int(num_values)
-        self._raise_on_error(self.dll.LccSpiTransceiveBytes(self._handle, self._c_array, self._c_array,
-                                                            c_num_values))
+        self._call('SpiTransceiveBytes', self._c_array, self._c_array, c_num_values)
 
         if receive_values is None:
             receive_values = [self._c_array[i + receive_start] for i in xrange(0, num_values)]
@@ -539,7 +516,7 @@ class Controller(object):
         """
         c_address = ct.c_uint32(address)
         c_value = ct.c_ubyte(value)
-        self._raise_on_error(self.dll.LccSpiSendByteAtAddress(self._handle, c_address, c_value))
+        self._call('SpiSendByteAtAddress', c_address, c_value)
 
     def spi_send_bytes_at_address(self, address, values, start=0, end=-1):
         """Write an address byte and values[start:end] via SPI.
@@ -571,8 +548,7 @@ class Controller(object):
 
         c_num_values = ct.c_int(num_values)
         c_address = ct.c_uint32(address)
-        self._raise_on_error(self.dll.LccSpiSendBytesAtAddress(self._handle, c_address,
-                                                               self._c_array, c_num_values))
+        self._call('SpiSendBytesAtAddress', c_address, self._c_array, c_num_values)
 
     def spi_receive_byte_at_address(self, address):
         """Write an address and receive a value via SPI; return the value.
@@ -587,8 +563,7 @@ class Controller(object):
         """
         c_address = ct.c_uint32(address)
         c_value = ct.c_ubyte()
-        self._raise_on_error(self.dll.LccSpiReceiveByteAtAddress(self._handle,
-                                                                 c_address, ct.byref(c_value)))
+        self._call('SpiReceiveByteAtAddress', c_address, ct.byref(c_value))
         return c_value.value
 
     def spi_receive_bytes_at_address(self, address, values=None,
@@ -622,8 +597,7 @@ class Controller(object):
 
         c_num_values = ct.c_int(num_values)
         c_address = ct.c_uint32(address)
-        self._raise_on_error(self.dll.LccSpiReceiveBytesAtAddress(self._handle, c_address,
-                                                                  self._c_array, c_num_values))
+        self._call('SpiReceiveBytesAtAddress', c_address, self._c_array, c_num_values)
 
         if values is None:
             values = [self._c_array[i + start] for i in xrange(0, num_values)]
@@ -640,7 +614,7 @@ class Controller(object):
         demo-board does not have an I/O expander."""
         
         c_chip_select = ct.c_int(chip_select_state)
-        self._raise_on_error(self.dll.LccSpiSetCsState(self._handle, c_chip_select))
+        self._call('SpiSetCsState', c_chip_select)
 
     def spi_send_no_chip_select(self, values, start=0, end=-1):
         """Send values[start:end] via SPI without controlling chip-select.
@@ -667,8 +641,7 @@ class Controller(object):
             self._c_array[i] = values[i + start]
 
         c_num_values = ct.c_int(num_values)
-        self._raise_on_error(self.dll.LccSpiSendNoChipSelect(self._handle, self._c_array,
-                                                             c_num_values))
+        self._call('SpiSendNoChipSelect', self._c_array, c_num_values)
 
     def spi_receive_no_chip_select(self, values=None, start=0, end=-1):
         """Fill values[start:end] via SPI without controlling chip-select.
@@ -694,8 +667,7 @@ class Controller(object):
             self._c_array = (ct.c_ubyte * num_values)()
 
         c_num_values = ct.c_int(num_values)
-        self._raise_on_error(self.dll.LccSpiReceiveNoChipSelect(self._handle, self._c_array,
-                                                                c_num_values))
+        self._call('SpiReceiveNoChipSelect', self._c_array, c_num_values)
 
         if values is None:
             values = [self._c_array[i + start] for i in xrange(0, num_values)]
@@ -738,8 +710,7 @@ class Controller(object):
             self._c_array[i] = send_values[i + send_start]
 
         c_num_values = ct.c_int(num_values)
-        self._raise_on_error(self.dll.LccSpiTransceiveNoChipSelect(self._handle,
-                                                                   self._c_array, self._c_array, c_num_values))
+        self._call('SpiTransceiveNoChipSelect', self._c_array, self._c_array, c_num_values)
 
         if receive_values is None:
             receive_values = [self._c_array[i + receive_start] for i in xrange(0, num_values)]
@@ -759,9 +730,7 @@ class Controller(object):
         returns True if the requested load is loaded, False otherwise.
         """
         is_loaded = ct.c_bool()
-        self._raise_on_error(
-            self.dll.LccFpgaGetIsLoaded(self._handle, ct.c_char_p(fpga_filename),
-                                        ct.byref(is_loaded)))
+        self._call('FpgaGetIsLoaded', ct.c_char_p(fpga_filename), ct.byref(is_loaded))
         return is_loaded.value
         
     def fpga_load_file(self, fpga_filename):
@@ -773,8 +742,7 @@ class Controller(object):
             or revision info, for instance 'DLVDS' or 'S2175', case insensitive.
         returns True if the requested load is loaded, False otherwise.
         """
-        self._raise_on_error(
-            self.dll.LccFpgaLoadFile(self._handle, ct.c_char_p(fpga_filename)))
+        self._call('FpgaLoadFile', ct.c_char_p(fpga_filename))
 
     def fpga_load_file_chunked(self, fpga_filename):
         """Load a particular FPGA file a chunk at a time. 
@@ -784,85 +752,81 @@ class Controller(object):
         SMALLER number. The process is finished when it returns 0.
         """
         progress = ct.c_int()
-        self._raise_on_error(
-            self.dll.LccFpgaLoadFileChunked(self._handle, ct.c_char_p(fpga_filename),
-                                            ct.byref(progress)))
+        self._call('FpgaLoadFileChunked', ct.c_char_p(fpga_filename), ct.byref(progress))
         return progress.value
         
     def fpga_cancel_load(self):
         """Must be called if you abandon loading the FPGA file before complete"""
-        self._raise_on_error(self.dll.LccFpgaCancelLoad(self._handle))
+        self._call('FpgaCancelLoad')
             
     def eeprom_read_string(self, num_chars):
         """Receive an EEPROM string."""
         c_string = ct.create_string_buffer(num_chars+1)
-        self._raise_on_error(self.dll.LccEepromReadString(self._handle, c_string, num_chars+1))
+        self._call('EepromReadString', c_string, num_chars+1)
         return c_string.value
 
     def hs_set_bit_mode(self, mode):
         """Set device mode to MODE_FIFO or MODE_MPSSE."""
         c_mode = ct.c_int(mode)
-        self._raise_on_error(self.dll.LccHsSetBitMode(self._handle, c_mode))
+        self._call('HsSetBitMode', c_mode)
 
     def hs_purge_io(self):
         """Purge input and output buffers."""
-        self._raise_on_error(self.dll.LccHsPurgeIo(self._handle))
+        self._call('HsPurgeIo')
 
     def hs_fpga_toggle_reset(self):
         """Set the FPGA reset bit low then high."""
-        self._raise_on_error(self.dll.LccHsFpgaToggleReset(self._handle))
+        self._call('HsFpgaToggleReset')
 
     def hs_fpga_write_address(self, address):
         """Set the FPGA address to write or read."""
         c_address = ct.c_ubyte(address)
-        self._raise_on_error(self.dll.LccHsFpgaWriteAddress(self._handle, c_address))
+        self._call('HsFpgaWriteAddress', c_address)
 
     def hs_fpga_write_data(self, value):
         """Write a value to the current FPGA address."""
         c_value = ct.c_ubyte(value)
-        self._raise_on_error(self.dll.LccHsFpgaWriteData(self._handle, c_value))
+        self._call('HsFpgaWriteData', c_value)
 
     def hs_fpga_read_data(self):
         """Read a value from the current FPGA address and return it."""
         c_value = ct.c_ubyte()
-        self._raise_on_error(self.dll.LccHsFpgaReadData(self._handle, ct.byref(c_value)))
+        self._call('HsFpgaReadData', ct.byref(c_value))
         return c_value.value
 
     def hs_fpga_write_data_at_address(self, address, value):
         """Set the current address and write a value to it."""
         c_address = ct.c_ubyte(address)
         c_value = ct.c_ubyte(value)
-        self._raise_on_error(
-            self.dll.LccHsFpgaWriteDataAtAddress(self._handle, c_address, c_value))
+        self._call('HsFpgaWriteDataAtAddress', c_address, c_value)
 
     def hs_fpga_read_data_at_address(self, address):
         """Set the current address and read a value from it."""
         c_address = ct.c_ubyte(address)
         c_value = ct.c_ubyte()
-        self._raise_on_error(
-            self.dll.LccHsFpgaReadDataAtAddress(self._handle, c_address, ct.byref(c_value)))
+        self._call('HsFpgaReadDataAtAddress', c_address, ct.byref(c_value))
         return c_value.value
 
     def hs_gpio_write_high_byte(self, value):
         """Set the GPIO high byte to a value."""
         c_value = ct.c_ubyte(value)
-        self._raise_on_error(self.dll.LccHsGpioWriteHighByte(self._handle, c_value))
+        self._call('HsGpioWriteHighByte', c_value)
 
     def hs_gpio_read_high_byte(self):
         """Read the GPIO high byte and return the value."""
         c_value = ct.c_ubyte()
-        self._raise_on_error(self.dll.LccHsGpioReadHighByte(self._handle, ct.byref(c_value)))
+        self._call('HsGpioReadHighByte', ct.byref(c_value))
         return c_value.value
 
     def hs_gpio_write_low_byte(self, value):
         """Set the GPIO low byte to a value."""
         c_value = ct.c_ubyte(value)
-        self._raise_on_error(self.dll.LccHsGpioWriteLowByte(self._handle, c_value))
+        self._call('HsGpioWriteLowByte', c_value)
 
     def hs_gpio_read_low_byte(self):
         """Read the GPIO low byte and return the value"""
         c_value = ct.c_ubyte()
-        self._raise_on_error(self.dll.LccHsGpioReadLowByte(self._handle, ct.byref(c_value)))
+        self._call('HsGpioReadLowByte', ct.byref(c_value))
         return c_value.value
 
     def hs_fpga_eeprom_set_bit_bang_register(self, register_address):
@@ -871,15 +835,13 @@ class Controller(object):
         If not called, address used is 0x11.
         """
         c_register_address = ct.c_ubyte(register_address)
-        self._raise_on_error(self.dll.LccHsFpgaEepromSetBitBangRegister(self._handle,
-                                                                        c_register_address))
+        self._call('HsFpgaEepromSetBitBangRegister', c_register_address)
 
     def dc1371_set_generic_config(self, generic_config):
         """
         generic_config is always 0, so you never have to call this function
         """
-        self._raise_on_error(self.dll.Lcc1371SetGenericConfig(self._handle,
-                                                              ct.c_uint32(generic_config)))
+        self._call('1371SetGenericConfig', ct.c_uint32(generic_config))
 
     def dc1371_set_demo_config(self, demo_config):
         """
@@ -888,8 +850,7 @@ class Controller(object):
         demo_config -- If an ID string were to have 01 02 03 04,
         demo_config would be 0x01020304
         """
-        self._raise_on_error(
-            self.dll.Lcc1371SetDemoConfig(self._handle, ct.c_uint32(demo_config)))
+        self._call('1371SetDemoConfig', ct.c_uint32(demo_config))
 
     def dc1371_spi_choose_chip_select(self, new_chip_select):
         """
@@ -897,8 +858,7 @@ class Controller(object):
         correct for most situations, rarely 2 is needed.
         new_chip_select -- 1 (usually) or 2
         """
-        self._raise_on_error(self.dll.Lcc1371SpiChooseChipSelect(self._handle,
-                                                                 ct.c_int(new_chip_select)))
+        self._call('1371SpiChooseChipSelect', ct.c_int(new_chip_select))
 
     def dc890_gpio_set_byte(self, byte):
         """
@@ -906,7 +866,7 @@ class Controller(object):
         a base value, or can be used to bit bang lines
         byte -- The bits of byte correspond to the output lines of the IO expander.
         """
-        self._raise_on_error(self.dll.Lcc890GpioSetByte(self._handle, ct.c_uint8(byte)))
+        self._call('890GpioSetByte', ct.c_uint8(byte))
 
     def dc890_gpio_spi_set_bits(self, cs_bit, sck_bit, sdi_bit):
         """
@@ -918,9 +878,7 @@ class Controller(object):
         sck_bit -- the bit used as sck
         sdi_bit -- the bit used as sdi
         """
-        self._raise_on_error(
-            self.dll.Lcc890GpioSpiSetBits(
-                self._handle, ct.c_int(cs_bit), ct.c_int(sck_bit), ct.c_int(sdi_bit)))
+        self._call('890GpioSpiSetBits', ct.c_int(cs_bit), ct.c_int(sck_bit), ct.c_int(sdi_bit))
 
     def dc890_flush(self):
         """
@@ -928,4 +886,4 @@ class Controller(object):
         purges the buffers.
         :return: nothing
         """
-        self._raise_on_error(self.dll.Lcc890Flush(self._handle))
+        self._call('890Flush')
