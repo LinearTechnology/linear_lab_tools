@@ -126,8 +126,7 @@ function Ltc2261_dc1369
 
             figure(2)
             plot(freq_domain_magnitude_db_ch1)
-            title('Frequency Domain Data')
-            
+            title('Frequency Domain Data')  
     end
     fprintf('All finished');
 end

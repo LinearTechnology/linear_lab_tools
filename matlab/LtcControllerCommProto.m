@@ -307,6 +307,7 @@ functions.name{iFunction} = 'LccEepromReadString';
 functions.calltype{iFunction} = 'cdecl';
 functions.LHS{iFunction} = 'int32';
 functions.RHS{iFunction} = {'voidPtr', 'cstring', 'int32'};
+iFunction = iFunction+1;
 
 % int HsLccPurgeIo(LccHandle handle); 
 functions.name{iFunction} = 'LccHsPurgeIo';

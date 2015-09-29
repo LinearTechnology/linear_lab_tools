@@ -83,8 +83,7 @@ classdef LtcControllerComm < handle
             if handle.value == 0
                 error('LtcControllerComm:InvalidArgument', 'Device has already been cleaned up');
             end
-            [varargout{1:nargout}] = calllib(self.libraryName, func, ...
-                handle, varargin{:});
+            [varargout{1:nargout}] = calllib(self.libraryName, func, handle, varargin{:});
         end
         
         function varargout = Call(self, did, func, varargin)
@@ -199,7 +198,7 @@ classdef LtcControllerComm < handle
             self.nextIndex = self.nextIndex + 1;
         end
         
-        function Cleanup(self, did)
+        function did = Cleanup(self, did)
             % cleanup method closes the device and deletes the underlying
             % native pointer. This can be called manually if you are not 
             % going to use the device anymore and you want it to be
@@ -207,6 +206,14 @@ classdef LtcControllerComm < handle
             % for all open devices whenever the LtcControllerComm goes away.
            self.CallWithStatus(did, 'LccCleanup');
            self.handles{did}.value = 0;
+           did = 0;
+        end
+        
+        function string = EepromReadString(self, did, nChars)
+            % Receive string at an address over bit-banged I2C via FPGA reg
+            % Address must be a 7-bit address, it will be left-shifted
+            % internally.
+            string = self.Call(did, 'LccEepromReadString', blanks(nChars), nChars);
         end
         
         function description = GetDescription(self, did)
@@ -463,12 +470,7 @@ classdef LtcControllerComm < handle
                 values, nValues);
         end
         
-        function string = EepromReadString(self, did, nChars)
-            % Receive string at an address over bit-banged I2C via FPGA reg
-            % Address must be a 7-bit address, it will be left-shifted
-            % internally.
-            string = self.Call(did, 'LccEepromReadString', blanks(nChars), nChars);
-        end
+        
         
         function HsSetBitMode(self, did, bitMode)
             % Set the device to MPSSE mode (for SPI, FPGA registers and
