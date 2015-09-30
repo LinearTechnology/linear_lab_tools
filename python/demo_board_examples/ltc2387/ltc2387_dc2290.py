@@ -75,18 +75,19 @@ DATA_ALTERNATING = 0x38
 test_data_reg = DATA_REAL
 
 NUM_ADC_SAMPLES = 16 * 1024
-NUM_ADC_SAMPLES_X2 = 2 * NUM_ADC_SAMPLES
 SAMPLE_BYTES = 3
+EEPROM_ID_SIZE = 50
 
 # find demo board with correct ID
-eeprom_id = 'LTC2387,D2433,DC2290A,YII101Q,NONE,-------------'
+# Full EEPROM string is 'LTC2387,D2433,DC2290A,YII101Q,NONE,-------------'
 device_info = None
 print 'Looking for a DC718 with a DC2290A demoboard'
 for info in comm.list_controllers(comm.TYPE_DC718):
     with comm.Controller(info) as device:
-        if device.eeprom_read_string(len(eeprom_id)) == eeprom_id:
+        eeprom_id = device.eeprom_read_string(EEPROM_ID_SIZE)
+        if 'DC2290' in eeprom_id:
             if verbose:
-                print 'Found a DC2290A demoboard'
+                print 'Found a DC2290 demoboard'
             device_info = info
             break
 if device_info is None:
