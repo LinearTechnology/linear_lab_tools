@@ -25,7 +25,7 @@ function Ltc2261_dc1369
     % find demo board with correct ID
     fprintf('Looking for a DC890 with a DC1369A demoboard');
     
-    deviceInfoList = comm.ListControllers(comm.TYPE_DC890, 2);
+    deviceInfoList = comm.ListControllers(comm.TYPE_DC890, 1);
     cId = comm.Init(deviceInfoList);
     
     for info = deviceInfoList
@@ -128,24 +128,24 @@ function Ltc2261_dc1369
     fclose(fileID);
     fprintf('\nFile write done');
     if(plot_data == true)
-            figure(1)
-            plot(data_ch1)
-            title('Time Domain Data')
-            
-            adc_amplitude = 16384.0 / 2.0;
-            
-            windowscale = (NUM_ADC_SAMPLES/2) / sum(blackman(NUM_ADC_SAMPLES/2));
-            fprintf('\nWindow scaling factor: %d', windowscale);
-            
-            windowed_data_ch1 = data_ch1' .* blackman(NUM_ADC_SAMPLES/2);
-            windowed_data_ch1 = windowed_data_ch1 .* windowscale; % Apply Blackman window
-            freq_domain_ch1 = fft(windowed_data_ch1)/(NUM_ADC_SAMPLES_PER_CH); % FFT
-            freq_domain_magnitude_ch1 = abs(freq_domain_ch1); % Extract magnitude
-            freq_domain_magnitude_db_ch1 = 20 * log10(freq_domain_magnitude_ch1/adc_amplitude);
+        figure(1)
+        plot(data_ch1)
+        title('Time Domain Data')
 
-            figure(2)
-            plot(freq_domain_magnitude_db_ch1)
-            title('Frequency Domain Data')  
+        adc_amplitude = 16384.0 / 2.0;
+
+        windowscale = (NUM_ADC_SAMPLES/2) / sum(blackman(NUM_ADC_SAMPLES/2));
+        fprintf('\nWindow scaling factor: %d', windowscale);
+
+        windowed_data_ch1 = data_ch1' .* blackman(NUM_ADC_SAMPLES/2);
+        windowed_data_ch1 = windowed_data_ch1 .* windowscale; % Apply Blackman window
+        freq_domain_ch1 = fft(windowed_data_ch1)/(NUM_ADC_SAMPLES_PER_CH); % FFT
+        freq_domain_magnitude_ch1 = abs(freq_domain_ch1); % Extract magnitude
+        freq_domain_magnitude_db_ch1 = 20 * log10(freq_domain_magnitude_ch1/adc_amplitude);
+
+        figure(2)
+        plot(freq_domain_magnitude_db_ch1)
+        title('Frequency Domain Data')  
     end
     fprintf('\nAll finished');
 end
