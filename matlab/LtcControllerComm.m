@@ -209,13 +209,6 @@ classdef LtcControllerComm < handle
            did = 0;
         end
         
-        function string = EepromReadString(self, did, nChars)
-            % Receive string at an address over bit-banged I2C via FPGA reg
-            % Address must be a 7-bit address, it will be left-shifted
-            % internally.
-            string = self.Call(did, 'LccEepromReadString', blanks(nChars), nChars);
-        end
-        
         function description = GetDescription(self, did)
             % Return the current device's serial number.
             description = self.Call(did, 'LccGetDescription', blanks(64), ...
@@ -321,8 +314,8 @@ classdef LtcControllerComm < handle
        
         function DataStartCollect(self, did, total_bytes, trigger)
             % todo
-            self.Call(did, 'LccDataStartCollect', int(total_bytes),...
-                int(trigger));
+            self.Call(did, 'LccDataStartCollect', total_bytes,...
+                trigger);
         end
         
         function IsDone = DataIsCollectDone(self, did)
@@ -470,7 +463,30 @@ classdef LtcControllerComm < handle
                 values, nValues);
         end
         
+        function is_loaded = FpgaGetIsLoaded(self, did, fpga_filename)
+            is_loaded = false;
+            is_loaded = self.Call(did, 'LccFpgaGetIsLoaded', fpga_filename, is_loaded);
+        end
         
+        function FpgaLoadFile(self, did, fpga_filename)
+            self.Call(did, 'LccFpgaLoadFile', fpga_filename);
+        end
+        
+        function progress = FpgaLoadFileChunked(self, did, fpga_filename)
+            progress = 0;
+            progress = self.Call(did, 'LccFpgaLoadFileChunked', fpga_filename, progress);
+        end
+        
+        function FpgaCancelLoad(self, did)
+            self.Call(did, 'LccFpgaCancelLoad');
+        end
+        
+        function string = EepromReadString(self, did, nChars)
+            % Receive string at an address over bit-banged I2C via FPGA reg
+            % Address must be a 7-bit address, it will be left-shifted
+            % internally.
+            string = self.Call(did, 'LccEepromReadString', blanks(nChars), nChars);
+        end
         
         function HsSetBitMode(self, did, bitMode)
             % Set the device to MPSSE mode (for SPI, FPGA registers and

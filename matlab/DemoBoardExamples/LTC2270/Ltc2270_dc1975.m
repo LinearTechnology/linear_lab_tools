@@ -25,7 +25,6 @@ function Ltc2270_dc1975
     
     eeprom_id = 'LTC2270,D9002,DC1975A-A,YGG200T,CMOS,-----------';
     % find demo board with correct ID
-    deviceInfo = [];
     fprintf('Looking for a DC890 with a DC1975A-A demoboard');
     
     deviceInfoList = comm.ListControllers(comm.TYPE_DC890, 1);

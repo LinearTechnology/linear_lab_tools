@@ -301,6 +301,21 @@ functions.LHS{iFunction} = 'int32';
 functions.RHS{iFunction} = {'voidPtr', 'cstring'};
 iFunction = iFunction+1;
 
+% int LccFpgaLoadFileChunked(LccHandle handle, const char* fpga_filename,
+%        int* progress);
+functions.name{iFunction} = 'LccFpgaLoadFileChunked';
+functions.calltype{iFunction} = 'cdecl';
+functions.LHS{iFunction} = 'int32';
+functions.RHS{iFunction} = {'voidPtr', 'cstring', 'int32Ptr'};
+iFunction = iFunction+1;
+
+% int LccFpgaCancelLoad(LccHandle handle);
+functions.name{iFunction} = 'LccFpgaCancelLoad';
+functions.calltype{iFunction} = 'cdecl';
+functions.LHS{iFunction} = 'int32';
+functions.RHS{iFunction} = {'voidPtr'};
+iFunction = iFunction+1;
+
 % int LccEepromReadString(LccHandle handle,
 %     char * buffer, int buffer_size); 
 functions.name{iFunction} = 'LccEepromReadString';
