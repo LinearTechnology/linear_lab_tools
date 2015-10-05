@@ -99,7 +99,7 @@ bool HandleStatus(LccHandle& handle, int status, int line_number) {
 }
 
 #define CHECK(x, ln) if (!HandleStatus(handle, (x), (ln))) { return -1; }
-#define FAIL(msg, ln) { LccCleanup(&handle); return -1; }
+#define FAIL(msg, ln) do { cout << msg; LccCleanup(&handle); return -1; } while(0);
 
 const int SPI_READ_BIT = 0x80;
 const int SPI_WRITE_BIT = 0x00;
@@ -212,11 +212,41 @@ bool CheckPrbs(const uint16_t* data, int size) {
     return true;
 }
 
+int CollectAndCheck(uint16_t* data, LccHandle handle, uint16_t expected) {
+    CHECK(LccDataStartCollect(handle, NUM_ADC_SAMPLES * 2, LCC_TRIGGER_NONE), __LINE__);
+    bool is_done = false;
+    for (int i = 0; i < 10; ++i) {
+        CHECK(LccDataIsCollectDone(handle, &is_done), __LINE__);
+        if (is_done) {
+            break;
+        }
+        sleep_for(milliseconds(200));
+    }
+
+    if (!is_done) {
+        FAIL("Data collect timed out.\n", __LINE__);
+    }
+
+    int total_bytes_received;
+    CHECK(LccDataReceiveUint16Values(handle, data, NUM_ADC_SAMPLES, &total_bytes_received), __LINE__);
+
+    if (total_bytes_received != 2 * NUM_ADC_SAMPLES) {
+        FAIL("Not all bytes received\n", __LINE__);
+    }
+
+    for (int i = 0; i < NUM_ADC_SAMPLES; ++i) {
+        if (data[i] != expected) {
+            FAIL("Data values not correct\n", __LINE__);
+        }
+    }
+    return 0;
+}
+
 //#define HIGH_SPEED_BATTERY_1
 //#define HIGH_SPEED_BATTERY_2
 //#define HIGH_SPEED_BATTERY_3
-//#define DC1371_BATTERY_1
-#define DC890_BATTERY_1
+#define DC1371_BATTERY_1
+//#define DC890_BATTERY_1
 //#define DC718_BATTERY_1
 
 int main() {
@@ -922,32 +952,42 @@ int main() {
     CHECK(Lcc1371SetDemoConfig(handle, 0x28000000), __LINE__);
 
     uint16_t data[NUM_ADC_SAMPLES];
-    CHECK(LccDataStartCollect(handle, NUM_ADC_SAMPLES * 2, LCC_TRIGGER_NONE), __LINE__);
-    bool is_done = false;
-    for (int i = 0; i < 10; ++i) {
-        CHECK(LccDataIsCollectDone(handle, &is_done), __LINE__);
-        if (is_done) {
-            break;
-        }
-        sleep_for(milliseconds(200));
+    
+    int status;
+    if (status = CollectAndCheck(data, handle, 0x2AAA) != 0) { return status; }
+
+    cout << "Please disconnect the clock\nPress Enter to continue...";
+    WaitForEnterPress();
+
+    CHECK(LccDataStartCollect(handle, NUM_ADC_SAMPLES, LCC_TRIGGER_NONE), __LINE__);
+    bool is_done;
+    CHECK(LccDataIsCollectDone(handle, &is_done), __LINE__);
+    if (is_done) {
+        FAIL("collect finished with no clock", __LINE__);
     }
 
-    if (!is_done) {
-        FAIL("Data collect timed out.\n", __LINE__);
-    }
+    cout << "Please reconnect the clock\nPress Enter to continue...";
+    WaitForEnterPress();
 
-    int total_bytes_received;
-    CHECK(LccDataReceiveUint16Values(handle, data, NUM_ADC_SAMPLES, &total_bytes_received), __LINE__);
+    CHECK(LccDataCancelCollect(handle), __LINE__);
 
-    if (total_bytes_received != 2 * NUM_ADC_SAMPLES) {
-        FAIL("Not all bytes received\n", __LINE__);
-    }
+    if (status = CollectAndCheck(data, handle, 0x2AAA) != 0) { return status; }
 
-    for (int i = 0; i < NUM_ADC_SAMPLES; ++i) {
-        if (data[i] != 0x2AAA) {
-            FAIL("Data values not correct\n", __LINE__);
-        }
-    }
+    CHECK(LccSpiSendByteAtAddress(handle, 0x03, 0xAA), __LINE__);
+    CHECK(LccSpiSendByteAtAddress(handle, 0x04, 0xBB), __LINE__);
+
+    if (status = CollectAndCheck(data, handle, 0x2ABB) != 0) { return status; }
+
+    int num_received;
+
+    CHECK(LccDataStartCollect(handle, NUM_ADC_SAMPLES, LCC_TRIGGER_NONE), __LINE__);
+    LccDataReceiveUint16Values(handle, data, 1000, &num_received);
+    LccDataCancelCollect(handle);
+
+    CHECK(LccSpiSendByteAtAddress(handle, 0x03, 0xAA), __LINE__);
+    CHECK(LccSpiSendByteAtAddress(handle, 0x04, 0xCC), __LINE__);
+
+    if (status = CollectAndCheck(data, handle, 0x2ACC) != 0) { return status; }
 
 #endif
 
