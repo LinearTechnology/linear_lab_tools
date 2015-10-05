@@ -306,16 +306,19 @@ namespace linear {
             throw invalid_argument("Number of samples must be a multiple of 1024.");
         }
         
-        Command command(Opcode::CONFIG);
-        // the bit in the high byte enables setting the generic_config, the bit in the low byte
-        // enables setting the demo_config
-        command.header.word_param = 0x0101;
-        command.header.dword_param_1.value = generic_config;
-        command.header.dword_param_2.value = demo_config;
-
         collect_command_file = make_unique<CommandFile>(drive_letter);
         try {
+            Command command(Opcode::COMMAND_RESET);
             collect_command_file->Write(command);
+
+            command.Reset(Opcode::CONFIG);
+            // the bit in the high byte enables setting the generic_config, the bit in the low byte
+            // enables setting the demo_config
+            command.header.word_param = 0x0101;
+            command.header.dword_param_1.value = generic_config;
+            command.header.dword_param_2.value = demo_config;
+            collect_command_file->Write(command);
+
             command.Reset(Opcode::COLLECT);
             command.header.byte_param = trigger_value;
             command.header.SetLength(total_samples / KILOSAMPLES);
@@ -360,37 +363,41 @@ namespace linear {
         MUST_BE_POSITIVE(total_bytes);
         MUST_NOT_BE_LARGER(total_bytes, 2 * MAX_TOTAL_SAMPLES);
 
+        int total_blocks = total_bytes / BLOCK_SIZE;
+        if ((total_bytes - total_blocks * BLOCK_SIZE) != 0) {
+            throw invalid_argument("total_bytes must be a multiple of 512");
+        }
+
         CommandFile command_file(drive_letter);
         BlockFile block_file(drive_letter);
         Command command(Opcode::READ_SRAM);
         command.header.byte_param = initialize_ram ? 0x01 : 0x00;
         initialize_ram = false;
+        command.header.SetNumBlocks(total_blocks);
+        command_file.Write(command);
         int bytes_read = 0;
-        int total_blocks = total_bytes / BLOCK_SIZE;
-        int bytes_in_extra_block = total_bytes - (total_blocks * BLOCK_SIZE);
+
         while (total_blocks > 0) {
+            // these get changed by CheckCommandResult
+            command.header.opcode = Opcode::READ_SRAM;
+            command.header.byte_param = 0x00;
+
             WORD num_blocks = Min(MAX_BLOCKS, total_blocks);
             int block_bytes = num_blocks * BLOCK_SIZE;
-            command.header.word_param = num_blocks;
-            command_file.Write(command);
-            command.header.byte_param = 0x00;
             block_file.Read(data, block_bytes);
-
+            
             total_blocks -= num_blocks;
             data += block_bytes;
             bytes_read += block_bytes;
-        }
-        if (bytes_in_extra_block > 0) {
-            // this case means the user put in a data size that was smaller than the collect size
-            // and not a multiple of 256 samples, so we read one block and put part of it into the
-            // data.
-            command.header.word_param = 1;
-            command_file.Write(command);
-            uint8_t last_block[BLOCK_SIZE];
-            block_file.Read(last_block, BLOCK_SIZE);
-            memcpy_s(data, bytes_in_extra_block, last_block, bytes_in_extra_block);
 
-            bytes_read += bytes_in_extra_block;
+            if (total_blocks == 0) {
+                CheckCommandResult(command, command_file);
+            } else {
+                auto status = GetCommandResult(command, command_file);
+                if (status != Dc1371Error::GOT_ACK) {
+                    throw Dc1371Error("expected ACK during read", status);
+                }
+            }
         }
         return bytes_read;
     }
