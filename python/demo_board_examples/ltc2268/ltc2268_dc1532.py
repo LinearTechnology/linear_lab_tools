@@ -72,7 +72,7 @@ plot_data = True
 write_to_file = True
 
 # change this to collect real or test pattern data
-use_test_data = True
+use_test_data = False
 # change this to set the output when using the test pattern
 test_data_value = 0x2AAA
 
@@ -103,15 +103,15 @@ with comm.Controller(controller_info) as controller:
 
     if verbose:
         print 'Configuring SPI registers'
-        if use_test_data:
-            print 'Set to read real data'
-        else:
-            print 'Set to generate test data'
 
     if use_test_data:
+        if verbose:
+            print 'Set to generate test data'
         reg3 = 0x80 | ((test_data_value >> 8) & 0x3F)
         reg4 = test_data_value & 0xFF
     else:
+        if verbose:
+            print 'Set to read real data'
         reg3 = 0x00
         reg4 = 0x00
 
