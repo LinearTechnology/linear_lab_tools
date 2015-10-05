@@ -133,7 +133,7 @@ class ControllerInfo(ct.Structure):
 # non-public DLL loading stuff
 _reg_key = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, "SOFTWARE\\Linear Technology\\LinearLabTools")
 _dll_file, _ = _winreg.QueryValueEx(_reg_key, "Location")
-_dll_file += "\\ltc_controller_comm"
+_dll_file += "ltc_controller_comm"
 _is_64_bit = sys.maxsize > 2 ** 32
 if _is_64_bit:
     _dll_file += "64.dll"
@@ -225,6 +225,10 @@ class Controller(object):
         c_description = ct.create_string_buffer(DESCRIPTION_BUFFER_SIZE)
         self._call('GetDescription', c_description, DESCRIPTION_BUFFER_SIZE)
         return c_description.value
+
+    def reset(self):
+        """Reset the controller, not used with High Speed controllers"""
+        self._call('Reset')
 
     def close(self):
         """Close device. Device will be automatically re-opened when needed."""
