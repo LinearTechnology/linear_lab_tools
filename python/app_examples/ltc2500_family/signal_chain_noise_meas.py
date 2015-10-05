@@ -146,3 +146,5 @@ if __name__ == "__main__":
     avg_fft /= GAIN_OF_OPAMP
     plt.semilogx(avg_fft[0:NUM_SAMPLES/2])    
     plt.show()
+    
+    print "The program took", (time.time() - start_time)/60, "min to run"
