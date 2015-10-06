@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# Client for daemon script to inteface with the FPGA peripherals and /dev/mem
+# Client for daemon script to interface with the FPGA peripherals and /dev/mem
 
 import os
 from subprocess import call
@@ -9,8 +9,6 @@ import struct
 from time import sleep
 
 basedir = os.path.abspath(os.path.dirname(__file__))
-
-
 
 # mem_func_lib = ctypes.CDLL(os.path.join(basedir, 'mem_functions'))
 
