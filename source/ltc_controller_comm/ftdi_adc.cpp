@@ -46,6 +46,11 @@ namespace linear {
                 "trigger must be NONE, START_ON_POSITIVE_EDGE or DC890_START_ON_NEGATIVE_EDGE.");
         }
 
+        if (sample_bytes == 0) {
+            throw invalid_argument(
+                "SetDataCharacteristics must be called before calling DataStartCollect");
+        }
+
         char buffer[100];
         sprintf_s(buffer, "T %d\nL %d\nD %d\nW %c\nH %d\nC\n", trigger_value, 
             total_samples * sample_multiplier, sample_bytes > 2 ? 2 : 1,

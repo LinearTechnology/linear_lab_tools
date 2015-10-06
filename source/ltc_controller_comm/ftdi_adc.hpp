@@ -28,8 +28,11 @@ namespace linear {
         string GetSerialNumber() override { return serial_number; }
 
         void DataSetCharacteristics(bool is_multiple_channels, int bytes_per_sample, 
-                bool is_positive_clock) { 
+                bool is_positive_clock) {
             is_multichannel = is_multiple_channels;
+            if (bytes_per_sample < 2 || bytes_per_sample > 4) {
+                throw invalid_argument("bytes_per_sample must be between 2 and 4");
+            }
             sample_bytes = bytes_per_sample;
             is_sampled_on_positive_edge = is_positive_clock;
         }
@@ -91,7 +94,7 @@ namespace linear {
         FT_HANDLE handle = nullptr;
         bool swap_bytes = true;
         bool is_sampled_on_positive_edge = true;
-        int sample_bytes = 2;
+        int sample_bytes = 0;
         bool is_multichannel = false;
         bool collect_was_read = true;
     };
