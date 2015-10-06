@@ -7,8 +7,6 @@
 #include "dc1371.hpp"
 #include "utilities.hpp"
 
-#define thread_local __declspec( thread ) static
-
 namespace linear {
 
     using std::string;
