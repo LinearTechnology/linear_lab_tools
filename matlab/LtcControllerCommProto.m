@@ -62,14 +62,6 @@ functions.LHS{iFunction} = 'int32';
 functions.RHS{iFunction} = {'voidPtr', 'cstring', 'int32'};
 iFunction = iFunction+1;
 
-% int LccSetTimeouts(LccHandle handle, unsigned long read_timeout,
-%         unsigned long write_timeout);
-functions.name{iFunction} = 'LccSetTimeouts';
-functions.calltype{iFunction} = 'cdecl';
-functions.LHS{iFunction} = 'int32';
-functions.RHS{iFunction} = {'voidPtr', 'uint32', 'uint32'};
-iFunction = iFunction+1;
-
 % int LccReset(LccHandle handle);
 functions.name{iFunction} = 'LccReset';
 functions.calltype{iFunction} = 'cdecl';
@@ -152,20 +144,6 @@ functions.name{iFunction} = 'LccDataReceiveUint32Values';
 functions.calltype{iFunction} = 'cdecl';
 functions.LHS{iFunction} = 'int32';
 functions.RHS{iFunction} = {'voidPtr', 'uint32Ptr', 'int32', 'int32Ptr'};
-iFunction = iFunction+1;
-
-% int LccDataCancelSend(LccHandle handle);
-functions.name{iFunction} = 'LccDataCancelSend';
-functions.calltype{iFunction} = 'cdecl';
-functions.LHS{iFunction} = 'int32';
-functions.RHS{iFunction} = {'voidPtr'};
-iFunction = iFunction+1;
-
-% int LccDataCancelReceive(LccHandle handle);
-functions.name{iFunction} = 'LccDataCancelReceive';
-functions.calltype{iFunction} = 'cdecl';
-functions.LHS{iFunction} = 'int32';
-functions.RHS{iFunction} = {'voidPtr'};
 iFunction = iFunction+1;
 
 % int LccDataStartCollect(LccHandle handle, int total_samples, int trigger);
