@@ -43,7 +43,7 @@
 % of the authors and should not be interpreted as representing official policies,
 % either expressed or implied, of Linear Technology Corp.
 
-function Ltc2123_dc1974_v6_core
+function Ltc2123Dc1974v6Core
 
     clear all;
     

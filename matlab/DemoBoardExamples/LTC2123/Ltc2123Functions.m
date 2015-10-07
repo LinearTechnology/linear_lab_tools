@@ -1,4 +1,4 @@
-function lt2k = ltc2123Functions(lths)
+function lt2k = Ltc2123Functions(lths)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % SPI read / write bit definitions %
