@@ -1,4 +1,4 @@
-function Ltc2261_dc1369
+function Ltc2261Dc1369
     
     VERBOSE = true;
     plot_data = true;
