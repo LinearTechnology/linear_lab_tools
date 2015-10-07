@@ -1,4 +1,4 @@
-function Ltc2268_dc1532
+function Ltc2268Dc1532
     clear all;
     % Print extra information to console
     verbose = true;
