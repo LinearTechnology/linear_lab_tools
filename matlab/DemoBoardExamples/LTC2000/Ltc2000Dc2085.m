@@ -43,7 +43,7 @@
 % of the authors and should not be interpreted as representing official policies,
 % either expressed or implied, of Linear Technology Corp.
 
-function Ltc2000_dc2085
+function Ltc2000Dc2085
 
 clear all;
 AMPLITUDE = 16000;

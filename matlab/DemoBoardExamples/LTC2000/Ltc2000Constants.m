@@ -34,7 +34,7 @@
 % of the authors and should not be interpreted as representing official policies,
 % either expressed or implied, of Linear Technology Corp.
 
-function lt2k = ltc2000Constants
+function lt2k = Ltc2000Constants
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % SPI read / write bit definitions %
