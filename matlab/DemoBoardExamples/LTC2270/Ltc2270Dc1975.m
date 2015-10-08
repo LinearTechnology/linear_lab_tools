@@ -1,4 +1,4 @@
-function Ltc2270_dc1975
+function Ltc2270Dc1975
     
     % Print extra information to console
     VERBOSE = true;
