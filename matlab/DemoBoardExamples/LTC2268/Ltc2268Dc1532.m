@@ -1,36 +1,47 @@
+% LTC2268 - 14 bit
+
 function Ltc2268Dc1532
+
     clear all;
+    
+    % LTC2268 Serial Programming Mode Registers
+    RESET_REG = 0;
+    POWER_DOWN_REG = 1;
+    OUTPUT_MODE_REG = 2;
+    TEST_PATTERN_MSB_REG = 3;
+    TEST_PATTERN_LSB_REG = 4;
+    
     % Print extra information to console
     verbose = true;
     % Plot data to screen
-    plot_data = true;
-    %Write data out to a text file
-    write_to_file = true;
+    plotData = true;
+    % Write data out to a text file
+    writeToFile = true;
 
-    % change this to collect real or test pattern data
-    use_test_data = true;
-    % change this to set the output when using the test pattern
-    test_data_value = 10922;
+    % Change this to collect real or test pattern data
+    useTestData = false;
+    % Change this to set the output when using the test pattern
+    testDataValue = 10922;              % 14-bit data
 
-    NUM_ADC_SAMPLES = 64 * 1024;
-    TOTAL_ADC_SAMPLES = 2 * NUM_ADC_SAMPLES; % two channel part
+    NUM_ADC_SAMPLES = 64 * 1024;        % WHY 64 * 1024 ????
+    TOTAL_ADC_SAMPLES = 2 * NUM_ADC_SAMPLES; % Two channel part
     SAMPLE_BYTES = 2;
-    EEPROM_ID_SIZE = 15;
     
     % Returns the object in the class constructor
     comm = LtcControllerComm();  
     
     % find demo board with correct ID
-    eeprom_id = '[0074 DEMO 10 DC1532A-A LTC2268-14 D2175';
-
+    EEPROM_ID = '[0074 DEMO 10 DC1532A-A LTC2268-14 D2175]';
+    eepromIdSize = length(EEPROM_ID);
+    
     % find demo board with correct ID
-    fprintf('Looking for a DC1371 with a DC1532A-A demoboard');
+    fprintf('\nLooking for a DC1371 with a DC1532A-A demoboard');
     
     deviceInfoList = comm.ListControllers(comm.TYPE_DC1371, 1);
     cId = comm.Init(deviceInfoList);
     
     for info = deviceInfoList
-        if strcmp(eeprom_id(1 : EEPROM_ID_SIZE - 1), comm.EepromReadString(cId, EEPROM_ID_SIZE))
+        if strcmp(EEPROM_ID(1 : eepromIdSize - 1), comm.EepromReadString(cId, eepromIdSize))
             break;
         end
         cId = comm.Cleanup(cId);
@@ -43,30 +54,35 @@ function Ltc2268Dc1532
     end
         
     if (verbose)
-        fprintf('Configuring SPI registers');
+        fprintf('\nConfiguring SPI registers');
     end
     
-    if (use_test_data == true)
+    if (useTestData == true)
         fprintf('\nSet to read real data');
     else
         fprintf('\nSet to generate test data');
     end
 
-    if (use_test_data)
-        reg3 = int32(test_data_value);
-        reg3 = int32(bitsra(test_data_value, 8));
+    if (useTestData)
+        reg3 = int32(testDataValue);
+        reg3 = int32(bitshift(testDataValue, -8));
         reg3 = bitor(bitand(reg3, 63), 128);
-        reg4 = bitand(test_data_value, 255);
+        reg4 = bitand(testDataValue, 255);
     else
         reg3 = 0;
         reg4 = 0;
     end
     
-    comm.SpiSendByteAtAddress(cId, 0, 128);
-    comm.SpiSendByteAtAddress(cId, 1, 0);
-    comm.SpiSendByteAtAddress(cId, 2, 0);
-    comm.SpiSendByteAtAddress(cId, 3, reg3);
-    comm.SpiSendByteAtAddress(cId, 4, reg4);
+    % Software Reset
+    comm.SpiSendByteAtAddress(cId, RESET_REG, 128); 
+    % Enable Clock DCS, Disable Output Randomizer, Enable Binary Data Format
+    comm.SpiSendByteAtAddress(cId, POWER_DOWN_REG, 0);  
+    % Disable LVDS Internal Terminaion, Enable Digital Outputs, 2 Lanes, 16 - Bit
+    comm.SpiSendByteAtAddress(cId, OUTPUT_MODE_REG, 0);
+    % Enable Digital Output Teast Pattern, Bits D5:D0 holds TP13:TP8
+    comm.SpiSendByteAtAddress(cId, TEST_PATTERN_MSB_REG, reg3);
+    % Bits D7:D0 holds TP7:TP0
+    comm.SpiSendByteAtAddress(cId, TEST_PATTERN_LSB_REG, reg4);
     
     if (comm.FpgaGetIsLoaded(cId, 'S2175'))
        if(verbose)
@@ -89,14 +105,14 @@ function Ltc2268Dc1532
     comm.DataStartCollect(cId, TOTAL_ADC_SAMPLES, comm.TRIGGER_NONE);
     
     for i = 1: 10
-        is_done = comm.DataIsCollectDone(cId);
-        if(is_done)
+        isDone = comm.DataIsCollectDone(cId);
+        if(isDone)
             break;
         end
         pause(0.2);
     end
     
-    if(is_done ~= true)
+    if(isDone ~= true)
         error('LtcControllerComm:HardwareError', 'Data collect timed out (missing clock?)');
     end
     
@@ -108,20 +124,26 @@ function Ltc2268Dc1532
         fprintf('\nReading data');
     end
     
-    [data, num_bytes] = comm.DataReceiveUint16Values(cId, TOTAL_ADC_SAMPLES);
+    [data, numBytes] = comm.DataReceiveUint16Values(cId, TOTAL_ADC_SAMPLES);
     
+    if (nnz(data == 10922) == length(data))
+        fprintf('\nGood data!!');
+    else
+        fprintf('Bad data!!');
+    end
+        
     if(verbose)
         fprintf('\nData Read done');
     end
     
     % Split data into two channels
-    data_ch1 = zeros(1, TOTAL_ADC_SAMPLES/2);
-    data_ch2 = zeros(1, TOTAL_ADC_SAMPLES/2);
+    dataCh1 = zeros(1, TOTAL_ADC_SAMPLES/2);
+    dataCh2 = zeros(1, TOTAL_ADC_SAMPLES/2);
     
-    data_ch1(1 : TOTAL_ADC_SAMPLES/2) = data(1 : 2 : TOTAL_ADC_SAMPLES);
-    data_ch2(1 : TOTAL_ADC_SAMPLES/2) = data(2 : 2 : TOTAL_ADC_SAMPLES);
+    dataCh1(1 : TOTAL_ADC_SAMPLES/2) = data(1 : 2 : TOTAL_ADC_SAMPLES);
+    dataCh2(1 : TOTAL_ADC_SAMPLES/2) = data(2 : 2 : TOTAL_ADC_SAMPLES);
     
-    if(write_to_file)
+    if(writeToFile)
         if(verbose)
             fprintf('\nWriting data to file');
         end    
@@ -129,45 +151,45 @@ function Ltc2268Dc1532
         fileID = fopen('data.txt','w');
 
         for i = 1:NUM_ADC_SAMPLES
-            fprintf(fileID,'%d\t%d\r\n', data_ch1(i), data_ch2(i));
+            fprintf(fileID,'%d\t%d\r\n', dataCh1(i), dataCh2(i));
         end
 
         fclose(fileID);
         fprintf('\nFile write done');
     end
     
-    if(plot_data == true)
+    if(plotData == true)
         figure(1)
         subplot(2, 1, 1)
-        plot(data_ch1)
+        plot(dataCh1)
         title('CH0')
         subplot(2, 1, 2)
-        plot(data_ch2)
+        plot(dataCh2)
         title('CH1')
 
-        adc_amplitude = 65536.0 / 2.0;
+        adcAmplitude = 65536.0 / 2.0;
 
-        windowscale = (NUM_ADC_SAMPLES/2) / sum(blackman(NUM_ADC_SAMPLES/2));
-        fprintf('\nWindow scaling factor: %d', windowscale);
+        windowScale = (NUM_ADC_SAMPLES/2) / sum(blackman(NUM_ADC_SAMPLES/2));
+        fprintf('\nWindow scaling factor: %d', windowScale);
 
-        windowed_data_ch1 = data_ch1' .* blackman(NUM_ADC_SAMPLES);
-        windowed_data_ch1 = windowed_data_ch1 .* windowscale; % Apply Blackman window
-        freq_domain_ch1 = fft(windowed_data_ch1)/(NUM_ADC_SAMPLES); % FFT
-        freq_domain_magnitude_ch1 = abs(freq_domain_ch1); % Extract magnitude
-        freq_domain_magnitude_db_ch1 = 10 * log10(freq_domain_magnitude_ch1/adc_amplitude);
+        windowedDataCh1 = dataCh1' .* blackman(NUM_ADC_SAMPLES);
+        windowedDataCh1 = windowedDataCh1 .* windowScale; % Apply Blackman window
+        freqDomainCh1 = fft(windowedDataCh1)/(NUM_ADC_SAMPLES); % FFT
+        freqDomainMagnitudeCh1 = abs(freqDomainCh1); % Extract magnitude
+        freqDomainMagnitudeDbCh1 = 10 * log10(freqDomainMagnitudeCh1/adcAmplitude);
         
-        windowed_data_ch2 = data_ch2' .* blackman(NUM_ADC_SAMPLES);
-        windowed_data_ch2 = windowed_data_ch2 .* windowscale; % Apply Blackman window
-        freq_domain_ch2 = fft(windowed_data_ch2)/(NUM_ADC_SAMPLES); % FFT
-        freq_domain_magnitude_ch2 = abs(freq_domain_ch2); % Extract magnitude
-        freq_domain_magnitude_db_ch2 = 10 * log10(freq_domain_magnitude_ch2/adc_amplitude);
+        windowedDataCh2 = dataCh2' .* blackman(NUM_ADC_SAMPLES);
+        windowedDataCh2 = windowedDataCh2 .* windowScale; % Apply Blackman window
+        freqDomainCh2 = fft(windowedDataCh2)/(NUM_ADC_SAMPLES); % FFT
+        freqDomainMagnitudeCh2 = abs(freqDomainCh2); % Extract magnitude
+        freqDomainMagnitudeDbCh2 = 10 * log10(freqDomainMagnitudeCh2/adcAmplitude);
         
         figure(2)
         subplot(2, 1, 1)
-        plot(freq_domain_magnitude_db_ch1)
+        plot(freqDomainMagnitudeDbCh1)
         title('CH0 FFT')
         subplot(2, 1, 2)
-        plot(freq_domain_magnitude_db_ch2)
+        plot(freqDomainMagnitudeDbCh2)
         title('CH1 FFT')
         
     end

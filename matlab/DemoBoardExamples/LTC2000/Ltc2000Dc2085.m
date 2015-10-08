@@ -129,34 +129,34 @@ data = round(AMPLITUDE * sin((NUM_CYCLES * 2 * pi / NUM_SAMPLES) * ...
     (0:(NUM_SAMPLES - 1))));
 
 % Demonstrates how to generate sinc data.
-sinc_data = zeros(NUM_SAMPLES, 1);
+sincData = zeros(NUM_SAMPLES, 1);
 for i = 1:NUM_SAMPLES
 x = ((i - 32768) / (512.0)) + 0.0001;
-sinc_data(i) = int16((32000 * (sin(x) / x)));
+sincData(i) = int16((32000 * (sin(x) / x)));
 end
 
 % Demonstrates how to write generated data to a file.
 fprintf('writing data out to file')
-outfile = fopen('dacdata_sinc.csv', 'w');
+outFile = fopen('dacdata_sinc.csv', 'w');
 for i = 1 : NUM_SAMPLES
-    fprintf(outfile, '%d\n', sinc_data(i));
+    fprintf(outFile, '%d\n', sincData(i));
 end
-fclose(outfile);
+fclose(outFile);
 fprintf('\ndone writing!')
 
 % Demonstrates how to read data in from a file.
-indata = zeros(NUM_SAMPLES, 1);
+inData = zeros(NUM_SAMPLES, 1);
 fprintf('\nreading data from file')
-infile = fopen('dacdata_sinc.csv', 'r');
+inFile = fopen('dacdata_sinc.csv', 'r');
 for i = 1: NUM_SAMPLES 
-    indata(i) = str2double(fgetl(infile));
+    inData(i) = str2double(fgetl(inFile));
 end
-fclose(infile);
+fclose(inFile);
 fprintf('\ndone reading!')
 
 lths.HsSetBitMode(did, lths.HS_BIT_MODE_FIFO);
 % DAC should start running here!
-numBytesSent = lths.DataSendUint16Values(did, indata);
+numBytesSent = lths.DataSendUint16Values(did, inData);
 fprintf('numBytesSent (should be %d) = %d\n', NUM_SAMPLES * 2, ...
     numBytesSent);
 

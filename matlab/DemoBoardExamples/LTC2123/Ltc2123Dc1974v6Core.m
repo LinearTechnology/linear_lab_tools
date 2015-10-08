@@ -52,48 +52,42 @@ function Ltc2123Dc1974v6Core
     %addpath C:\Users\Msajikumar\Documents\linear_technology\linear_lab_tools\matlab
     
     % Initialize script operation parameters
-    bitfile_id = 190; % Bitfile ID
+    bitFileId = 190; % Bitfile ID
     continuous = false;            % Run continuously or once
     runs = 0;                      % Run counter
-    runs_with_errors = 0;          % Keep track of runs with errors
-    runs_with_uncaught_errors = 0; % Runs with errors that did not have SYNC~ asserted
-    errorcount = 0;                % Initial error count
+    runWithErrors = 0;          % Keep track of runs with errors
+    runWithUncaughtErrors = 0; % Runs with errors that did not have SYNC~ asserted
+    errorCount = 0;                % Initial error count
 
     % Enable Hardware initialization. This only needs to be done on the first run.
     % Can be disabled for testing purposes.
-    initialize_spi = true;
-    initialize_core = true;
-    initialize_reset = true;
+    initializeSpi = true;
+    initializeCore = true;
+    initializeReset = true;
 
     % Display time and frequency domain plots for ADC data
-    plot_data = true;
+    plotData = true;
     % Display lots of debug messages
     VERBOSE = true;
 
     % Set up JESD204B parameters
-    did=171;  %  Device ID (programmed into ADC, read back from JEDEC core)
-    bid= 12;   %  Bank      (programmed into ADC, read back from JEDEC core)
-    K=10;     %  Frames per multiframe (subclass 1 only)
+    dId=171;  %  Device ID (programmed into ADC, read back from JEDEC core)
+    bankId= 12;   %  Bank      (programmed into ADC, read back from JEDEC core)
+    K=10;     %  Frames per multiframe (subClass 1 only)
     LIU = 2;  %  Lanes in use
     modes = 0; %  Enable FAM, LAM (Frame / Lane alignment monitorning)
     % modes = 0x18 % Disable FAM, LAM (for testing purposes)
 
-    % patterncheck = 32 % Enable PRBS check, ADC data otherwise
-    patterncheck = false; %  Zero to disable PRBS check, dumps number of samples to console for numbers >0
+    % patternCheck = 32 % Enable PRBS check, ADC data otherwise
+    patternCheck = false; %  Zero to disable PRBS check, dumps number of samples to console for numbers >0
     dumppattern = 32; % Dump pattern analysis
 
-    dumpdata = 32; % Set to 1 and select an option below to dump to STDOUT:
+    dumpData = 32; % Set to 1 and select an option below to dump to STDOUT:
     
-    dump_pscope_data = 1; % Writes data to "pscope_data.csv", append to header to open in PScope
+    dumpPscopeData = 1; % Writes data to "pscope_data.csv", append to header to open in PScope
     
-    % Configure other ADC modes here to override ADC data / PRBS selection
-    forcepattern = false;    % Don't override ADC data / PRBS selection
-    %  Other options:
-    %  0x04 = PRBS, 0x06 Test Samples test pattern, 0x07 = RPAT,
-    %  0x02 = K28.7 (minimum frequency), 0x03 = D21.5 (maximum frequency)
-
     device = NaN;
-    do_reset = true;
+    doReset = true;
     % Reset FPGA once (not necessary to reset between data loads)
     
     if VERBOSE
@@ -125,7 +119,7 @@ function Ltc2123Dc1974v6Core
     %n = NumSamp64K; % Set number of samples here.
     
     %Configure other ADC modes here to override ADC data / PRBS selection
-    forcepattern = 0;    %Don't override ADC data / PRBS selection
+    forcePattern = 0;    %Don't override ADC data / PRBS selection
     % Other options:
     % 0x04 = PRBS, 0x06 Test Samples test pattern, 0x07 = RPAT,
     % 0x02 = K28.7 (minimum frequency), 0x03 = D21.5 (maximum frequency)
@@ -149,18 +143,18 @@ function Ltc2123Dc1974v6Core
     % init a device and get an id
     cId = lths.Init(deviceInfo);
 
-    while((runs < 1 || continuous == true) && runs_with_errors < 100000)
+    while((runs < 1 || continuous == true) && runWithErrors < 100000)
         
         runs = runs + 1;
         fprintf('LTC2123 Interface Program');
         fprintf('Run number: %s', runs');
-        fprintf('\nRuns with errors: %s\n', runs_with_errors');
-        if (runs_with_uncaught_errors > 0)
-            fprintf('***\n***\n***\n*** UNCAUGHT error count: %s !\n***\n***\n***\n',runs_with_uncaught_errors);
+        fprintf('\nRuns with errors: %s\n', runWithErrors');
+        if (runWithUncaughtErrors > 0)
+            fprintf('***\n***\n***\n*** UNCAUGHT error count: %s !\n***\n***\n***\n',runWithUncaughtErrors);
         end
         
         lths.HsSetBitMode(cId, lths.HS_BIT_MODE_MPSSE);
-        if do_reset
+        if doReset
             lths.HsFpgaToggleReset(cId);
         end
 
@@ -173,13 +167,13 @@ function Ltc2123Dc1974v6Core
             fprintf('Configuring ADC over SPI\n');
         end
 
-        if(patterncheck)
-            load_ltc212x(0, VERBOSE, did, bid, LIU, K, modes, 0, 4);
+        if(patternCheck)
+            LoadLtc212x(0, VERBOSE, dId, bankId, LIU, K, modes, 0, 4);
         else
-            load_ltc212x(0, VERBOSE, did, bid, LIU, K, modes, 0, forcepattern);
+            LoadLtc212x(0, VERBOSE, dId, bankId, LIU, K, modes, 0, forcePattern);
         end
 
-        if(initialize_core)
+        if(initializeCore)
             if(VERBOSE)
                 fprintf('Configuring JESD204B core!!');
             end
@@ -205,47 +199,47 @@ function Ltc2123Dc1974v6Core
         end
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% FIX n, syncErr removed
 
-        channel_data = capture2(lths, memSize, buffSize, dumpdata, dump_pscope_data, VERBOSE, data);
-        if(patterncheck ~= 0)
-            errorcount = pattern_checker(channel_data.data_ch0, channel_data.nSamps_per_channel, dumppattern);
-            errorcount = errorcount + pattern_checker(channel_data.data_ch1, channel_data.nSamps_per_channel, dumppattern);
+        channelData = Capture2(lths, memSize, buffSize, dumpData, dumpPscopeData, VERBOSE, data);
+        if(patternCheck ~= 0)
+            errorCount = PatternChecker(channelData.dataCh0, channelData.nSampsPerChannel, dumppattern);
+            errorCount = errorCount + PatternChecker(channelData.dataCh1, channelData.nSampsPerChannel, dumppattern);
         end
 
         %%%%%%%%%%%%%%%%% error handling
 
         if(VERBOSE)
-            read_xilinx_core_config(device, 1);
-            read_xilinx_core_ilas(device, VERBOSE, 0);
-            read_xilinx_core_ilas(device, VERBOSE, 1);
+            ReadXilinxCoreConfig(device, 1);
+            ReadXilinxCoreIlas(device, VERBOSE, 0);
+            ReadXilinxCoreIlas(device, VERBOSE, 1);
         end
 
-        if((plot_data == true) && (patterncheck == false))
+        if((plotData == true) && (patternCheck == false))
             figure
             subplot(2, 1, 1)
-            plot(data_ch0)
+            plot(dataCh0)
             title('CH0')
             subplot(2, 1, 2)
-            plot(data_ch1)
+            plot(dataCh1)
             title('CH1')
 
 
-            data_ch0 = data_ch0' .* blackman(buffSize/2); % Apply Blackman window
-            freq_domain_ch0 = fft(data_ch0)/(buffSize/2); % FFT
-            freq_domain_magnitude_ch0 = abs(freq_domain_ch0); % Extract magnitude
-            freq_domain_magnitude_db_ch0 = 10 * log(freq_domain_magnitude_ch0/8192.0);
+            dataCh0 = dataCh0' .* blackman(buffSize/2); % Apply Blackman window
+            freqDomainCh0 = fft(dataCh0)/(buffSize/2); % FFT
+            freqDomainMagnitudeCh0 = abs(freqDomainCh0); % Extract magnitude
+            freqDomainMagnitudeDbCh0 = 10 * log(freqDomainMagnitudeCh0/8192.0);
 
-            data_ch1 = data_ch1' .* blackman(buffSize/2); % Apply Blackman window
-            freq_domain_ch1 = fft(data_ch1)/(buffSize/2); % FFT
-            freq_domain_magnitude_ch1 = abs(freq_domain_ch1); % Extract magnitude
-            freq_domain_magnitude_db_ch1 = 10 * log(freq_domain_magnitude_ch1/8192.0);
+            dataCh1 = dataCh1' .* blackman(buffSize/2); % Apply Blackman window
+            freqDomainCh1 = fft(dataCh1)/(buffSize/2); % FFT
+            freqDomainMagnitudeCh1 = abs(freqDomainCh1); % Extract magnitude
+            freqDomainMagnitudeDbCh1 = 10 * log(freqDomainMagnitudeCh1/8192.0);
 
 
             figure
             subplot(2,1,1)
-            plot(freq_domain_magnitude_db_ch0)
+            plot(freqDomainMagnitudeDbCh0)
             title('CH0 FFT')
             subplot(2,1,2)
-            plot(freq_domain_magnitude_db_ch1)
+            plot(freqDomainMagnitudeDbCh1)
             title('CH1 FFT')
 
         end
@@ -258,7 +252,7 @@ function Ltc2123Dc1974v6Core
     
     % Adding support for V6 core, with true AXI access. Need to confirm that this doesn't break anything with V4 FPGA loads,
     % as we'd be writing to undefined registers.
-    function [byte3, byte2, byte1, byte0] = read_jesd204b_reg(device, address)
+    function [byte3, byte2, byte1, byte0] = ReadJesd204bReg(device, address)
 %         x = bitand(address, 63);
 %         x = bitsra(x, 2);
 %         x = bitor(x, 2);
@@ -278,21 +272,21 @@ function Ltc2123Dc1974v6Core
         
     end
 
-    function read_xilinx_core_config(device, verbose)
+    function ReadXilinxCoreConfig(device, verbose)
         fprintf('\n\nJEDEC core config registers:')  
         for i = 0 : 15
             reg = i*4;
-            [byte3, byte2, byte1, byte0] = read_jesd204b_reg(device, reg);
+            [byte3, byte2, byte1, byte0] = ReadJesd204bReg(device, reg);
             fprintf('\n%s : 0X %s %s %s %s', lt2k.JESD204B_XILINX_CONFIG_REG_NAMES{i + 1}, dec2hex(byte3, 2), dec2hex(byte2, 2), dec2hex(byte1, 2), dec2hex(byte0, 2));
         end
     end
 
-    function read_xilinx_core_ilas(device, verbose, lane)
+    function ReadXilinxCoreIlas(device, verbose, lane)
         startreg = 2048 + lane * 64;
         fprintf('\n\nILAS and stuff for lane %d :', lane);
         for i = 0 : 12
             reg = startreg + i*4;
-            [byte3, byte2, byte1, byte0] = read_jesd204b_reg(device, reg)                ;
+            [byte3, byte2, byte1, byte0] = ReadJesd204bReg(device, reg)                ;
             fprintf('\n %s : 0X %s %s %s %s', lt2k.JESD204B_XILINX_LANE_REG_NAMES{i + 1}, dec2hex(byte3, 2), dec2hex(byte2, 2), dec2hex(byte1, 2), dec2hex(byte0, 2));
         end
     end
@@ -321,17 +315,17 @@ function Ltc2123Dc1974v6Core
         fprintf('Register A: %X\n',SpiRead(138)); 
     end
 
-    function load_ltc212x(cs_control, verbose, did, bid, lanes, K, modes, subclass, pattern)
+    function LoadLtc212x(csControl, verbose, dId, bankId, lanes, K, modes, subClass, pattern)
         if(verbose)
             fprintf('Configuring ADCs over SPI:');
         end
-        lths.HsFpgaWriteDataAtAddress(cId, lt2k.SPI_CONFIG_REG, cs_control);
+        lths.HsFpgaWriteDataAtAddress(cId, lt2k.SPI_CONFIG_REG, csControl);
         SpiWrite(3, cId); % Device ID to 0xAB
-        SpiWrite(4, bid); % Bank ID to 0x01
+        SpiWrite(4, bankId); % Bank ID to 0x01
         SpiWrite(5, lanes-1); % 2 lane mode (default)
         SpiWrite(6, K-1);
         SpiWrite(7, modes); % Enable FAM, LAM
-        SpiWrite(8, subclass); % Subclass mode
+        SpiWrite(8, subClass); % Subclass mode
         SpiWrite(9, pattern); % PRBS test pattern
         SpiWrite(10, 3); %  0x03 = 16mA CML current
     end 
@@ -352,7 +346,7 @@ function Ltc2123Dc1974v6Core
         end
     end 
 
-    function channel_data = capture2(device, memSize, buffSize, dumpdata, dump_pscope_data, verbose, data)
+    function channelData = Capture2(device, memSize, buffSize, dumpData, dumpPscopeData, verbose, data)
         device.HsSetBitMode(cId, device.HS_BIT_MODE_MPSSE);
         dec = 0;
 
@@ -391,40 +385,40 @@ function Ltc2123Dc1974v6Core
         end
 
         % Initialize data arrays
-        data_ch0 = zeros(1, buffSize/2);
-        data_ch1 = zeros(1, buffSize/2);
+        dataCh0 = zeros(1, buffSize/2);
+        dataCh1 = zeros(1, buffSize/2);
 
 
         for i = 1 : 2 : (buffSize)/4
             % Split data for CH0, CH1
-            data_ch0(i) = data(i*2 - 1);
-            data_ch0(i+1) = data(i*2);
-            data_ch1(i) = data(i*2 + 1);
-            data_ch1(i+1) = data(i*2 + 2);
+            dataCh0(i) = data(i*2 - 1);
+            dataCh0(i+1) = data(i*2);
+            dataCh1(i) = data(i*2 + 1);
+            dataCh1(i+1) = data(i*2 + 2);
         end
 
-        nSamps_per_channel = buffSize/2;
-        channel_data = [data_ch0, data_ch1, nSamps_per_channel];
+        nSampsPerChannel = buffSize/2;
+        channelData = [dataCh0, dataCh1, nSampsPerChannel];
     end % end of function
     
-    function errorcount = pattern_checker(data, nSamps_per_channel, dumppattern)
+    function errorCount = PatternChecker(data, nSampsPerChannel, dumppattern)
         printError = true;
-        errorcount = nSamps_per_channel - 1; % Start big
+        errorCount = nSampsPerChannel - 1; % Start big
         % periodicity = lastperiodicity = 0
         golden = next_pbrs(data(0));
-        for i = 0 : (nSamps_per_channel-1)
+        for i = 0 : (nSampsPerChannel-1)
             next = next_pbrs(data(i));
             if(i < dumppattern)
                 %fprintf('data: 0x' + '{:04X}'.format(data(i)) + ', next: 0x' +'{:04X}'.format(next) + ', XOR: 0x' +'{:04X}'.format(data[i+1] ^ next) + ', golden: 0x' +'{:04X}'.format(golden));      % UN-commet for hex
                 % print '0b' + '{:016b}'.format(data[i]) + ',  0x' +'{:016b}'.format(next) + ',  0x' +'{:016b}'.format(data[i] ^ next)   % UN-comment for binary
             end
             if(data(i+1) == next)
-                errorcount = errorcount - 1;
+                errorCount = errorCount - 1;
             elseif(printError)
                 printError = False;
                 %fprintf(hexStr(data(i-1)) + "; " + hexStr(data(i)) + "; " + hexStr(data(i+1));
                 
-    %                print "error count = " + str(errorcount)
+    %                print "error count = " + str(errorCount)
     %                device.Close() % End of main loop.
     %                raise Exception("BAD DATA!!!")
             end
@@ -435,8 +429,8 @@ function Ltc2123Dc1974v6Core
             golden = next_pbrs(golden);
 
         % print "periodicity (only valid for captures > 64k): " + str(periodicity)
-        % if errorcount < 0:
-        %     errorcount = 100000000
+        % if errorCount < 0:
+        %     errorCount = 100000000
         end
     end %end of function
     
