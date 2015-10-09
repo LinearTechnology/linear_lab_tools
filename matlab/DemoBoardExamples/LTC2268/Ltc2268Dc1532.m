@@ -19,7 +19,7 @@ function Ltc2268Dc1532
     writeToFile = true;
 
     % Change this to collect real or test pattern data
-    useTestData = false;
+    useTestData = true;
     % Change this to set the output when using the test pattern
     testDataValue = 10922;              % 14-bit data
 
@@ -38,6 +38,8 @@ function Ltc2268Dc1532
     fprintf('\nLooking for a DC1371 with a DC1532A-A demoboard');
     
     deviceInfoList = comm.ListControllers(comm.TYPE_DC1371, 1);
+	
+	% Open communication to the device
     cId = comm.Init(deviceInfoList);
     
     for info = deviceInfoList
@@ -173,15 +175,15 @@ function Ltc2268Dc1532
         fprintf('\nWindow scaling factor: %d', windowScale);
 
         windowedDataCh1 = dataCh1' .* blackman(NUM_ADC_SAMPLES);
-        windowedDataCh1 = windowedDataCh1 .* windowScale; % Apply Blackman window
+        windowedDataCh1 = windowedDataCh1 .* windowScale; 	% Apply Blackman window
         freqDomainCh1 = fft(windowedDataCh1)/(NUM_ADC_SAMPLES); % FFT
-        freqDomainMagnitudeCh1 = abs(freqDomainCh1); % Extract magnitude
+        freqDomainMagnitudeCh1 = abs(freqDomainCh1); 		% Extract magnitude
         freqDomainMagnitudeDbCh1 = 10 * log10(freqDomainMagnitudeCh1/adcAmplitude);
         
         windowedDataCh2 = dataCh2' .* blackman(NUM_ADC_SAMPLES);
-        windowedDataCh2 = windowedDataCh2 .* windowScale; % Apply Blackman window
+        windowedDataCh2 = windowedDataCh2 .* windowScale; 	% Apply Blackman window
         freqDomainCh2 = fft(windowedDataCh2)/(NUM_ADC_SAMPLES); % FFT
-        freqDomainMagnitudeCh2 = abs(freqDomainCh2); % Extract magnitude
+        freqDomainMagnitudeCh2 = abs(freqDomainCh2); 		% Extract magnitude
         freqDomainMagnitudeDbCh2 = 10 * log10(freqDomainMagnitudeCh2/adcAmplitude);
         
         figure(2)
