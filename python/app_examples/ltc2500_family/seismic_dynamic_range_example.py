@@ -54,15 +54,95 @@ from mem_func_client import MemClient
 # Parameters for running different tests
 ###############################################################################
 
-SYSTEM_CLOCK_DIVIDER = 199 # 50MHz / 200 = 250 Ksps
+SYSTEM_CLOCK_DIVIDER = 99 # 50MHz / 200 = 250 Ksps
 NUM_SAMPLES = 2**20
 SINC_LEN = 2048
-FILTER_TYPE = 0
+FILTER_TYPE = 1
 
 ###############################################################################
 # Functions
 ###############################################################################
+def capture_seismic_data(client, gain, filter_type):
+    """
+        Captures and plots data for the DC2390
+        Filter_type options - 0: sinc
+                            - 1: ssinc 256
+                            - 2: ssinc 1024
+                            - 3: ssinc 4096
+    """
+    # Construct or extract filter coefficients
+    if filter_type == 1:
+        length = 256
+        with open('../../../common/ltc25xx_filters/ssinc_256.txt') as filter_coeff_file:
+            ltc25xx_filter = [float(line) for line in filter_coeff_file]
+        # Normalize to unity gain
+        sum_ltc25xx_filter = sum(ltc25xx_filter)
+        ltc25xx_filter[:] = [x / sum_ltc25xx_filter for x in ltc25xx_filter] 
+    elif filter_type == 2:    
+        length = 1024
+        with open('../../../common/ltc25xx_filters/ssinc_1024.txt') as filter_coeff_file:
+            ltc25xx_filter = [float(line) for line in filter_coeff_file]
+        # Normalize to unity gain
+        sum_ltc25xx_filter = sum(ltc25xx_filter)
+        ltc25xx_filter[:] = [x / sum_ltc25xx_filter for x in ltc25xx_filter]
+    elif filter_type == 3:  
+        length = 4096
+        with open('../../../common/ltc25xx_filters/ssinc_4096.txt') as filter_coeff_file:
+            ltc25xx_filter = [float(line) for line in filter_coeff_file]
+        # Normalize to unity gain
+        sum_ltc25xx_filter = sum(ltc25xx_filter)
+        ltc25xx_filter[:] = [x / sum_ltc25xx_filter for x in ltc25xx_filter]
+    else:
+        length = SINC_LEN
+        ltc25xx_filter = np.ones(SINC_LEN)      # Create the sinc filter coeff
+        ltc25xx_filter /= sum(ltc25xx_filter)   # Normalize to unity gain
 
+    # Read the unfiltered nyquist data
+    # -------------------------------------------------------------------------
+    # Set Mux for raw Nyquist data
+    # Set Dac A for SIN and Dac B for LUT
+    client.reg_write(DC2390.DATAPATH_CONTROL_BASE,DC2390.DC2390_FIFO_ADCB_NYQ |
+                                                  DC2390.DC2390_DAC_B_LUT |
+                                                  DC2390.DC2390_DAC_A_NCO_SIN |
+                                                  DC2390.DC2390_LUT_ADDR_COUNT |
+                                                  DC2390.DC2390_LUT_RUN_ONCE)
+    
+    # Capture the data
+    nyq_data = DC2390.capture(client, NUM_SAMPLES, trigger = 0, timeout = 1.0)
+    avg = np.average(nyq_data[len(nyq_data)-1002:len(nyq_data)-2])
+    nyq_data -= avg
+    nyq_data *= gain
+
+
+    # Apply the digital filter to the raw Nyquist data by convolution
+    # -------------------------------------------------------------------------
+    convt_time = time.time();
+    nyq_filt_data = np.convolve(nyq_data,ltc25xx_filter) # Apply the filter coeff to the 
+                                            # nyquist data
+    print "The program took", time.time() - convt_time, "sec to run convolution"    
+
+
+    
+    # Read the LTC25xx filtered data 
+    # -------------------------------------------------------------------------
+    # Set Mux for filtered data
+    # Set Dac A for SIN and Dac B for LUT
+    client.reg_write(DC2390.DATAPATH_CONTROL_BASE, DC2390.DC2390_FIFO_ADCB_FIL |
+                                                   DC2390.DC2390_DAC_B_LUT |
+                                                   DC2390.DC2390_DAC_A_NCO_SIN |
+                                                   DC2390.DC2390_LUT_ADDR_COUNT |
+                                                   DC2390.DC2390_LUT_RUN_ONCE)
+    
+    # Capture the data
+    filt_25xx_data = DC2390.capture(client, NUM_SAMPLES/length, trigger = 0, 
+                          timeout = 1)
+    avg = np.average(filt_25xx_data[len(filt_25xx_data)-6:len(filt_25xx_data)-2])
+    filt_25xx_data = filt_25xx_data - avg
+    filt_25xx_data = filt_25xx_data * gain
+    
+    return nyq_data, nyq_filt_data, filt_25xx_data
+    
+    
 def capture_plot(client, plot, gain, filter_type):
     """
         Captures and plots data for the DC2390
@@ -103,8 +183,10 @@ def capture_plot(client, plot, gain, filter_type):
     # Set Mux for raw Nyquist data
     # Set Dac A for SIN and Dac B for LUT
     client.reg_write(DC2390.DATAPATH_CONTROL_BASE,DC2390.DC2390_FIFO_ADCB_NYQ |
-                     DC2390.DC2390_DAC_B_LUT | DC2390.DC2390_DAC_A_NCO_SIN | 
-                     DC2390.DC2390_LUT_ADDR_COUNT | DC2390.DC2390_LUT_RUN_ONCE)
+                                                  DC2390.DC2390_DAC_B_LUT |
+                                                  DC2390.DC2390_DAC_A_NCO_SIN |
+                                                  DC2390.DC2390_LUT_ADDR_COUNT |
+                                                  DC2390.DC2390_LUT_RUN_ONCE)
     
     # Capture the data
     data = DC2390.capture(client, NUM_SAMPLES, trigger = 0, timeout = 1.0)
@@ -134,9 +216,11 @@ def capture_plot(client, plot, gain, filter_type):
     # Set Mux for filtered data
     # Set Dac A for SIN and Dac B for LUT
     client.reg_write(DC2390.DATAPATH_CONTROL_BASE, DC2390.DC2390_FIFO_ADCB_FIL |
-                     DC2390.DC2390_DAC_B_LUT | DC2390.DC2390_DAC_A_NCO_SIN | 
-                     DC2390.DC2390_LUT_ADDR_COUNT | DC2390.DC2390_LUT_RUN_ONCE)
-    
+                                                   DC2390.DC2390_DAC_B_LUT |
+                                                   DC2390.DC2390_DAC_A_NCO_SIN |
+                                                   DC2390.DC2390_LUT_ADDR_COUNT |
+                                                   DC2390.DC2390_LUT_RUN_ONCE)
+    sleep(1.0) # Let any wiggles in progress die out
     # Capture the data
     data = DC2390.capture(client, NUM_SAMPLES/length, trigger = 0, 
                           timeout = 1)
@@ -196,7 +280,9 @@ if __name__ == "__main__":
     DC2390.LTC6954_configure(client, 0x04)
     
     # Set the clock divider
-    client.reg_write(DC2390.SYSTEM_CLOCK_BASE, 0xF5000000 | SYSTEM_CLOCK_DIVIDER)
+#    client.reg_write(DC2390.SYSTEM_CLOCK_BASE, 0xF5000000 | SYSTEM_CLOCK_DIVIDER) # Approx. 400ms sinc period
+#    client.reg_write(DC2390.SYSTEM_CLOCK_BASE, 0xFA800000 | SYSTEM_CLOCK_DIVIDER) # Approx. 200ms sinc period
+    client.reg_write(DC2390.SYSTEM_CLOCK_BASE, 0xFDFF0000 | SYSTEM_CLOCK_DIVIDER) # Approx. 200ms sinc period
     
     # Set the sample depth
     client.reg_write(DC2390.NUM_SAMPLES_BASE, NUM_SAMPLES)
@@ -215,18 +301,49 @@ if __name__ == "__main__":
     # Start the application test
     #--------------------------------------------------------------------------
     raw_input("Set the Jumper for -120 dB, then hit enter")
-    capture_plot(client, plt, (100 * 100 * 100)/2, FILTER_TYPE)
+#    capture_plot(client, plt, (100 * 100 * 100)/2, FILTER_TYPE)
+
+    nyq_data_120, nyq_filt_data_120, filt_25xx_data_120 = capture_seismic_data(client, (100 * 100 * 100)/2, FILTER_TYPE)
+   
+#    raw_input("Set the Jumper for -80 dB, then hit enter")
+#    capture_plot(client, plt, 100 * 100, FILTER_TYPE)
     
-    raw_input("Set the Jumper for -80 dB, then hit enter")
-    capture_plot(client, plt, 100 * 100, FILTER_TYPE)
-    
-    raw_input("Set the Jumper for -40 dB, then hit enter")
-    capture_plot(client, plt, 100, FILTER_TYPE)
+#    raw_input("Set the Jumper for -40 dB, then hit enter")
+#    capture_plot(client, plt, 100, FILTER_TYPE)
     
     raw_input("Set the Jumper for 0 dB, then hit enter")
-    capture_plot(client, plt, 1, FILTER_TYPE)
-    
+#    capture_plot(client, plt, 1, FILTER_TYPE)
+    nyq_data_0, nyq_filt_data_0, filt_25xx_data_0 = capture_seismic_data(client, 1, FILTER_TYPE)    
     # Display the graphs
+    
+    plt.figure(1)    
+    plt.subplot(2, 1, 1)
+    plt.title("LTC2378-20 mode seismic capture")
+    plt.plot(nyq_data_0)
+    plt.subplot(2, 1, 2)
+    plt.plot(nyq_data_120)
+    
+    plt.figure(2)
+    plt.subplot(2, 1, 1)
+    plt.title("LTC2378-20 mode, post-processed w/ LTC2508 DF256 filter")
+    plt.plot(nyq_filt_data_0)
+    plt.subplot(2, 1, 2)
+    plt.plot(nyq_filt_data_120)
+
+    plt.figure(3)
+    plt.subplot(2, 1, 1)
+    plt.title("LTC2508, DF256 seismic capture")
+    plt.plot(filt_25xx_data_0)
+    plt.subplot(2, 1, 2)
+    plt.plot(filt_25xx_data_120)    
+    
     plt.show()
+    
+    # For testing purposes, let the LUT run continuously...
+    client.reg_write(DC2390.DATAPATH_CONTROL_BASE,DC2390.DC2390_FIFO_ADCB_NYQ |
+                                                  DC2390.DC2390_DAC_B_LUT |
+                                                  DC2390.DC2390_DAC_A_NCO_SIN |
+                                                  DC2390.DC2390_LUT_ADDR_COUNT |
+                                                  DC2390.DC2390_LUT_RUN_CONT)    
     
     print "The program took", (time.time() - start_time)/60, "min to run"
