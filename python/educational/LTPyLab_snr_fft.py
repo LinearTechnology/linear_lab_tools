@@ -33,15 +33,15 @@ num_bins = 4096 #This is also the number of points in the time record
 bin_number = 500 #Bin number of the signal itself. If bin_number is greater
                 #than num_bins/2, then the signal will be aliased accordingly
 
-thermal_noise = 0.00010 #stdandard dev, equivalent to RMS noise
-jitter = 0.000025 # clock jitter, expressed as RMS fraction of a sampling interval
+thermal_noise = 0.5 #0.00010 # LSB of thermal noise
+jitter = 0.0000000000001 #0.000025 # clock jitter, expressed as RMS fraction of a sampling interval
 
 # Now for some phase noise... To illustrate the concept, we're going to introduce
 # a single tone of phase noise, rather than a distribution (as is the case in
 # "real life".) This IS an accurate representation of a sinusoidal disturbance
 # on the clock.
 phase_noise_offset = 25 # Offset from carrier in bins
-phase_noise_amplitude = .000001 #Amplitude, in fraction of a sample period
+phase_noise_amplitude = 0.0 #.000001 #Amplitude, in fraction of a sample period
 # third_harm = 0.0 Next revision will include harmonics...
 '''##############################'''
 '''END setupsimulation parameters'''
@@ -53,9 +53,9 @@ from scipy import fft
 from matplotlib import pyplot as plt
 
 # declare variables to make code easier to read below
-data = np.ndarray(shape=num_bins, dtype=float)#np.zeros(num_bins)
-freq_domain_signal = np.ndarray(shape=num_bins, dtype=complex)
-freq_domain_noise = np.ndarray(shape=num_bins, dtype=complex)
+data = np.zeros(num_bins)
+freq_domain_signal = np.zeros(num_bins)
+freq_domain_noise = np.zeros(num_bins)
 
 signal_level = 2.0**bits # Calculated amplitude in LSB.
 
@@ -66,7 +66,7 @@ for t in range(num_bins):
     data[t] = signal_level * np.cos(2.0*np.pi*bin_number*(t + samp_jitter + phase_jitter)/num_bins)/2.0 #First the signal :)
     #data[t] += third_harm * np.cos(3.0*2.0*np.pi*bin_number*(t)/num_bins)/2.0
     data[t] += np.random.normal(0.0, thermal_noise) #Then the thermal noise ;(
-    data[t] = int(data[t]) #Finally, truncate to integer value - equiavalent to quantizing
+    data[t] = np.rint(data[t]) #Finally, round to integer value - equiavalent to quantizing
     
 freq_domain = np.fft.fft(data)/num_bins
 freq_domain_magnitude = np.abs(freq_domain)
@@ -81,21 +81,26 @@ freq_domain_noise[num_bins - bin_number] = 0 # Average noise floor
 
 #Make another array that just has the signal
 
-freq_domain_signal = freq_domain_signal * 0.0
-freq_domain_signal[bin_number] = freq_domain[bin_number]
-freq_domain_signal[num_bins - bin_number] = freq_domain[num_bins - bin_number]
+freq_domain_signal[bin_number] = freq_domain_magnitude[bin_number]
+freq_domain_signal[num_bins - bin_number] = freq_domain_magnitude[num_bins - bin_number]
 
 signal = 0.0 #Start with zero signal, zero noise
 noise = 0.0
 
 # Sum the power root-sum-square in each bin. Abs() function finds the power, a resistor dissipating
 # power does not care what the phase is!
-for i in range(num_bins):
-    signal += (np.abs(freq_domain_signal[i])) ** 2
-    noise += (np.abs(freq_domain_noise[i])) ** 2
+
+#for i in range(num_bins):
+#    signal += (np.abs(freq_domain_signal[i])) ** 2 # D'oh... not supposed to RSS signal
+#    noise += (np.abs(freq_domain_noise[i])) ** 2
+
+signal_ss = np.sum(((freq_domain_signal)) ** 2) # D'oh... not supposed to RSS signal
+noise_ss = np.sum(((freq_domain_noise)) ** 2 )
     
-signal = np.sqrt(np.abs(signal)) / num_bins
-noise = np.sqrt(np.abs(noise)) / num_bins
+#signal = np.sqrt(np.abs(signal)) / num_bins
+#noise = np.sqrt(np.abs(noise)) / num_bins
+signal = np.sqrt(signal_ss) / num_bins
+noise = np.sqrt(noise_ss) / num_bins
 
 snr_fraction = signal / noise
 snr = 20*np.log10(signal / noise)

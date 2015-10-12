@@ -76,11 +76,11 @@ plt.title("Data and test sinusoids for bins 0-15")
 
 for f in range (0, num_bins):
     if(f<=15):
-        plt.figure(2)
+        plt.figure(1)
     else:
-        plt.figure(3)
+        plt.figure(2)
     plt.subplot(4, 4, (f+1) % 16) # % to take care of bins > 15
-    plt.title("Bin " + str(f))
+    plt.title("Bin " + str(f) , fontsize=12)
     lines = plt.plot(test_cosines[f], color='#0000FF', marker=".") #Blue
     lines = plt.plot(test_sines[f], color='#FF0000', marker=".") #Red
     lines = plt.plot(data,  linestyle='', color='#00FF00', marker = ".") #Green
@@ -88,20 +88,24 @@ for f in range (0, num_bins):
     # And original data, but makes for a cluttered plot!!
     #lines = plt.plot(result_cosines[f], color='#9900CC', marker=".") #purple
     #lines = plt.plot(result_sines[f], color='#00FF00', marker=".") #Green
+plt.figure(1)
+plt.suptitle("Bins 0-15 (positive freq's.)", fontsize=12)
+plt.figure(2)
+plt.suptitle("Bins 16-31 (negative freq's.)", fontsize=12)
 plt.show()
 
 # And finally, let's see how we did! Plot original data, along with NumPy's idea
 # of its FFT, as well as our own FFT
 
-plt.figure(1)
+plt.figure(3)
 plt.subplot(311)
-plt.title("Original signal")
+plt.title("Original signal", fontsize=12)
 plt.plot(data)
 plt.subplot(312)
-plt.title("and NumPy's FFT:")
+plt.title("and NumPy's FFT:", fontsize=12)
 plt.plot(numpy_fft_magnitude)
 plt.subplot(313)
-plt.title("And our _slow_ FFT!")
+plt.title("And our _slow_ FFT!", fontsize=12)
 plt.plot(magnitude/num_bins)
 plt.show()
 
@@ -114,18 +118,25 @@ plt.show()
 bin2examine = int(np.rint(bin_number))
 
 plt.figure(4)
+plt.suptitle("details of bin-1, bin, bin+1", fontsize=12)
+x = np.arange(0.0, 32, 1)
 subp = 1
 for f in range (bin2examine-1, bin2examine+2):
     plt.subplot(3, 1, subp)
     subp += 1
-    plt.title("Bin " + str(f))
-    lines = plt.plot(test_cosines[f], color='#0000FF', marker=".") #Blue
-    lines = plt.plot(test_sines[f], color='#FF0000', marker=".") #Red
-    lines = plt.plot(data,  linestyle='', color='#00FF00', marker = ".") #Green
-    # Enabling the following two lines shows the product of the test sinusoids
-    # And original data, but makes for a cluttered plot!!
-    lines = plt.plot(result_cosines[f], color='#9900CC', marker=".") #purple
-    lines = plt.plot(result_sines[f], color='#00FF00', marker=".") #Green
+    plt.title("Bin " + str(f), fontsize=12)
+    lines = plt.plot(x, test_cosines[f], color='#0000FF', marker=".") #Blue
+    lines = plt.plot(x, test_sines[f], color='#FF0000', marker=".") #Red
+    lines = plt.plot(x, data,  linestyle='', color='#00FF00', marker = ".") #Green
+    # Enabling the following four lines shows the product of the test sinusoids
+    # And original data, and fills in around y=0 to help visualize positive and
+    #negative regions, but makes for a bit of a cluttered plot!!
+    #Try enabling the first two or second two lines (for real, imag, respectively.)
+    lines = plt.plot(x, result_cosines[f], color='#9900CC', marker=".") #purple
+    plt.fill_between(x, 0, result_cosines[f], color='#0000FF', alpha=0.5)
+    lines = plt.plot(x, result_sines[f], color='#00FF00', marker=".") #Green
+    plt.fill_between(x, 0, result_sines[f], color='#FF0000', alpha=0.5)
+
 plt.show()
 
 

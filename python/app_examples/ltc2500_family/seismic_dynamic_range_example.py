@@ -62,7 +62,7 @@ FILTER_TYPE = 1
 ###############################################################################
 # Functions
 ###############################################################################
-def capture_seismic_data(client, gain, filter_type):
+def capture_seismic_data(client, filter_type):
     """
         Captures and plots data for the DC2390
         Filter_type options - 0: sinc
@@ -108,21 +108,14 @@ def capture_seismic_data(client, gain, filter_type):
                                                   DC2390.DC2390_LUT_RUN_ONCE)
     
     # Capture the data
-    nyq_data = DC2390.capture(client, NUM_SAMPLES, trigger = 0, timeout = 1.0)
-    avg = np.average(nyq_data[len(nyq_data)-1002:len(nyq_data)-2])
-    nyq_data -= avg
-    nyq_data *= gain
+    nyq_data_c = DC2390.capture(client, NUM_SAMPLES, trigger = 0, timeout = 1.0)
+    nyq_data = np.zeros(len(nyq_data_c))
+    nyq_data += nyq_data_c
+    nyq_data *= (5.0 / 2147483648.0)
+    # Remove offset, based on a slice of data points near the end
+    avg = np.average(nyq_data[len(nyq_data)-2000:len(nyq_data)-1000])
+    nyq_data = nyq_data - avg    
 
-
-    # Apply the digital filter to the raw Nyquist data by convolution
-    # -------------------------------------------------------------------------
-    convt_time = time.time();
-    nyq_filt_data = np.convolve(nyq_data,ltc25xx_filter) # Apply the filter coeff to the 
-                                            # nyquist data
-    print "The program took", time.time() - convt_time, "sec to run convolution"    
-
-
-    
     # Read the LTC25xx filtered data 
     # -------------------------------------------------------------------------
     # Set Mux for filtered data
@@ -132,14 +125,21 @@ def capture_seismic_data(client, gain, filter_type):
                                                    DC2390.DC2390_DAC_A_NCO_SIN |
                                                    DC2390.DC2390_LUT_ADDR_COUNT |
                                                    DC2390.DC2390_LUT_RUN_ONCE)
-    
     # Capture the data
-    filt_25xx_data = DC2390.capture(client, NUM_SAMPLES/length, trigger = 0, 
+    filt_25xx_data_c = DC2390.capture(client, NUM_SAMPLES/length, trigger = 0, 
                           timeout = 1)
-    avg = np.average(filt_25xx_data[len(filt_25xx_data)-6:len(filt_25xx_data)-2])
-    filt_25xx_data = filt_25xx_data - avg
-    filt_25xx_data = filt_25xx_data * gain
-    
+    filt_25xx_data = np.zeros(len(filt_25xx_data_c))
+    filt_25xx_data += filt_25xx_data_c
+    filt_25xx_data *= (5.0 / 2147483648.0)
+    avg = np.average(filt_25xx_data[len(filt_25xx_data)-200:len(filt_25xx_data)-100])
+    filt_25xx_data = filt_25xx_data - avg    
+
+    # Apply the digital filter to the raw Nyquist data by convolution
+    # -------------------------------------------------------------------------
+    convt_time = time.time();
+    nyq_filt_data = np.convolve(nyq_data,ltc25xx_filter, mode='valid') # Apply the filter coeff to the 
+                                            # nyquist data
+    print "The program took", time.time() - convt_time, "sec to run convolution"        
     return nyq_data, nyq_filt_data, filt_25xx_data
     
     
@@ -303,7 +303,7 @@ if __name__ == "__main__":
     raw_input("Set the Jumper for -120 dB, then hit enter")
 #    capture_plot(client, plt, (100 * 100 * 100)/2, FILTER_TYPE)
 
-    nyq_data_120, nyq_filt_data_120, filt_25xx_data_120 = capture_seismic_data(client, (100 * 100 * 100)/2, FILTER_TYPE)
+    nyq_data_120, nyq_filt_data_120, filt_25xx_data_120 = capture_seismic_data(client, FILTER_TYPE)
    
 #    raw_input("Set the Jumper for -80 dB, then hit enter")
 #    capture_plot(client, plt, 100 * 100, FILTER_TYPE)
@@ -313,7 +313,7 @@ if __name__ == "__main__":
     
     raw_input("Set the Jumper for 0 dB, then hit enter")
 #    capture_plot(client, plt, 1, FILTER_TYPE)
-    nyq_data_0, nyq_filt_data_0, filt_25xx_data_0 = capture_seismic_data(client, 1, FILTER_TYPE)    
+    nyq_data_0, nyq_filt_data_0, filt_25xx_data_0 = capture_seismic_data(client, FILTER_TYPE)    
     # Display the graphs
     
     plt.figure(1)    

@@ -89,7 +89,7 @@ plt.plot(upsample_data)
 plt.show
 
 
-dac_spectrum = (abs(np.fft.fft(upsample_data)))
+dac_spectrum = (abs(np.fft.fft(upsample_data))) / len(upsample_data)
 plt.subplot(212)
 plt.title('spectrum, showing clock products')
 plt.plot(dac_spectrum)#, '-o')
@@ -112,7 +112,7 @@ for h in range (0, num_cycles):
         for j in range (0, upsample):
             upsample_data_w_qnoise[h*upsample*len(data) + i*upsample + j] = data[i] + qnoise
 
-dac_spectrum_w_qnoise = (abs(np.fft.fft(upsample_data_w_qnoise)))
+dac_spectrum_w_qnoise = (abs(np.fft.fft(upsample_data_w_qnoise))) / len(upsample_data_w_qnoise)
 
 plt.figure(3)
 plt.title('Spectrum, with quantization noise')
