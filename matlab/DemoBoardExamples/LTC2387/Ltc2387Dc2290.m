@@ -1,12 +1,5 @@
 function Ltc2387Dc2290
     
-    % Print extra information to console
-    VERBOSE = true;
-    % Plot data to screen
-    plotData = true;
-    % Write data out to a text file
-    writeToFile = true;
-
     % set testDataReg to one of these constants
     DATA_REAL = 0;
     DATA_ALL_ZEROS = 8;
@@ -20,6 +13,13 @@ function Ltc2387Dc2290
     SAMPLE_BYTES = 3;
     EEPROM_ID_SIZE = 48;
 
+    % Print extra information to console
+    verbose = true;
+    % Plot data to screen
+    plotData = true;
+    % Write data out to a text file
+    writeToFile = true;
+    
     % Returns the object in the class constructor
     comm = LtcControllerComm();  
     
@@ -46,7 +46,7 @@ function Ltc2387Dc2290
         fprintf('\nDevice Found');
     end
     
-    if(VERBOSE)
+    if(verbose)
         fprintf('\nStarting Data Collect');
     end 
  
@@ -66,17 +66,17 @@ function Ltc2387Dc2290
         error('LtcControllerComm:HardwareError', 'Data collect timed out (missing clock?)');
     end
     
-    if(VERBOSE)
+    if(verbose)
         fprintf('\nData Collect done');
     end
     
-    if(VERBOSE)
+    if(verbose)
         fprintf('\nReading data');
     end
     
     [dataBytes, numBytes] = comm.DataReceiveUint16Values(cId, TOTAL_ADC_SAMPLES);
     
-    if(VERBOSE)
+    if(verbose)
         fprintf('\nData read done, parsing data...');
     end
     

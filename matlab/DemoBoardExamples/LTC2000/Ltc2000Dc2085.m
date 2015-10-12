@@ -1,5 +1,5 @@
-
 % DC2085 / LTC2000 Interface Example
+% LTC2000: 16-/14-/11- Bit 2.5 Gsps DAcs
 %
 % This program demonstrates how to communicate with the LTC2000 demo board 
 % using Matlab. Examples are provided for generating sinusoidal data from within
@@ -45,123 +45,129 @@
 
 function Ltc2000Dc2085
 
-clear all;
-AMPLITUDE = 16000;
-NUM_CYCLES = 800;   % Number of sinewave cycles over the entire data record
-VERBOSE = true;
-SLEEP_TIME = 0.1;
-NUM_SAMPLES = 65536;    % n.BuffSize
+    clear all;
+    AMPLITUDE = 16000;
+    NUM_CYCLES = 800;   % Number of sinewave cycles over the entire data record
+    SLEEP_TIME = 0.1;
+    NUM_SAMPLES = 65536;    % n.BuffSize
 
-if VERBOSE
-    fprintf('LTC2000 Test Script\n');
-end
-
-% Import LTC2000 definitions and support functions
-[lt2k] = ltc2000Constants();
-
-% Returns the object in the class constructor
-lths = LtcControllerComm();
-
-deviceInfoList = lths.ListControllers(lths.TYPE_HIGH_SPEED, 2);
-deviceInfo = [];
-for info = deviceInfoList
-   if strcmp(info.description(1:7), 'LTC2000')
-       deviceInfo = info;
-   end
-end
-
-if isempty(deviceInfo)
-    error('TestLtcHighSpeedComm:noDevice', 'No LTC200 demo board detected');
-end
-
-fprintf('Found LTC2000 demo board:\n');
-fprintf('Description: %s\n', deviceInfo.description);
-fprintf('Serial Number: %s\n', deviceInfo.serialNumber);
-
-% init a device and get an id
-did = lths.Init(deviceInfo);
-
-lths.HsSetBitMode(did, lths.HS_BIT_MODE_MPSSE);
-lths.HsFpgaToggleReset(did);
-
-fprintf('FPGA ID is %X\n', lths.HsFpgaReadDataAtAddress(did, lt2k.FPGA_ID_REG));
-
-lths.HsFpgaWriteDataAtAddress(did, lt2k.FPGA_DAC_PD, 1);
-      
-pause(SLEEP_TIME);
-
-if VERBOSE
-    fprintf('Configuring ADC over SPI\n');
-end
-
-% Initial register values can be taken directly from LTDACGen.
-% Refer to LTC2000 datasheet for detailed register descriptions.
-
-SpiWrite(lt2k.REG_RESET_PD, 0);
-SpiWrite(lt2k.REG_CLK_CONFIG, 2);    % setting output current to 7mA?
-SpiWrite(lt2k.REG_CLK_PHASE, 7);     % DCKIP/N delay = 315 ps
-SpiWrite(lt2k.REG_PORT_EN, 11);      % Enables Port A and B Rxs and allows DAC to be updated from A and B
-SpiWrite(lt2k.REG_SYNC_PHASE, 0);
-SpiWrite(lt2k.REG_LINER_GAIN, 0);
-SpiWrite(lt2k.REG_LINEARIZATION, 8);
-SpiWrite(lt2k.REG_DAC_GAIN, 32);
-SpiWrite(lt2k.REG_LVDS_MUX, 0);
-SpiWrite(lt2k.REG_TEMP_SELECT, 0);
-SpiWrite(lt2k.REG_PATTERN_ENABLE, 0);
-
-pause(SLEEP_TIME);
-
-% Optionally read back all registers
-if VERBOSE
-    fprintf('LTC2000 Register Dump:\n');
-    for k = 1:9
-        fprintf('Register %d: 0x%02X\n', k, SpiRead(k));
+    % Print extra information to console
+    verbose = true;
+    
+    if verbose
+        fprintf('LTC2000 Test Script\n');
     end
-end
 
-lths.HsFpgaWriteDataAtAddress(did, lt2k.FPGA_CONTROL_REG, 32);
+    % Import LTC2000 definitions and support functions
+    [lt2k] = Ltc2000Constants();
 
-pause(SLEEP_TIME);
+    % Returns the object in the class constructor
+    lths = LtcControllerComm();
 
-% Demonstrates how to generate sinusoidal data. Note that the total data 
-% record length contains an exact integer number of cycles.
-data = round(AMPLITUDE * sin((NUM_CYCLES * 2 * pi / NUM_SAMPLES) * ...
-    (0:(NUM_SAMPLES - 1))));
+    deviceInfoList = lths.ListControllers(lths.TYPE_HIGH_SPEED, 2);
+    deviceInfo = [];
+    for info = deviceInfoList
+       if strcmp(info.description(1:7), 'LTC2000')
+           deviceInfo = info;
+       end
+    end
 
-% Demonstrates how to generate sinc data.
-sincData = zeros(NUM_SAMPLES, 1);
-for i = 1:NUM_SAMPLES
-x = ((i - 32768) / (512.0)) + 0.0001;
-sincData(i) = int16((32000 * (sin(x) / x)));
-end
+    if isempty(deviceInfo)
+        error('TestLtcHighSpeedComm:noDevice', 'No LTC200 demo board detected');
+    end
 
-% Demonstrates how to write generated data to a file.
-fprintf('writing data out to file')
-outFile = fopen('dacdata_sinc.csv', 'w');
-for i = 1 : NUM_SAMPLES
-    fprintf(outFile, '%d\n', sincData(i));
-end
-fclose(outFile);
-fprintf('\ndone writing!')
+    fprintf('Found LTC2000 demo board:\n');
+    fprintf('Description: %s\n', deviceInfo.description);
+    fprintf('Serial Number: %s\n', deviceInfo.serialNumber);
 
-% Demonstrates how to read data in from a file.
-inData = zeros(NUM_SAMPLES, 1);
-fprintf('\nreading data from file')
-inFile = fopen('dacdata_sinc.csv', 'r');
-for i = 1: NUM_SAMPLES 
-    inData(i) = str2double(fgetl(inFile));
-end
-fclose(inFile);
-fprintf('\ndone reading!')
+    % init a device and get an id
+    did = lths.Init(deviceInfo);
 
-lths.HsSetBitMode(did, lths.HS_BIT_MODE_FIFO);
-% DAC should start running here!
-numBytesSent = lths.DataSendUint16Values(did, inData);
-fprintf('numBytesSent (should be %d) = %d\n', NUM_SAMPLES * 2, ...
-    numBytesSent);
+    lths.HsSetBitMode(did, lths.HS_BIT_MODE_MPSSE);
+    lths.HsFpgaToggleReset(did);
+
+    fprintf('FPGA Load ID is %X\n', lths.HsFpgaReadDataAtAddress(did, lt2k.FPGA_ID_REG));
+    fprintf('Reading PLL status, should be 0x47\n');
+    data = lths.HsFpgaReadDataAtAddress(did, lt2k.FPGA_STATUS_REG);
+    fprintf('And it is... 0x%s\n', dec2hex(data));
+    fprintf('Turning on DAC...\n');
+    
+    lths.HsFpgaWriteDataAtAddress(did, lt2k.FPGA_DAC_PD, 1);
+
+    pause(SLEEP_TIME);
+
+    if verbose
+        fprintf('Configuring ADC over SPI\n');
+    end
+
+    % Initial register values can be taken directly from LTDACGen.
+    % Refer to LTC2000 datasheet for detailed register descriptions.
+
+    SpiWrite(lt2k.REG_RESET_PD, 0);
+    SpiWrite(lt2k.REG_CLK_CONFIG, 2);    % setting output current to 7mA?
+    SpiWrite(lt2k.REG_CLK_PHASE, 7);     % DCKIP/N delay = 315 ps
+    SpiWrite(lt2k.REG_PORT_EN, 11);      % Enables Port A and B Rxs and allows DAC to be updated from A and B
+    SpiWrite(lt2k.REG_SYNC_PHASE, 0);
+    SpiWrite(lt2k.REG_LINER_GAIN, 0);
+    SpiWrite(lt2k.REG_LINEARIZATION, 8);
+    SpiWrite(lt2k.REG_DAC_GAIN, 32);
+    SpiWrite(lt2k.REG_LVDS_MUX, 0);
+    SpiWrite(lt2k.REG_TEMP_SELECT, 0);
+    SpiWrite(lt2k.REG_PATTERN_ENABLE, 0);
+
+    pause(SLEEP_TIME);
+
+    % Optionally read back all registers
+    if verbose
+        fprintf('LTC2000 Register Dump:\n');
+        for k = 0:9
+            fprintf('Register %d: 0x%02X\n', k, SpiRead(k));
+        end
+    end
+
+    lths.HsFpgaWriteDataAtAddress(did, lt2k.FPGA_CONTROL_REG, 32);
+
+    pause(SLEEP_TIME);
+
+    % Demonstrates how to generate sinusoidal data. Note that the total data 
+    % record length contains an exact integer number of cycles.
+    data = round(AMPLITUDE * sin((NUM_CYCLES * 2 * pi / NUM_SAMPLES) * ...
+        (0:(NUM_SAMPLES - 1))));
+
+    % Demonstrates how to generate sinc data.
+    sincData = zeros(NUM_SAMPLES, 1);
+    for i = 1:NUM_SAMPLES
+    x = ((i - 32768) / (512.0)) + 0.0001;
+    sincData(i) = int16((32000 * (sin(x) / x)));
+    end
+
+    % Demonstrates how to write generated data to a file.
+    fprintf('writing data out to file')
+    outFile = fopen('dacdata_sinc.csv', 'w');
+    for i = 1 : NUM_SAMPLES
+        fprintf(outFile, '%d\n', sincData(i));
+    end
+    fclose(outFile);
+    fprintf('\ndone writing!')
+
+    % Demonstrates how to read data in from a file.
+    inData = zeros(NUM_SAMPLES, 1);
+    fprintf('\nreading data from file')
+    inFile = fopen('dacdata_sinc.csv', 'r');
+    for i = 1: NUM_SAMPLES 
+        inData(i) = str2double(fgetl(inFile));
+    end
+    fclose(inFile);
+    fprintf('\ndone reading!')
+
+    lths.HsSetBitMode(did, lths.HS_BIT_MODE_FIFO);
+    % DAC should start running here!
+    numBytesSent = lths.DataSendUint16Values(did, inData);
+    fprintf('\nnumBytesSent (should be %d) = %d\n', NUM_SAMPLES * 2, ...
+        numBytesSent);
 
 
-function SpiWrite(address, value)
+    function SpiWrite(address, value)
         lths.SpiSendByteAtAddress(did, bitor(address, lt2k.SPI_WRITE), value);
     end
 
