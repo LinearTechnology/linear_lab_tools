@@ -33,8 +33,6 @@ function Ltc2268Dc1532
     % find demo board with correct ID
     EEPROM_ID = '[0074 DEMO 10 DC1532A-A LTC2268-14 D2175]';
     eepromIdSize = length(EEPROM_ID);
-    
-    % find demo board with correct ID
     fprintf('\nLooking for a DC1371 with a DC1532A-A demoboard');
     
     deviceInfoList = comm.ListControllers(comm.TYPE_DC1371, 1);
