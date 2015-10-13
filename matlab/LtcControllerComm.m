@@ -70,7 +70,7 @@ classdef LtcControllerComm < handle
             if status ~= 0
                 errorIds = {'OK', 'HardwareError', 'InvalidArgument', 'LogicError', ...
                     'NotSupported', 'UserAborted', 'UnknownError'};
-                errorId = errorIds{-status};
+                errorId = errorIds{1-status};
                 message = repmat(' ', 1, 256);
                 [~, ~, message] = calllib(self.libraryName, ...
                     'LccGetErrorInfo', self.handles{did}, message, 256);

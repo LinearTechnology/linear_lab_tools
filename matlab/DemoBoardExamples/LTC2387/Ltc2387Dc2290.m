@@ -25,16 +25,16 @@ function Ltc2387Dc2290
     
     % find demo board with correct ID
     EEPROM_ID = 'LTC2387,D2433,DC2290A,YII101Q,NONE,-------------';
-    eepromIdSize = length(EEPROM_ID);
+    EEPROM_IDSize = length(EEPROM_ID);
     fprintf('Looking for a DC718 with a DC2290A demoboard');
     
-    deviceInfoList = comm.ListControllers(comm.TYPE_DC890, 1);
+    deviceInfoList = comm.ListControllers(comm.TYPE_DC718, 1);
     
 	% Open communication to the device
     cId = comm.Init(deviceInfoList);
     
     for info = deviceInfoList
-        if strcmp(eepromId, comm.EepromReadString(cId, eepromIdSize))
+        if strcmp(EEPROM_ID, comm.EepromReadString(cId, EEPROM_IDSize))
             break;
         end
         cId = comm.Cleanup(cId);
@@ -74,7 +74,7 @@ function Ltc2387Dc2290
         fprintf('\nReading data');
     end
     
-    [dataBytes, numBytes] = comm.DataReceiveUint16Values(cId, TOTAL_ADC_SAMPLES);
+    dataBytes = comm.DataReceiveBytes(cId, NUM_ADC_SAMPLES * SAMPLE_BYTES);
     
     if(verbose)
         fprintf('\nData read done, parsing data...');
@@ -82,8 +82,16 @@ function Ltc2387Dc2290
     
     data = zeros(1, NUM_ADC_SAMPLES);
     for i = 1:NUM_ADC_SAMPLES
-        d1 = bitand((uint8(dataBytes(i * 3 - 2)) * 65536), 16711680);
-        d2 = bitand((uint8(dataBytes(i * 3 - 1)) * 256), 65280);
+        d1 = (uint8(dataBytes(i * 3 - 2)) * 65536);
+        d1 = bitshift(d1, -16);
+        d1 = bitand(d1, 255);
+        d1 = bitshift(d1, 16);
+        % d1 = bitand((uint8(dataBytes(i * 3 - 2)) * 65536), 16711680);
+        d2 = (uint8(dataBytes(i * 3 - 1)) * 256);
+        d2 = bitshift(d2, -8);
+        d2 = bitand(d2, 255);
+        d2 = bitshift(d2, 8);
+        % d2 = bitand((uint8(dataBytes(i * 3 - 1)) * 256), 65280);
         d3 = bitand(uint8(dataBytes(i * 3)), 255);
         data(i) = bitor(bitor(d1, d2), d3);
         if(data(i) > 131072)
