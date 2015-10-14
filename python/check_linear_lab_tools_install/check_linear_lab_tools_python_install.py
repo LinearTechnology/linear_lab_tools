@@ -16,18 +16,19 @@ reverser = zeros(osr*2)
 reverser[0] = 1
 reverser[osr] = 1
 sinc4_w_rev = convolve(sinc4, reverser)
+sinc4_w_rev = sinc4_w_rev/sum(sinc4_w_rev)
 
 
 from matplotlib import pyplot as plt
 
 w, h = signal.freqz(sinc4_w_rev, 1, 16385)
-fresp = log(abs(h))
+fresp = 20*np.log10(abs(h))
 plt.plot(fresp, zorder=1)
 plt.title('Congratulations! Python is installed properly!')
-plt.xlabel('freq.')
-plt.ylabel('log Amplitude')
-plt.axis([0, 2000, 0, 23])
+plt.xlabel('Frequency')
+plt.ylabel('Rejection')
+plt.axis([0, 1000, -150, 0])
 print plt.axis()
-img = imread("LinearLogo.tiff")
-plt.imshow(img, origin='upper',aspect='auto', extent=[750, 2000, 8, 23])
+img = imread("LinearLogo.png")
+plt.imshow(img, origin='upper',aspect='auto', extent=[350, 1000, -40, 0])
 plt.show()
