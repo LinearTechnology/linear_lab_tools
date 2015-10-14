@@ -16,7 +16,7 @@ function Ltc2268Dc1532
     writeToFile = true;
 
     % Change this to collect real or test pattern data
-    useTestData = true;
+    useTestData = false;
     % Change this to set the output when using the test pattern
     testDataValue = 10922;              % 14-bit data
 
