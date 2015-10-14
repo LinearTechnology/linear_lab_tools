@@ -75,24 +75,24 @@ function Ltc2387Dc2290
     end
     
     dataBytes = comm.DataReceiveBytes(cId, NUM_ADC_SAMPLES * SAMPLE_BYTES);
-    
+   
     if(verbose)
         fprintf('\nData read done, parsing data...');
     end
     
     data = zeros(1, NUM_ADC_SAMPLES);
     for i = 1:NUM_ADC_SAMPLES
-        d1 = (uint8(dataBytes(i * 3 - 2)) * 65536);
+        d1 = bitand(uint32(dataBytes(i * 3 - 2)), 255) * 65536;
         d1 = bitshift(d1, -16);
         d1 = bitand(d1, 255);
         d1 = bitshift(d1, 16);
         % d1 = bitand((uint8(dataBytes(i * 3 - 2)) * 65536), 16711680);
-        d2 = (uint8(dataBytes(i * 3 - 1)) * 256);
+        d2 = bitand(uint32(dataBytes(i * 3 - 1)), 255) * 256;
         d2 = bitshift(d2, -8);
         d2 = bitand(d2, 255);
         d2 = bitshift(d2, 8);
         % d2 = bitand((uint8(dataBytes(i * 3 - 1)) * 256), 65280);
-        d3 = bitand(uint8(dataBytes(i * 3)), 255);
+        d3 = bitand(uint32(dataBytes(i * 3)), 255);
         data(i) = bitor(bitor(d1, d2), d3);
         if(data(i) > 131072)
             data(i) = data(i) - 262144;
