@@ -179,6 +179,8 @@ def ltc2261_dc1369(num_samples, verbose=False, do_demo=False):
             plt.show()
 
         vprint('All finished!')
+    
+        return data_ch1
 
 if __name__ == '__main__':
     NUM_SAMPLES = 64 * 1024
