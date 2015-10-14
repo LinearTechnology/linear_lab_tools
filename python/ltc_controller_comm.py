@@ -177,7 +177,7 @@ class Controller(object):
         self._c_array = None
         self._c_array_type = "none"
         self._dll = _dll
-        if self._dll.LccInitController(ct.byref(self._handle), controller_info) != 0:
+        if self._dll.LccInitController(ct.byref(self._handle), ct.byref(controller_info)) != 0:
             raise HardwareError("Error initializing the device")
 
     # support "with" semantics
