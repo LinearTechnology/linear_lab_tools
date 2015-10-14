@@ -100,12 +100,12 @@ const int LCC_1371_CHIP_SELECT_ONE = 1;
 const int LCC_1371_CHIP_SELECT_TWO = 2;
 
 // Info for a found controller
-struct LccControllerInfo {
+typedef struct LccControllerInfoStruct {
     int type;
     char description[LCC_MAX_DESCRIPTION_SIZE];
     char serial_number[LCC_MAX_SERIAL_NUMBER_SIZE];
     unsigned long id;
-};
+} LccControllerInfo;
 
 // Opaque handle to High Speed Comm interface
 typedef void* LccHandle;
@@ -134,7 +134,7 @@ extern "C" {
     // Given a LccControllerInfo struct and a pointer to an LccHandle, this function initializes the
     // controller and sets the handle.
     LTC_CONTROLLER_COMM_API int LccInitController(LccHandle* handle,
-        LccControllerInfo controller_info);
+        LccControllerInfo* controller_info);
 
     // This function MUST be called before the program exits to clean up the internal data structures.
     // It takes a pointer to the handle and zeros the handle to help prevent accidental reuse.

@@ -107,7 +107,7 @@ classdef LtcControllerComm < handle
                 self.libraryName = 'ltc_controller_comm';
             end
             
-            loadlibrary([location, self.libraryName, '.dll'], @LtcControllerCommProto);
+            loadlibrary([location, self.libraryName, '.dll'], 'ltc_controller_comm_matlab.h');
             self.handles = {};
             self.nextIndex = 1;
         end
@@ -174,21 +174,17 @@ classdef LtcControllerComm < handle
             end
         end
         
-        function did = Init(self, deviceInfo)
-            % takes a deviceInfo struct and returns a did, a device ID used
-            % by (almost) all the subequent methods to talk to a device.
-            deviceStruct = struct(...
-                'type', int32(deviceInfo.type), ...
-                'serial_number', uint8(zeros(1, 16)), ...
-                'description', uint8(zeros(1,64)), ...
-                'id', uint32(deviceInfo.id));
-            n = length(deviceInfo.serialNumber);
-            deviceStruct.serial_number(1:n) = deviceInfo.serialNumber;
-            n = length(deviceInfo.description);
-            deviceStruct.description(1:n) = deviceInfo.description;
-            
+        function did = Init(self, controllerInfo)           
+            controllerStruct = uint8(zeros(1, 88));
+            controllerStruct(1:4) = typecast(controllerInfo.type, 'uint8');
+            n = length(controllerInfo.description);
+            controllerStruct((1:n)+4) = controllerInfo.description;
+            n = length(controllerInfo.serialNumber);
+            controllerStruct((1:n)+68) = controllerInfo.serialNumber;
+            controllerStruct((1:4)+84) = typecast(controllerInfo.id, 'uint8');
+
             handle = libpointer('voidPtr', 0);
-            status = calllib(self.libraryName, 'LccInitController', handle, deviceStruct);
+            status = calllib(self.libraryName, 'LccInitController', handle, controllerStruct);
             if status ~= 0
                 error('LtcControllerComm:LtcControllerComm', ...
                     'Error creating device');
@@ -211,8 +207,7 @@ classdef LtcControllerComm < handle
         
         function description = GetDescription(self, did)
             % Return the current device's serial number.
-            description = self.Call(did, 'LccGetDescription', blanks(64), ...
-                64);
+            description = self.Call(did, 'LccGetDescription', blanks(64), 64);
         end
         
         function serialNumber = GetSerialNumber(self, did)

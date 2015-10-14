@@ -118,33 +118,35 @@ LTC_CONTROLLER_COMM_API int LccGetControllerList(int controller_types,
 }
 
 LTC_CONTROLLER_COMM_API int LccInitController(LccHandle* handle,
-        LccControllerInfo controller_info) {
+        LccControllerInfo* controller_info) {
+    C_MUST_NOT_BE_NULL(handle);
+    C_MUST_NOT_BE_NULL(controller_info);
     auto new_handle = new Handle(nullptr);
-    switch (controller_info.type) {
+    switch (controller_info->type) {
     case LCC_TYPE_DC1371:
     {
-        int code = ToErrorCode([&] { return new Dc1371(controller_info); },
+        int code = ToErrorCode([&] { return new Dc1371(*controller_info); },
             new_handle->controller, new_handle->error_string);
         *handle = new_handle;
         return code;
     }
     case LCC_TYPE_HIGH_SPEED:
     {
-        int code = ToErrorCode([&] { return new HighSpeed(ftdi, controller_info); },
+        int code = ToErrorCode([&] { return new HighSpeed(ftdi, *controller_info); },
             new_handle->controller, new_handle->error_string);
         *handle = new_handle;
         return code;
     }
     case LCC_TYPE_DC718:
     {
-        int code = ToErrorCode([&] { return new Dc718(ftdi, controller_info); },
+        int code = ToErrorCode([&] { return new Dc718(ftdi, *controller_info); },
             new_handle->controller, new_handle->error_string);
         *handle = new_handle;
         return code;
     }
     case LCC_TYPE_DC890:
     {
-        int code = ToErrorCode([&] {return new Dc890(ftdi, controller_info); },
+        int code = ToErrorCode([&] {return new Dc890(ftdi, *controller_info); },
             new_handle->controller, new_handle->error_string);
         *handle = new_handle;
         return code;
