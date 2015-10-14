@@ -70,7 +70,7 @@ namespace linear {
 
         static int GetNumControllers(int max_controllers);
         static vector<LccControllerInfo> ListControllers(int max_controllers);
-        Dc1371(LccControllerInfo info) : drive_letter(char(info.id)) { }
+        Dc1371(const LccControllerInfo& info) : drive_letter(char(info.id)) { }
         Dc1371(const Dc1371&) = delete;
         Dc1371(Dc1371&&) = delete;
         Dc1371& operator=(const Dc1371& other) = delete;
