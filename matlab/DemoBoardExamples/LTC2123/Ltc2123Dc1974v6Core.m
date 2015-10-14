@@ -99,7 +99,7 @@ function Ltc2123Dc1974v6Core
     lths = LtcControllerComm();
 
     % Import LTC2000 definitions and support functions
-    [lt2k] = ltc2123Functions(lths);
+    [lt2k] = Ltc2123Functions(lths);
 
     memSize = 144;
     buffSize = 64 * 1024;
@@ -226,12 +226,12 @@ function Ltc2123Dc1974v6Core
             dataCh0 = dataCh0' .* blackman(buffSize/2); % Apply Blackman window
             freqDomainCh0 = fft(dataCh0)/(buffSize/2); % FFT
             freqDomainMagnitudeCh0 = abs(freqDomainCh0); % Extract magnitude
-            freqDomainMagnitudeDbCh0 = 10 * log(freqDomainMagnitudeCh0/8192.0);
+            freqDomainMagnitudeDbCh0 = 20 * log10(freqDomainMagnitudeCh0/8192.0);
 
             dataCh1 = dataCh1' .* blackman(buffSize/2); % Apply Blackman window
             freqDomainCh1 = fft(dataCh1)/(buffSize/2); % FFT
             freqDomainMagnitudeCh1 = abs(freqDomainCh1); % Extract magnitude
-            freqDomainMagnitudeDbCh1 = 10 * log(freqDomainMagnitudeCh1/8192.0);
+            freqDomainMagnitudeDbCh1 = 20 * log10(freqDomainMagnitudeCh1/8192.0);
 
 
             figure
@@ -389,7 +389,7 @@ function Ltc2123Dc1974v6Core
         dataCh1 = zeros(1, buffSize/2);
 
 
-        for i = 1 : 2 : (buffSize)/4
+        for i = 1 : 2 : (buffSize)/2
             % Split data for CH0, CH1
             dataCh0(i) = data(i*2 - 1);
             dataCh0(i+1) = data(i*2);
