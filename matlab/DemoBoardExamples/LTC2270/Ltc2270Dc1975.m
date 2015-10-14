@@ -71,7 +71,7 @@ function Ltc2270Dc1975
     
     % find demo board with correct ID
     EEPROM_ID = '[0074 DEMO 10 DC1532A-A LTC2268-14 D2175]';
-    eepromIdSize = length(EEPROM_ID);
+    EEPROM_IDSize = length(EEPROM_ID);
     fprintf('Looking for a DC890 with a DC1975A-A demoboard');
     
     deviceInfoList = comm.ListControllers(comm.TYPE_DC890, 1);
@@ -80,7 +80,7 @@ function Ltc2270Dc1975
     cId = comm.Init(deviceInfoList);
     
     for info = deviceInfoList
-        if strcmp(eepromId, comm.EepromReadString(cId, eepromIdSize))
+        if strcmp(EEPROM_ID, comm.EepromReadString(cId, EEPROM_IDSize))
             break;
         end
         cId = comm.Cleanup(cId);
