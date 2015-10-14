@@ -1,9 +1,6 @@
 % LTC2268 - 14 bit
 
-function Ltc2268Dc1532
-
-    clear all;
-    
+function Ltc2268Dc1532  
     % LTC2268 Serial Programming Mode Registers
     RESET_REG = 0;
     POWER_DOWN_REG = 1;
@@ -33,7 +30,7 @@ function Ltc2268Dc1532
     % find demo board with correct ID
     EEPROM_ID = '[0074 DEMO 10 DC1532A-A LTC2268-14 D2175]';
     eepromIdSize = length(EEPROM_ID);
-    fprintf('\nLooking for a DC1371 with a DC1532A-A demoboard');
+    fprintf('Looking for a DC1371 with a DC1532A-A demoboard\n');
     
     deviceInfoList = comm.ListControllers(comm.TYPE_DC1371, 1);
 	
@@ -48,19 +45,19 @@ function Ltc2268Dc1532
     end
     
     if(cId == 0)
-        fprintf('\nDevice not found');
+        fprintf('Device not found\n');
     else
-        fprintf('\nDevice Found');
+        fprintf('Device Found\n');
     end
         
     if (verbose)
-        fprintf('\nConfiguring SPI registers');
+        fprintf('Configuring SPI registers\n');
     end
     
     if (useTestData == true)
-        fprintf('\nSet to read real data');
+        fprintf('Set to read real data\n');
     else
-        fprintf('\nSet to generate test data');
+        fprintf('Set to generate test data\n');
     end
 
     if (useTestData)
@@ -86,20 +83,20 @@ function Ltc2268Dc1532
     
     if (comm.FpgaGetIsLoaded(cId, 'S2175'))
        if(verbose)
-            fprintf('\nLoading FPGA');
+            fprintf('Loading FPGA\n');
        end 
        comm.FpgaLoadFile(cId, 'S2175');
     else
        if(verbose)
-            fprintf('\nFPGA already loaded');
+            fprintf('FPGA already loaded\n');
        end 
     end
     
-    % demo-board specific information needed by the DC1371
+    % demo-board specific information needed by the DC1371 (0x28000000)
     comm.DC1371SetDemoConfig(cId, 671088640)
 
     if(verbose)
-        fprintf('\nStarting Data Collect');
+        fprintf('Starting Data Collect\n');
     end 
     
     comm.DataStartCollect(cId, TOTAL_ADC_SAMPLES, comm.TRIGGER_NONE);
@@ -113,27 +110,28 @@ function Ltc2268Dc1532
     end
     
     if(isDone ~= true)
-        error('LtcControllerComm:HardwareError', 'Data collect timed out (missing clock?)');
+        error('LtcControllerComm:HardwareError', ...
+            'Data collect timed out (missing clock?)');
     end
     
     if(verbose)
-        fprintf('\nData Collect done');
+        fprintf('Data Collect done\n');
     end
     
     if(verbose)
-        fprintf('\nReading data');
+        fprintf('Reading data\n');
     end
     
     [data, numBytes] = comm.DataReceiveUint16Values(cId, TOTAL_ADC_SAMPLES);
     
     if (nnz(data == 10922) == length(data))
-        fprintf('\nGood data!!');
+        fprintf('Good data!!\n');
     else
-        fprintf('Bad data!!');
+        fprintf('Bad data!!\n');
     end
         
     if(verbose)
-        fprintf('\nData Read done');
+        fprintf('Data Read done\n');
     end
     
     % Split data into two channels
@@ -145,7 +143,7 @@ function Ltc2268Dc1532
     
     if(writeToFile)
         if(verbose)
-            fprintf('\nWriting data to file');
+            fprintf('Writing data to file\n');
         end    
 
         fileID = fopen('data.txt','w');
@@ -155,7 +153,7 @@ function Ltc2268Dc1532
         end
 
         fclose(fileID);
-        fprintf('\nFile write done');
+        fprintf('File write done\n');
     end
     
     if(plotData == true)
@@ -170,7 +168,7 @@ function Ltc2268Dc1532
         adcAmplitude = 65536.0 / 2.0;
 
         windowScale = (NUM_ADC_SAMPLES/2) / sum(blackman(NUM_ADC_SAMPLES/2));
-        fprintf('\nWindow scaling factor: %d', windowScale);
+        fprintf('Window scaling factor: %d\n', windowScale);
 
         windowedDataCh1 = dataCh1' .* blackman(NUM_ADC_SAMPLES);
         windowedDataCh1 = windowedDataCh1 .* windowScale; 	% Apply Blackman window
@@ -193,7 +191,7 @@ function Ltc2268Dc1532
         title('CH1 FFT')
         
     end
-    fprintf('\nAll finished');
+    fprintf('All finished\n');
     
     
     
