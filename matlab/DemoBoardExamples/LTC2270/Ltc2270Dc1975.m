@@ -64,23 +64,23 @@ function Ltc2270Dc1975
     NUM_ADC_SAMPLES = 64 * 1024;
     NUM_ADC_SAMPLES_PER_CH = NUM_ADC_SAMPLES / 2;
     SAMPLE_BYTES = 2;
-    EEPROM_ID_SIZE = 48;
+    EEPROM_ID_SIZE = 40;
         
     % Returns the object in the class constructor
     comm = LtcControllerComm();  
-    
-    % find demo board with correct ID
-    EEPROM_ID = '[0074 DEMO 10 DC1532A-A LTC2268-14 D2175]';
-    EEPROM_IDSize = length(EEPROM_ID);
-    fprintf('Looking for a DC890 with a DC1975A-A demoboard');
-    
+     
     deviceInfoList = comm.ListControllers(comm.TYPE_DC890, 1);
     
 	% Open communication to the device
     cId = comm.Init(deviceInfoList);
     
+    % find demo board with correct ID
+    EEPROM_ID = 'LTC2270,D9002,DC1975A-A,YGG200T,CMOS,----';
+    eepromIdSize = length(EEPROM_ID);
+    fprintf('\nLooking for a DC1371 with a DC1532A-A demoboard');
+    
     for info = deviceInfoList
-        if strcmp(EEPROM_ID, comm.EepromReadString(cId, EEPROM_IDSize))
+        if strcmp(EEPROM_ID, comm.EepromReadString(cId, eepromIdSize))
             break;
         end
         cId = comm.Cleanup(cId);
@@ -108,10 +108,10 @@ function Ltc2270Dc1975
     comm.SpiSendByteAtAddress(cId, 0, 128);
     comm.SpiSendByteAtAddress(cId, 1, 0);
     comm.SpiSendByteAtAddress(cId, 2, 0);
-    comm.SpiSendByteAtAddress(cId, 3, 113);
+    comm.SpiSendByteAtAddress(cId, 3, 112);
     comm.SpiSendByteAtAddress(cId, 4, testDataReg);
     
-    if (comm.FpgaGetIsLoaded(cId, 'CMOS'))
+    if (~comm.FpgaGetIsLoaded(cId, 'CMOS'))
        if(VERBOSE)
             fprintf('\nLoading FPGA');
        end 
@@ -200,17 +200,17 @@ function Ltc2270Dc1975
         windowScale = (NUM_ADC_SAMPLES/2) / sum(blackman(NUM_ADC_SAMPLES/2));
         fprintf('\nWindow scaling factor: %d', windowScale);
 
-        windowedDataCh1 = data_ch1' .* blackman(NUM_ADC_SAMPLES/2);
+        windowedDataCh1 = dataCh1' .* blackman(NUM_ADC_SAMPLES/2);
         windowedDataCh1 = windowedDataCh1 .* windowScale; 	% Apply Blackman window
         freqDomainCh1 = fft(windowedDataCh1)/(NUM_ADC_SAMPLES_PER_CH); % FFT
         freqDomainMagnitudeCh1 = abs(freqDomainCh1); 		% Extract magnitude
-        freqDomainMagnitudeDbCh1 = 10 * log10(freqDomainMagnitudeCh1/adcAmplitude);
+        freqDomainMagnitudeDbCh1 = 20 * log10(freqDomainMagnitudeCh1/adcAmplitude);
         
-        windowedDataCh2 = data_ch2' .* blackman(NUM_ADC_SAMPLES/2);
+        windowedDataCh2 = dataCh2' .* blackman(NUM_ADC_SAMPLES/2);
         windowedDataCh2 = windowedDataCh2 .* windowScale; 	% Apply Blackman window
         freqDomainCh2 = fft(windowedDataCh2)/(NUM_ADC_SAMPLES_PER_CH); % FFT
         freqDomainMagnitudeCh2 = abs(freqDomainCh2); 		% Extract magnitude
-        freqDomainMagnitudeDbCh2 = 10 * log10(freqDomainMagnitudeCh2/adcAmplitude);
+        freqDomainMagnitudeDbCh2 = 20 * log10(freqDomainMagnitudeCh2/adcAmplitude);
         
         figure(2)
         subplot(2, 1, 1)
