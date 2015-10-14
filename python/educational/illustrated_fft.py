@@ -115,6 +115,7 @@ plt.show()
 # entered in an integer bin number!! If not, your frequency will "leak" into these
 # adjacent bins. Go on, give it a try!
 
+# Round to nearest integer, in case a non-integer was entered
 bin2examine = int(np.rint(bin_number))
 
 plt.figure(4)
