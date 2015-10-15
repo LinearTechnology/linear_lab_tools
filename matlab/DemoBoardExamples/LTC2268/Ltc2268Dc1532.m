@@ -47,28 +47,36 @@
 % 	ADD THE ABSOLUTE PATH TO "linear_lab_tools\matlab" FOLDER BEFORE RUNNING THE SCRIPT.
 %   RUN "mex -setup" TO SET UP COMPILER AND CHOSE THE OPTION "Lcc-win32 C".
 
-function Ltc2268Dc1532  
+function Ltc2268Dc1532(arg1NumSamples, arg2Verbose, doDemo)
+    
+    if(~nargin)
+        numAdcSamples = 64 * 1024;
+        % Print extra information to console
+        verbose = true;
+        % Plot data to screen
+        plotData = true;
+        % Write data out to a text file
+        writeToFile = true;
+    else
+        numAdcSamples = arg1NumSamples;
+        verbose = arg2Verbose;
+        plotData = doDemo;
+        writeToFile = doDemo;
+    end
+    
     % LTC2268 Serial Programming Mode Registers
     RESET_REG = 0;
     POWER_DOWN_REG = 1;
     OUTPUT_MODE_REG = 2;
     TEST_PATTERN_MSB_REG = 3;
     TEST_PATTERN_LSB_REG = 4;
-    
-    % Print extra information to console
-    verbose = true;
-    % Plot data to screen
-    plotData = true;
-    % Write data out to a text file
-    writeToFile = true;
 
     % Change this to collect real or test pattern data
     useTestData = false;
     % Change this to set the output when using the test pattern
     testDataValue = 10922;              % 14-bit data
 
-    NUM_ADC_SAMPLES = 64 * 1024;        % WHY 64 * 1024 ????
-    TOTAL_ADC_SAMPLES = 2 * NUM_ADC_SAMPLES; % Two channel part
+    TOTAL_ADC_SAMPLES = 2 * numAdcSamples; % Two channel part
     SAMPLE_BYTES = 2;
     
     % Returns the object in the class constructor
@@ -196,7 +204,7 @@ function Ltc2268Dc1532
 
         fileID = fopen('data.txt','w');
 
-        for i = 1:NUM_ADC_SAMPLES
+        for i = 1:numAdcSamples
             fprintf(fileID,'%d\t%d\r\n', dataCh1(i), dataCh2(i));
         end
 
@@ -215,18 +223,18 @@ function Ltc2268Dc1532
 
         adcAmplitude = 65536.0 / 2.0;
 
-        windowScale = (NUM_ADC_SAMPLES/2) / sum(blackman(NUM_ADC_SAMPLES/2));
+        windowScale = (numAdcSamples/2) / sum(blackman(numAdcSamples/2));
         fprintf('Window scaling factor: %d\n', windowScale);
 
-        windowedDataCh1 = dataCh1' .* blackman(NUM_ADC_SAMPLES);
+        windowedDataCh1 = dataCh1' .* blackman(numAdcSamples);
         windowedDataCh1 = windowedDataCh1 .* windowScale; 	% Apply Blackman window
-        freqDomainCh1 = fft(windowedDataCh1)/(NUM_ADC_SAMPLES); % FFT
+        freqDomainCh1 = fft(windowedDataCh1)/(numAdcSamples); % FFT
         freqDomainMagnitudeCh1 = abs(freqDomainCh1); 		% Extract magnitude
         freqDomainMagnitudeDbCh1 = 10 * log10(freqDomainMagnitudeCh1/adcAmplitude);
         
-        windowedDataCh2 = dataCh2' .* blackman(NUM_ADC_SAMPLES);
+        windowedDataCh2 = dataCh2' .* blackman(numAdcSamples);
         windowedDataCh2 = windowedDataCh2 .* windowScale; 	% Apply Blackman window
-        freqDomainCh2 = fft(windowedDataCh2)/(NUM_ADC_SAMPLES); % FFT
+        freqDomainCh2 = fft(windowedDataCh2)/(numAdcSamples); % FFT
         freqDomainMagnitudeCh2 = abs(freqDomainCh2); 		% Extract magnitude
         freqDomainMagnitudeDbCh2 = 10 * log10(freqDomainMagnitudeCh2/adcAmplitude);
         

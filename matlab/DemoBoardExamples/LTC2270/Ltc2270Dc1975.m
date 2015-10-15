@@ -47,15 +47,23 @@
 % 	ADD THE ABSOLUTE PATH TO "linear_lab_tools\matlab" FOLDER BEFORE RUNNING THE SCRIPT.
 %   RUN "mex -setup" TO SET UP COMPILER AND CHOSE THE OPTION "Lcc-win32 C".
 
-function Ltc2270Dc1975
+function Ltc2270Dc1975(arg1NumSamples, arg2Verbose, doDemo)
     
-    % Print extra information to console
-    VERBOSE = true;
-    % Plot data to screen
-    plotData = true;
-    % Write data out to a text file
-    writeToFile = true;
-
+    if(~nargin)
+        numAdcSamples = 64 * 1024;
+        % Print extra information to console
+        verbose = true;
+        % Plot data to screen
+        plotData = true;
+        % Write data out to a text file
+        writeToFile = true;
+    else
+        numAdcSamples = arg1NumSamples;
+        verbose = arg2Verbose;
+        plotData = doDemo;
+        writeToFile = doDemo;
+    end
+              
     % set testDataReg to one of these constants
     DATA_REAL = 0;
     DATA_ALL_ZEROS = 8;
@@ -65,8 +73,7 @@ function Ltc2270Dc1975
     % testDataReg = DATA_ALTERNATING
     testDataReg = DATA_REAL;
 
-    NUM_ADC_SAMPLES = 64 * 1024;
-    NUM_ADC_SAMPLES_PER_CH = NUM_ADC_SAMPLES / 2;
+    NUM_ADC_SAMPLES_PER_CH = numAdcSamples / 2;
     SAMPLE_BYTES = 2;
         
     % Returns the object in the class constructor
@@ -99,7 +106,7 @@ function Ltc2270Dc1975
     comm.DC890GpioSetByte(cId, 248);
     comm.DC890GpioSpiSetBits(cId, 3, 0, 1);
     
-    if (VERBOSE)
+    if (verbose)
         fprintf('Configuring SPI registers');
     end
     
@@ -116,24 +123,24 @@ function Ltc2270Dc1975
     comm.SpiSendByteAtAddress(cId, 4, testDataReg);
     
     if (~comm.FpgaGetIsLoaded(cId, 'CMOS'))
-       if(VERBOSE)
+       if(verbose)
             fprintf('\nLoading FPGA');
        end 
        comm.FpgaLoadFile(cId, 'CMOS');
     else
-       if(VERBOSE)
+       if(verbose)
             fprintf('\nFPGA already loaded');
        end 
     end
     
-    if(VERBOSE)
+    if(verbose)
         fprintf('\nStarting Data Collect');
     end 
  
     comm.DataSetHighByteFirst(cId);
     
     comm.DataSetCharacteristics(cId, true, SAMPLE_BYTES, true);
-    comm.DataStartCollect(cId, NUM_ADC_SAMPLES, comm.TRIGGER_NONE);
+    comm.DataStartCollect(cId, numAdcSamples, comm.TRIGGER_NONE);
     
     for i = 1: 10
         isDone = comm.DataIsCollectDone(cId);
@@ -147,19 +154,19 @@ function Ltc2270Dc1975
         error('LtcControllerComm:HardwareError', 'Data collect timed out (missing clock?)');
     end
     
-    if(VERBOSE)
+    if(verbose)
         fprintf('\nData Collect done');
     end
     
     comm.DC890Flush(cId);
     
-    if(VERBOSE)
+    if(verbose)
         fprintf('\nReading data');
     end
     
-    [data, numBytes] = comm.DataReceiveUint16Values(cId, NUM_ADC_SAMPLES);
+    [data, numBytes] = comm.DataReceiveUint16Values(cId, numAdcSamples);
     
-    if(VERBOSE)
+    if(verbose)
         fprintf('\nData Read done');
     end
     
@@ -173,7 +180,7 @@ function Ltc2270Dc1975
     end
     
     if(writeToFile)
-        if(VERBOSE)
+        if(verbose)
             fprintf('\nWriting data to file');
         end    
 
@@ -201,16 +208,16 @@ function Ltc2270Dc1975
 
         adcAmplitude = 65536.0 / 2.0;
 
-        windowScale = (NUM_ADC_SAMPLES/2) / sum(blackman(NUM_ADC_SAMPLES/2));
+        windowScale = (numAdcSamples/2) / sum(blackman(numAdcSamples/2));
         fprintf('\nWindow scaling factor: %d', windowScale);
 
-        windowedDataCh1 = dataCh1' .* blackman(NUM_ADC_SAMPLES/2);
+        windowedDataCh1 = dataCh1' .* blackman(numAdcSamples/2);
         windowedDataCh1 = windowedDataCh1 .* windowScale; 	% Apply Blackman window
         freqDomainCh1 = fft(windowedDataCh1)/(NUM_ADC_SAMPLES_PER_CH); % FFT
         freqDomainMagnitudeCh1 = abs(freqDomainCh1); 		% Extract magnitude
         freqDomainMagnitudeDbCh1 = 20 * log10(freqDomainMagnitudeCh1/adcAmplitude);
         
-        windowedDataCh2 = dataCh2' .* blackman(NUM_ADC_SAMPLES/2);
+        windowedDataCh2 = dataCh2' .* blackman(numAdcSamples/2);
         windowedDataCh2 = windowedDataCh2 .* windowScale; 	% Apply Blackman window
         freqDomainCh2 = fft(windowedDataCh2)/(NUM_ADC_SAMPLES_PER_CH); % FFT
         freqDomainMagnitudeCh2 = abs(freqDomainCh2); 		% Extract magnitude

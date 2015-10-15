@@ -47,7 +47,22 @@
 % 	ADD THE ABSOLUTE PATH TO "linear_lab_tools\matlab" FOLDER BEFORE RUNNING THE SCRIPT.
 %   RUN "mex -setup" TO SET UP COMPILER AND CHOSE THE OPTION "Lcc-win32 C".
 
-function Ltc2387Dc2290
+function Ltc2387Dc2290(arg1NumSamples, arg2Verbose, doDemo)
+    
+    if(~nargin)
+        numAdcSamples = 64 * 1024;
+        % Print extra information to console
+        verbose = true;
+        % Plot data to screen
+        plotData = true;
+        % Write data out to a text file
+        writeToFile = true;
+    else
+        numAdcSamples = arg1NumSamples;
+        verbose = arg2Verbose;
+        plotData = doDemo;
+        writeToFile = doDemo;
+    end
     
     % set testDataReg to one of these constants
     DATA_REAL = 0;
@@ -58,17 +73,9 @@ function Ltc2387Dc2290
     % testDataReg = DATA_CHECKERBOARD
     testDataReg = DATA_REAL;
 
-    NUM_ADC_SAMPLES = 16 * 1024;
     SAMPLE_BYTES = 3;
     EEPROM_ID_SIZE = 48;
-
-    % Print extra information to console
-    verbose = true;
-    % Plot data to screen
-    plotData = true;
-    % Write data out to a text file
-    writeToFile = true;
-    
+  
     % Returns the object in the class constructor
     comm = LtcControllerComm();  
     
@@ -101,7 +108,7 @@ function Ltc2387Dc2290
     end 
  
     comm.DataSetCharacteristics(cId, false, SAMPLE_BYTES, false);
-    comm.DataStartCollect(cId, NUM_ADC_SAMPLES, comm.TRIGGER_NONE);
+    comm.DataStartCollect(cId, numAdcSamples, comm.TRIGGER_NONE);
     
     for i = 1: 10
         isDone = comm.DataIsCollectDone(cId);
@@ -124,14 +131,14 @@ function Ltc2387Dc2290
         fprintf('\nReading data');
     end
     
-    dataBytes = comm.DataReceiveBytes(cId, NUM_ADC_SAMPLES * SAMPLE_BYTES);
+    dataBytes = comm.DataReceiveBytes(cId, numAdcSamples * SAMPLE_BYTES);
    
     if(verbose)
         fprintf('\nData read done, parsing data...');
     end
     
-    data = zeros(1, NUM_ADC_SAMPLES);
-    for i = 1:NUM_ADC_SAMPLES
+    data = zeros(1, numAdcSamples);
+    for i = 1:numAdcSamples
         d1 = bitand(uint32(dataBytes(i * 3 - 2)), 255) * 65536;
         d1 = bitshift(d1, -16);
         d1 = bitand(d1, 255);
@@ -156,7 +163,7 @@ function Ltc2387Dc2290
 
         fileID = fopen('data.txt','w');
 
-        for i = 1:NUM_ADC_SAMPLES
+        for i = 1:numAdcSamples
             fprintf(fileID,'%d\r\n', data(i));
         end
 

@@ -47,9 +47,17 @@
 % 	ADD THE ABSOLUTE PATH TO "linear_lab_tools\matlab" FOLDER BEFORE RUNNING THE SCRIPT.
 %   RUN "mex -setup" TO SET UP COMPILER AND CHOSE THE OPTION "Lcc-win32 C".
 	
-function Ltc2261Dc1369
+function Ltc2261Dc1369(arg1NumSamples, arg2Verbose)
     
-    VERBOSE = true;
+    if(~nargin)
+        numAdcSamples = 64 * 1024;
+        % Print extra information to console
+        verbose = true;
+    else
+        numAdcSamples = arg1NumSamples;
+        verbose = arg2Verbose;
+    end
+    
     plotData = true;
     
     % set testDataReg to one of these constants
@@ -61,9 +69,8 @@ function Ltc2261Dc1369
     %testDataReg = DATA_CHECKERBOARD
     testDataReg = DATA_REAL;
     
-    NUM_ADC_SAMPLES = 64 * 1024;
-    NUM_ADC_SAMPLES_PER_CH = NUM_ADC_SAMPLES / 2;
-    NUM_ADC_SAMPLES_X2 = NUM_ADC_SAMPLES * 2;
+    NUM_ADC_SAMPLES_PER_CH = numAdcSamples / 2;
+    NUM_ADC_SAMPLES_X2 = numAdcSamples * 2;
     sampleBytes = 2;
  	
 	% Returns the object in the class constructor
@@ -94,7 +101,7 @@ function Ltc2261Dc1369
     comm.DC890GpioSetByte(cId, 248);
     comm.DC890GpioSpiSetBits(cId, 3, 0, 1);
     
-    if (VERBOSE)
+    if (verbose)
         fprintf('Configuring SPI registers');
     end
     
@@ -111,17 +118,17 @@ function Ltc2261Dc1369
     comm.SpiSendByteAtAddress(cId, 4, testDataReg);
     
     if (comm.FpgaGetIsLoaded(cId, 'DLVDS'))
-       if(VERBOSE)
+       if(verbose)
             fprintf('\nLoading FPGA');
        end 
        comm.FpgaLoadFile(cId, 'DLVDS');
     else
-       if(VERBOSE)
+       if(verbose)
             fprintf('\nFPGA already loaded');
        end 
     end
     
-    if(VERBOSE)
+    if(verbose)
         fprintf('\nStarting Data Collect');
     end 
     
@@ -140,19 +147,19 @@ function Ltc2261Dc1369
         comm.ErrorOnBadStatus(cId, 1);   %HardwareError
     end
     
-    if(VERBOSE)
+    if(verbose)
         fprintf('\nData Collect done');
     end
     
     comm.DC890Flush(cId);
     
-    if(VERBOSE)
+    if(verbose)
         fprintf('\nReading data');
     end
     
     [data, numBytes] = comm.DataReceiveUint16Values(cId, NUM_ADC_SAMPLES_X2);
     
-    if(VERBOSE)
+    if(verbose)
         fprintf('\nData Read done');
     end
     
@@ -163,7 +170,7 @@ function Ltc2261Dc1369
         dataCh1(i) = bitand(data(2*i - 1), 16383);
     end
     
-    if(VERBOSE)
+    if(verbose)
         fprintf('\nWriting data to file');
     end    
     
@@ -184,10 +191,10 @@ function Ltc2261Dc1369
 
         adcAmplitude = 16384.0 / 2.0;
 
-        windowScale = (NUM_ADC_SAMPLES/2) / sum(blackman(NUM_ADC_SAMPLES/2));
+        windowScale = (numAdcSamples/2) / sum(blackman(numAdcSamples/2));
         fprintf('\nWindow scaling factor: %d', windowScale);
 
-        windowedDataCh1 = dataCh1' .* blackman(NUM_ADC_SAMPLES/2);
+        windowedDataCh1 = dataCh1' .* blackman(numAdcSamples/2);
         windowedDataCh1 = windowedDataCh1 .* windowScale; % Apply Blackman window
         freqDomainCh1 = fft(windowedDataCh1)/(NUM_ADC_SAMPLES_PER_CH); % FFT
         freqDomainMagnitudeCh1 = abs(freqDomainCh1); % Extract magnitude
