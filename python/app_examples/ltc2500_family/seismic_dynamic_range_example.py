@@ -36,6 +36,8 @@
         Applications
 """
 
+
+
 ###############################################################################
 # Libraries
 ###############################################################################
@@ -106,7 +108,7 @@ def capture_seismic_data(client, filter_type):
                                                   DC2390.DC2390_DAC_A_NCO_SIN |
                                                   DC2390.DC2390_LUT_ADDR_COUNT |
                                                   DC2390.DC2390_LUT_RUN_ONCE)
-    
+    sleep(0.25)
     # Capture the data
     nyq_data_c = DC2390.capture(client, NUM_SAMPLES, trigger = 0, timeout = 1.0)
     nyq_data = np.zeros(len(nyq_data_c))
@@ -125,6 +127,8 @@ def capture_seismic_data(client, filter_type):
                                                    DC2390.DC2390_DAC_A_NCO_SIN |
                                                    DC2390.DC2390_LUT_ADDR_COUNT |
                                                    DC2390.DC2390_LUT_RUN_ONCE)
+    sleep(0.25)
+                                                  
     # Capture the data
     filt_25xx_data_c = DC2390.capture(client, NUM_SAMPLES/length, trigger = 0, 
                           timeout = 1)
