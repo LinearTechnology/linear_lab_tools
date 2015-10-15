@@ -1,20 +1,18 @@
-
-% DC2085 / LTC2000 Interface Example
+% DC1974 / LTC2123 Interface Example
+% LTC2123: Dual 14-Bit 250Msps ADC with JESD204B Serial Outputs
 %
-% This program demonstrates how to communicate with the LTC2000 demo board 
-% using Matlab. Examples are provided for generating sinusoidal data from within
-% the program, as well as writing and reading pattern data from a file.
+% This program demonstrates how to communicate with the LTC2123 demo board using MATLAB.
 % 
-% Board setup is described in Demo Manual 2085. Follow the procedure in 
-% this manual, and verify operation with the LTDACGen software. Once 
-% operation is verified, exit LTDACGen and run this script.
+% Board setup is described in Demo Manual 1974. Follow the procedure in this manual, and
+% verify operation with PScope software. Once operation is verified, exit PScope
+% and run this script.
 % 
 % Demo board documentation:
-% http://www.linear.com/demo/2085
-% http://www.linear.com/product/LTC2000#demoboards
+% http://www.linear.com/demo/1974
+% http://www.linear.com/product/LTC2123#demoboards
 % 
-% LTC2000 product page
-% http://www.linear.com/product/LTC2000
+% LTC2123 product page
+% http://www.linear.com/product/LTC2123
 % 
 % Copyright (c) 2015, Linear Technology Corp.(LTC)
 % All rights reserved.
@@ -22,8 +20,8 @@
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions are met:
 % 
-% 1. Redistributions of source code must retain the above copyright notice, 
-%    this list of conditions and the following disclaimer.
+% 1. Redistributions of source code must retain the above copyright notice, this
+%    list of conditions and the following disclaimer.
 % 2. Redistributions in binary form must reproduce the above copyright notice,
 %    this list of conditions and the following disclaimer in the documentation
 %    and/or other materials provided with the distribution.
@@ -99,7 +97,7 @@ function Ltc2123Dc1974v6Core
     lths = LtcControllerComm();
 
     % Import LTC2000 definitions and support functions
-    [lt2k] = Ltc2123Functions(lths);
+    [lt2k] = Ltc2123Constants(lths);
 
     memSize = 144;
     buffSize = 64 * 1024;
