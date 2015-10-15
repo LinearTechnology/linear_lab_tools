@@ -189,12 +189,12 @@ with comm.Controller(device_info) as controller:
         windowed_data_ch1 = data_ch1 * np.blackman(NUM_ADC_SAMPLES/2) * windowscale # Apply Blackman window
         freq_domain_ch1 = np.fft.fft(windowed_data_ch1)/(NUM_ADC_SAMPLES/2) # FFT
         freq_domain_magnitude_ch1 = np.abs(freq_domain_ch1) # Extract magnitude
-        freq_domain_magnitude_db_ch1 = 10 * np.log(freq_domain_magnitude_ch1/adc_amplitude)
+        freq_domain_magnitude_db_ch1 = 20 * np.log10(freq_domain_magnitude_ch1/adc_amplitude)
 
         windowed_data_ch2 = data_ch2 * np.blackman(NUM_ADC_SAMPLES/2) * windowscale # Apply Blackman window
         freq_domain_ch2 = np.fft.fft(windowed_data_ch2)/(NUM_ADC_SAMPLES/2) # FFT
         freq_domain_magnitude_ch2 = np.abs(freq_domain_ch2) # Extract magnitude
-        freq_domain_magnitude_db_ch2 = 10 * np.log10(freq_domain_magnitude_ch2/adc_amplitude)
+        freq_domain_magnitude_db_ch2 = 20 * np.log10(freq_domain_magnitude_ch2/adc_amplitude)
 
         
         plt.figure(2)

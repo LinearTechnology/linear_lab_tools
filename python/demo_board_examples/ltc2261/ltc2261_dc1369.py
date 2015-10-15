@@ -87,13 +87,15 @@ def ltc2261_dc1369(num_samples, verbose=False, do_demo=False):
             print s
 
    # find demo board with correct ID
-    EEPROM_ID = 'LTC2261-14,D9002,DC1369A-A,YEE232T,DLVDS,-------'
+    EXPECTED_EEPROM_ID = 'LTC2261-14,D9002,DC1369A-A,YEE232T,DLVDS,-------'
     device_info = None
     vprint('Looking for a DC890 with a DC1369A-A demoboard')
     for info in comm.list_controllers(comm.TYPE_DC890):
         with comm.Controller(info) as device:
-            if device.eeprom_read_string(len(EEPROM_ID)) == EEPROM_ID:
-                vprint('Found a DC1369A-A demoboard')
+            eeprom_id = device.eeprom_read_string(len(EXPECTED_EEPROM_ID))
+            if 'DC1369' in eeprom_id:
+                if verbose:
+                    print 'Found a DC1369 demoboard'
                 device_info = info
                 break
     vprint(device_info)
@@ -127,6 +129,7 @@ def ltc2261_dc1369(num_samples, verbose=False, do_demo=False):
         # Due to a quirk of the DC1369 and the DDR LVDS load, we have to claim this
         # is a 2 channel part and then throw away the data from the second channel
         # this means we only get half of what we ask for (so we ask for twice as much).
+        controller.data_set_high_byte_first()
         controller.data_set_characteristics(True, SAMPLE_BYTES, True)
         controller.data_start_collect(num_samples_x2, comm.TRIGGER_NONE)
         for i in range(10):

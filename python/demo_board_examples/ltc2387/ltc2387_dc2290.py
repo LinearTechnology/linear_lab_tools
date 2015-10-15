@@ -14,11 +14,11 @@ Tested with Python 2.7, Anaconda distribution available from Continuum Analytics
 http://www.continuum.io/
 
 Demo board documentation:
-http://www.linear.com/demo/1369
+http://www.linear.com/demo/2290
 http://www.linear.com/product/LTC2261#demoboards
 
-LTC2000 product page
-http://www.linear.com/product/LTC2261
+LTC2387 product page
+http://www.linear.com/product/LTC2387
 
 
 REVISION HISTORY
@@ -55,7 +55,6 @@ either expressed or implied, of Linear Technology Corp.
 
 from time import sleep
 import numpy as np
-from matplotlib import pyplot as plt
 # Import communication library
 import sys
 sys.path.append("../../")
@@ -64,6 +63,7 @@ import ltc_controller_comm as comm
 
 # Print extra information to console
 verbose = True
+plot_data = True
 
 # set test_data_reg to one of these constants
 DATA_REAL = 0x00
@@ -74,9 +74,14 @@ DATA_ALTERNATING = 0x38
 #test_data_reg = DATA_CHECKERBOARD
 test_data_reg = DATA_REAL
 
-NUM_ADC_SAMPLES = 16 * 1024
+num_samples = 16 * 1024
 SAMPLE_BYTES = 3
 EEPROM_ID_SIZE = 50
+
+def vprint(s):
+    """Print string only if verbose is on"""
+    if verbose:
+        print s
 
 # find demo board with correct ID
 # Full EEPROM string is 'LTC2387,D2433,DC2290A,YII101Q,NONE,-------------'
@@ -95,11 +100,9 @@ if device_info is None:
 # Open communication to the demo board
 with comm.Controller(device_info) as controller:
 
-
-    if verbose:
-        print 'Starting data collect'
+    vprint('Starting data collect')
     controller.data_set_characteristics(False, SAMPLE_BYTES, False)
-    controller.data_start_collect(NUM_ADC_SAMPLES, comm.TRIGGER_NONE)
+    controller.data_start_collect(num_samples, comm.TRIGGER_NONE)
 
     for i in range(10):
         is_done = controller.data_is_collect_done()
@@ -111,24 +114,19 @@ with comm.Controller(device_info) as controller:
         controller.data_cancel_collect()
         raise comm.HardwareError('Data collect timed out (missing clock?)')
 
-    if verbose:
-        print 'Data collect done.'
-
-    if verbose:
-        print 'Reading data'
-    num_bytes, data_bytes = controller.data_receive_bytes(end=NUM_ADC_SAMPLES*SAMPLE_BYTES)
-    if verbose:
-        print 'Data read done, parsing data...'
+    vprint('Data collect done.')
+    vprint('Reading data')
+    num_bytes, data_bytes = controller.data_receive_bytes(end=num_samples*SAMPLE_BYTES)
+    vprint('Data read done, parsing data...')
         
-    data = [0] * NUM_ADC_SAMPLES
-    for i in range(NUM_ADC_SAMPLES):
+    data = [0] * num_samples
+    for i in range(num_samples):
         data[i] = (((data_bytes[3*i]&0xFF) * 65536) & 0xFF0000) | (((data_bytes[3*i + 1]&0xFF) * 256) & 0x00FF00) | ((data_bytes[3*i + 2]&0xFF) & 0x0000FF)
         if(data[i] >= 0x20000):
             data[i] -= 0x40000
 
     # write the data to a file
-    if verbose:
-        print 'Writing data to file'
+    vprint('Writing data to file')
     with open('data.txt', 'w') as f:
         for i, item in enumerate(data):
             f.write(str(item) + '\n')
@@ -137,7 +135,27 @@ with comm.Controller(device_info) as controller:
 
     print 'All finished!'
 
-    plt.figure(1)
-    plt.plot(data)
-    plt.show()
 
+    if plot_data:
+        from matplotlib import pyplot as plt
+        plt.figure(1)
+        plt.plot(data)
+        plt.title('Time Domain Data')
+
+        plt.show()
+
+        ADC_AMPLITUDE = 262144.0 / 2.0
+
+        windowscale = (num_samples) / sum(np.blackman(num_samples))
+        vprint("Window scaling factor: " + str(windowscale))
+
+        windowed_data = data * np.blackman(num_samples) * windowscale # Apply Blackman window
+        freq_domain_ch1 = np.fft.fft(windowed_data)/(num_samples) # FFT
+        freq_domain_magnitude_ch1 = np.abs(freq_domain_ch1) # Extract magnitude
+        freq_domain_magnitude_db = 20 * np.log10(freq_domain_magnitude_ch1/ADC_AMPLITUDE)
+
+        plt.figure(2)
+        plt.title('Frequency Domain')
+        plt.plot(freq_domain_magnitude_db)
+
+        plt.show()
