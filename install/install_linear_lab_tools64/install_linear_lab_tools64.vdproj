@@ -519,12 +519,6 @@
         }
         "Entry"
         {
-        "MsmKey" = "8:_E79BACF43A28485A8D854BCB6BFE40FB"
-        "OwnerKey" = "8:_UNDEFINED"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
         "MsmKey" = "8:_E7CF1B91243F4BD0A2654A4FBE9E45CF"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
@@ -556,6 +550,12 @@
         "Entry"
         {
         "MsmKey" = "8:_EFF37496F1ED48B69B2441092A68407A"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_F0F98943918D43E98C898564249E650D"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -2378,26 +2378,6 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
-            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_E79BACF43A28485A8D854BCB6BFE40FB"
-            {
-            "SourcePath" = "8:..\\..\\matlab\\DemoBoardExamples\\LTC2123\\Ltc2123Functions.m"
-            "TargetName" = "8:Ltc2123Functions.m"
-            "Tag" = "8:"
-            "Folder" = "8:_7CF5F1FEAD5B4245A5E1A8755B5B5354"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:FALSE"
-            "IsDependency" = "11:FALSE"
-            "IsolateTo" = "8:"
-            }
             "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_E7CF1B91243F4BD0A2654A4FBE9E45CF"
             {
             "SourcePath" = "8:..\\..\\matlab\\DemoBoardExamples\\LTC2123\\matlab_workspace.mat"
@@ -2504,6 +2484,26 @@
             "TargetName" = "8:illustrated_fft.py"
             "Tag" = "8:"
             "Folder" = "8:_4D9378EE2361449BBB7983716D915EA8"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_F0F98943918D43E98C898564249E650D"
+            {
+            "SourcePath" = "8:..\\..\\matlab\\DemoBoardExamples\\LTC2123\\Ltc2123Constants.m"
+            "TargetName" = "8:Ltc2123Constants.m"
+            "Tag" = "8:"
+            "Folder" = "8:_7CF5F1FEAD5B4245A5E1A8755B5B5354"
             "Condition" = "8:"
             "Transitive" = "11:FALSE"
             "Vital" = "11:TRUE"
@@ -3055,15 +3055,15 @@
         {
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:linear_lab_tools64"
-        "ProductCode" = "8:{89D203C1-9C29-4949-983B-BE8CD709A20C}"
-        "PackageCode" = "8:{DD272CCB-2B34-4948-9B61-7A05C75FCFB1}"
+        "ProductCode" = "8:{00C4E9F4-2D2E-4B86-BADB-FBD3FAB90C1B}"
+        "PackageCode" = "8:{6AB1E14C-6F32-4B30-8552-92F2920C0F10}"
         "UpgradeCode" = "8:{34C9E896-F9F8-4563-A1D3-FB0FE69C2B22}"
         "AspNetVersion" = "8:4.0.30319.0"
         "RestartWWWService" = "11:FALSE"
         "RemovePreviousVersions" = "11:TRUE"
         "DetectNewerInstalledVersion" = "11:TRUE"
-        "InstallAllUsers" = "11:FALSE"
-        "ProductVersion" = "8:1.0.8"
+        "InstallAllUsers" = "11:TRUE"
+        "ProductVersion" = "8:1.0.9"
         "Manufacturer" = "8:Linear Technology"
         "ARPHELPTELEPHONE" = "8:"
         "ARPHELPLINK" = "8:"
