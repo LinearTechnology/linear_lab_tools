@@ -61,6 +61,8 @@ NUM_SAMPLES = 2**20
 SINC_LEN = 2048
 FILTER_TYPE = 1
 
+
+
 ###############################################################################
 # Functions
 ###############################################################################
@@ -108,7 +110,7 @@ def capture_seismic_data(client, filter_type):
                                                   DC2390.DC2390_DAC_A_NCO_SIN |
                                                   DC2390.DC2390_LUT_ADDR_COUNT |
                                                   DC2390.DC2390_LUT_RUN_ONCE)
-    sleep(0.25)
+    sleep(2.5) # Allow LUT to run through until end...
     # Capture the data
     nyq_data_c = DC2390.capture(client, NUM_SAMPLES, trigger = 0, timeout = 1.0)
     nyq_data = np.zeros(len(nyq_data_c))
@@ -239,7 +241,10 @@ def capture_plot(client, plot, gain, filter_type):
     plot.plot(data)
 
 
-if __name__ == "__main__": 
+if __name__ == "__main__":
+    
+    PREFIX = "run2_120dB"
+    
     if FILTER_TYPE == 1:
         filt = DC2390.LTC2500_SSINC_FILT
         df = DC2390.LTC2500_DF_256
@@ -308,7 +313,21 @@ if __name__ == "__main__":
 #    capture_plot(client, plt, (100 * 100 * 100)/2, FILTER_TYPE)
 
     nyq_data_120, nyq_filt_data_120, filt_25xx_data_120 = capture_seismic_data(client, FILTER_TYPE)
-   
+    # write the data to a file
+    print('Writing nyq_data_120 data to file')
+    with open('data/' + PREFIX + 'nyq_data_120.txt', 'w') as f:
+        for i, item in enumerate(nyq_data_120):
+            f.write(str(item) + '\n') 
+    print('Writing nyq_filt_data_120 data to file')
+    with open('data/' + PREFIX + 'nyq_filt_data_120.txt', 'w') as f:
+        for i, item in enumerate(nyq_filt_data_120):
+            f.write(str(item) + '\n')
+    print('Writing filt_25xx_data_120 data to file')
+    with open('data/' + PREFIX + 'filt_25xx_data_120.txt', 'w') as f:
+        for i, item in enumerate(filt_25xx_data_120):
+            f.write(str(item) + '\n')
+            
+            
 #    raw_input("Set the Jumper for -80 dB, then hit enter")
 #    capture_plot(client, plt, 100 * 100, FILTER_TYPE)
     
@@ -318,6 +337,20 @@ if __name__ == "__main__":
     raw_input("Set the Jumper for 0 dB, then hit enter")
 #    capture_plot(client, plt, 1, FILTER_TYPE)
     nyq_data_0, nyq_filt_data_0, filt_25xx_data_0 = capture_seismic_data(client, FILTER_TYPE)    
+    print('Writing nyq_data_0 data to file')
+    with open('data/' + PREFIX + 'nyq_data_0.txt', 'w') as f:
+        for i, item in enumerate(nyq_data_0):
+            f.write(str(item) + '\n') 
+    print('Writing nyq_filt_data_0 data to file')
+    with open('data/' + PREFIX + 'nyq_filt_data_0.txt', 'w') as f:
+        for i, item in enumerate(nyq_filt_data_0):
+            f.write(str(item) + '\n')
+    print('Writing filt_25xx_data_0 data to file')
+    with open('data/' + PREFIX + 'filt_25xx_data_0.txt', 'w') as f:
+        for i, item in enumerate(filt_25xx_data_0):
+            f.write(str(item) + '\n')
+
+
     # Display the graphs
     
     plt.figure(1)    
@@ -348,6 +381,6 @@ if __name__ == "__main__":
                                                   DC2390.DC2390_DAC_B_LUT |
                                                   DC2390.DC2390_DAC_A_NCO_SIN |
                                                   DC2390.DC2390_LUT_ADDR_COUNT |
-                                                  DC2390.DC2390_LUT_RUN_CONT)    
+                                                  DC2390.DC2390_LUT_RUN_CONT)        
     
     print "The program took", (time.time() - start_time)/60, "min to run"
