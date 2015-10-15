@@ -10,8 +10,7 @@
 % Demo board documentation:
 % http://www.linear.com/demo/1974
 % http://www.linear.com/product/LTC2123#demoboards
-% 
-% LTC2123 product page
+% % LTC2123 product page
 % http://www.linear.com/product/LTC2123
 % 
 % Copyright (c) 2015, Linear Technology Corp.(LTC)
@@ -40,6 +39,10 @@
 % The views and conclusions contained in the software and documentation are those
 % of the authors and should not be interpreted as representing official policies,
 % either expressed or implied, of Linear Technology Corp.
+
+% NOTE:
+% 	ADD THE ABSOLUTE PATH TO "linear_lab_tools\matlab" FOLDER BEFORE RUNNING THE SCRIPT.
+%   RUN "mex -setup" TO SET UP COMPILER AND CHOSE THE OPTION "Lcc-win32 C".
 
 function Ltc2123Dc1974v6Core
 

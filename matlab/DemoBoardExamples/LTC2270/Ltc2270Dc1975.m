@@ -43,6 +43,10 @@
 % of the authors and should not be interpreted as representing official policies,
 % either expressed or implied, of Linear Technology Corp.
 
+% NOTE:
+% 	ADD THE ABSOLUTE PATH TO "linear_lab_tools\matlab" FOLDER BEFORE RUNNING THE SCRIPT.
+%   RUN "mex -setup" TO SET UP COMPILER AND CHOSE THE OPTION "Lcc-win32 C".
+
 function Ltc2270Dc1975
     
     % Print extra information to console
