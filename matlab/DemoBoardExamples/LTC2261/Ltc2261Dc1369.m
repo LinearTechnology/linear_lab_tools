@@ -61,20 +61,21 @@ function Ltc2261Dc1369
     NUM_ADC_SAMPLES_PER_CH = NUM_ADC_SAMPLES / 2;
     NUM_ADC_SAMPLES_X2 = NUM_ADC_SAMPLES * 2;
     sampleBytes = 2;
-    EEPROM_ID_SIZE = 48;
-    
-    % Returns the object in the class constructor
+ 	
+	% Returns the object in the class constructor
     comm = LtcControllerComm();  
     
-    eepromId = 'LTC2261-14,D9002,DC1369A-A,YEE232T,DLVDS,-------';
     % find demo board with correct ID
-    fprintf('Looking for a DC890 with a DC1369A demoboard');
+    EEPROM_ID = 'LTC2261-14,D9002,DC1369A-A,YEE232T,DLVDS,-------';
+    eepromIdSize = length(EEPROM_ID);
+    fprintf('Looking for a DC890 with a DC1369A demoboard\n');
     
     deviceInfoList = comm.ListControllers(comm.TYPE_DC890, 1);
     cId = comm.Init(deviceInfoList);
     
     for info = deviceInfoList
-        if strcmp(eepromId, comm.EepromReadString(cId, EEPROM_ID_SIZE))
+        % if strcmp(EEPROM_ID(1 : eepromIdSize - 1), comm.EepromReadString(cId, eepromIdSize))
+		if ~isempty(strfind(comm.EepromReadString(cId, eepromIdSize), 'DC1369'))
             break;
         end
         cId = comm.Cleanup(cId);

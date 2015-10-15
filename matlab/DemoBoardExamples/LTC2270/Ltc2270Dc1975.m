@@ -64,7 +64,6 @@ function Ltc2270Dc1975
     NUM_ADC_SAMPLES = 64 * 1024;
     NUM_ADC_SAMPLES_PER_CH = NUM_ADC_SAMPLES / 2;
     SAMPLE_BYTES = 2;
-    EEPROM_ID_SIZE = 40;
         
     % Returns the object in the class constructor
     comm = LtcControllerComm();  
@@ -77,10 +76,11 @@ function Ltc2270Dc1975
     % find demo board with correct ID
     EEPROM_ID = 'LTC2270,D9002,DC1975A-A,YGG200T,CMOS,----';
     eepromIdSize = length(EEPROM_ID);
-    fprintf('\nLooking for a DC1371 with a DC1532A-A demoboard');
-    
+    fprintf('\nLooking for a DC890 with a DC1975A-A demoboard');
+	
     for info = deviceInfoList
-        if strcmp(EEPROM_ID, comm.EepromReadString(cId, eepromIdSize))
+        % if strcmp(EEPROM_ID, comm.EepromReadString(cId, eepromIdSize))
+		if ~isempty(strfind(comm.EepromReadString(cId, eepromIdSize), 'DC1975'))
             break;
         end
         cId = comm.Cleanup(cId);

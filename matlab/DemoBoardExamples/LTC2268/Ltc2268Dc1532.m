@@ -81,7 +81,8 @@ function Ltc2268Dc1532
     cId = comm.Init(deviceInfoList);
     
     for info = deviceInfoList
-        if strcmp(EEPROM_ID(1 : eepromIdSize - 1), comm.EepromReadString(cId, eepromIdSize))
+        % if strcmp(EEPROM_ID(1 : eepromIdSize - 1), comm.EepromReadString(cId, eepromIdSize))
+		if ~isempty(strfind(comm.EepromReadString(cId, eepromIdSize), 'DC1532'))
             break;
         end
         cId = comm.Cleanup(cId);

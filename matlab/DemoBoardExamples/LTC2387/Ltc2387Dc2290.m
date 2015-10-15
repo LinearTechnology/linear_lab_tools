@@ -70,16 +70,17 @@ function Ltc2387Dc2290
     
     % find demo board with correct ID
     EEPROM_ID = 'LTC2387,D2433,DC2290A,YII101Q,NONE,-------------';
-    EEPROM_IDSize = length(EEPROM_ID);
+    eepromIdSize = length(EEPROM_ID);
     fprintf('Looking for a DC718 with a DC2290A demoboard');
-    
+ 
     deviceInfoList = comm.ListControllers(comm.TYPE_DC718, 1);
     
 	% Open communication to the device
     cId = comm.Init(deviceInfoList);
     
     for info = deviceInfoList
-        if strcmp(EEPROM_ID, comm.EepromReadString(cId, EEPROM_IDSize))
+        % if strcmp(EEPROM_ID(1 : eepromIdSize - 1), comm.EepromReadString(cId, eepromIdSize))
+		if ~isempty(strfind(comm.EepromReadString(cId, eepromIdSize), 'DC2290'))
             break;
         end
         cId = comm.Cleanup(cId);
