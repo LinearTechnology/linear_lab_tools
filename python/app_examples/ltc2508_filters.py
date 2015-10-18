@@ -173,22 +173,38 @@ plt.show()
 
 # Now let's show the first 2 images of the DF 256 filter, then create an
 # analog filter with the intent of suppressing the first image by at least 80dB
+
+sample_rate = 1000000.0
+bin_width = sample_rate / len(ssinc_256_mag)
+print ("bin width: " + str(bin_width))
+print ("1kHz bin: " + str(1000.0 / bin_width))
+print ("1kHz bin: " + str(2000.0 / bin_width))
+
 wide_ssinc_256_mag = np.concatenate((ssinc_256_mag, ssinc_256_mag))
 first_order_response = np.ndarray(len(wide_ssinc_256_mag), dtype=float)
 second_order_response = np.ndarray(len(wide_ssinc_256_mag), dtype=float)
-cutoff_1st = 1000.0 # Bin number
-cutoff_2nd = 2000.0
+cutoff_1st = 1000.0 / bin_width# 1000.0 # Bin number
+cutoff_2nd = 1000.0 / bin_width# 2000.0
 for i in range(0, len(wide_ssinc_256_mag)): # Generate first order response for each frequency in wide response
     first_order_response[i] = 1.0 / (1.0 + (i/cutoff_1st)**2.0)**0.5 # Magnitude = 1/SQRT(1 + (f/fc)^2)
     second_order_response[i] = 1.0 / (1.0 + (i/cutoff_2nd)**4.0)**0.5 # Magnitude = 1/SQRT(1 + (f/fc)^2)
 
+
+
+x = np.linspace(0, len(wide_ssinc_256_mag) - 1, num=len(wide_ssinc_256_mag))
 plt.figure(3)
 plt.title("First image of DF256 filter, along with analog AAF filter response")
-plt.axis([0, len(wide_ssinc_256_mag), 10.0**(-150/20), 1])
-plt.loglog(wide_ssinc_256_mag)
-plt.loglog(first_order_response)
-plt.loglog(second_order_response)
-plt.loglog(np.multiply(wide_ssinc_256_mag, second_order_response))
+plt.axis([200, 0.75*len(wide_ssinc_256_mag), -150, 0])
+plt.ylabel("Rejection (dB)")
+plt.xlabel("Frequency (Hz)")
+#plt.loglog(wide_ssinc_256_mag)
+#plt.loglog(first_order_response)
+#plt.loglog(second_order_response)
+plt.semilogx(x, 20*np.log10(wide_ssinc_256_mag))
+plt.semilogx(x, 20*np.log10(first_order_response))
+plt.semilogx(x, 20*np.log10(second_order_response))
+#plt.loglog(np.multiply(wide_ssinc_256_mag, second_order_response))
+plt.tight_layout()
 
 sscinc_shifted = ssinc_256
 
