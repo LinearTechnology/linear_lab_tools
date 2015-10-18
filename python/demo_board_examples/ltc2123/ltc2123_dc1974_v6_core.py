@@ -1,8 +1,6 @@
 '''
 DC1974 / LTC2123 Interface Example
-
 This program demonstrates how to communicate with the LTC2123 demo board through Python.
-
 
 Board setup is described in Demo Manual 1974. Follow the procedure in this manual, and
 verify operation with PScope software. Once operation is verified, exit PScope
@@ -19,8 +17,8 @@ LTC2123 product page
 http://www.linear.com/product/LTC2123
 
 REVISION HISTORY
-$Revision: 3018 $
-$Date: 2014-12-01 15:53:20 -0800 (Mon, 01 Dec 2014) $
+$Revision: $
+$Date: $
 
 Copyright (c) 2015, Linear Technology Corp.(LTC)
 All rights reserved.

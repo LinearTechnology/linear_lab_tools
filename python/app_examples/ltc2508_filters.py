@@ -8,21 +8,12 @@ impulse responses and frequency responses.
 It also shows how to combine the responses of an analog anti-aliasing filter and the digital filter
 in order to validate that the overall rejection is adequate at the first image frequency (fs) 
 
-
 Tested with Python 2.7, Anaconda distribution available from Continuum Analytics,
 http://www.continuum.io/
 
-Demo board documentation:
-http://www.linear.com/demo/2085
-http://www.linear.com/product/LTC2000#demoboards
-
-LTC2508 product page
-http://www.linear.com/product/LTC2508
-
-
 REVISION HISTORY
-$Revision: 3018 $
-$Date: 2014-12-01 15:53:20 -0800 (Mon, 01 Dec 2014) $
+$Revision: $
+$Date: $
 
 Copyright (c) 2015, Linear Technology Corp.(LTC)
 All rights reserved.

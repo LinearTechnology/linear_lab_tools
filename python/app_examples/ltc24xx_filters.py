@@ -1,22 +1,11 @@
 # -*- coding: utf-8 -*-
 '''
 Simulation of LTC2440 filters.
-We'll derive the filter used in the LTC2400 family of ADCs,
-Then demonstrate that averaging is just the same thing as bin 0 of an FFT.
-This is a useful mental tool for relating the AC spec of SNR to the DC spec
-of RMS noise.
-
-
+This program QUALITATIVELY derive a filter of a type similar to that
+used in the LTC2400 family of ADCs.
 
 Tested with Python 2.7, Anaconda distribution available from Continuum Analytics,
 http://www.continuum.io/
-
-Demo board documentation:
-http://www.linear.com/demo/2085
-http://www.linear.com/product/LTC2000#demoboards
-
-LTC2508 product page
-http://www.linear.com/product/LTC2508
 
 
 REVISION HISTORY
@@ -55,7 +44,6 @@ Linear Technology Corporation
 November, 2014
 '''
 
-
 from numpy import min, max, convolve, random, average, ones, zeros, amax, log
 import numpy as np
 from scipy import linspace, fft
@@ -84,11 +72,6 @@ sinc2 = sinc2 / sum(sinc2)
 sinc4 = sinc4 / sum(sinc4)
 sinc4_w_rev = sinc4_w_rev / sum(sinc4_w_rev)
 
-
-
-
-
-#plt.plot(t, s, t, i)
 plt.figure(1)
 
 plt.subplot(211)

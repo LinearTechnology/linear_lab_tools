@@ -14,11 +14,11 @@ Tested with Python 2.7, Anaconda distribution available from Continuum Analytics
 http://www.continuum.io/
 
 Demo board documentation:
-http://www.linear.com/demo/1369
-http://www.linear.com/product/LTC2261#demoboards
+http://www.linear.com/demo/1975
+http://www.linear.com/product/LTC2270#demoboards
 
-LTC2000 product page
-http://www.linear.com/product/LTC2261
+LTC2270 product page
+http://www.linear.com/product/LTC2270
 
 
 REVISION HISTORY

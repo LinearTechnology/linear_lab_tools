@@ -1,5 +1,5 @@
 '''
-Welcome to the LTPyLab simulation of basic FFT operation, SNR calculation
+Welcome to the LinearLabTools simulation of basic FFT operation, SNR calculation
 Basically, we're making a vector of num_bins time domain
 samples, then corrupting the signal in several "real world" ways:
 
@@ -20,9 +20,32 @@ at a particular frequency. This gives an intuitive understanding of the effect
 of phase noise as a signal's frequency and amplitude change.
 
 
-Mark Thoren
-Linear Technology Corporation
-November, 2014
+Copyright (c) 2015, Linear Technology Corp.(LTC)
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+1. Redistributions of source code must retain the above copyright notice, this
+   list of conditions and the following disclaimer.
+2. Redistributions in binary form must reproduce the above copyright notice,
+   this list of conditions and the following disclaimer in the documentation
+   and/or other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
+ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+The views and conclusions contained in the software and documentation are those
+of the authors and should not be interpreted as representing official policies,
+either expressed or implied, of Linear Technology Corp.
 '''
 
 '''############################'''
@@ -31,7 +54,9 @@ November, 2014
 bits = 16 # ADC resolution (Theoretical!!)
 num_bins = 4096 #This is also the number of points in the time record
 bin_number = 500 #Bin number of the signal itself. If bin_number is greater
-                #than num_bins/2, then the signal will be aliased accordingly
+                #than num_bins/2, then the signal will be aliased accordingly.
+                # Also, this simulation does not handle non-integer (noncoherent)
+                # bin numbers. (Application of windows is a big topic in and of itself.)
 
 thermal_noise = 0.5 #0.00010 # LSB of thermal noise
 jitter = 0.0000000000001 #0.000025 # clock jitter, expressed as RMS fraction of a sampling interval
@@ -42,9 +67,8 @@ jitter = 0.0000000000001 #0.000025 # clock jitter, expressed as RMS fraction of 
 # on the clock.
 phase_noise_offset = 25 # Offset from carrier in bins
 phase_noise_amplitude = 0.0 #.000001 #Amplitude, in fraction of a sample period
-# third_harm = 0.0 Next revision will include harmonics...
 '''##############################'''
-'''END setupsimulation parameters'''
+'''END set up simulation parameters'''
 '''##############################'''
 
 # Pull in the good stuff from various libraries...
@@ -63,8 +87,7 @@ signal_level = 2.0**bits # Calculated amplitude in LSB.
 for t in range(num_bins):
     phase_jitter = phase_noise_amplitude * np.cos(2.0 * np.pi * phase_noise_offset* t / num_bins)
     samp_jitter = np.random.normal(0.0, jitter)
-    data[t] = signal_level * np.cos(2.0*np.pi*bin_number*(t + samp_jitter + phase_jitter)/num_bins)/2.0 #First the signal :)
-    #data[t] += third_harm * np.cos(3.0*2.0*np.pi*bin_number*(t)/num_bins)/2.0
+    data[t] = signal_level * np.cos(2.0*np.pi*bin_number*(t + samp_jitter + phase_jitter)/num_bins)/2.0 #First the pure signal :)
     data[t] += np.random.normal(0.0, thermal_noise) #Then the thermal noise ;(
     data[t] = np.rint(data[t]) #Finally, round to integer value - equiavalent to quantizing
     
@@ -73,14 +96,15 @@ freq_domain_magnitude = np.abs(freq_domain)
 
 #Now notch the signal out of the spectrum. We have the advantage here
 #that there's only a single bin of signal, and no distortion.
-
 np.copyto(freq_domain_noise, freq_domain_magnitude) #Make a copy
+freq_domain_noise[bin_number] = 0 #Zero out positive signal bin
+freq_domain_noise[num_bins - bin_number] = 0 # And the negative bin
+# Note that we're also zeroing out one bin worth of noise. We're going to assume this is insignificant
+# in this simulation, but if you're zeroing out lots of bins with a mask, you might want to fill them in
+# with the average noise floor from the bins that aren't zeroed (or some more intelligent estimate.)
 
-freq_domain_noise[bin_number] = 0 #Zero out signal bins. Fill in later with
-freq_domain_noise[num_bins - bin_number] = 0 # Average noise floor
 
 #Make another array that just has the signal
-
 freq_domain_signal[bin_number] = freq_domain_magnitude[bin_number]
 freq_domain_signal[num_bins - bin_number] = freq_domain_magnitude[num_bins - bin_number]
 
@@ -90,15 +114,9 @@ noise = 0.0
 # Sum the power root-sum-square in each bin. Abs() function finds the power, a resistor dissipating
 # power does not care what the phase is!
 
-#for i in range(num_bins):
-#    signal += (np.abs(freq_domain_signal[i])) ** 2 # D'oh... not supposed to RSS signal
-#    noise += (np.abs(freq_domain_noise[i])) ** 2
-
-signal_ss = np.sum(((freq_domain_signal)) ** 2) # D'oh... not supposed to RSS signal
+signal_ss = np.sum(((freq_domain_signal)) ** 2)
 noise_ss = np.sum(((freq_domain_noise)) ** 2 )
-    
-#signal = np.sqrt(np.abs(signal)) / num_bins
-#noise = np.sqrt(np.abs(noise)) / num_bins
+
 signal = np.sqrt(signal_ss) / num_bins
 noise = np.sqrt(noise_ss) / num_bins
 
@@ -109,10 +127,8 @@ print "Noise: " + str(noise)
 print "Fractional signal to noise: " + str(snr_fraction)
 print "SNR: " + str(snr) + "dB"
 
-#raw_input('Enter to close and Continue: ')
-
 max_freq_domain_magnitude = max(freq_domain_magnitude)
-freq_domain_magnitude_db = 10 * np.log(freq_domain_magnitude / max_freq_domain_magnitude)
+freq_domain_magnitude_db = 20 * np.log10(freq_domain_magnitude / max_freq_domain_magnitude)
 
 plt.figure(1)
 plt.title("Time domain data, with imperfections")
@@ -123,5 +139,4 @@ plt.figure(2)
 plt.title("Spectrum")
 plt.plot(freq_domain_magnitude_db)
 plt.show
-
 

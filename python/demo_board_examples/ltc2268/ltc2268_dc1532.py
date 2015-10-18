@@ -17,7 +17,7 @@ Demo board documentation:
 http://www.linear.com/demo/1532
 http://www.linear.com/product/LTC2268#demoboards
 
-LTC2000 product page
+LTC2268 product page
 http://www.linear.com/product/LTC2268
 
 

@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 '''
 DC2085 / LTC2000 Interface Example
-
 This program demonstrates how to communicate with the LTC2000 demo board through Python.
 Examples are provided for generating sinusoidal data from within the program, as well
 as writing and reading pattern data from a file.
@@ -22,8 +21,8 @@ http://www.linear.com/product/LTC2000
 
 
 REVISION HISTORY
-$Revision: 3018 $
-$Date: 2014-12-01 15:53:20 -0800 (Mon, 01 Dec 2014) $
+$Revision: $
+$Date: $
 
 Copyright (c) 2015, Linear Technology Corp.(LTC)
 All rights reserved.
