@@ -47,17 +47,13 @@
 function Ltc2123Dc1974v6Core
 
     clear all;
-    
-    
-    % fix this
-    %addpath C:\Users\Msajikumar\Documents\linear_technology\linear_lab_tools\matlab
-    
+   
     % Initialize script operation parameters
     bitFileId = 190; % Bitfile ID
     continuous = false;            % Run continuously or once
     runs = 0;                      % Run counter
-    runWithErrors = 0;          % Keep track of runs with errors
-    runWithUncaughtErrors = 0; % Runs with errors that did not have SYNC~ asserted
+    runsWithErrors = 0;          % Keep track of runs with errors
+    runsWithUncaughtErrors = 0; % Runs with errors that did not have SYNC~ asserted
     errorCount = 0;                % Initial error count
 
     % Enable Hardware initialization. This only needs to be done on the first run.
@@ -144,14 +140,14 @@ function Ltc2123Dc1974v6Core
     % init a device and get an id
     cId = lths.Init(deviceInfo);
 
-    while((runs < 1 || continuous == true) && runWithErrors < 100000)
+    while((runs < 1 || continuous == true) && runsWithErrors < 100000)
         
         runs = runs + 1;
         fprintf('LTC2123 Interface Program');
         fprintf('Run number: %s', runs');
-        fprintf('\nRuns with errors: %s\n', runWithErrors');
-        if (runWithUncaughtErrors > 0)
-            fprintf('***\n***\n***\n*** UNCAUGHT error count: %s !\n***\n***\n***\n',runWithUncaughtErrors);
+        fprintf('\nRuns with errors: %s\n', runsWithErrors');
+        if (runsWithUncaughtErrors > 0)
+            fprintf('***\n***\n***\n*** UNCAUGHT error count: %s !\n***\n***\n***\n',runsWithUncaughtErrors);
         end
         
         lths.HsSetBitMode(cId, lths.HS_BIT_MODE_MPSSE);
@@ -198,22 +194,36 @@ function Ltc2123Dc1974v6Core
         if(VERBOSE)
             fprintf('\nCapturing data and resetting...');
         end
-        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% FIX n, syncErr removed
-
+        
         channelData = Capture2(lths, memSize, buffSize, dumpData, dumpPscopeData, VERBOSE, data);
         if(patternCheck ~= 0)
             errorCount = PatternChecker(channelData.dataCh0, channelData.nSampsPerChannel, dumppattern);
             errorCount = errorCount + PatternChecker(channelData.dataCh1, channelData.nSampsPerChannel, dumppattern);
         end
 
-        %%%%%%%%%%%%%%%%% error handling
-
+        if(errorCount ~= 0)
+            outFile = fopen('LTC2123_python_error_log.txt','a');
+            fprintf(outFile,'Caught %d errors on run %d\n', errorCount, runs);
+            [byte3, byte2, byte1, byte0] = ReadJesd204bReg(lths, 36);
+            fprintf(outFile,'Register 0x24, all bytes: %d\t %d\t %d\t %d \n', byte3, byte2, byte1, byte0);
+            [byte3, byte2, byte1, byte0] = ReadJesd204bReg(lths, 39);
+            fprintf(outFile,'Register 0x27, all bytes: %d\t %d\t %d\t %d \n', byte3, byte2, byte1, byte0);
+            fclose(outFile);
+            
+            runsWithErrors = runsWithErrors + 1;
+            if (channelData.syncErr == false)
+                 runsWithUncaughtErrors = runsWithUncaughtErrors + 1;
+            end
+            fprintf('Error counts: %d', errorCount);
+        end
+        
         if(VERBOSE)
             ReadXilinxCoreConfig(device, 1);
             ReadXilinxCoreIlas(device, VERBOSE, 0);
             ReadXilinxCoreIlas(device, VERBOSE, 1);
         end
 
+        % Plot data if not running pattern check
         if((plotData == true) && (patternCheck == false))
             figure
             subplot(2, 1, 1)
@@ -222,7 +232,6 @@ function Ltc2123Dc1974v6Core
             subplot(2, 1, 2)
             plot(dataCh1)
             title('CH1')
-
 
             dataCh0 = dataCh0' .* blackman(buffSize/2); % Apply Blackman window
             freqDomainCh0 = fft(dataCh0)/(buffSize/2); % FFT
@@ -233,7 +242,6 @@ function Ltc2123Dc1974v6Core
             freqDomainCh1 = fft(dataCh1)/(buffSize/2); % FFT
             freqDomainMagnitudeCh1 = abs(freqDomainCh1); % Extract magnitude
             freqDomainMagnitudeDbCh1 = 20 * log10(freqDomainMagnitudeCh1/8192.0);
-
 
             figure
             subplot(2,1,1)
@@ -251,14 +259,16 @@ function Ltc2123Dc1974v6Core
     %%%    FUNCTION DEFINITIONS    
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     
+    function ResetFpga(device)
+        device.HsSetBitMode(cId, device.HS_BIT_MODE_MPSSE);
+        device.HsFpgaToggleReset(cId);
+        pause(0.01);
+    end
+        
+    
     % Adding support for V6 core, with true AXI access. Need to confirm that this doesn't break anything with V4 FPGA loads,
     % as we'd be writing to undefined registers.
     function [byte3, byte2, byte1, byte0] = ReadJesd204bReg(device, address)
-%         x = bitand(address, 63);
-%         x = bitsra(x, 2);
-%         x = bitor(x, 2);
-%         fprintf('\n             address : %d', address);
-%         fprintf('\n writing ro checkreg : %d', bitor(bitsll(bitand(address, 63), 2), 2));
         byte3 = lths.HsFpgaReadDataAtAddress(cId, lt2k.JESD204B_RB3_REG);
         byte2 = lths.HsFpgaReadDataAtAddress(cId, lt2k.JESD204B_RB2_REG);
         byte1 = lths.HsFpgaReadDataAtAddress(cId, lt2k.JESD204B_RB1_REG);
@@ -266,11 +276,9 @@ function Ltc2123Dc1974v6Core
         lths.HsFpgaWriteDataAtAddress(cId, lt2k.JESD204B_R2INDEX_REG, bitshift(bitand(address,4032), -6));  % Upper 6 bits of AXI reg address
         lths.HsFpgaWriteDataAtAddress(cId, lt2k.JESD204B_CHECK_REG, (bitor(bitshift(bitand(address, 63), 2), 2)));  % Lower 6 bits address of JESD204B Check Register
         
-%         if device.fpga_read_data() & 1 == 0
-%             raise RuntimeError("Got bad FPGA status in read_jedec_reg")
-%         end
-       
-        
+        if (bitand(device.HsFpgaReadData(cId), 1) == 0)
+            error('Got bad FPGA status in read_jedec_reg');
+        end
     end
 
     function ReadXilinxCoreConfig(device, verbose)
@@ -399,7 +407,7 @@ function Ltc2123Dc1974v6Core
         end
 
         nSampsPerChannel = buffSize/2;
-        channelData = [dataCh0, dataCh1, nSampsPerChannel];
+        channelData = [dataCh0, dataCh1, nSampsPerChannel, syncErr];
     end % end of function
     
     function errorCount = PatternChecker(data, nSampsPerChannel, dumppattern)

@@ -170,7 +170,10 @@ function Ltc2000Dc2085
     fprintf('\nnumBytesSent (should be %d) = %d\n', NUM_SAMPLES * 2, ...
         numBytesSent);
 
-
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%%    FUNCTION DEFINITIONS    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    
     function SpiWrite(address, value)
         lths.SpiSendByteAtAddress(did, bitor(address, lt2k.SPI_WRITE), value);
     end
