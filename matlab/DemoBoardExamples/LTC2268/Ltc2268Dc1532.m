@@ -180,12 +180,14 @@ function Ltc2268Dc1532(arg1NumSamples, arg2Verbose, doDemo)
     
     [data, numBytes] = comm.DataReceiveUint16Values(cId, TOTAL_ADC_SAMPLES);
     
-    if (nnz(data == 10922) == length(data))
-        fprintf('Good data!!\n');
-    else
-        fprintf('Bad data!!\n');
+    if(useTestData)
+        if (nnz(data == 10922) == length(data))
+            fprintf('Good data!!\n');
+        else
+            fprintf('Bad data!!\n');
+        end
     end
-        
+    
     if(verbose)
         fprintf('Data Read done\n');
     end
