@@ -196,10 +196,6 @@ while((runs < 1 or continuous == True) and runs_with_errors < 100000):
         if(errorcount != 0):
             outfile = open("LTC2123_python_error_log.txt", "a")
             outfile.write("Caught " + str(errorcount) + "errors on run " + str(runs) + "\n")
-            byte3, byte2, byte1, byte0 = read_jesd204b_reg(device, 0x24)
-            outfile.write("Register 0x24, all bytes: " + ' {:02X} {:02X} {:02X} {:02X}'.format(byte3, byte2, byte1, byte0))
-            byte3, byte2, byte1, byte0 = read_jesd204b_reg(device, 0x27)
-            outfile.write("Register 0x27, all bytes: " + ' {:02X} {:02X} {:02X} {:02X}'.format(byte3, byte2, byte1, byte0))
             outfile.close()
             
             outfile = open("error_data_run_" + str(runs) + ".csv", "w")
@@ -236,16 +232,17 @@ while((runs < 1 or continuous == True) and runs_with_errors < 100000):
         plt.plot(data_ch1)
         plt.show()
 
-
+        data_ch0 -= np.average(data_ch0)
         data_ch0 = data_ch0 * np.blackman(n.BuffSize/2) # Apply Blackman window
         freq_domain_ch0 = np.fft.fft(data_ch0)/(n.BuffSize/2) # FFT
         freq_domain_magnitude_ch0 = np.abs(freq_domain_ch0) # Extract magnitude
-        freq_domain_magnitude_db_ch0 = 10 * np.log(freq_domain_magnitude_ch0/8192.0)
-
+        freq_domain_magnitude_db_ch0 = 20 * np.log10(freq_domain_magnitude_ch0/8192.0)
+        
+        data_ch1 -= np.average(data_ch1)
         data_ch1 = data_ch1 * np.blackman(n.BuffSize/2) # Apply Blackman window
         freq_domain_ch1 = np.fft.fft(data_ch1)/(n.BuffSize/2) # FFT
         freq_domain_magnitude_ch1 = np.abs(freq_domain_ch1) # Extract magnitude
-        freq_domain_magnitude_db_ch1 = 10 * np.log(freq_domain_magnitude_ch1/8192.0)
+        freq_domain_magnitude_db_ch1 = 20 * np.log10(freq_domain_magnitude_ch1/8192.0)
 
         
         plt.figure(2)

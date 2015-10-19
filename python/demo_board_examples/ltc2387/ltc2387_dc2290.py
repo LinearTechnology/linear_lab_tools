@@ -149,6 +149,7 @@ with comm.Controller(device_info) as controller:
         windowscale = (num_samples) / sum(np.blackman(num_samples))
         vprint("Window scaling factor: " + str(windowscale))
 
+        data -= np.average(data)
         windowed_data = data * np.blackman(num_samples) * windowscale # Apply Blackman window
         freq_domain_ch1 = np.fft.fft(windowed_data)/(num_samples) # FFT
         freq_domain_magnitude_ch1 = np.abs(freq_domain_ch1) # Extract magnitude

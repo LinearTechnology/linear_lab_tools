@@ -170,6 +170,7 @@ def ltc2261_dc1369(num_samples, verbose=False, do_demo=False):
             windowscale = (num_samples) / sum(np.blackman(num_samples))
             vprint("Window scaling factor: " + str(windowscale))
 
+            data_ch1 -= np.average(data_ch1)
             windowed_data_ch1 = data_ch1 * np.blackman(num_samples) * windowscale # Apply Blackman window
             freq_domain_ch1 = np.fft.fft(windowed_data_ch1)/(num_samples) # FFT
             freq_domain_magnitude_ch1 = np.abs(freq_domain_ch1) # Extract magnitude

@@ -159,9 +159,9 @@ function Ltc2123Dc1974v6Core
             lths.HsFpgaToggleReset(cId);
         end
 
-        fprintf('FPGA ID is %X\n', lths.HsFpgaReadDataAtAddress(cId, lt2k.ID_REG));
-        fprintf('Register 4 (capture status) is %X\n', lths.HsFpgaReadDataAtAddress(cId, lt2k.CAPTURE_STATUS_REG));
-        fprintf('Register 6   (Clock status) is %X\n', lths.HsFpgaReadDataAtAddress(cId, lt2k.CLOCK_STATUS_REG));
+        fprintf('FPGA ID is %x\n', lths.HsFpgaReadDataAtAddress(cId, lt2k.ID_REG));
+        fprintf('Register 4 (capture status) is %x\n', lths.HsFpgaReadDataAtAddress(cId, lt2k.CAPTURE_STATUS_REG));
+        fprintf('Register 6   (Clock status) is %x\n', lths.HsFpgaReadDataAtAddress(cId, lt2k.CLOCK_STATUS_REG));
 
 
         if VERBOSE
@@ -208,10 +208,6 @@ function Ltc2123Dc1974v6Core
         if(errorCount ~= 0)
             outFile = fopen('LTC2123_python_error_log.txt','a');
             fprintf(outFile,'Caught %d errors on run %d\n', errorCount, runs);
-            [byte3, byte2, byte1, byte0] = ReadJesd204bReg(lths, 36);
-            fprintf(outFile,'Register 0x24, all bytes: %d\t %d\t %d\t %d \n', byte3, byte2, byte1, byte0);
-            [byte3, byte2, byte1, byte0] = ReadJesd204bReg(lths, 39);
-            fprintf(outFile,'Register 0x27, all bytes: %d\t %d\t %d\t %d \n', byte3, byte2, byte1, byte0);
             fclose(outFile);
             
             runsWithErrors = runsWithErrors + 1;
@@ -237,11 +233,13 @@ function Ltc2123Dc1974v6Core
             plot(dataCh1)
             title('CH1')
 
+            dataCh0 = dataCh0 - mean(dataCh0);
             dataCh0 = dataCh0' .* blackman(buffSize/2); % Apply Blackman window
             freqDomainCh0 = fft(dataCh0)/(buffSize/2); % FFT
             freqDomainMagnitudeCh0 = abs(freqDomainCh0); % Extract magnitude
             freqDomainMagnitudeDbCh0 = 20 * log10(freqDomainMagnitudeCh0/8192.0);
 
+            dataCh1 = dataCh1 - mean(dataCh1);
             dataCh1 = dataCh1' .* blackman(buffSize/2); % Apply Blackman window
             freqDomainCh1 = fft(dataCh1)/(buffSize/2); % FFT
             freqDomainMagnitudeCh1 = abs(freqDomainCh1); % Extract magnitude
@@ -272,16 +270,17 @@ function Ltc2123Dc1974v6Core
     % Adding support for V6 core, with true AXI access. Need to confirm that this doesn't break anything with V4 FPGA loads,
     % as we'd be writing to undefined registers.
     function [byte3, byte2, byte1, byte0] = ReadJesd204bReg(device, address)
-        byte3 = device.HsFpgaReadDataAtAddress(cId, lt2k.JESD204B_RB3_REG);
-        byte2 = device.HsFpgaReadDataAtAddress(cId, lt2k.JESD204B_RB2_REG);
-        byte1 = device.HsFpgaReadDataAtAddress(cId, lt2k.JESD204B_RB1_REG);
-        byte0 = device.HsFpgaReadDataAtAddress(cId, lt2k.JESD204B_RB0_REG); 
         device.HsFpgaWriteDataAtAddress(cId, lt2k.JESD204B_R2INDEX_REG, bitshift(bitand(address,4032), -6));  % Upper 6 bits of AXI reg address
         device.HsFpgaWriteDataAtAddress(cId, lt2k.JESD204B_CHECK_REG, (bitor(bitshift(bitand(address, 63), 2), 2)));  % Lower 6 bits address of JESD204B Check Register
         
         if (bitand(device.HsFpgaReadData(cId), 1) == 0)
             error('Got bad FPGA status in read_jedec_reg');
         end
+        
+        byte3 = device.HsFpgaReadDataAtAddress(cId, lt2k.JESD204B_RB3_REG);
+        byte2 = device.HsFpgaReadDataAtAddress(cId, lt2k.JESD204B_RB2_REG);
+        byte1 = device.HsFpgaReadDataAtAddress(cId, lt2k.JESD204B_RB1_REG);
+        byte0 = device.HsFpgaReadDataAtAddress(cId, lt2k.JESD204B_RB0_REG);        
     end
 
     function ReadXilinxCoreConfig(device, verbose)
@@ -314,17 +313,17 @@ function Ltc2123Dc1974v6Core
     function dump_ADC_registers(device)
         device.HsSetBitMode(cId, device.HS_BIT_MODE_MPSSE);
         fprintf('LTC2124 Register Dump: '); 
-        fprintf('Register 4 (capture status) is %X\n', device.HsFpgaReadDataAtAddress(cId, lt2k.CAPTURE_STATUS_REG));
-        fprintf('Register 1: %X\n',SpiRead(device, 129));
-        fprintf('Register 2: %X\n',SpiRead(device, 130));
-        fprintf('Register 3: %X\n',SpiRead(device, 131));
-        fprintf('Register 4: %X\n',SpiRead(device, 132));
-        fprintf('Register 5: %X\n',SpiRead(device, 133));
-        fprintf('Register 6: %X\n',SpiRead(device, 134));
-        fprintf('Register 7: %X\n',SpiRead(device, 135));
-        fprintf('Register 8: %X\n',SpiRead(device, 136));
-        fprintf('Register 9: %X\n',SpiRead(device, 137));
-        fprintf('Register A: %X\n',SpiRead(device, 138)); 
+        fprintf('Register 4 (capture status) is %x\n', device.HsFpgaReadDataAtAddress(cId, lt2k.CAPTURE_STATUS_REG));
+        fprintf('Register 1: %x\n',SpiRead(device, 129));
+        fprintf('Register 2: %x\n',SpiRead(device, 130));
+        fprintf('Register 3: %x\n',SpiRead(device, 131));
+        fprintf('Register 4: %x\n',SpiRead(device, 132));
+        fprintf('Register 5: %x\n',SpiRead(device, 133));
+        fprintf('Register 6: %x\n',SpiRead(device, 134));
+        fprintf('Register 7: %x\n',SpiRead(device, 135));
+        fprintf('Register 8: %x\n',SpiRead(device, 136));
+        fprintf('Register 9: %x\n',SpiRead(device, 137));
+        fprintf('Register A: %x\n',SpiRead(device, 138)); 
     end
 
     function LoadLtc212x(device, csControl, verbose, dId, bankId, lanes, K, modes, subClass, pattern)
@@ -332,7 +331,7 @@ function Ltc2123Dc1974v6Core
             fprintf('Configuring ADCs over SPI:');
         end
         device.HsFpgaWriteDataAtAddress(cId, lt2k.SPI_CONFIG_REG, csControl);
-        SpiWrite(device, 3, cId); % Device ID to 0xAB
+        SpiWrite(device, 3, dId); % Device ID to 0xAB
         SpiWrite(device, 4, bankId); % Bank ID to 0x01
         SpiWrite(device, 5, lanes-1); % 2 lane mode (default)
         SpiWrite(device, 6, K-1);
