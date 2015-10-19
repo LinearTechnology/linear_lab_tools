@@ -16,7 +16,7 @@
 % LTC2261 product page
 % http://www.linear.com/product/LTC2261
 % 
-% $Rev: 12 $:     Revision of last commit
+% $Revision: 4253 $
 %
 % Copyright (c) 2015, Linear Technology Corp.(LTC)
 % All rights reserved.
