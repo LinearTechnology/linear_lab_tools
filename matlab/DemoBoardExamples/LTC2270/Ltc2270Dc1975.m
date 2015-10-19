@@ -91,9 +91,10 @@ function Ltc2270Dc1975(arg1NumSamples, arg2Verbose, doDemo)
 	
     for info = deviceInfoList
         % if strcmp(EEPROM_ID, comm.EepromReadString(cId, eepromIdSize))
-		if ~isempty(strfind(comm.EepromReadString(cId, eepromIdSize), 'DC1975'))
+        if(~isempty(strfind(comm.EepromReadString(cId, eepromIdSize), 'DC1975')))
             break;
         end
+		
         cId = comm.Cleanup(cId);
     end
     
