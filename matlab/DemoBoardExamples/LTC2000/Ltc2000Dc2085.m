@@ -47,17 +47,21 @@
 % 	ADD THE ABSOLUTE PATH TO "linear_lab_tools\matlab" FOLDER BEFORE RUNNING THE SCRIPT.
 %   RUN "mex -setup" TO SET UP COMPILER AND CHOSE THE OPTION "Lcc-win32 C".
 
-function Ltc2000Dc2085
+function Ltc2000Dc2085(arg1NumSamples, arg2Verbose)
 
-    clear all;
     AMPLITUDE = 16000;
     NUM_CYCLES = 800;   % Number of sinewave cycles over the entire data record
     SLEEP_TIME = 0.1;
-    NUM_SAMPLES = 65536;    % n.BuffSize
 
-    % Print extra information to console
-    verbose = true;
-    
+    if(~nargin)
+        numSamples = 65536;    % n.BuffSize
+        % Print extra information to console
+        verbose = true;
+    else
+        numSamples = arg1NumSamples;
+        verbose = arg2Verbose;
+    end
+
     if verbose
         fprintf('LTC2000 Test Script\n');
     end
@@ -68,7 +72,7 @@ function Ltc2000Dc2085
     % Returns the object in the class constructor
     lths = LtcControllerComm();
 
-    deviceInfoList = lths.ListControllers(lths.TYPE_HIGH_SPEED, 2);
+    deviceInfoList = lths.ListControllers(lths.TYPE_HIGH_SPEED, 1);
     deviceInfo = [];
     for info = deviceInfoList
        if strcmp(info.description(1:7), 'LTC2000')
@@ -135,12 +139,12 @@ function Ltc2000Dc2085
 
     % Demonstrates how to generate sinusoidal data. Note that the total data 
     % record length contains an exact integer number of cycles.
-    data = round(AMPLITUDE * sin((NUM_CYCLES * 2 * pi / NUM_SAMPLES) * ...
-        (0:(NUM_SAMPLES - 1))));
+    data = round(AMPLITUDE * sin((NUM_CYCLES * 2 * pi / numSamples) * ...
+        (0:(numSamples - 1))));
 
     % Demonstrates how to generate sinc data.
-    sincData = zeros(NUM_SAMPLES, 1);
-    for i = 1:NUM_SAMPLES
+    sincData = zeros(numSamples, 1);
+    for i = 1:numSamples
     x = ((i - 32768) / (512.0)) + 0.0001;
     sincData(i) = int16((32000 * (sin(x) / x)));
     end
@@ -148,17 +152,17 @@ function Ltc2000Dc2085
     % Demonstrates how to write generated data to a file.
     fprintf('writing data out to file')
     outFile = fopen('dacdata_sinc.csv', 'w');
-    for i = 1 : NUM_SAMPLES
+    for i = 1 : numSamples
         fprintf(outFile, '%d\n', sincData(i));
     end
     fclose(outFile);
     fprintf('\ndone writing!')
 
     % Demonstrates how to read data in from a file.
-    inData = zeros(NUM_SAMPLES, 1);
+    inData = zeros(numSamples, 1);
     fprintf('\nreading data from file')
     inFile = fopen('dacdata_sinc.csv', 'r');
-    for i = 1: NUM_SAMPLES 
+    for i = 1: numSamples 
         inData(i) = str2double(fgetl(inFile));
     end
     fclose(inFile);
@@ -167,7 +171,7 @@ function Ltc2000Dc2085
     lths.HsSetBitMode(did, lths.HS_BIT_MODE_FIFO);
     % DAC should start running here!
     numBytesSent = lths.DataSendUint16Values(did, inData);
-    fprintf('\nnumBytesSent (should be %d) = %d\n', NUM_SAMPLES * 2, ...
+    fprintf('\nnumBytesSent (should be %d) = %d\n', numSamples * 2, ...
         numBytesSent);
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
