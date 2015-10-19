@@ -150,8 +150,9 @@ with comm.Controller(device_info) as device:
 # Demonstrate how to read data in from a file
 # (Note that the same data[] variable is used)
     print('reading data from file')
-    infile = open('dacdata.csv', 'r')
-#    infile = open('dacdata_sinc.csv', 'r')
+#    infile = open('dacdata.csv', 'r')  # UNcomment this line for sine wave (generated above)
+    # Run "generate_sinc_data.py" file before uncommenting the line below.
+    infile = open('dacdata_sinc.csv', 'r')  # UNcomment this line for funky SINC waveform
     for i in range(0, total_samples):
         data[i] = int(infile.readline())
     infile.close()
@@ -160,4 +161,5 @@ with comm.Controller(device_info) as device:
     device.hs_set_bit_mode(comm.HS_BIT_MODE_FIFO)
     num_bytes_sent = device.data_send_uint16_values(data) #DAC should start running here!
     print 'num_bytes_sent (should be 131072) = ' + str(num_bytes_sent)
+    print 'You should see a waveform at the output of the LTC2000 now!'
     

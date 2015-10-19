@@ -177,7 +177,8 @@ function Ltc2000Dc2085(arg1NumSamples, arg2Verbose)
     numBytesSent = lths.DataSendUint16Values(did, inData);
     fprintf('\nnumBytesSent (should be %d) = %d\n', numSamples * 2, ...
         numBytesSent);
-
+    fprintf('You should see a waveform at the output of the LTC2000 now!\n');
+    
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %%%    FUNCTION DEFINITIONS    
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
