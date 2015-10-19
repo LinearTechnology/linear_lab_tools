@@ -16,6 +16,10 @@
 % LTC2268 product page
 % http://www.linear.com/product/LTC2268
 % 
+% REVISION HISTORY
+% $Revision$
+% $Date$
+%
 % Copyright (c) 2015, Linear Technology Corp.(LTC)
 % All rights reserved.
 % 

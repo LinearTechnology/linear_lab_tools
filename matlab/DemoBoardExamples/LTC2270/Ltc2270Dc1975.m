@@ -15,7 +15,11 @@
 % 
 % LTC2270 product page
 % http://www.linear.com/product/LTC2270
-% 
+%  
+% REVISION HISTORY
+% $Revision$
+% $Date$
+%
 % Copyright (c) 2015, Linear Technology Corp.(LTC)
 % All rights reserved.
 % 

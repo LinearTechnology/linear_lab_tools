@@ -10,9 +10,14 @@
 % Demo board documentation:
 % http://www.linear.com/demo/1974
 % http://www.linear.com/product/LTC2123#demoboards
-% % LTC2123 product page
+%
+% LTC2123 product page
 % http://www.linear.com/product/LTC2123
-% 
+%  
+% REVISION HISTORY
+% $Revision$
+% $Date$
+%
 % Copyright (c) 2015, Linear Technology Corp.(LTC)
 % All rights reserved.
 % 
