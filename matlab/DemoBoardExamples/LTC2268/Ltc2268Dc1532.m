@@ -227,22 +227,24 @@ function Ltc2268Dc1532(arg1NumSamples, arg2Verbose, doDemo)
         plot(dataCh2)
         title('CH1')
 
-        adcAmplitude = 65536.0 / 2.0;
+        adcAmplitude = 16384.0 / 2.0;
 
         windowScale = (numAdcSamples/2) / sum(blackman(numAdcSamples/2));
         fprintf('Window scaling factor: %d\n', windowScale);
 
+        dataCh1 = dataCh1 - mean(dataCh1);
         windowedDataCh1 = dataCh1' .* blackman(numAdcSamples);
         windowedDataCh1 = windowedDataCh1 .* windowScale; 	% Apply Blackman window
         freqDomainCh1 = fft(windowedDataCh1)/(numAdcSamples); % FFT
         freqDomainMagnitudeCh1 = abs(freqDomainCh1); 		% Extract magnitude
-        freqDomainMagnitudeDbCh1 = 10 * log10(freqDomainMagnitudeCh1/adcAmplitude);
+        freqDomainMagnitudeDbCh1 = 20 * log10(freqDomainMagnitudeCh1/adcAmplitude);
         
+        dataCh2 = dataCh2 - mean(dataCh2);
         windowedDataCh2 = dataCh2' .* blackman(numAdcSamples);
         windowedDataCh2 = windowedDataCh2 .* windowScale; 	% Apply Blackman window
         freqDomainCh2 = fft(windowedDataCh2)/(numAdcSamples); % FFT
         freqDomainMagnitudeCh2 = abs(freqDomainCh2); 		% Extract magnitude
-        freqDomainMagnitudeDbCh2 = 10 * log10(freqDomainMagnitudeCh2/adcAmplitude);
+        freqDomainMagnitudeDbCh2 = 20 * log10(freqDomainMagnitudeCh2/adcAmplitude);
         
         figure(2)
         subplot(2, 1, 1)

@@ -54,7 +54,7 @@
 function Ltc2387Dc2290(arg1NumSamples, arg2Verbose, doDemo)
     
     if(~nargin)
-        numAdcSamples = 64 * 1024;
+        numAdcSamples = 32 * 1024;
         % Print extra information to console
         verbose = true;
         % Plot data to screen
@@ -178,5 +178,22 @@ function Ltc2387Dc2290(arg1NumSamples, arg2Verbose, doDemo)
     if(plotData == true)
         figure(1)
         plot(data)
+        title('Time Domain Data')
+
+        adcAmplitude = 262144.0 / 2.0;
+
+        windowScale = (numAdcSamples/2) / sum(blackman(numAdcSamples));
+        fprintf('Window scaling factor: %d\n', windowScale);
+        
+        data = data - mean(data);
+        windowedDataCh1 = data' .* blackman(numAdcSamples);
+        windowedDataCh1 = windowedDataCh1 .* windowScale; % Apply Blackman window
+        freqDomainCh1 = fft(windowedDataCh1)/(numAdcSamples); % FFT
+        freqDomainMagnitudeCh1 = abs(freqDomainCh1); % Extract magnitude
+        freqDomainMagnitudeDbCh1 = 20 * log10(freqDomainMagnitudeCh1/adcAmplitude);
+
+        figure(2)
+        plot(freqDomainMagnitudeDbCh1)
+        title('Frequency Domain')
     end
 end

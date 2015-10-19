@@ -198,6 +198,7 @@ function Ltc2261Dc1369(arg1NumSamples, arg2Verbose)
         windowScale = (numAdcSamples/2) / sum(blackman(numAdcSamples/2));
         fprintf('\nWindow scaling factor: %d', windowScale);
 
+        dataCh1 = dataCh1 - mean(dataCh1);
         windowedDataCh1 = dataCh1' .* blackman(numAdcSamples/2);
         windowedDataCh1 = windowedDataCh1 .* windowScale; % Apply Blackman window
         freqDomainCh1 = fft(windowedDataCh1)/(NUM_ADC_SAMPLES_PER_CH); % FFT
