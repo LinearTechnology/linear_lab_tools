@@ -9,8 +9,8 @@ http://www.continuum.io/
 
 
 REVISION HISTORY
-$Revision: 3018 $
-$Date: 2014-12-01 15:53:20 -0800 (Mon, 01 Dec 2014) $
+$Revision$
+$Date$
 
 Copyright (c) 2015, Linear Technology Corp.(LTC)
 All rights reserved.

@@ -8,8 +8,8 @@ http://www.continuum.io/
 
 
 REVISION HISTORY
-$Revision: $
-$Date: $
+$Revision$
+$Date$
 
 Copyright (c) 2015, Linear Technology Corp.(LTC)
 All rights reserved.

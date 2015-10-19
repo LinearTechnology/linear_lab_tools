@@ -11,8 +11,8 @@ Tested with Python 2.7, Anaconda distribution available from Continuum Analytics
 http://www.continuum.io/
 
 REVISION HISTORY
-$Revision: $
-$Date: $
+$Revision$
+$Date$
 
 Copyright (c) 2015, Linear Technology Corp.(LTC)
 All rights reserved.

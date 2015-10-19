@@ -22,8 +22,8 @@ http://www.linear.com/product/LTC2268
 
 
 REVISION HISTORY
-$Revision:  $
-$Date:  $
+$Revision$
+$Date$
 
 Copyright (c) 2015, Linear Technology Corp.(LTC)
 All rights reserved.
