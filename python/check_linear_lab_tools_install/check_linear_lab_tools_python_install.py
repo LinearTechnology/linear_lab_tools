@@ -43,7 +43,7 @@ Linear Technology Corporation
 November, 2014
 '''
 
-from numpy import min, max, convolve, log, ones, zeros
+import numpy as np
 from scipy import linspace, fft
 from scipy import signal
 from scipy.signal import lti, step
@@ -51,16 +51,16 @@ from scipy.misc import imread
 
 # Choices for LTC parts: 2048 for NON-LTC2440 family, 64 to 32768 for LTC2440
 osr = 1024 
-sinc1=ones(osr/4)
+sinc1=np.ones(osr/4)
 #print sinc1
-sinc2 = convolve(sinc1, sinc1)
+sinc2 = np.convolve(sinc1, sinc1)
 #print sinc2
-sinc4 = convolve(sinc2, sinc2)
+sinc4 = np.convolve(sinc2, sinc2)
 #print sinc4
-reverser = zeros(osr*2)
+reverser = np.zeros(osr*2)
 reverser[0] = 1
 reverser[osr] = 1
-sinc4_w_rev = convolve(sinc4, reverser)
+sinc4_w_rev = np.convolve(sinc4, reverser)
 sinc4_w_rev = sinc4_w_rev/sum(sinc4_w_rev)
 
 
@@ -74,6 +74,6 @@ plt.xlabel('Frequency')
 plt.ylabel('Rejection')
 plt.axis([0, 1000, -150, 0])
 print plt.axis()
-img = imread("LinearLogo.png")
+img = imread("LinearLogo.PNG")
 plt.imshow(img, origin='upper',aspect='auto', extent=[350, 1000, -40, 0])
 plt.show()
