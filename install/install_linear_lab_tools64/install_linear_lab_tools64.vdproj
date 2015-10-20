@@ -39,12 +39,6 @@
         }
         "Entry"
         {
-        "MsmKey" = "8:_0885574CB8F44A7F8CD696EACA05BB03"
-        "OwnerKey" = "8:_UNDEFINED"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
         "MsmKey" = "8:_0E01ED8CEFE34F5DBAC14B8DE2479BCC"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
@@ -75,13 +69,13 @@
         }
         "Entry"
         {
-        "MsmKey" = "8:_1CCF83A7293544C480FA6F41A043F903"
+        "MsmKey" = "8:_1A9970C1FDDE4396ADBAC45A84FE3868"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
-        "MsmKey" = "8:_1D832BAA87E64EEF985C04E3D38ED128"
+        "MsmKey" = "8:_1CCF83A7293544C480FA6F41A043F903"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -94,6 +88,12 @@
         "Entry"
         {
         "MsmKey" = "8:_1DF9E3C926994D69849D257A1E9A4C64"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_20926C34BDA9428B86BBB2E3592FE015"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -153,18 +153,6 @@
         }
         "Entry"
         {
-        "MsmKey" = "8:_2FC2C295037D4ABC8787CE10E1A1860E"
-        "OwnerKey" = "8:_UNDEFINED"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_37C50D97182940AE93CF22283DA5CD00"
-        "OwnerKey" = "8:_UNDEFINED"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
         "MsmKey" = "8:_38BF842418374AB98F65DA24846CBD2E"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
@@ -184,12 +172,6 @@
         "Entry"
         {
         "MsmKey" = "8:_3F4A1349C25E41A68610993A5968D6D8"
-        "OwnerKey" = "8:_UNDEFINED"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_3F80DA2D7E60442AB1A5D476808FFA3E"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -267,12 +249,6 @@
         }
         "Entry"
         {
-        "MsmKey" = "8:_688FF7F477874073A3517ADB8AEDF1D7"
-        "OwnerKey" = "8:_UNDEFINED"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
         "MsmKey" = "8:_6AC8C16847CE4F55B8C9DAFFD29AD34F"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
@@ -298,6 +274,12 @@
         "Entry"
         {
         "MsmKey" = "8:_76C22526F77C4F1789008F116BE95B1E"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_77EB5956FC424FC48230ED872F4E11B8"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -387,12 +369,6 @@
         }
         "Entry"
         {
-        "MsmKey" = "8:_9C088E415EB742CE978D1D10BC7AAF4B"
-        "OwnerKey" = "8:_UNDEFINED"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
         "MsmKey" = "8:_A3F946144EA94910B0ACC545C5C1284C"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
@@ -418,12 +394,6 @@
         "Entry"
         {
         "MsmKey" = "8:_AD500F1696954011B821C17CD2A773D0"
-        "OwnerKey" = "8:_UNDEFINED"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_B079DA179E1A481C85FD401E13C6ED0C"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -561,6 +531,12 @@
         }
         "Entry"
         {
+        "MsmKey" = "8:_F364095E7AD84A27B760F611F5CC8D1C"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
         "MsmKey" = "8:_F39BEC0DEBBD4FE6A233085A6F1EC5A6"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
@@ -586,12 +562,6 @@
         "Entry"
         {
         "MsmKey" = "8:_F8D7560753A844EDB654C49276E65259"
-        "OwnerKey" = "8:_UNDEFINED"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_FF335243C08B4975B61333BFF8A57368"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -778,26 +748,6 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
-            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_0885574CB8F44A7F8CD696EACA05BB03"
-            {
-            "SourcePath" = "8:..\\..\\python\\app_examples\\ltc2500_family\\DC2390_functions.py"
-            "TargetName" = "8:DC2390_functions.py"
-            "Tag" = "8:"
-            "Folder" = "8:_A96BDBAE27E44A93BEC00BE76819F342"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:FALSE"
-            "IsDependency" = "11:FALSE"
-            "IsolateTo" = "8:"
-            }
             "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_0E01ED8CEFE34F5DBAC14B8DE2479BCC"
             {
             "SourcePath" = "8:..\\..\\matlab\\DemoBoardExamples\\LTC2000\\Ltc2000Dc2085.m"
@@ -898,12 +848,12 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
-            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_1CCF83A7293544C480FA6F41A043F903"
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_1A9970C1FDDE4396ADBAC45A84FE3868"
             {
-            "SourcePath" = "8:..\\..\\source\\ltc_controller_comm\\error.hpp"
-            "TargetName" = "8:error.hpp"
+            "SourcePath" = "8:..\\..\\common\\LTSpice\\DC2390_AFE.asc"
+            "TargetName" = "8:DC2390_AFE.asc"
             "Tag" = "8:"
-            "Folder" = "8:_CAB66B5FC773409D8BE8F24AF8FAF4B1"
+            "Folder" = "8:_20BDC8400D27474491C6EAE0CE48B2A8"
             "Condition" = "8:"
             "Transitive" = "11:FALSE"
             "Vital" = "11:TRUE"
@@ -918,12 +868,12 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
-            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_1D832BAA87E64EEF985C04E3D38ED128"
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_1CCF83A7293544C480FA6F41A043F903"
             {
-            "SourcePath" = "8:..\\..\\common\\ltc25xx_filters\\ssinc_256.txt"
-            "TargetName" = "8:ssinc_256.txt"
+            "SourcePath" = "8:..\\..\\source\\ltc_controller_comm\\error.hpp"
+            "TargetName" = "8:error.hpp"
             "Tag" = "8:"
-            "Folder" = "8:_8D0087F443094C3E8E8F59CFC7B932AD"
+            "Folder" = "8:_CAB66B5FC773409D8BE8F24AF8FAF4B1"
             "Condition" = "8:"
             "Transitive" = "11:FALSE"
             "Vital" = "11:TRUE"
@@ -964,6 +914,26 @@
             "TargetName" = "8:dcmosr1.sqz"
             "Tag" = "8:"
             "Folder" = "8:_07E8049162A24A548A8589F6273C5A99"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_20926C34BDA9428B86BBB2E3592FE015"
+            {
+            "SourcePath" = "8:..\\..\\common\\LTSpice\\LTC2057_differential_noisesim.asc"
+            "TargetName" = "8:LTC2057_differential_noisesim.asc"
+            "Tag" = "8:"
+            "Folder" = "8:_20BDC8400D27474491C6EAE0CE48B2A8"
             "Condition" = "8:"
             "Transitive" = "11:FALSE"
             "Vital" = "11:TRUE"
@@ -1158,46 +1128,6 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
-            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_2FC2C295037D4ABC8787CE10E1A1860E"
-            {
-            "SourcePath" = "8:..\\..\\python\\app_examples\\LTC2508_filters.py"
-            "TargetName" = "8:LTC2508_filters.py"
-            "Tag" = "8:"
-            "Folder" = "8:_79C46EAB8DD94E38B6DBB17157553041"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:FALSE"
-            "IsDependency" = "11:FALSE"
-            "IsolateTo" = "8:"
-            }
-            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_37C50D97182940AE93CF22283DA5CD00"
-            {
-            "SourcePath" = "8:..\\..\\python\\app_examples\\ltc2500_family\\signal_chain_noise_meas.py"
-            "TargetName" = "8:signal_chain_noise_meas.py"
-            "Tag" = "8:"
-            "Folder" = "8:_A96BDBAE27E44A93BEC00BE76819F342"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:FALSE"
-            "IsDependency" = "11:FALSE"
-            "IsolateTo" = "8:"
-            }
             "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_38BF842418374AB98F65DA24846CBD2E"
             {
             "SourcePath" = "8:..\\..\\source\\ltc_controller_comm\\utilties.cpp"
@@ -1264,26 +1194,6 @@
             "TargetName" = "8:generate_sinc_data.py"
             "Tag" = "8:"
             "Folder" = "8:_106440E62A0C413AB70F73BAE0E52291"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:FALSE"
-            "IsDependency" = "11:FALSE"
-            "IsolateTo" = "8:"
-            }
-            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_3F80DA2D7E60442AB1A5D476808FFA3E"
-            {
-            "SourcePath" = "8:..\\..\\python\\app_examples\\ltc2500_family\\LTC2758.py"
-            "TargetName" = "8:LTC2758.py"
-            "Tag" = "8:"
-            "Folder" = "8:_A96BDBAE27E44A93BEC00BE76819F342"
             "Condition" = "8:"
             "Transitive" = "11:FALSE"
             "Vital" = "11:TRUE"
@@ -1538,26 +1448,6 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
-            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_688FF7F477874073A3517ADB8AEDF1D7"
-            {
-            "SourcePath" = "8:..\\..\\common\\ltc25xx_filters\\ssinc_16384.txt"
-            "TargetName" = "8:ssinc_16384.txt"
-            "Tag" = "8:"
-            "Folder" = "8:_8D0087F443094C3E8E8F59CFC7B932AD"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:FALSE"
-            "IsDependency" = "11:FALSE"
-            "IsolateTo" = "8:"
-            }
             "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_6AC8C16847CE4F55B8C9DAFFD29AD34F"
             {
             "SourcePath" = "8:..\\..\\source\\ltc_controller_comm\\i_spi_send_only.hpp"
@@ -1644,6 +1534,26 @@
             "TargetName" = "8:i_close.hpp"
             "Tag" = "8:"
             "Folder" = "8:_CAB66B5FC773409D8BE8F24AF8FAF4B1"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_77EB5956FC424FC48230ED872F4E11B8"
+            {
+            "SourcePath" = "8:..\\..\\common\\LTSpice\\LTC2057_noisesim_2Meg.asc"
+            "TargetName" = "8:LTC2057_noisesim_2Meg.asc"
+            "Tag" = "8:"
+            "Folder" = "8:_20BDC8400D27474491C6EAE0CE48B2A8"
             "Condition" = "8:"
             "Transitive" = "11:FALSE"
             "Vital" = "11:TRUE"
@@ -1938,26 +1848,6 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
-            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_9C088E415EB742CE978D1D10BC7AAF4B"
-            {
-            "SourcePath" = "8:..\\..\\common\\ltc25xx_filters\\ssinc_1024.txt"
-            "TargetName" = "8:ssinc_1024.txt"
-            "Tag" = "8:"
-            "Folder" = "8:_8D0087F443094C3E8E8F59CFC7B932AD"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:FALSE"
-            "IsDependency" = "11:FALSE"
-            "IsolateTo" = "8:"
-            }
             "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_A3F946144EA94910B0ACC545C5C1284C"
             {
             "SourcePath" = "8:..\\..\\source\\ltc_controller_comm\\i_data_receive.hpp"
@@ -2044,26 +1934,6 @@
             "TargetName" = "8:s1407r3.sqz"
             "Tag" = "8:"
             "Folder" = "8:_07E8049162A24A548A8589F6273C5A99"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:FALSE"
-            "IsDependency" = "11:FALSE"
-            "IsolateTo" = "8:"
-            }
-            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_B079DA179E1A481C85FD401E13C6ED0C"
-            {
-            "SourcePath" = "8:..\\..\\common\\ltc25xx_filters\\ssinc_4096.txt"
-            "TargetName" = "8:ssinc_4096.txt"
-            "Tag" = "8:"
-            "Folder" = "8:_8D0087F443094C3E8E8F59CFC7B932AD"
             "Condition" = "8:"
             "Transitive" = "11:FALSE"
             "Vital" = "11:TRUE"
@@ -2518,6 +2388,26 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_F364095E7AD84A27B760F611F5CC8D1C"
+            {
+            "SourcePath" = "8:..\\..\\matlab\\Test_LinearLabTools_Matlab\\Test_LinearLabTools_Matlab.m"
+            "TargetName" = "8:Test_LinearLabTools_Matlab.m"
+            "Tag" = "8:"
+            "Folder" = "8:_08C64CBCF0354FB48DC4B15112570AEA"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
             "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_F39BEC0DEBBD4FE6A233085A6F1EC5A6"
             {
             "SourcePath" = "8:..\\..\\source\\linear_lab_tools.sln"
@@ -2604,26 +2494,6 @@
             "TargetName" = "8:Ltc2123Dc1974v6Core.m"
             "Tag" = "8:"
             "Folder" = "8:_7CF5F1FEAD5B4245A5E1A8755B5B5354"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:FALSE"
-            "IsDependency" = "11:FALSE"
-            "IsolateTo" = "8:"
-            }
-            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_FF335243C08B4975B61333BFF8A57368"
-            {
-            "SourcePath" = "8:..\\..\\python\\app_examples\\ltc2500_family\\seismic_dynamic_range_example.py"
-            "TargetName" = "8:seismic_dynamic_range_example.py"
-            "Tag" = "8:"
-            "Folder" = "8:_A96BDBAE27E44A93BEC00BE76819F342"
             "Condition" = "8:"
             "Transitive" = "11:FALSE"
             "Vital" = "11:TRUE"
@@ -2738,17 +2608,6 @@
                                 {
                                 }
                             }
-                            "{9EF0B969-E518-4E46-987F-47570745A589}:_8D0087F443094C3E8E8F59CFC7B932AD"
-                            {
-                            "Name" = "8:ltc25xx_filters"
-                            "AlwaysCreate" = "11:FALSE"
-                            "Condition" = "8:"
-                            "Transitive" = "11:FALSE"
-                            "Property" = "8:_76DD2F24F5034E4B96BF13558E518956"
-                                "Folders"
-                                {
-                                }
-                            }
                         }
                     }
                     "{9EF0B969-E518-4E46-987F-47570745A589}:_BB266A198734433BACFE625C71C5ACA9"
@@ -2791,17 +2650,6 @@
                             "Property" = "8:_F24B894F4ABB4E0BAB869E9CD13DF507"
                                 "Folders"
                                 {
-                                    "{9EF0B969-E518-4E46-987F-47570745A589}:_A96BDBAE27E44A93BEC00BE76819F342"
-                                    {
-                                    "Name" = "8:ltc2500_family"
-                                    "AlwaysCreate" = "11:FALSE"
-                                    "Condition" = "8:"
-                                    "Transitive" = "11:FALSE"
-                                    "Property" = "8:_8E2284C82702434DB575DE77C7B7426C"
-                                        "Folders"
-                                        {
-                                        }
-                                    }
                                 }
                             }
                             "{9EF0B969-E518-4E46-987F-47570745A589}:_BCD3C6CF9A4F4362BA3A090333BA49AA"
@@ -2936,6 +2784,17 @@
                                 {
                                 }
                             }
+                            "{9EF0B969-E518-4E46-987F-47570745A589}:_08C64CBCF0354FB48DC4B15112570AEA"
+                            {
+                            "Name" = "8:Test_LinearLabTools_Matlab"
+                            "AlwaysCreate" = "11:FALSE"
+                            "Condition" = "8:"
+                            "Transitive" = "11:FALSE"
+                            "Property" = "8:_A37FDE65976D4C16BCA20C5B0D2233FE"
+                                "Folders"
+                                {
+                                }
+                            }
                             "{9EF0B969-E518-4E46-987F-47570745A589}:_0CE00B3BB5554A549AED3548FE68CFE9"
                             {
                             "Name" = "8:Utils"
@@ -3055,15 +2914,15 @@
         {
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:linear_lab_tools64"
-        "ProductCode" = "8:{00C4E9F4-2D2E-4B86-BADB-FBD3FAB90C1B}"
-        "PackageCode" = "8:{6AB1E14C-6F32-4B30-8552-92F2920C0F10}"
+        "ProductCode" = "8:{E432BD3B-037A-4DD8-A024-98DB69792645}"
+        "PackageCode" = "8:{551A1CC9-06C1-4CEA-AE25-829E3D000609}"
         "UpgradeCode" = "8:{34C9E896-F9F8-4563-A1D3-FB0FE69C2B22}"
         "AspNetVersion" = "8:4.0.30319.0"
         "RestartWWWService" = "11:FALSE"
         "RemovePreviousVersions" = "11:TRUE"
         "DetectNewerInstalledVersion" = "11:TRUE"
         "InstallAllUsers" = "11:TRUE"
-        "ProductVersion" = "8:1.0.9"
+        "ProductVersion" = "8:1.0.10"
         "Manufacturer" = "8:Linear Technology"
         "ARPHELPTELEPHONE" = "8:"
         "ARPHELPLINK" = "8:"
