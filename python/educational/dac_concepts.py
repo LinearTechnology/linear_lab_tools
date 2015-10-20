@@ -3,7 +3,7 @@
 LinearLabTools simulation of Digital to Analog Converter
 operation and theory. We will simulate the output spectrum of an ideal DAC,
 then add quantization noise. Quantization noise is not described in much
-detail, or at least I couldn't find much on the subject. So we'll try to get
+detail, or at least we couldn't find much on the subject. So we'll try to get
 a nice picture of what "ideal noise" looks like!
 
 

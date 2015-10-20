@@ -115,6 +115,7 @@ def ltc2261_dc1369(num_samples, verbose=False, do_demo=False):
             
         controller.spi_send_byte_at_address(0x00, 0x80)
         controller.spi_send_byte_at_address(0x01, 0x00)
+        # Set address 0x02 to a value of 0x01 to enable DCS (useful if clock is not 50% Duty Cycle)
         controller.spi_send_byte_at_address(0x02, 0x00)
         controller.spi_send_byte_at_address(0x03, 0x71)
         controller.spi_send_byte_at_address(0x04, TEST_DATA_REG)

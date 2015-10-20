@@ -181,7 +181,7 @@ with comm.Controller(controller_info) as controller:
         plt.plot(data_ch2)
         plt.show()
 
-        adc_amplitude = 65536.0 / 2.0
+        adc_amplitude = 16384.0 / 2.0
         
         windowscale = (NUM_ADC_SAMPLES) / sum(np.blackman(NUM_ADC_SAMPLES))
         print("Window scaling factor: " + str(windowscale))
@@ -190,13 +190,13 @@ with comm.Controller(controller_info) as controller:
         windowed_data_ch1 = data_ch1 * np.blackman(NUM_ADC_SAMPLES) * windowscale # Apply Blackman window
         freq_domain_ch1 = np.fft.fft(windowed_data_ch1)/(NUM_ADC_SAMPLES) # FFT
         freq_domain_magnitude_ch1 = np.abs(freq_domain_ch1) # Extract magnitude
-        freq_domain_magnitude_db_ch1 = 10 * np.log10(freq_domain_magnitude_ch1/adc_amplitude)
+        freq_domain_magnitude_db_ch1 = 20 * np.log10(freq_domain_magnitude_ch1/adc_amplitude)
         
         data_ch2 -= np.average(data_ch2)
         windowed_data_ch2 = data_ch2 * np.blackman(NUM_ADC_SAMPLES) * windowscale # Apply Blackman window
         freq_domain_ch2 = np.fft.fft(windowed_data_ch2)/(NUM_ADC_SAMPLES) # FFT
         freq_domain_magnitude_ch2 = np.abs(freq_domain_ch2) # Extract magnitude
-        freq_domain_magnitude_db_ch2 = 10 * np.log10(freq_domain_magnitude_ch2/adc_amplitude)
+        freq_domain_magnitude_db_ch2 = 20 * np.log10(freq_domain_magnitude_ch2/adc_amplitude)
 
         
         plt.figure(2)

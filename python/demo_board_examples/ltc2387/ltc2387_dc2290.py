@@ -74,7 +74,7 @@ DATA_ALTERNATING = 0x38
 #test_data_reg = DATA_CHECKERBOARD
 test_data_reg = DATA_REAL
 
-num_samples = 16 * 1024
+num_samples = 32 * 1024
 SAMPLE_BYTES = 3
 EEPROM_ID_SIZE = 50
 

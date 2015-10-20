@@ -163,7 +163,6 @@ with comm.Controller(device_info) as controller:
             print 'Writing data to file'
         with open('data.txt', 'w') as f:
             for i in range(NUM_ADC_SAMPLES/2):
-                # remember we have an extra fake channel so we write every other sample
                 f.write(str(data_ch1[i] & 0xFFFF) + str(data_ch2[i] & 0xFFFF) + '\n')
     
         print 'File write done.'
@@ -182,6 +181,9 @@ with comm.Controller(device_info) as controller:
         plt.show()
 
         adc_amplitude = 65536.0 / 2.0
+        
+        data_ch1 -= np.average(data_ch1)
+        data_ch2 -= np.average(data_ch2)
         
         windowscale = (NUM_ADC_SAMPLES/2) / sum(np.blackman(NUM_ADC_SAMPLES/2))
         print("Window scaling factor: " + str(windowscale))
