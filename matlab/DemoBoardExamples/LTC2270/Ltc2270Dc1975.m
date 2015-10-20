@@ -216,12 +216,14 @@ function Ltc2270Dc1975(arg1NumSamples, arg2Verbose, doDemo)
         windowScale = (numAdcSamples/2) / sum(blackman(numAdcSamples/2));
         fprintf('\nWindow scaling factor: %d', windowScale);
 
+        dataCh1 = dataCh1 - mean(dataCh1);                  % Normalizing to remove DC
         windowedDataCh1 = dataCh1' .* blackman(numAdcSamples/2);
         windowedDataCh1 = windowedDataCh1 .* windowScale; 	% Apply Blackman window
         freqDomainCh1 = fft(windowedDataCh1)/(NUM_ADC_SAMPLES_PER_CH); % FFT
         freqDomainMagnitudeCh1 = abs(freqDomainCh1); 		% Extract magnitude
         freqDomainMagnitudeDbCh1 = 20 * log10(freqDomainMagnitudeCh1/adcAmplitude);
         
+        dataCh2 = dataCh2 - mean(dataCh2);                  % Normalizing to remove DC
         windowedDataCh2 = dataCh2' .* blackman(numAdcSamples/2);
         windowedDataCh2 = windowedDataCh2 .* windowScale; 	% Apply Blackman window
         freqDomainCh2 = fft(windowedDataCh2)/(NUM_ADC_SAMPLES_PER_CH); % FFT
