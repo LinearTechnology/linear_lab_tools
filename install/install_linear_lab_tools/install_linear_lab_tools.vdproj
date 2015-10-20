@@ -105,12 +105,6 @@
         }
         "Entry"
         {
-        "MsmKey" = "8:_2D0727C659BE42BAAF06DBD6D321E4D3"
-        "OwnerKey" = "8:_UNDEFINED"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
         "MsmKey" = "8:_2FDC9442C9D94C7D850102731FF627FB"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
@@ -118,6 +112,12 @@
         "Entry"
         {
         "MsmKey" = "8:_300A401F80314E3BAEE220A1D5538B07"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_32B01D350AFD4FCEBAF27516CD0DD12A"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -962,26 +962,6 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
-            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_2D0727C659BE42BAAF06DBD6D321E4D3"
-            {
-            "SourcePath" = "8:..\\..\\python\\check_linear_lab_tools_install\\LinearLogo.tiff"
-            "TargetName" = "8:LinearLogo.tiff"
-            "Tag" = "8:"
-            "Folder" = "8:_D03B92EE372D44DCB217F80B8D5F14BD"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:FALSE"
-            "IsDependency" = "11:FALSE"
-            "IsolateTo" = "8:"
-            }
             "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_2FDC9442C9D94C7D850102731FF627FB"
             {
             "SourcePath" = "8:..\\..\\matlab\\TestLtcControllerComm.m"
@@ -1008,6 +988,26 @@
             "TargetName" = "8:s2175.sqz"
             "Tag" = "8:"
             "Folder" = "8:_FD8CB1E8997B45CC8313B5B51B6BCF21"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_32B01D350AFD4FCEBAF27516CD0DD12A"
+            {
+            "SourcePath" = "8:..\\..\\python\\check_linear_lab_tools_install\\LinearLogo.PNG"
+            "TargetName" = "8:LinearLogo.PNG"
+            "Tag" = "8:"
+            "Folder" = "8:_D03B92EE372D44DCB217F80B8D5F14BD"
             "Condition" = "8:"
             "Transitive" = "11:FALSE"
             "Vital" = "11:TRUE"
@@ -2899,15 +2899,15 @@
         {
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:linear_lab_tools"
-        "ProductCode" = "8:{48392E81-CE9C-484E-9180-0379B648FE82}"
-        "PackageCode" = "8:{9A3DB87D-8C5D-4AAE-98D4-C1659DC3B482}"
+        "ProductCode" = "8:{2A38D9F8-652F-46CE-852D-992DC04170B3}"
+        "PackageCode" = "8:{BCA8BD59-44F3-4ACF-8C75-56FB2711C596}"
         "UpgradeCode" = "8:{E149E7BD-322C-441A-9954-732185D6F984}"
         "AspNetVersion" = "8:4.0.30319.0"
         "RestartWWWService" = "11:FALSE"
         "RemovePreviousVersions" = "11:TRUE"
         "DetectNewerInstalledVersion" = "11:TRUE"
         "InstallAllUsers" = "11:TRUE"
-        "ProductVersion" = "8:1.0.10"
+        "ProductVersion" = "8:1.0.11"
         "Manufacturer" = "8:Linear Technology"
         "ARPHELPTELEPHONE" = "8:"
         "ARPHELPLINK" = "8:"
