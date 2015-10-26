@@ -54,7 +54,7 @@
 function Ltc2378Dc2135(arg1NumSamples, arg2Verbose, doDemo)
     
     if(~nargin)
-        numAdcSamples = 32 * 1024;
+        numAdcSamples = 64 * 1024;
         % Print extra information to console
         verbose = true;
         % Plot data to screen
@@ -79,7 +79,7 @@ function Ltc2378Dc2135(arg1NumSamples, arg2Verbose, doDemo)
     % testDataReg = DATA_ALTERNATING
 %     testDataReg = DATA_REAL;
 
-    SAMPLE_BYTES = 2;
+    SAMPLE_BYTES = 4; % for 32-bit reads
         
     % Returns the object in the class constructor
     comm = LtcControllerComm();  
@@ -126,7 +126,7 @@ function Ltc2378Dc2135(arg1NumSamples, arg2Verbose, doDemo)
     comm.DataSetHighByteFirst(cId);
     
     comm.DataSetCharacteristics(cId, true, SAMPLE_BYTES, true);
-    comm.DataStartCollect(cId, numDc890Samples, comm.TRIGGER_NONE);
+    comm.DataStartCollect(cId, numAdcSamples, comm.TRIGGER_NONE);
     
     for i = 1: 10
         isDone = comm.DataIsCollectDone(cId);
@@ -150,31 +150,33 @@ function Ltc2378Dc2135(arg1NumSamples, arg2Verbose, doDemo)
         fprintf('\nReading data');
     end
     
-    [data, numBytes] = comm.DataReceiveUint16Values(cId, numAdcSamples);
+    [rawData, numBytes] = comm.DataReceiveUint32Values(cId, numAdcSamples);
     
     if(verbose)
         fprintf('\nData Read done');
     end
-    
-    % Split data into two channels
-    dataHigh = zeros(1, NUM_ADC_SAMPLES);
-    dataLow = zeros(1, NUM_ADC_SAMPLES);
-    
-    for i = 1 : NUM_ADC_SAMPLES
-        dataHigh(i) = bitand(data(2*i - 1), 65535);
-        dataLow(i) = bitand(data(2*i), 65535);
+       
+    for i = 1 : numAdcSamples
+        rawData(i) = bitand(rawData(i), 1048575);
     end
     
-    % Assembling 32-bit wide data
-    data = zeros(1, NUM_ADC_SAMPLES);
-    for i = 1 : NUM_ADC_SAMPLES
-        data(i) = bitor(bitshift(dataHigh(i), 16), dataLow(i));
-        data(i) = bitand(data(i), 1048575);
-        if(data(i) > 524287)
-            data(i) = data(i) - 1048576;
+%     for i = 1 : numAdcSamples
+%         if(data(i) > 524287)
+%             data(i) = bitand((1048576 - data(i)), 1048575);
+%             data(i) = -data(i);
+%         end
+%     end
+    
+    for i = 1 : numAdcSamples
+        if(rawData(i) > 524287)
+            data(i) = int32(1048576 - rawData(i));
+            data(i) = (-1) * int32(data(i));
+        else
+            data(i) = int32(rawData(i));
         end
     end
-    
+
+
     if(writeToFile)
         if(verbose)
             fprintf('\nWriting data to file');
@@ -182,7 +184,7 @@ function Ltc2378Dc2135(arg1NumSamples, arg2Verbose, doDemo)
 
         fileID = fopen('data.txt','w');
 
-        for i = 1:NUM_ADC_SAMPLES
+        for i = 1:numAdcSamples
             fprintf(fileID,'%d\r\n', data(i));
         end
 
@@ -198,15 +200,18 @@ function Ltc2378Dc2135(arg1NumSamples, arg2Verbose, doDemo)
         
         adcAmplitude = 65536.0 / 2.0;
 
-        
-        
-        windowScale = (numAdcSamples/2) / sum(blackman(numAdcSamples/2));
+        windowScale = (numAdcSamples) / sum(blackman(numAdcSamples));
         fprintf('\nWindow scaling factor: %d', windowScale);
 
         data = data - mean(data);      % Normalizing to remove DC
-        windowedData = data' .* blackman(numAdcSamples/2);
+        
+        figure(3)
+        plot(data)
+        title('dc removed')
+        
+        windowedData = data' .* blackman(numAdcSamples);
         windowedData = windowedData .* windowScale; 	% Apply Blackman window
-        freqDomainData = fft(windowedData)/(numAdcSamples/2); % FFT
+        freqDomainData = fft(windowedData)/(numAdcSamples); % FFT
         freqDomainMagnitudeData = abs(freqDomainData); 		% Extract magnitude
         freqDomainMagnitudeDbData = 20 * log10(freqDomainMagnitudeData/adcAmplitude);
         
