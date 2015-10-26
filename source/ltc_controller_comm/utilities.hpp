@@ -162,12 +162,10 @@ namespace linear {
     }
 
     inline void SwapBytes(uint32_t values[], int num_values) {
-        uint32_t value;
-        uint8_t* value_pointer;
         uint8_t* byte_pointer = reinterpret_cast<uint8_t*>(values);
         for (int i = 0; i < num_values; ++i, byte_pointer += 4) {
-            value = values[i];
-            value_pointer = reinterpret_cast<uint8_t*>(values + i);
+            uint32_t value = values[i];
+            uint8_t* value_pointer = reinterpret_cast<uint8_t*>(&value);
             byte_pointer[0] = value_pointer[3];
             byte_pointer[1] = value_pointer[2];
             byte_pointer[2] = value_pointer[1];
