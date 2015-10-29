@@ -297,7 +297,7 @@ function Ltc2123Dc1974v6Core
         fprintf('\n\nILAS and stuff for lane %d :', lane);
         for i = 0 : 12
             reg = startreg + i*4;
-            [byte3, byte2, byte1, byte0] = ReadJesd204bReg(device, reg)                ;
+            [byte3, byte2, byte1, byte0] = ReadJesd204bReg(device, reg);
             fprintf('\n %s : 0X %s %s %s %s', lt2k.JESD204B_XILINX_LANE_REG_NAMES{i + 1}, dec2hex(byte3, 2), dec2hex(byte2, 2), dec2hex(byte1, 2), dec2hex(byte0, 2));
         end
     end
