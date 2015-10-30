@@ -50,14 +50,14 @@ sys.path.append('../../')
 from mem_func_client import MemClient
 
 ###############################################################################
-# Parameters for running different tests
+# Parameters for running test
 ###############################################################################
 
-AVERAGING_NUMBER = 10
+AVERAGING_NUMBER = 100
 SYS_CLK = 50000000
-SYSTEM_CLOCK_DIVIDER = 199 # 50MHz / 200 = 250 Ksps
+SYSTEM_CLOCK_DIVIDER = 99 # 50MHz / 100 = 500 Ksps
 NUM_SAMPLES = 8192#2**20
-GAIN_OF_OPAMP = 21
+GAIN_OF_OPAMP = 1
 
 
 if __name__ == "__main__": 
@@ -115,31 +115,36 @@ if __name__ == "__main__":
     for x in range(0, AVERAGING_NUMBER):
         # Set Mux for raw Nyquist data
         # Set Dac A for SIN and Dac B for
-        client.reg_write(DC2390.DATAPATH_CONTROL_BASE,DC2390.DC2390_FIFO_ADCB_NYQ |
+        client.reg_write(DC2390.DATAPATH_CONTROL_BASE,DC2390.DC2390_FIFO_ADCB_NYQ | 
                          DC2390.DC2390_DAC_B_LUT | DC2390.DC2390_DAC_A_NCO_SIN | 
                          DC2390.DC2390_LUT_ADDR_COUNT | DC2390.DC2390_LUT_RUN_ONCE)
                          
         
         # Capture the data
         data = DC2390.capture(client, NUM_SAMPLES, trigger = 0, timeout = 1.0)
-        
+        lsb = 10.0/(2**32-1) 
+        data_volts = np.multiply(data , lsb)
+        print np.average(data_volts)
+        print np.std(data_volts)
         # Convert time domain data to frequncy domain
-        fftdata = np.abs(np.fft.fft(data))/len(data)
+        fftdata = np.abs(np.fft.fft(data_volts))/len(data_volts)
         
-        avg_fft = np.add(avg_fft, fftdata) 
+        avg_fft = np.add(avg_fft, fftdata)
     
     avg_fft /= AVERAGING_NUMBER
     
     # Convert to nV/sqrt(Hz)
     
-    lsb_in_nV = 10000000000/(2**32-1) # 10V / 10^-9 = 10000000000
+#    lsb =100000
     number_bins = NUM_SAMPLES / 2.0
     sampling_freq = SYS_CLK / (SYSTEM_CLOCK_DIVIDER + 1)
     bin_width = sampling_freq / number_bins
-        
-    avg_fft *= lsb_in_nV
+    
+#    avg_fft *= lsb
+    
     
     avg_fft /= np.sqrt(bin_width)
+    
     
     avg_fft[0] = 0 # remove DC info
     
