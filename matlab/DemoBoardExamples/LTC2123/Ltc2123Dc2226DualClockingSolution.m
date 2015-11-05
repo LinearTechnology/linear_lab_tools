@@ -56,7 +56,7 @@ function Ltc2123Dc2226DualClockingSolution
         pattern1=0;
     end
 
-    sleeptime = 0.5;
+    sleepTime = 0.5;
     
     if verbose
         fprintf('LTC2123 DC2226 dual clocking solution Interface Program\n');
@@ -112,15 +112,14 @@ function Ltc2123Dc2226DualClockingSolution
 %             bitfile_id_warning(bitfile_id, id)
         
         if(initializeAdcs)
-            LoadLtc212x(lths, 0, verbose, dId, bankId, LIU, K, modes, 0, pattern0);
-        else
-            LoadLtc212x(lths, 0, verbose, dId, bankId, LIU, K, modes, 0, pattern1);
+            LoadLtc212x(lths, 0, verbose, dId0, bankId, LIU, K, modes, 1, pattern0);
+            LoadLtc212x(lths, 1, verbose, dId1, bankId, LIU, K, modes, 1, pattern1);
+            initializeAdcs = 0;
         end
         
         if(initializeClocks)
-%             #initialize_DC2226_version2_clocks_300(device, verbose)
-%             initialize_DC2226_version2_clocks_250(device, verbose)
-%             initialize_clocks = 0
+            InitializeDC2226Version2Clocks250(lths, verbose);
+            initializeClocks = 0;
         end
         
         lths.HsFpgaWriteDataAtAddress(cId, lt2k.CAPTURE_RESET_REG, 1);  % Reset
@@ -226,7 +225,6 @@ function Ltc2123Dc2226DualClockingSolution
             subplot(4,1,4)
             plot(freqDomainMagnitudeDbCh3)
             title('CH3 FFT')
-
         end
         
         if(verbose)
@@ -236,4 +234,87 @@ function Ltc2123Dc2226DualClockingSolution
             ReadXilinxCoreIlas(lths, verbose, 2);
             ReadXilinxCoreIlas(lths, verbose, 3);
         end
+    end
+    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%%    FUNCTION DEFINITIONS    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    
+    function InitializeDC2226Version2Clocks250(device, verbose)
+        if(verbose)
+            fprintf('Configuring clock generators over SPI:');
+        end
+        device.HsSetBitMode(cId, device.HS_BIT_MODE_MPSSE);
+        fprintf('Configuring LTC6954 (REF distribution)');
+        device.HsFpgaWriteDataAtAddress(cId, 0, 0);
+        device.HsFpgaWriteDataAtAddress(cId, 2, 128);   % 6951-1 delay
+        device.HsFpgaWriteDataAtAddress(cId, 4, 1);     % 6951-1 divider
+        device.HsFpgaWriteDataAtAddress(cId, 6, 128);   % 6951-2 delay
+        device.HsFpgaWriteDataAtAddress(cId, 8, 1);     % 6951-2 divider
+        device.HsFpgaWriteDataAtAddress(cId, 10, 192);  % sync delay & CMSINV
+        device.HsFpgaWriteDataAtAddress(cId, 12, 1);    % sync divider
+        device.HsFpgaWriteDataAtAddress(cId, 14, 33);
+        
+        fprintf('Configuring U10 (LTC6951) cp');
+        % LTC6951config
+        device.HsFpgaWriteDataAtAddress(cId, lt2k.SPI_CONFIG_REG, 2);
+        device.SpiSendByteAtAddress(cId, 0, 5);
+        device.SpiSendByteAtAddress(cId, 2, 186);
+        device.SpiSendByteAtAddress(cId, 4, 0);
+        device.SpiSendByteAtAddress(cId, 6, 124);
+        device.SpiSendByteAtAddress(cId, 8, 163);
+        device.SpiSendByteAtAddress(cId, 10, 8);
+        device.SpiSendByteAtAddress(cId, 12, 5);    % 5 for 200, 6 for 300. VCO=2GHz.
+        device.SpiSendByteAtAddress(cId, 14, 7);
+        device.SpiSendByteAtAddress(cId, 16, 1);
+        device.SpiSendByteAtAddress(cId, 18, 19);
+        device.SpiSendByteAtAddress(cId, 20, 192);
+        device.SpiSendByteAtAddress(cId, 22, 155);  % ADC SYSREF 2 div, 
+        device.SpiSendByteAtAddress(cId, 24, 22);   % ADC SYSREF 2 delay, - 16 for 250, 1E f0r 300
+        device.SpiSendByteAtAddress(cId, 26, 149);   % FPGA CLK div, 0x95 for half of 250
+        device.SpiSendByteAtAddress(cId, 28, 22);   % FPGA CLK div,  0x97 for 1/4 of 250...
+        device.SpiSendByteAtAddress(cId, 30, 149);   % FPGA CLK delay, 16 for 250, 1E for 300
+        device.SpiSendByteAtAddress(cId, 32, 22);   % ADC CLK 2 div,
+        device.SpiSendByteAtAddress(cId, 34, 48);   % ADC CLK 2 delay ,16 for 250, 1E for 300
+        device.SpiSendByteAtAddress(cId, 36, 0);
+        device.SpiSendByteAtAddress(cId, 38, 17);
+        device.SpiSendByteAtAddress(cId, 4, 1);     % calibrate after writing all registers
+        
+        fprintf('Configuring U13 (LTC6951) cp');
+        
+        device.HsFpgaWriteDataAtAddress(cId, lt2k.SPI_CONFIG_REG, 3);
+        device.SpiSendByteAtAddress(cId, 0, 5) 
+        device.SpiSendByteAtAddress(cId, 2, 186) 
+        device.SpiSendByteAtAddress(cId, 4, 0) 
+        device.SpiSendByteAtAddress(cId, 6, 124) 
+        device.SpiSendByteAtAddress(cId, 8, 163) 
+        device.SpiSendByteAtAddress(cId, 10, 8) 
+        device.SpiSendByteAtAddress(cId, 12, 5) % 5 for 250, 6 for 300
+        device.SpiSendByteAtAddress(cId, 14, 7) 
+        device.SpiSendByteAtAddress(cId, 16, 1) 
+        device.SpiSendByteAtAddress(cId, 18, 19) 
+        device.SpiSendByteAtAddress(cId, 20, 192) 
+        device.SpiSendByteAtAddress(cId, 22, 155) % FPGA SYSREF div, 
+        device.SpiSendByteAtAddress(cId, 24, 22) % FPGA SYSREF delay, 16 for 250, 1E f0r 300
+        device.SpiSendByteAtAddress(cId, 26, 149) % ADC CLK 1 div,
+        device.SpiSendByteAtAddress(cId, 28, 22) % ADC CLK 1 delay, 16 for 250, 1E for 300
+        device.SpiSendByteAtAddress(cId, 30, 149) % ADC SYSREF 1 div,
+        device.SpiSendByteAtAddress(cId, 32, 22) % ADC SYSREF 1 delay, 16 for 250, 1E for 300
+        device.SpiSendByteAtAddress(cId, 34, 48) 
+        device.SpiSendByteAtAddress(cId, 36, 0) 
+        device.SpiSendByteAtAddress(cId, 38, 17) 
+        device.SpiSendByteAtAddress(cId, 4, 1) % calibrate after writing all registers
+        
+        fprintf('toggle SYNC cp\n');
+        pause(sleepTime);
+        device.HsFpgaWriteDataAtAddress(cId, lt2k.SPI_CONFIG_REG, 8);
+        fprintf('sync high');
+        pause(sleepTime);
+        fprintf('sync low');
+        device.HsFpgaWriteData(0)
+        pause(sleepTime);
+
+    end   
+
+
 end
