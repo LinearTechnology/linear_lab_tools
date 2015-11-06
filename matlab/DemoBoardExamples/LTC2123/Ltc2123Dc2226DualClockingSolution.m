@@ -321,4 +321,191 @@ function Ltc2123Dc2226DualClockingSolution
         device.SpiSendByteAtAddress(cId, bitor(address, lt2k.SPI_WRITE), value);
     end
 
+    function LoadLtc212x(device, csControl, verbose, dId, bankId, lanes, K, modes, subClass, pattern)
+        if(verbose)
+            fprintf('Configuring ADCs over SPI:');
+        end
+        device.HsFpgaWriteDataAtAddress(cId, lt2k.SPI_CONFIG_REG, csControl);
+        SpiWrite(device, 3, dId); % Device ID to 0xAB
+        SpiWrite(device, 4, bankId); % Bank ID to 0x01
+        SpiWrite(device, 5, lanes-1); % 2 lane mode (default)
+        SpiWrite(device, 6, K-1);
+        SpiWrite(device, 7, modes); % Enable FAM, LAM
+        SpiWrite(device, 8, subClass); % Subclass mode
+        SpiWrite(device, 9, pattern); % PRBS test pattern
+        SpiWrite(device, 10, 3); %  0x03 = 16mA CML current
+    end 
+
+    function ReadXilinxCoreConfig(device, verbose)
+        fprintf('\n\nJEDEC core config registers:')  
+        for i = 0 : 15
+            reg = i*4;
+            [byte3, byte2, byte1, byte0] = ReadJesd204bReg(device, reg);
+            fprintf('\n%s : 0X %s %s %s %s', lt2k.JESD204B_XILINX_CONFIG_REG_NAMES{i + 1}, dec2hex(byte3, 2), dec2hex(byte2, 2), dec2hex(byte1, 2), dec2hex(byte0, 2));
+        end
+    end
+
+    function ReadXilinxCoreIlas(device, verbose, lane)
+        startreg = 2048 + lane * 64;
+        fprintf('\n\nILAS and stuff for lane %d :', lane);
+        for i = 0 : 12
+            reg = startreg + i*4;
+            [byte3, byte2, byte1, byte0] = ReadJesd204bReg(device, reg);
+            fprintf('\n %s : 0X %s %s %s %s', lt2k.JESD204B_XILINX_LANE_REG_NAMES{i + 1}, dec2hex(byte3, 2), dec2hex(byte2, 2), dec2hex(byte1, 2), dec2hex(byte0, 2));
+        end
+    end
+
+    % Adding support for V6 core, with true AXI access. Need to confirm that this doesn't break anything with V4 FPGA loads,
+    % as we'd be writing to undefined registers.
+    function [byte3, byte2, byte1, byte0] = ReadJesd204bReg(device, address)
+        device.HsFpgaWriteDataAtAddress(cId, lt2k.JESD204B_R2INDEX_REG, bitshift(bitand(address,4032), -6));  % Upper 6 bits of AXI reg address
+        device.HsFpgaWriteDataAtAddress(cId, lt2k.JESD204B_CHECK_REG, (bitor(bitshift(bitand(address, 63), 2), 2)));  % Lower 6 bits address of JESD204B Check Register
+        
+        if (bitand(device.HsFpgaReadData(cId), 1) == 0)
+            error('Got bad FPGA status in read_jedec_reg');
+        end
+        
+        byte3 = device.HsFpgaReadDataAtAddress(cId, lt2k.JESD204B_RB3_REG);
+        byte2 = device.HsFpgaReadDataAtAddress(cId, lt2k.JESD204B_RB2_REG);
+        byte1 = device.HsFpgaReadDataAtAddress(cId, lt2k.JESD204B_RB1_REG);
+        byte0 = device.HsFpgaReadDataAtAddress(cId, lt2k.JESD204B_RB0_REG);        
+    end
+
+    % Adding support for V6 core, with true AXI access. Need to confirm that this 
+    % doesn't break anything with V4 FPGA loads,
+    % as we'd be writing to undefined registers.
+    function WriteJesd204bReg(device, address, b3, b2, b1, b0)
+        device.HsFpgaWriteDataAtAddress(cId, lt2k.JESD204B_WB3_REG, b3);
+        device.HsFpgaWriteDataAtAddress(cId, lt2k.JESD204B_WB2_REG, b2);
+        device.HsFpgaWriteDataAtAddress(cId, lt2k.JESD204B_WB1_REG, b1);
+        device.HsFpgaWriteDataAtAddress(cId, lt2k.JESD204B_WB0_REG, b0);
+        device.HsFpgaWriteDataAtAddress(cId, lt2k.JESD204B_W2INDEX_REG, (bitand(address, 4032) / 6)); % Upper 6 bits of AXI reg address
+        device.HsFpgaWriteDataAtAddress(cId, lt2k.JESD204B_CONFIG_REG, (bitor((bitand(address, 63) * 4), 2)));
+        x = device.HsFpgaReadDataAtAddress(cId, lt2k.JESD204B_CONFIG_REG);
+        if (bitand(x, 1) == 0)
+            error('Got bad FPGA status in write_jedec_reg');
+        end
+    end 
+
+    function channelData = Capture4(device, memSize, buffSize, dumpData, dumpPscopeData, verbose)
+
+        clockStatus = device.HsFpgaReadDataAtAddress(cId, lt2k.CLOCK_STATUS_REG);
+
+        if(verbose)
+            fprintf('Reading Clock Status register; should be 0x16 (or at least 0x04 bit set)');
+            fprintf('Register 6   (Clock status) is %x\n', lths.HsFpgaReadDataAtAddress(cId, lt2k.CLOCK_STATUS_REG));
+        end
+
+        captureStatus = device.HsFpgaReadDataAtAddress(cId, lt2k.CAPTURE_STATUS_REG);
+
+        if(bitand(captureStatus, 4) ~= 0)
+            syncErr = 1;
+        else
+            syncErr = 0;
+        end
+
+        if (verbose ~= 0)
+            fprintf('\nReading capture status, should be 0xF0 or 0xF4 (CH0, CH1 valid, Capture NOT done, data not fetched)');
+            fprintf('\nAnd it is... 0x%s', dec2hex(captureStatus, 4));
+        end
+
+        device.HsFpgaWriteDataAtAddress(cId, lt2k.CAPTURE_CONFIG_REG, uint8(bitor(memSize, 8))); % Both Channels active
+
+        device.HsFpgaWriteDataAtAddress(cId, lt2k.CAPTURE_CONTROL_REG, 0);
+        device.HsFpgaWriteDataAtAddress(cId, lt2k.CAPTURE_CONTROL_REG, 1);  % Start!!
+
+        pause(1);  % wait for capture
+
+        captureStatus = device.HsFpgaReadDataAtAddress(cId, lt2k.CAPTURE_STATUS_REG);
+        if(bitand(captureStatus, 4) ~= 0)
+            syncErr = 1;
+        else
+            syncErr = 0;
+        end
+
+        if (verbose ~= 0)
+            fprintf('\nReading capture status, should be 0xF1 (CH0, CH1, CH2, CH3 valid, Capture  IS done, data not fetched)');
+            fprintf('\nAnd it is... 0x%s', dec2hex(captureStatus, 4));
+        end
+
+        device.DataSetLowByteFirst(cId); % Set endian-ness
+        device.HsSetBitMode(cId, device.HS_BIT_MODE_FIFO);
+        pause(0.1);
+
+        throwAway = 3;
+
+        [data01, nSampsRead] = device.DataReceiveUint16Values(cId, buffSize);
+
+        if(throwAway ~= 0)
+            device.DataReceiveBytes(cId, throwAway);
+        end
+
+        device.HsSetBitMode(cId, device.HS_BIT_MODE_MPSSE);
+
+        if(verbose ~= 0)
+            fprintf('\nRead out %d samples for CH0, 1', nSampsRead);
+        end
+
+        % Okay, now get CH2, CH3 data...
+
+        device.HsSetBitMode(cId, device.HS_BIT_MODE_MPSSE);
+        pause(0.1);
+
+        device.HsFpgaWriteDataAtAddress(cId, lt2k.CAPTURE_RESET_REG, 1); % Reset
+
+        device.HsFpgaWriteDataAtAddress(cId, lt2k.CAPTURE_CONFIG_REG, uint8(bitor(memSize, 10))); % CH2 and CH3
+
+        device.HsFpgaWriteDataAtAddress(cId, lt2k.CAPTURE_CONTROL_REG, 2);
+        device.HsFpgaWriteDataAtAddress(cId, lt2k.CAPTURE_CONTROL_REG, 3);
+
+        captureStatus = device.HsFpgaReadDataAtAddress(cId, lt2k.CAPTURE_STATUS_REG);
+        if(bitand(captureStatus, 4) ~= 0)
+            syncErr = 1;
+        else
+            syncErr = 0;
+        end
+
+        if (verbose ~= 0)
+            fprintf('\nReading capture status, should be 0xF1 (CH0, CH1, CH2, CH3 valid, Capture  IS done, data not fetched)');
+            fprintf('\nAnd it is... 0x%s', dec2hex(captureStatus, 4));
+        end
+
+        device.HsSetBitMode(cId, device.HS_BIT_MODE_FIFO);
+        pause(0.1);
+
+        [data23, nSampsRead] = device.DataReceiveUint16Values(cId, buffSize);
+
+        if(throwAway ~= 0)
+            device.DataReceiveBytes(cId, throwAway);
+        end
+
+        device.HsSetBitMode(cId, device.HS_BIT_MODE_MPSSE);
+        pause(0.1);
+
+        if(verbose ~= 0)
+            fprintf('\nRead out %d samples for CH2, 3', nSampsRead);
+        end
+
+        % Initialize data arrays
+        dataCh0 = zeros(1, buffSize/2);
+        dataCh1 = zeros(1, buffSize/2);
+        dataCh2 = zeros(1, buffSize/2);
+        dataCh3 = zeros(1, buffSize/2);
+
+        for i = 1 : 2 : (buffSize)/2
+            % Split data for CH0, CH1
+            dataCh0(i) = data01(i*2 - 1);
+            dataCh0(i+1) = data01(i*2);
+            dataCh1(i) = data01(i*2 + 1);
+            dataCh1(i+1) = data01(i*2 + 2);
+
+            % Split data for CH2, CH3
+            dataCh2(i) = data23(i*2 - 1);
+            dataCh2(i+1) = data23(i*2);
+            dataCh3(i) = data23(i*2 + 1);
+            dataCh3(i+1) = data23(i*2 + 2);
+        end
+        nSampsPerChannel = nSampsRead/2;
+        channelData = [dataCh0, dataCh1, dataCh2, dataCh3, nSampsPerChannel, syncErr];
+    end % end of function
 end

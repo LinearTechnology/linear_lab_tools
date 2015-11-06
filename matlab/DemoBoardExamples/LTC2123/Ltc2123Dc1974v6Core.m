@@ -282,6 +282,21 @@ function Ltc2123Dc1974v6Core
         byte1 = device.HsFpgaReadDataAtAddress(cId, lt2k.JESD204B_RB1_REG);
         byte0 = device.HsFpgaReadDataAtAddress(cId, lt2k.JESD204B_RB0_REG);        
     end
+    
+    function LoadLtc212x(device, csControl, verbose, dId, bankId, lanes, K, modes, subClass, pattern)
+        if(verbose)
+            fprintf('Configuring ADCs over SPI:');
+        end
+        device.HsFpgaWriteDataAtAddress(cId, lt2k.SPI_CONFIG_REG, csControl);
+        SpiWrite(device, 3, dId); % Device ID to 0xAB
+        SpiWrite(device, 4, bankId); % Bank ID to 0x01
+        SpiWrite(device, 5, lanes-1); % 2 lane mode (default)
+        SpiWrite(device, 6, K-1);
+        SpiWrite(device, 7, modes); % Enable FAM, LAM
+        SpiWrite(device, 8, subClass); % Subclass mode
+        SpiWrite(device, 9, pattern); % PRBS test pattern
+        SpiWrite(device, 10, 3); %  0x03 = 16mA CML current
+    end 
 
     function ReadXilinxCoreConfig(device, verbose)
         fprintf('\n\nJEDEC core config registers:')  
@@ -325,6 +340,22 @@ function Ltc2123Dc1974v6Core
         fprintf('Register 9: %x\n',SpiRead(device, 137));
         fprintf('Register A: %x\n',SpiRead(device, 138)); 
     end
+
+    % Adding support for V6 core, with true AXI access. Need to confirm that this 
+    % doesn't break anything with V4 FPGA loads,
+    % as we'd be writing to undefined registers.
+    function WriteJesd204bReg(device, address, b3, b2, b1, b0)
+        device.HsFpgaWriteDataAtAddress(cId, lt2k.JESD204B_WB3_REG, b3);
+        device.HsFpgaWriteDataAtAddress(cId, lt2k.JESD204B_WB2_REG, b2);
+        device.HsFpgaWriteDataAtAddress(cId, lt2k.JESD204B_WB1_REG, b1);
+        device.HsFpgaWriteDataAtAddress(cId, lt2k.JESD204B_WB0_REG, b0);
+        device.HsFpgaWriteDataAtAddress(cId, lt2k.JESD204B_W2INDEX_REG, (bitand(address, 4032) / 6)); % Upper 6 bits of AXI reg address
+        device.HsFpgaWriteDataAtAddress(cId, lt2k.JESD204B_CONFIG_REG, (bitor((bitand(address, 63) * 4), 2)));
+        x = device.HsFpgaReadDataAtAddress(cId, lt2k.JESD204B_CONFIG_REG);
+        if (bitand(x, 1) == 0)
+            error('Got bad FPGA status in write_jedec_reg');
+        end
+    end 
 
     function channelData = Capture2(device, memSize, buffSize, dumpData, dumpPscopeData, verbose)
         device.HsSetBitMode(cId, device.HS_BIT_MODE_MPSSE);
