@@ -1,7 +1,7 @@
 function Ltc2123Dc2226DualClockingSolution
     
     % Initialize script operation parameters
-    bitFileId = 12; % Bitfile ID
+    bitFileId = 192; % Bitfile ID
     continuous = 0; % Run continuously, or just once
     runs = 0; % Initial run count
     runsWithErrors = 0; % Runs with PRBS errors (only valid if PRBStest is enabled)
@@ -42,10 +42,10 @@ function Ltc2123Dc2226DualClockingSolution
     %forcePattern = 0x03; % D21.5 (maximum frequency)
 
     LIU = 2;
-    dId0=239; % JESD204B device ID for ADC 0
-    dId1=171; % JESD204B device ID for ADC 1
-    bankId=12; % Bank ID (only low nibble is significant)
-    modes=0;
+    dId0 = 239; % JESD204B device ID for ADC 0
+    dId1 = 171; % JESD204B device ID for ADC 1
+    bankId = 12; % Bank ID (only low nibble is significant)
+    modes = 0;
     %modes=0x18; %Disable FAM/LAM
     %modes=0x1A; %Disable SYSREF
 
