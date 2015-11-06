@@ -41,9 +41,10 @@ function Ltc2123Dc2226DualClockingSolution
     %forcePattern = 0x02; % K28.7 (minimum frequency)
     %forcePattern = 0x03; % D21.5 (maximum frequency)
 
-    did0=239; % JESD204B device ID for ADC 0
-    did1=171; % JESD204B device ID for ADC 1
-    bid=12; % Bank ID (only low nibble is significant)
+    LIU = 2;
+    dId0=239; % JESD204B device ID for ADC 0
+    dId1=171; % JESD204B device ID for ADC 1
+    bankId=12; % Bank ID (only low nibble is significant)
     modes=0;
     %modes=0x18; %Disable FAM/LAM
     %modes=0x1A; %Disable SYSREF
@@ -147,11 +148,11 @@ function Ltc2123Dc2226DualClockingSolution
             write_jesd204b_reg(lths, 4, 0, 0, 0, 1);  %  Reset core
         end
         
-        if(VERBOSE)
+        if(verbose)
             fprintf('\nCapturing data and resetting...');
         end
         
-        channelData = Capture4(lths, memSize, buffSize, dumpData, dumpPscopeData, VERBOSE, data);
+        channelData = Capture4(lths, memSize, buffSize, dumpData, dumpPscopeData, verbose, data);
         errorCount = 0;
         if(patternCheck ~= 0)
             errorCount = PatternChecker(channelData.dataCh0, channelData.nSampsPerChannel, dumppattern);
@@ -311,10 +312,44 @@ function Ltc2123Dc2226DualClockingSolution
         fprintf('sync high');
         pause(sleepTime);
         fprintf('sync low');
-        device.HsFpgaWriteData(0)
+        device.HsFpgaWriteData(cId, 0)
         pause(sleepTime);
 
     end   
 
+    function SpiWrite(device, address, value)
+        device.SpiSendByteAtAddress(cId, bitor(address, lt2k.SPI_WRITE), value);
+    end
+
+    function LoadLtc212x(device, csControl, verbose, dId, bankId, lanes, K, modes, subClass, pattern)
+        if(verbose)
+            fprintf('Configuring ADCs over SPI:');
+        end
+        device.HsFpgaWriteDataAtAddress(cId, lt2k.SPI_CONFIG_REG, csControl);
+        SpiWrite(device, 3, dId); % Device ID to 0xAB
+        SpiWrite(device, 4, bankId); % Bank ID to 0x01
+        SpiWrite(device, 5, lanes-1); % 2 lane mode (default)
+        SpiWrite(device, 6, K-1);
+        SpiWrite(device, 7, modes); % Enable FAM, LAM
+        SpiWrite(device, 8, subClass); % Subclass mode
+        SpiWrite(device, 9, pattern); % PRBS test pattern
+        SpiWrite(device, 10, 3); %  0x03 = 16mA CML current
+    end 
+
+     % Adding support for V6 core, with true AXI access. Need to confirm that this 
+    % doesn't break anything with V4 FPGA loads,
+    % as we'd be writing to undefined registers.
+    function write_jesd204b_reg(device, address, b3, b2, b1, b0)
+        device.HsFpgaWriteDataAtAddress(cId, lt2k.JESD204B_WB3_REG, b3);
+        device.HsFpgaWriteDataAtAddress(cId, lt2k.JESD204B_WB2_REG, b2);
+        device.HsFpgaWriteDataAtAddress(cId, lt2k.JESD204B_WB1_REG, b1);
+        device.HsFpgaWriteDataAtAddress(cId, lt2k.JESD204B_WB0_REG, b0);
+        device.HsFpgaWriteDataAtAddress(cId, lt2k.JESD204B_W2INDEX_REG, (bitand(address, 4032) / 6)); % Upper 6 bits of AXI reg address
+        device.HsFpgaWriteDataAtAddress(cId, lt2k.JESD204B_CONFIG_REG, (bitor((bitand(address, 63) * 4), 2)));
+        x = device.HsFpgaReadDataAtAddress(cId, lt2k.JESD204B_CONFIG_REG);
+        if (bitand(x, 1) == 0)
+            error('Got bad FPGA status in write_jedec_reg');
+        end
+    end 
 
 end
