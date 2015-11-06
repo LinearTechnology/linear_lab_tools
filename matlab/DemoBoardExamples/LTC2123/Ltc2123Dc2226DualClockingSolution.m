@@ -95,8 +95,8 @@ function Ltc2123Dc2226DualClockingSolution
         
         runs = runs + 1;
         fprintf('LTC2123 Interface Program\n');
-        fprintf('Run number: %s\n', runs');
-        fprintf('Runs with errors: %s\n', runsWithErrors');
+        fprintf('Run number: %d\n', runs');
+        fprintf('Runs with errors: %d\n', runsWithErrors');
         if (runsWithUncaughtErrors > 0)
             fprintf('***\n***\n***\n*** UNCAUGHT error count: %s !\n***\n***\n***\n',runsWithUncaughtErrors);
         end
@@ -309,9 +309,9 @@ function Ltc2123Dc2226DualClockingSolution
         fprintf('toggle SYNC cp\n');
         pause(sleepTime);
         device.HsFpgaWriteDataAtAddress(cId, lt2k.SPI_CONFIG_REG, 8);
-        fprintf('sync high');
+        fprintf('sync high\n');
         pause(sleepTime);
-        fprintf('sync low');
+        fprintf('sync low\n');
         device.HsFpgaWriteData(cId, 0)
         pause(sleepTime);
 
