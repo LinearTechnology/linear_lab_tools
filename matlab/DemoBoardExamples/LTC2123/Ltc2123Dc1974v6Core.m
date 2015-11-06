@@ -178,28 +178,28 @@ function Ltc2123Dc1974v6Core
             if(VERBOSE)
                 fprintf('Configuring JESD204B core!!');
             end
-            write_jesd204b_reg(lths, 8, 0, 0, 0, 1);  % Enable ILA
-            write_jesd204b_reg(lths, 12, 0, 0, 0, 0);  % Scrambling - 0 to disable, 1 to enable
-            write_jesd204b_reg(lths, 16, 0, 0, 0, 1);  %  Only respond to first SYSREF (Subclass 1 only)
-            write_jesd204b_reg(lths, 24, 0, 0, 0, 0);  %  Normal operation (no test modes enabled)
-            write_jesd204b_reg(lths, 32, 0, 0, 0, 1);  %  2 octets per frame
-            write_jesd204b_reg(lths, 36, 0, 0, 0, K-1);   %  Frames per multiframe, 1 to 32 for V6 core
-            write_jesd204b_reg(lths, 40, 0, 0, 0, LIU-1); %  Lanes in use - program with N-1
-            write_jesd204b_reg(lths, 44, 0, 0, 0, 0);  %  Subclass 0
-            write_jesd204b_reg(lths, 48, 0, 0, 0, 0);  %  RX buffer delay = 0
-            write_jesd204b_reg(lths, 52, 0, 0, 0, 0);  %  Disable error counters, error reporting by SYNC~
-            write_jesd204b_reg(lths, 4, 0, 0, 0, 1);  %  Reset core
+            WriteJesd204bReg(lths, 8, 0, 0, 0, 1);  % Enable ILA
+            WriteJesd204bReg(lths, 12, 0, 0, 0, 0);  % Scrambling - 0 to disable, 1 to enable
+            WriteJesd204bReg(lths, 16, 0, 0, 0, 1);  %  Only respond to first SYSREF (Subclass 1 only)
+            WriteJesd204bReg(lths, 24, 0, 0, 0, 0);  %  Normal operation (no test modes enabled)
+            WriteJesd204bReg(lths, 32, 0, 0, 0, 1);  %  2 octets per frame
+            WriteJesd204bReg(lths, 36, 0, 0, 0, K-1);   %  Frames per multiframe, 1 to 32 for V6 core
+            WriteJesd204bReg(lths, 40, 0, 0, 0, LIU-1); %  Lanes in use - program with N-1
+            WriteJesd204bReg(lths, 44, 0, 0, 0, 0);  %  Subclass 0
+            WriteJesd204bReg(lths, 48, 0, 0, 0, 0);  %  RX buffer delay = 0
+            WriteJesd204bReg(lths, 52, 0, 0, 0, 0);  %  Disable error counters, error reporting by SYNC~
+            WriteJesd204bReg(lths, 4, 0, 0, 0, 1);  %  Reset core
         end
 
-        data = lths.HsFpgaReadDataAtAddress(cId, lt2k.CLOCK_STATUS_REG);
+        clockStatus = lths.HsFpgaReadDataAtAddress(cId, lt2k.CLOCK_STATUS_REG);
         fprintf('Double-checking clock status after JESD204B configuration:');
-        fprintf('\nRegister 6   (Clock status): 0x%s', dec2hex(data, 4));
+        fprintf('\nRegister 6   (Clock status): 0x%s', dec2hex(clockStatus, 4));
 
         if(VERBOSE)
             fprintf('\nCapturing data and resetting...');
         end
         
-        channelData = Capture2(lths, memSize, buffSize, dumpData, dumpPscopeData, VERBOSE, data);
+        channelData = Capture2(lths, memSize, buffSize, dumpData, dumpPscopeData, VERBOSE);
         if(patternCheck ~= 0)
             errorCount = PatternChecker(channelData.dataCh0, channelData.nSampsPerChannel, dumppattern);
             errorCount = errorCount + PatternChecker(channelData.dataCh1, channelData.nSampsPerChannel, dumppattern);
@@ -326,38 +326,7 @@ function Ltc2123Dc1974v6Core
         fprintf('Register A: %x\n',SpiRead(device, 138)); 
     end
 
-    function LoadLtc212x(device, csControl, verbose, dId, bankId, lanes, K, modes, subClass, pattern)
-        if(verbose)
-            fprintf('Configuring ADCs over SPI:');
-        end
-        device.HsFpgaWriteDataAtAddress(cId, lt2k.SPI_CONFIG_REG, csControl);
-        SpiWrite(device, 3, dId); % Device ID to 0xAB
-        SpiWrite(device, 4, bankId); % Bank ID to 0x01
-        SpiWrite(device, 5, lanes-1); % 2 lane mode (default)
-        SpiWrite(device, 6, K-1);
-        SpiWrite(device, 7, modes); % Enable FAM, LAM
-        SpiWrite(device, 8, subClass); % Subclass mode
-        SpiWrite(device, 9, pattern); % PRBS test pattern
-        SpiWrite(device, 10, 3); %  0x03 = 16mA CML current
-    end 
-
-    % Adding support for V6 core, with true AXI access. Need to confirm that this 
-    % doesn't break anything with V4 FPGA loads,
-    % as we'd be writing to undefined registers.
-    function write_jesd204b_reg(device, address, b3, b2, b1, b0)
-        device.HsFpgaWriteDataAtAddress(cId, lt2k.JESD204B_WB3_REG, b3);
-        device.HsFpgaWriteDataAtAddress(cId, lt2k.JESD204B_WB2_REG, b2);
-        device.HsFpgaWriteDataAtAddress(cId, lt2k.JESD204B_WB1_REG, b1);
-        device.HsFpgaWriteDataAtAddress(cId, lt2k.JESD204B_WB0_REG, b0);
-        device.HsFpgaWriteDataAtAddress(cId, lt2k.JESD204B_W2INDEX_REG, (bitand(address, 4032) / 6)); % Upper 6 bits of AXI reg address
-        device.HsFpgaWriteDataAtAddress(cId, lt2k.JESD204B_CONFIG_REG, (bitor((bitand(address, 63) * 4), 2)));
-        x = device.HsFpgaReadDataAtAddress(cId, lt2k.JESD204B_CONFIG_REG);
-        if (bitand(x, 1) == 0)
-            error('Got bad FPGA status in write_jedec_reg');
-        end
-    end 
-
-    function channelData = Capture2(device, memSize, buffSize, dumpData, dumpPscopeData, verbose, data)
+    function channelData = Capture2(device, memSize, buffSize, dumpData, dumpPscopeData, verbose)
         device.HsSetBitMode(cId, device.HS_BIT_MODE_MPSSE);
         dec = 0;
 

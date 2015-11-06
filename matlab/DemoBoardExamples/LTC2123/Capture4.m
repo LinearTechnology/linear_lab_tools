@@ -1,4 +1,4 @@
-function channelData = Capture4(device, memSize, buffSize, dumpData, dumpPscopeData, verbose, data)
+function channelData = Capture4(device, memSize, buffSize, dumpData, dumpPscopeData, verbose)
 
     clockStatus = device.HsFpgaReadDataAtAddress(cId, lt2k.CLOCK_STATUS_REG);
     

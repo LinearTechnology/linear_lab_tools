@@ -94,9 +94,9 @@ function Ltc2123Dc2226DualClockingSolution
     while((runs < 1 || continuous == true) && runsWithErrors < 100000)
         
         runs = runs + 1;
-        fprintf('LTC2123 Interface Program');
-        fprintf('Run number: %s', runs');
-        fprintf('\nRuns with errors: %s\n', runsWithErrors');
+        fprintf('LTC2123 Interface Program\n');
+        fprintf('Run number: %s\n', runs');
+        fprintf('Runs with errors: %s\n', runsWithErrors');
         if (runsWithUncaughtErrors > 0)
             fprintf('***\n***\n***\n*** UNCAUGHT error count: %s !\n***\n***\n***\n',runsWithUncaughtErrors);
         end
@@ -126,33 +126,33 @@ function Ltc2123Dc2226DualClockingSolution
         lths.HsFpgaWriteDataAtAddress(cId, lt2k.CAPTURE_RESET_REG, 1);  % Reset
         
         if(verbose)
-            fprintf('Reading Clock Status register; should be 0x16 (or at least 0x04 bit set)');
+            fprintf('Reading Clock Status register; should be 0x16 (or at least 0x04 bit set)\n');
             fprintf('Register 6   (Clock status) is %x\n', lths.HsFpgaReadDataAtAddress(cId, lt2k.CLOCK_STATUS_REG));
             pause(sleepTime);
         end
         
         if(initializeCore)
             if(verbose)
-                fprintf('Configuring JESD204B core!!');
+                fprintf('Configuring JESD204B core!!\n');
             end
-            write_jesd204b_reg(lths, 8, 0, 0, 0, 1);  % Enable ILA
-            write_jesd204b_reg(lths, 12, 0, 0, 0, 0);  % Scrambling - 0 to disable, 1 to enable
-            write_jesd204b_reg(lths, 16, 0, 0, 0, 1);  %  Only respond to first SYSREF (Subclass 1 only)
-            write_jesd204b_reg(lths, 24, 0, 0, 0, 0);  %  Normal operation (no test modes enabled)
-            write_jesd204b_reg(lths, 32, 0, 0, 0, 1);  %  2 octets per frame
-            write_jesd204b_reg(lths, 36, 0, 0, 0, K-1);   %  Frames per multiframe, 1 to 32 for V6 core
-            write_jesd204b_reg(lths, 40, 0, 0, 0, LIU-1); %  Lanes in use - program with N-1
-            write_jesd204b_reg(lths, 44, 0, 0, 0, 0);  %  Subclass 0
-            write_jesd204b_reg(lths, 48, 0, 0, 0, 0);  %  RX buffer delay = 0
-            write_jesd204b_reg(lths, 52, 0, 0, 0, 0);  %  Disable error counters, error reporting by SYNC~
-            write_jesd204b_reg(lths, 4, 0, 0, 0, 1);  %  Reset core
+            WriteJesd204bReg(lths, 8, 0, 0, 0, 1);  % Enable ILA
+            WriteJesd204bReg(lths, 12, 0, 0, 0, 0);  % Scrambling - 0 to disable, 1 to enable
+            WriteJesd204bReg(lths, 16, 0, 0, 0, 1);  %  Only respond to first SYSREF (Subclass 1 only)
+            WriteJesd204bReg(lths, 24, 0, 0, 0, 0);  %  Normal operation (no test modes enabled)
+            WriteJesd204bReg(lths, 32, 0, 0, 0, 1);  %  2 octets per frame
+            WriteJesd204bReg(lths, 36, 0, 0, 0, K-1);   %  Frames per multiframe, 1 to 32 for V6 core
+            WriteJesd204bReg(lths, 40, 0, 0, 0, LIU-1); %  Lanes in use - program with N-1
+            WriteJesd204bReg(lths, 44, 0, 0, 0, 0);  %  Subclass 0
+            WriteJesd204bReg(lths, 48, 0, 0, 0, 0);  %  RX buffer delay = 0
+            WriteJesd204bReg(lths, 52, 0, 0, 0, 0);  %  Disable error counters, error reporting by SYNC~
+            WriteJesd204bReg(lths, 4, 0, 0, 0, 1);  %  Reset core
         end
         
         if(verbose)
-            fprintf('\nCapturing data and resetting...');
+            fprintf('Capturing data and resetting...\n');
         end
         
-        channelData = Capture4(lths, memSize, buffSize, dumpData, dumpPscopeData, verbose, data);
+        channelData = Capture4(lths, memSize, buffSize, dumpData, dumpPscopeData, verbose);
         errorCount = 0;
         if(patternCheck ~= 0)
             errorCount = PatternChecker(channelData.dataCh0, channelData.nSampsPerChannel, dumppattern);
@@ -243,7 +243,7 @@ function Ltc2123Dc2226DualClockingSolution
     
     function InitializeDC2226Version2Clocks250(device, verbose)
         if(verbose)
-            fprintf('Configuring clock generators over SPI:');
+            fprintf('Configuring clock generators over SPI:\n');
         end
         device.HsSetBitMode(cId, device.HS_BIT_MODE_MPSSE);
         fprintf('Configuring LTC6954 (REF distribution)');
@@ -320,36 +320,5 @@ function Ltc2123Dc2226DualClockingSolution
     function SpiWrite(device, address, value)
         device.SpiSendByteAtAddress(cId, bitor(address, lt2k.SPI_WRITE), value);
     end
-
-    function LoadLtc212x(device, csControl, verbose, dId, bankId, lanes, K, modes, subClass, pattern)
-        if(verbose)
-            fprintf('Configuring ADCs over SPI:');
-        end
-        device.HsFpgaWriteDataAtAddress(cId, lt2k.SPI_CONFIG_REG, csControl);
-        SpiWrite(device, 3, dId); % Device ID to 0xAB
-        SpiWrite(device, 4, bankId); % Bank ID to 0x01
-        SpiWrite(device, 5, lanes-1); % 2 lane mode (default)
-        SpiWrite(device, 6, K-1);
-        SpiWrite(device, 7, modes); % Enable FAM, LAM
-        SpiWrite(device, 8, subClass); % Subclass mode
-        SpiWrite(device, 9, pattern); % PRBS test pattern
-        SpiWrite(device, 10, 3); %  0x03 = 16mA CML current
-    end 
-
-     % Adding support for V6 core, with true AXI access. Need to confirm that this 
-    % doesn't break anything with V4 FPGA loads,
-    % as we'd be writing to undefined registers.
-    function write_jesd204b_reg(device, address, b3, b2, b1, b0)
-        device.HsFpgaWriteDataAtAddress(cId, lt2k.JESD204B_WB3_REG, b3);
-        device.HsFpgaWriteDataAtAddress(cId, lt2k.JESD204B_WB2_REG, b2);
-        device.HsFpgaWriteDataAtAddress(cId, lt2k.JESD204B_WB1_REG, b1);
-        device.HsFpgaWriteDataAtAddress(cId, lt2k.JESD204B_WB0_REG, b0);
-        device.HsFpgaWriteDataAtAddress(cId, lt2k.JESD204B_W2INDEX_REG, (bitand(address, 4032) / 6)); % Upper 6 bits of AXI reg address
-        device.HsFpgaWriteDataAtAddress(cId, lt2k.JESD204B_CONFIG_REG, (bitor((bitand(address, 63) * 4), 2)));
-        x = device.HsFpgaReadDataAtAddress(cId, lt2k.JESD204B_CONFIG_REG);
-        if (bitand(x, 1) == 0)
-            error('Got bad FPGA status in write_jedec_reg');
-        end
-    end 
 
 end
