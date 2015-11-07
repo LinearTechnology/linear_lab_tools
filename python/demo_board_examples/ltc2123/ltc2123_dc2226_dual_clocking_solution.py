@@ -249,26 +249,34 @@ while((runs < 1 or continuous == 1) and runs_with_errors < 100000):
             plt.plot(data_ch3)
             plt.show()
 
+
+            data_ch0 -= np.average(data_ch0)
+            data_ch1 -= np.average(data_ch1)
+            data_ch2 -= np.average(data_ch2)
+            data_ch3 -= np.average(data_ch3)
+
+            windowscale = (fftlength) / sum(np.blackman(fftlength))
+
             fftlength = n.BuffSize/2
-            data_ch0 = data_ch0 * np.blackman(fftlength) # Apply Blackman window
+            data_ch0 = data_ch0 * np.blackman(fftlength) * windowscale # Apply Blackman window
             freq_domain_ch0 = np.fft.fft(data_ch0)/(fftlength) # FFT
             freq_domain_magnitude_ch0 = np.abs(freq_domain_ch0) # Extract magnitude
-            freq_domain_magnitude_db_ch0 = 10 * np.log(freq_domain_magnitude_ch0/fftlength)
+            freq_domain_magnitude_db_ch0 = 20 * np.log10(freq_domain_magnitude_ch0/fftlength)
     
-            data_ch1 = data_ch1 * np.blackman(fftlength) # Apply Blackman window
+            data_ch1 = data_ch1 * np.blackman(fftlength) * windowscale # Apply Blackman window
             freq_domain_ch1 = np.fft.fft(data_ch1)/(fftlength) # FFT
             freq_domain_magnitude_ch1 = np.abs(freq_domain_ch1) # Extract magnitude
-            freq_domain_magnitude_db_ch1 = 10 * np.log(freq_domain_magnitude_ch1/fftlength)
+            freq_domain_magnitude_db_ch1 = 20 * np.log10(freq_domain_magnitude_ch1/fftlength)
     
-            data_ch2 = data_ch2 * np.blackman(fftlength) # Apply Blackman window
+            data_ch2 = data_ch2 * np.blackman(fftlength) * windowscale # Apply Blackman window
             freq_domain_ch2 = np.fft.fft(data_ch2)/(fftlength) # FFT
             freq_domain_magnitude_ch2 = np.abs(freq_domain_ch2) # Extract magnitude
-            freq_domain_magnitude_db_ch2 = 10 * np.log(freq_domain_magnitude_ch2/fftlength)
+            freq_domain_magnitude_db_ch2 = 20 * np.log10(freq_domain_magnitude_ch2/fftlength)
             
-            data_ch3 = data_ch3 * np.blackman(fftlength) # Apply Blackman window
+            data_ch3 = data_ch3 * np.blackman(fftlength) * windowscale # Apply Blackman window
             freq_domain_ch3 = np.fft.fft(data_ch3)/(fftlength) # FFT
             freq_domain_magnitude_ch3 = np.abs(freq_domain_ch3) # Extract magnitude
-            freq_domain_magnitude_db_ch3 = 10 * np.log(freq_domain_magnitude_ch3/fftlength)
+            freq_domain_magnitude_db_ch3 = 20 * np.log10(freq_domain_magnitude_ch3/fftlength)
             
             plt.figure(2)
             plt.subplot(411)
