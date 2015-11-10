@@ -106,11 +106,22 @@ function Ltc2123Dc2226DualClockingSolution
             lths.HsFpgaToggleReset(cId);
         end
 
-        fprintf('FPGA ID is %x\n', lths.HsFpgaReadDataAtAddress(cId, lt2k.ID_REG));
+        id = lths.HsFpgaReadDataAtAddress(cId, lt2k.ID_REG);
+        % fprintf('FPGA ID is %x\n', lths.HsFpgaReadDataAtAddress(cId, lt2k.ID_REG));
         
-%         if(verbose != 0):
-%             #print "FPGA Load ID: 0x{:04X}".format(id)
-%             bitfile_id_warning(bitfile_id, id)
+        if(verbose)
+            if(bitFileId ~= id)
+                frpintf('***********************************\n');
+                fprintf('Warning!!! Bitfile ID should be 0x%d \n', dec2hex(bitFileId, 2));
+                fprintf('Make sure you know what you are doing...\n');
+                fprintf('***********************************\n');
+            else
+                frpintf('***********************************\n');
+                fprintf('Bitfile ID is 0x%d \n', dec2hex(id, 2));
+                fprintf('All good!!\n');
+                fprintf('***********************************\n');
+            end
+        end
         
         if(initializeAdcs)
             LoadLtc212x(lths, 0, verbose, dId0, bankId, LIU, K, modes, 1, pattern0);
@@ -341,7 +352,7 @@ function Ltc2123Dc2226DualClockingSolution
         for i = 0 : 15
             reg = i*4;
             [byte3, byte2, byte1, byte0] = ReadJesd204bReg(device, reg);
-            fprintf('\n%s : 0X %s %s %s %s', lt2k.JESD204B_XILINX_CONFIG_REG_NAMES{i + 1}, dec2hex(byte3, 2), dec2hex(byte2, 2), dec2hex(byte1, 2), dec2hex(byte0, 2));
+            fprintf('\n%s : 0x %d %d %d %d', lt2k.JESD204B_XILINX_CONFIG_REG_NAMES{i + 1}, dec2hex(byte3, 2), dec2hex(byte2, 2), dec2hex(byte1, 2), dec2hex(byte0, 2));
         end
     end
 
@@ -351,7 +362,7 @@ function Ltc2123Dc2226DualClockingSolution
         for i = 0 : 12
             reg = startreg + i*4;
             [byte3, byte2, byte1, byte0] = ReadJesd204bReg(device, reg);
-            fprintf('\n %s : 0X %s %s %s %s', lt2k.JESD204B_XILINX_LANE_REG_NAMES{i + 1}, dec2hex(byte3, 2), dec2hex(byte2, 2), dec2hex(byte1, 2), dec2hex(byte0, 2));
+            fprintf('\n%s : 0x %d %d %d %d', lt2k.JESD204B_XILINX_LANE_REG_NAMES{i + 1}, dec2hex(byte3, 2), dec2hex(byte2, 2), dec2hex(byte1, 2), dec2hex(byte0, 2));
         end
     end
 
