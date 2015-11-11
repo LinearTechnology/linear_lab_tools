@@ -116,7 +116,7 @@ function Ltc2123Dc2226DualClockingSolution
                 fprintf('Make sure you know what you are doing...\n');
                 fprintf('***********************************\n');
             else
-                frpintf('***********************************\n');
+                %frpintf('***********************************\n');
                 fprintf('Bitfile ID is 0x%d \n', dec2hex(id, 2));
                 fprintf('All good!!\n');
                 fprintf('***********************************\n');
@@ -257,7 +257,7 @@ function Ltc2123Dc2226DualClockingSolution
             fprintf('Configuring clock generators over SPI:\n');
         end
         device.HsSetBitMode(cId, device.HS_BIT_MODE_MPSSE);
-        fprintf('Configuring LTC6954 (REF distribution)');
+        fprintf('Configuring LTC6954 (REF distribution)\n');
         device.HsFpgaWriteDataAtAddress(cId, 0, 0);
         device.HsFpgaWriteDataAtAddress(cId, 2, 128);   % 6951-1 delay
         device.HsFpgaWriteDataAtAddress(cId, 4, 1);     % 6951-1 divider
@@ -267,7 +267,7 @@ function Ltc2123Dc2226DualClockingSolution
         device.HsFpgaWriteDataAtAddress(cId, 12, 1);    % sync divider
         device.HsFpgaWriteDataAtAddress(cId, 14, 33);
         
-        fprintf('Configuring U10 (LTC6951) cp');
+        fprintf('Configuring U10 (LTC6951) cp\n');
         % LTC6951config
         device.HsFpgaWriteDataAtAddress(cId, lt2k.SPI_CONFIG_REG, 2);
         device.SpiSendByteAtAddress(cId, 0, 5);
@@ -292,7 +292,7 @@ function Ltc2123Dc2226DualClockingSolution
         device.SpiSendByteAtAddress(cId, 38, 17);
         device.SpiSendByteAtAddress(cId, 4, 1);     % calibrate after writing all registers
         
-        fprintf('Configuring U13 (LTC6951) cp');
+        fprintf('Configuring U13 (LTC6951) cp\n');
         
         device.HsFpgaWriteDataAtAddress(cId, lt2k.SPI_CONFIG_REG, 3);
         device.SpiSendByteAtAddress(cId, 0, 5) 
@@ -334,7 +334,7 @@ function Ltc2123Dc2226DualClockingSolution
 
     function LoadLtc212x(device, csControl, verbose, dId, bankId, lanes, K, modes, subClass, pattern)
         if(verbose)
-            fprintf('Configuring ADCs over SPI:');
+            fprintf('Configuring ADCs over SPI:\n');
         end
         device.HsFpgaWriteDataAtAddress(cId, lt2k.SPI_CONFIG_REG, csControl);
         SpiWrite(device, 3, dId); % Device ID to 0xAB
@@ -345,6 +345,24 @@ function Ltc2123Dc2226DualClockingSolution
         SpiWrite(device, 8, subClass); % Subclass mode
         SpiWrite(device, 9, pattern); % PRBS test pattern
         SpiWrite(device, 10, 3); %  0x03 = 16mA CML current
+        
+        if(verbose)
+            fprintf('ADC %d configuration:\n', csControl);
+            
+            device.HsSetBitMode(cId, lths.HS_BIT_MODE_MPSSE);
+            fprintf('LTC2124 Register Dump: \n');
+            fprintf('Register 1: 0x%x\n', device.SpiReceiveByteAtAddress(cId, 129));
+            fprintf('Register 2: 0x%x\n', device.SpiReceiveByteAtAddress(cId, 130));
+            fprintf('Register 3: 0x%x\n', device.SpiReceiveByteAtAddress(cId, 131));
+            fprintf('Register 4: 0x%x\n', device.SpiReceiveByteAtAddress(cId, 132));
+            fprintf('Register 5: 0x%x\n', device.SpiReceiveByteAtAddress(cId, 133));
+            fprintf('Register 6: 0x%x\n', device.SpiReceiveByteAtAddress(cId, 134));
+            fprintf('Register 7: 0x%x\n', device.SpiReceiveByteAtAddress(cId, 135));
+            fprintf('Register 8: 0x%x\n', device.SpiReceiveByteAtAddress(cId, 136));
+            fprintf('Register 9: 0x%x\n', device.SpiReceiveByteAtAddress(cId, 137));
+            fprintf('Register A: 0x%x\n', device.SpiReceiveByteAtAddress(cId, 138));  
+        end
+
     end 
 
     function ReadXilinxCoreConfig(device, verbose)
@@ -352,7 +370,7 @@ function Ltc2123Dc2226DualClockingSolution
         for i = 0 : 15
             reg = i*4;
             [byte3, byte2, byte1, byte0] = ReadJesd204bReg(device, reg);
-            fprintf('\n%s : 0x %d %d %d %d', lt2k.JESD204B_XILINX_CONFIG_REG_NAMES{i + 1}, dec2hex(byte3, 2), dec2hex(byte2, 2), dec2hex(byte1, 2), dec2hex(byte0, 2));
+            fprintf('\n%s : 0x %s %s %s %s', lt2k.JESD204B_XILINX_CONFIG_REG_NAMES{i + 1}, dec2hex(byte3, 2), dec2hex(byte2, 2), dec2hex(byte1, 2), dec2hex(byte0, 2));
         end
     end
 
@@ -362,7 +380,7 @@ function Ltc2123Dc2226DualClockingSolution
         for i = 0 : 12
             reg = startreg + i*4;
             [byte3, byte2, byte1, byte0] = ReadJesd204bReg(device, reg);
-            fprintf('\n%s : 0x %d %d %d %d', lt2k.JESD204B_XILINX_LANE_REG_NAMES{i + 1}, dec2hex(byte3, 2), dec2hex(byte2, 2), dec2hex(byte1, 2), dec2hex(byte0, 2));
+            fprintf('\n%s : 0x %s %s %s %s', lt2k.JESD204B_XILINX_LANE_REG_NAMES{i + 1}, dec2hex(byte3, 2), dec2hex(byte2, 2), dec2hex(byte1, 2), dec2hex(byte0, 2));
         end
     end
 
@@ -381,6 +399,7 @@ function Ltc2123Dc2226DualClockingSolution
         byte1 = device.HsFpgaReadDataAtAddress(cId, lt2k.JESD204B_RB1_REG);
         byte0 = device.HsFpgaReadDataAtAddress(cId, lt2k.JESD204B_RB0_REG);        
     end
+    
 
     % Adding support for V6 core, with true AXI access. Need to confirm that this 
     % doesn't break anything with V4 FPGA loads,
