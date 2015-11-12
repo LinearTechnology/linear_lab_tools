@@ -2,6 +2,9 @@
 """
 Demonstration of how a FFT works.
 
+Some favorite resources on the web:
+http://www.earlevel.com/main/2002/08/31/a-gentle-introduction-to-the-fft/
+http://betterexplained.com/articles/an-interactive-guide-to-the-fourier-transform/
 
 Copyright (c) 2015, Linear Technology Corp.(LTC)
 All rights reserved.
