@@ -170,6 +170,7 @@ function Ltc2123Dc2226DualClockingSolution
             errorCount = errorCount + PatternChecker(channelData.dataCh1, channelData.nSampsPerChannel, dumppattern);
             errorCount = errorCount + PatternChecker(channelData.dataCh2, channelData.nSampsPerChannel, dumppattern);
             errorCount = errorCount + PatternChecker(channelData.dataCh3, channelData.nSampsPerChannel, dumppattern);
+            fprintf('error count: %d! \n', errorCount);
         end
 
         if(errorCount ~= 0)
@@ -181,7 +182,7 @@ function Ltc2123Dc2226DualClockingSolution
             if (channelData.syncErr == false)
                  runsWithUncaughtErrors = runsWithUncaughtErrors + 1;
             end
-            fprintf('Error counts: %d', errorCount);
+            
         end
         
         % Plot data if not running pattern check
@@ -258,6 +259,8 @@ function Ltc2123Dc2226DualClockingSolution
         end
         device.HsSetBitMode(cId, device.HS_BIT_MODE_MPSSE);
         fprintf('Configuring LTC6954 (REF distribution)\n');
+        device.HsFpgaWriteDataAtAddress(cId, lt2k.SPI_CONFIG_REG, 4);
+        
         device.HsFpgaWriteDataAtAddress(cId, 0, 0);
         device.HsFpgaWriteDataAtAddress(cId, 2, 128);   % 6951-1 delay
         device.HsFpgaWriteDataAtAddress(cId, 4, 1);     % 6951-1 divider
