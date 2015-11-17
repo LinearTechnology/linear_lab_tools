@@ -91,9 +91,6 @@ with comm.Controller(device_info) as device:
     id = device.hs_fpga_read_data_at_address(lt2k.FPGA_ID_REG)
     if verbose:
         print "FPGA Load ID: 0x{:04X}".format(id)    # Check FPGA PLL status
-        print "Reading PLL status, should be 0x47"
-        data = device.hs_fpga_read_data_at_address(lt2k.FPGA_STATUS_REG)
-        print "And it is... 0x{:04X}".format(data)
         print "Turning on DAC..."
 
     # Turn on DAC (Discrete I/O line from FPGA to LTC2000
@@ -121,11 +118,18 @@ with comm.Controller(device_info) as device:
        
     sleep(sleep_time) # Give some time for things to spin up...
 
+    if verbose:
+        print "Reading PLL status, should be 0x06"
+        data = device.hs_fpga_read_data_at_address(lt2k.FPGA_STATUS_REG)
+        print "And it is... 0x{:04X}".format(data)
+
+
+
     if verbose: # Optionally read back all registers
         lt2k.register_dump(device)
 
     # 64k, loop forever
-    device.hs_fpga_write_data_at_address(lt2k.FPGA_CONTROL_REG, 0x20 | 0x00)
+    device.hs_fpga_write_data_at_address(lt2k.FPGA_CONTROL_REG, 0x02 | 0x00)
     
     sleep(sleep_time)
 
@@ -159,7 +163,7 @@ with comm.Controller(device_info) as device:
     print('done reading!')
 
     device.hs_set_bit_mode(comm.HS_BIT_MODE_FIFO)
-    num_bytes_sent = device.data_send_uint16_values(data) #DAC should start running here!
+    num_bytes_sent = device.data_send_uint16_values(data[0:len(data)/2]) #DAC should start running here!
     print 'num_bytes_sent (should be 131072) = ' + str(num_bytes_sent)
     print 'You should see a waveform at the output of the LTC2000 now!'
     
