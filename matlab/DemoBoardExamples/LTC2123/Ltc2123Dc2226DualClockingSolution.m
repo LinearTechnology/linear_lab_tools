@@ -90,6 +90,8 @@ function Ltc2123Dc2226DualClockingSolution
 
     % init a device and get an id
     cId = lths.Init(deviceInfo);
+  
+    
     
     while((runs < 1 || continuous == true) && runsWithErrors < 100000)
         
@@ -286,9 +288,11 @@ function Ltc2123Dc2226DualClockingSolution
         device.SpiSendByteAtAddress(cId, 20, 192);
         device.SpiSendByteAtAddress(cId, 22, 155);  % ADC SYSREF 2 div, 
         device.SpiSendByteAtAddress(cId, 24, 22);   % ADC SYSREF 2 delay, - 16 for 250, 1E f0r 300
+        
         device.SpiSendByteAtAddress(cId, 26, 149);   % FPGA CLK div, 0x95 for half of 250
+        
         device.SpiSendByteAtAddress(cId, 28, 22);   % FPGA CLK div,  0x97 for 1/4 of 250...
-        device.SpiSendByteAtAddress(cId, 30, 149);   % FPGA CLK delay, 16 for 250, 1E for 300
+        device.SpiSendByteAtAddress(cId, 30, 147);   % FPGA CLK delay, 16 for 250, 1E for 300
         device.SpiSendByteAtAddress(cId, 32, 22);   % ADC CLK 2 div,
         device.SpiSendByteAtAddress(cId, 34, 48);   % ADC CLK 2 delay ,16 for 250, 1E for 300
         device.SpiSendByteAtAddress(cId, 36, 0);
@@ -311,9 +315,9 @@ function Ltc2123Dc2226DualClockingSolution
         device.SpiSendByteAtAddress(cId, 20, 192) 
         device.SpiSendByteAtAddress(cId, 22, 155) % FPGA SYSREF div, 
         device.SpiSendByteAtAddress(cId, 24, 22) % FPGA SYSREF delay, 16 for 250, 1E f0r 300
-        device.SpiSendByteAtAddress(cId, 26, 149) % ADC CLK 1 div,
+        device.SpiSendByteAtAddress(cId, 26, 147) % ADC CLK 1 div,
         device.SpiSendByteAtAddress(cId, 28, 22) % ADC CLK 1 delay, 16 for 250, 1E for 300
-        device.SpiSendByteAtAddress(cId, 30, 149) % ADC SYSREF 1 div,
+        device.SpiSendByteAtAddress(cId, 30, 155) % ADC SYSREF 1 div,
         device.SpiSendByteAtAddress(cId, 32, 22) % ADC SYSREF 1 delay, 16 for 250, 1E for 300
         device.SpiSendByteAtAddress(cId, 34, 48) 
         device.SpiSendByteAtAddress(cId, 36, 0) 
@@ -425,8 +429,9 @@ function Ltc2123Dc2226DualClockingSolution
         clockStatus = device.HsFpgaReadDataAtAddress(cId, lt2k.CLOCK_STATUS_REG);
 
         if(verbose)
-            fprintf('Reading Clock Status register; should be 0x16 (or at least 0x04 bit set)');
-            fprintf('Register 6   (Clock status) is %x\n', lths.HsFpgaReadDataAtAddress(cId, lt2k.CLOCK_STATUS_REG));
+            fprintf('Reading Clock Status register; should be 0x16 (or at least 0x04 bit set)\n');
+            % fprintf('Register 6   (Clock status) is %x\n', lths.HsFpgaReadDataAtAddress(cId, lt2k.CLOCK_STATUS_REG));
+            fprintf('Register 6   (Clock status) is %x\n', lths.HsFpgaReadDataAtAddress(cId, clockStatus));
         end
 
         captureStatus = device.HsFpgaReadDataAtAddress(cId, lt2k.CAPTURE_STATUS_REG);
@@ -516,7 +521,7 @@ function Ltc2123Dc2226DualClockingSolution
         pause(0.1);
 
         if(verbose ~= 0)
-            fprintf('\nRead out %d samples for CH2, 3', nSampsRead);
+            fprintf('\nRead out %d samples for CH2, 3\n', nSampsRead);
         end
 
         % Initialize data arrays
@@ -538,6 +543,13 @@ function Ltc2123Dc2226DualClockingSolution
             dataCh3(i) = data23(i*2 + 1);
             dataCh3(i+1) = data23(i*2 + 2);
         end
+        
+        if(dumpData ~= 0)
+            for i = 1:min(dumpData, buffSize)
+                fprintf('0x%x \t 0x%x \t 0x%x \t 0x%x\n', dec2hex(dataCh0(i)), dec2hex(dataCh1(i)), dec2hex(dataCh2(i)), dec2hex(dataCh3(i)));
+            end
+        end
+        
         nSampsPerChannel = nSampsRead/2;
         channelData = [dataCh0, dataCh1, dataCh2, dataCh3, nSampsPerChannel, syncErr];
     end % end of function
