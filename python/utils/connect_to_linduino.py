@@ -68,6 +68,9 @@ class Linduino:
      
     def __init__(self):
         self.open()
+        
+    def __del__(self):
+        self.close()
 
     def open(self):
         print "\nLooking for COM ports ..."
@@ -104,7 +107,7 @@ class Linduino:
         try:
             self.port.close()  # Close serial port
             return 1
-        except:
+        except Exception:
             return 0
             
     def transfer_packets(self, packets, return_size):
