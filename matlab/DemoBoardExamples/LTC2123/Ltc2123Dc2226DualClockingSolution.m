@@ -242,6 +242,25 @@ function Ltc2123Dc2226DualClockingSolution
             title('CH3 FFT')
         end
         
+        searchStart = 5;
+        
+        [peak0 peakIndex0] = max(freqDomainMagnitudeCh3(searchStart:buffSize/4));
+        [peak1 peakIndex1] = max(freqDomainMagnitudeCh1(searchStart:buffSize/4));
+        [peak2 peakIndex2] = max(freqDomainMagnitudeCh2(searchStart:buffSize/4));
+        [peak3 peakIndex3] = max(freqDomainMagnitudeCh3(searchStart:buffSize/4));
+        
+        fprintf('\nFound peaks in these bins:\n');
+        fprintf('%d\n', peakIndex0 + searchStart);
+        fprintf('%d\n', peakIndex1 + searchStart);
+        fprintf('%d\n', peakIndex2 + searchStart);
+        fprintf('%d\n', peakIndex3 + searchStart);
+        
+        fprintf('\with these phases:\n');
+        fprintf('%d\n', angle(freqDomainCh0(peakIndex0 + searchStart)));
+        fprintf('%d\n', angle(freqDomainCh0(peakIndex1 + searchStart)));
+        fprintf('%d\n', angle(freqDomainCh0(peakIndex2 + searchStart)));
+        fprintf('%d\n', angle(freqDomainCh0(peakIndex3 + searchStart)));
+        
         if(verbose)
             ReadXilinxCoreConfig(lths, verbose);
             ReadXilinxCoreIlas(lths, verbose, 0);
@@ -546,7 +565,7 @@ function Ltc2123Dc2226DualClockingSolution
         
         if(dumpData ~= 0)
             for i = 1:min(dumpData, buffSize)
-                fprintf('0x%x \t 0x%x \t 0x%x \t 0x%x\n', dec2hex(dataCh0(i)), dec2hex(dataCh1(i)), dec2hex(dataCh2(i)), dec2hex(dataCh3(i)));
+                fprintf('0x%s \t 0x%s \t 0x%s \t 0x%s\n', dec2hex(dataCh0(i), 4), dec2hex(dataCh1(i), 4), dec2hex(dataCh2(i), 4), dec2hex(dataCh3(i), 4));
             end
         end
         
