@@ -1,3 +1,51 @@
+% DC2226 / dual LTC2123 with LTC6951 clocking solution Example
+% LTC2123: Dual 14-Bit 250Msps ADC with JESD204B Serial Outputs
+%
+% This program demonstrates a dual LTC2123 JESD204B interface clocked by
+% LTC6951 PLL with integrated VCO and clock distribution.
+% 
+% Demo board documentation:
+% http://www.linear.com/demo/2226
+% http://www.linear.com/product/LTC2123#demoboards
+% 
+% LTC2261 product page
+% http://www.linear.com/product/LTC2123
+% 
+% REVISION HISTORY
+% $Revision: 4260 $
+% $Date: 2015-10-19 16:45:28 -0700 (Mon, 19 Oct 2015) $
+%
+% Copyright (c) 2015, Linear Technology Corp.(LTC)
+% All rights reserved.
+% 
+% Redistribution and use in source and binary forms, with or without
+% modification, are permitted provided that the following conditions are met:
+% 
+% 1. Redistributions of source code must retain the above copyright notice, 
+%    this list of conditions and the following disclaimer.
+% 2. Redistributions in binary form must reproduce the above copyright notice,
+%    this list of conditions and the following disclaimer in the documentation
+%    and/or other materials provided with the distribution.
+% 
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+% ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+% WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+% DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
+% ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+% (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+% LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+% ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+% (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+% SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+% 
+% The views and conclusions contained in the software and documentation are those
+% of the authors and should not be interpreted as representing official policies,
+% either expressed or implied, of Linear Technology Corp.
+
+% NOTE:
+% 	ADD THE ABSOLUTE PATH TO "linear_lab_tools\matlab" FOLDER BEFORE RUNNING THE SCRIPT.
+%   RUN "mex -setup" TO SET UP COMPILER AND CHOSE THE OPTION "Lcc-win32 C".
+
 function Ltc2123Dc2226DualClockingSolution
     
     % Initialize script operation parameters
@@ -103,11 +151,19 @@ function Ltc2123Dc2226DualClockingSolution
             fprintf('***\n***\n***\n*** UNCAUGHT error count: %s !\n***\n***\n***\n',runsWithUncaughtErrors);
         end
         
+		%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+		% Configuration Flow Steps 4, 5: 
+		% MPSSE Mode, Issue Reset Pulse
+		%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         lths.HsSetBitMode(cId, lths.HS_BIT_MODE_MPSSE);
         if doReset
             lths.HsFpgaToggleReset(cId);
         end
 
+		%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        % Configuration Flow Step 6:
+        % Check ID register
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         id = lths.HsFpgaReadDataAtAddress(cId, lt2k.ID_REG);
         % fprintf('FPGA ID is %x\n', lths.HsFpgaReadDataAtAddress(cId, lt2k.ID_REG));
         
@@ -125,10 +181,13 @@ function Ltc2123Dc2226DualClockingSolution
             end
         end
         
+		%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        % Configuration Flow Step 9, 10: Configure ADC
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         if(initializeAdcs)
             LoadLtc212x(lths, 0, verbose, dId0, bankId, LIU, K, modes, 1, pattern0);
             LoadLtc212x(lths, 1, verbose, dId1, bankId, LIU, K, modes, 1, pattern1);
-            initializeAdcs = 0;
+            initializeAdcs = 0;		% Only initialize on first run
         end
         
         if(initializeClocks)
@@ -136,14 +195,24 @@ function Ltc2123Dc2226DualClockingSolution
             initializeClocks = 0;
         end
         
+		%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        % Configuration Flow Step 11: Reset Capture Engine
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         lths.HsFpgaWriteDataAtAddress(cId, lt2k.CAPTURE_RESET_REG, 1);  % Reset
         
+		%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        % Configuration Flow Step 19: Check Clock Status
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         if(verbose)
             fprintf('Reading Clock Status register; should be 0x16 (or at least 0x04 bit set)\n');
             fprintf('Register 6   (Clock status) is %x\n', lths.HsFpgaReadDataAtAddress(cId, lt2k.CLOCK_STATUS_REG));
             pause(sleepTime);
         end
         
+		%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        % Configuration Flow Step 11: configure JEDEC Core
+        % Refer to Xilinx user manual for detailed register descriptioins
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         if(initializeCore)
             if(verbose)
                 fprintf('Configuring JESD204B core!!\n');
@@ -261,6 +330,7 @@ function Ltc2123Dc2226DualClockingSolution
         fprintf('%d\n', angle(freqDomainCh0(peakIndex2 + searchStart)));
         fprintf('%d\n', angle(freqDomainCh0(peakIndex3 + searchStart)));
         
+		% Read out JESD204B core registers
         if(verbose)
             ReadXilinxCoreConfig(lths, verbose);
             ReadXilinxCoreIlas(lths, verbose, 0);
@@ -282,6 +352,7 @@ function Ltc2123Dc2226DualClockingSolution
         fprintf('Configuring LTC6954 (REF distribution)\n');
         device.HsFpgaWriteDataAtAddress(cId, lt2k.SPI_CONFIG_REG, 4);
         
+		% LTC6954 config
         device.HsFpgaWriteDataAtAddress(cId, 0, 0);
         device.HsFpgaWriteDataAtAddress(cId, 2, 128);   % 6951-1 delay
         device.HsFpgaWriteDataAtAddress(cId, 4, 1);     % 6951-1 divider
@@ -307,13 +378,13 @@ function Ltc2123Dc2226DualClockingSolution
         device.SpiSendByteAtAddress(cId, 20, 192);
         device.SpiSendByteAtAddress(cId, 22, 155);  % ADC SYSREF 2 div, 
         device.SpiSendByteAtAddress(cId, 24, 22);   % ADC SYSREF 2 delay, - 16 for 250, 1E f0r 300
-        
+        % device.SpiSendByteAtAddress(cId, 26, 147);   % FFPGA CLK div, 
         device.SpiSendByteAtAddress(cId, 26, 149);   % FPGA CLK div, 0x95 for half of 250
-        
-        device.SpiSendByteAtAddress(cId, 28, 22);   % FPGA CLK div,  0x97 for 1/4 of 250...
-        device.SpiSendByteAtAddress(cId, 30, 147);   % FPGA CLK delay, 16 for 250, 1E for 300
-        device.SpiSendByteAtAddress(cId, 32, 22);   % ADC CLK 2 div,
-        device.SpiSendByteAtAddress(cId, 34, 48);   % ADC CLK 2 delay ,16 for 250, 1E for 300
+        % device.SpiSendByteAtAddress(cId, 26, 151);   % FPGA CLK div,  0x97 for 1/4 of 250...
+        device.SpiSendByteAtAddress(cId, 28, 22);   % FPGA CLK delay, 16 for 250, 1E for 300
+        device.SpiSendByteAtAddress(cId, 30, 147);   % ADC CLK 2 div,
+        device.SpiSendByteAtAddress(cId, 32, 22);   % ADC CLK 2 delay ,16 for 250, 1E for 300 
+        device.SpiSendByteAtAddress(cId, 34, 48);   
         device.SpiSendByteAtAddress(cId, 36, 0);
         device.SpiSendByteAtAddress(cId, 38, 17);
         device.SpiSendByteAtAddress(cId, 4, 1);     % calibrate after writing all registers
@@ -344,6 +415,7 @@ function Ltc2123Dc2226DualClockingSolution
         device.SpiSendByteAtAddress(cId, 4, 1) % calibrate after writing all registers
         
         fprintf('toggle SYNC cp\n');
+		% only toggle LTC6951 sync (LTC6954 does not need a sync with DIV=1)
         pause(sleepTime);
         device.HsFpgaWriteDataAtAddress(cId, lt2k.SPI_CONFIG_REG, 8);
         fprintf('sync high\n');
@@ -444,7 +516,11 @@ function Ltc2123Dc2226DualClockingSolution
     end 
 
     function channelData = Capture4(device, memSize, buffSize, dumpData, dumpPscopeData, verbose)
-
+		% Configuration Flow Step 11: Reset Capture Engine
+		%    device.SetMode(device.ModeMPSSE)
+		%    device.FPGAWriteAddress(CAPTURE_RESET_REG) 
+		%    device.FPGAWriteData(0x01)  %Reset
+		% Step 24
         clockStatus = device.HsFpgaReadDataAtAddress(cId, lt2k.CLOCK_STATUS_REG);
 
         if(verbose)
@@ -452,7 +528,8 @@ function Ltc2123Dc2226DualClockingSolution
             % fprintf('Register 6   (Clock status) is %x\n', lths.HsFpgaReadDataAtAddress(cId, lt2k.CLOCK_STATUS_REG));
             fprintf('Register 6   (Clock status) is %x\n', lths.HsFpgaReadDataAtAddress(cId, clockStatus));
         end
-
+		
+		% Step 25
         captureStatus = device.HsFpgaReadDataAtAddress(cId, lt2k.CAPTURE_STATUS_REG);
 
         if(bitand(captureStatus, 4) ~= 0)
@@ -465,14 +542,17 @@ function Ltc2123Dc2226DualClockingSolution
             fprintf('\nReading capture status, should be 0xF0 or 0xF4 (CH0, CH1 valid, Capture NOT done, data not fetched)');
             fprintf('\nAnd it is... 0x%s', dec2hex(captureStatus, 4));
         end
-
+		
+		% Step 26 in config flow
         device.HsFpgaWriteDataAtAddress(cId, lt2k.CAPTURE_CONFIG_REG, uint8(bitor(memSize, 8))); % Both Channels active
-
+		
+		% Step 27
         device.HsFpgaWriteDataAtAddress(cId, lt2k.CAPTURE_CONTROL_REG, 0);
         device.HsFpgaWriteDataAtAddress(cId, lt2k.CAPTURE_CONTROL_REG, 1);  % Start!!
 
         pause(1);  % wait for capture
 
+		% Step 28
         captureStatus = device.HsFpgaReadDataAtAddress(cId, lt2k.CAPTURE_STATUS_REG);
         if(bitand(captureStatus, 4) ~= 0)
             syncErr = 1;
@@ -486,9 +566,11 @@ function Ltc2123Dc2226DualClockingSolution
         end
 
         device.DataSetLowByteFirst(cId); % Set endian-ness
+		% Step 29
         device.HsSetBitMode(cId, device.HS_BIT_MODE_FIFO);
         pause(0.1);
 
+		% Step 30
         throwAway = 3;
 
         [data01, nSampsRead] = device.DataReceiveUint16Values(cId, buffSize);
@@ -497,6 +579,7 @@ function Ltc2123Dc2226DualClockingSolution
             device.DataReceiveBytes(cId, throwAway);
         end
 
+		% Step 31 
         device.HsSetBitMode(cId, device.HS_BIT_MODE_MPSSE);
 
         if(verbose ~= 0)
@@ -507,14 +590,18 @@ function Ltc2123Dc2226DualClockingSolution
 
         device.HsSetBitMode(cId, device.HS_BIT_MODE_MPSSE);
         pause(0.1);
-
+		
+		% Step 32
         device.HsFpgaWriteDataAtAddress(cId, lt2k.CAPTURE_RESET_REG, 1); % Reset
 
+		% Step 33
         device.HsFpgaWriteDataAtAddress(cId, lt2k.CAPTURE_CONFIG_REG, uint8(bitor(memSize, 10))); % CH2 and CH3
 
+		% Step 34
         device.HsFpgaWriteDataAtAddress(cId, lt2k.CAPTURE_CONTROL_REG, 2);
         device.HsFpgaWriteDataAtAddress(cId, lt2k.CAPTURE_CONTROL_REG, 3);
-
+		
+		% Step 35
         captureStatus = device.HsFpgaReadDataAtAddress(cId, lt2k.CAPTURE_STATUS_REG);
         if(bitand(captureStatus, 4) ~= 0)
             syncErr = 1;
@@ -527,9 +614,11 @@ function Ltc2123Dc2226DualClockingSolution
             fprintf('\nAnd it is... 0x%s', dec2hex(captureStatus, 4));
         end
 
+		% Step 36
         device.HsSetBitMode(cId, device.HS_BIT_MODE_FIFO);
         pause(0.1);
 
+		% Step 37
         [data23, nSampsRead] = device.DataReceiveUint16Values(cId, buffSize);
 
         if(throwAway ~= 0)
