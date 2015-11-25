@@ -15,7 +15,7 @@ function Ltc2389Dc1826
     eepromIdSize = length(EEPROM_ID);
     fprintf('Looking for a DC718 with a DC1826A demoboard\n');
     
-    deviceInfoList = comm.ListControllers(comm.TYPE_DC1371, 1);
+    deviceInfoList = comm.ListControllers(comm.TYPE_DC718, 1);
 	
 	% Open communication to the device
     cId = comm.Init(deviceInfoList);
@@ -35,7 +35,7 @@ function Ltc2389Dc1826
     end
     
     if(verbose)
-        fprintf('Starting data collect');
+        fprintf('Starting data collect\n');
     end
     
     comm.DataSetCharacteristics(cId, false, SAMPLE_BYTES, false);
@@ -43,12 +43,12 @@ function Ltc2389Dc1826
     if(trigger)
         comm.DataStartCollect(cId, numSamples, comm.TRIGGER_START_POSITIVE_EDGE);
         for i = 1:timeOut
-            isDone = comm.DataIsCollectDone();
+            isDone = comm.DataIsCollectDone(cId);
             if(isDone)
                 break;
             end
             pause(0.1);
-            fprintf('Waiting up to %d seconds...%d', timeOut, i);
+            fprintf('Waiting up to %d seconds...%d\n', timeOut, i);
         end
     else
         comm.DataStartCollect(cId, numSamples, comm.TRIGGER_NONE);
@@ -63,16 +63,16 @@ function Ltc2389Dc1826
     
     if(isDone ~= true)
         error('LtcControllerComm:HardwareError', ...
-            'Data collect timed out (missing clock?)');
+            'Data collect timed out (missing clock?)\n');
     end
     
     if(verbose)
-        fprintf('Data collect done.');
-        fprintf('Reading data');
+        fprintf('Data collect done\n.');
+        fprintf('Reading data\n');
     end
     dataBytes = comm.DataReceiveBytes(cId, numSamples * SAMPLE_BYTES);
     if(verbose)
-        fprintf('Data read done, parsing done...');
+        fprintf('Data read done, parsing done...\n');
     end
 
     data = zeros(1, numSamples);
