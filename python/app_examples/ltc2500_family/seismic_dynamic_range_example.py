@@ -244,6 +244,7 @@ def capture_plot(client, plot, gain, filter_type):
 if __name__ == "__main__":
     
     PREFIX = "run2_120dB"
+    WRITE_FILES = False
     
     if FILTER_TYPE == 1:
         filt = DC2390.LTC2500_SSINC_FILT
@@ -313,19 +314,20 @@ if __name__ == "__main__":
 #    capture_plot(client, plt, (100 * 100 * 100)/2, FILTER_TYPE)
 
     nyq_data_120, nyq_filt_data_120, filt_25xx_data_120 = capture_seismic_data(client, FILTER_TYPE)
-    # write the data to a file
-    print('Writing nyq_data_120 data to file')
-    with open('data/' + PREFIX + 'nyq_data_120.txt', 'w') as f:
-        for i, item in enumerate(nyq_data_120):
-            f.write(str(item) + '\n') 
-    print('Writing nyq_filt_data_120 data to file')
-    with open('data/' + PREFIX + 'nyq_filt_data_120.txt', 'w') as f:
-        for i, item in enumerate(nyq_filt_data_120):
-            f.write(str(item) + '\n')
-    print('Writing filt_25xx_data_120 data to file')
-    with open('data/' + PREFIX + 'filt_25xx_data_120.txt', 'w') as f:
-        for i, item in enumerate(filt_25xx_data_120):
-            f.write(str(item) + '\n')
+    if(WRITE_FILES == True):
+        # write the data to a file
+        print('Writing nyq_data_120 data to file')
+        with open('data/' + PREFIX + 'nyq_data_120.txt', 'w') as f:
+            for i, item in enumerate(nyq_data_120):
+                f.write(str(item) + '\n') 
+        print('Writing nyq_filt_data_120 data to file')
+        with open('data/' + PREFIX + 'nyq_filt_data_120.txt', 'w') as f:
+            for i, item in enumerate(nyq_filt_data_120):
+                f.write(str(item) + '\n')
+        print('Writing filt_25xx_data_120 data to file')
+        with open('data/' + PREFIX + 'filt_25xx_data_120.txt', 'w') as f:
+            for i, item in enumerate(filt_25xx_data_120):
+                f.write(str(item) + '\n')
             
             
 #    raw_input("Set the Jumper for -80 dB, then hit enter")
@@ -336,19 +338,20 @@ if __name__ == "__main__":
     
     raw_input("Set the Jumper for 0 dB, then hit enter")
 #    capture_plot(client, plt, 1, FILTER_TYPE)
-    nyq_data_0, nyq_filt_data_0, filt_25xx_data_0 = capture_seismic_data(client, FILTER_TYPE)    
-    print('Writing nyq_data_0 data to file')
-    with open('data/' + PREFIX + 'nyq_data_0.txt', 'w') as f:
-        for i, item in enumerate(nyq_data_0):
-            f.write(str(item) + '\n') 
-    print('Writing nyq_filt_data_0 data to file')
-    with open('data/' + PREFIX + 'nyq_filt_data_0.txt', 'w') as f:
-        for i, item in enumerate(nyq_filt_data_0):
-            f.write(str(item) + '\n')
-    print('Writing filt_25xx_data_0 data to file')
-    with open('data/' + PREFIX + 'filt_25xx_data_0.txt', 'w') as f:
-        for i, item in enumerate(filt_25xx_data_0):
-            f.write(str(item) + '\n')
+    nyq_data_0, nyq_filt_data_0, filt_25xx_data_0 = capture_seismic_data(client, FILTER_TYPE)  
+    if(WRITE_FILES == True):
+        print('Writing nyq_data_0 data to file')
+        with open('data/' + PREFIX + 'nyq_data_0.txt', 'w') as f:
+            for i, item in enumerate(nyq_data_0):
+                f.write(str(item) + '\n') 
+        print('Writing nyq_filt_data_0 data to file')
+        with open('data/' + PREFIX + 'nyq_filt_data_0.txt', 'w') as f:
+            for i, item in enumerate(nyq_filt_data_0):
+                f.write(str(item) + '\n')
+        print('Writing filt_25xx_data_0 data to file')
+        with open('data/' + PREFIX + 'filt_25xx_data_0.txt', 'w') as f:
+            for i, item in enumerate(filt_25xx_data_0):
+                f.write(str(item) + '\n')
 
 
     # Display the graphs
