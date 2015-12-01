@@ -79,6 +79,16 @@ def freqz_by_fft(filter_coeffs, points_per_coeff):
     resp = abs(np.fft.fft(np.concatenate((filter_coeffs, np.zeros(fftlength - num_coeffs))))) # filter and a bunch more zeros
     return resp
 
+# Upsample an array and stuff zeros between data points.
+# Upsample_factor is the total number of output points per
+# input point (that is, the number of zeros stuffed is
+# upsample_factor-1)
+def upsample_zero_stuff(data, upsample_factor):
+    # Starting with zeros makes things easy :)
+    upsample_data = np.zeros(upsample_factor * len(data))
+    for i in range (0, len(data)):
+        upsample_data[upsample_factor*i] = data[i]
+    return upsample_data
 
 
 
