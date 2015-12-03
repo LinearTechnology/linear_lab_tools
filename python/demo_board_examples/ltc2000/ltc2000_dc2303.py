@@ -104,7 +104,7 @@ with comm.Controller(device_info) as device:
 # Refer to LTC2000 datasheet for detailed register descriptions.
     device.spi_send_byte_at_address(lt2k.SPI_WRITE | lt2k.REG_RESET_PD, 0x00)
     device.spi_send_byte_at_address(lt2k.SPI_WRITE | lt2k.REG_CLK_CONFIG, 0x02)
-    device.spi_send_byte_at_address(lt2k.SPI_WRITE | lt2k.REG_DCKI_PHASE, 0x07)
+    device.spi_send_byte_at_address(lt2k.SPI_WRITE | lt2k.REG_DCKI_PHASE, 0x07)# 0x07) # 0x03 for inphase, 0x07 for quadrature
     device.spi_send_byte_at_address(lt2k.SPI_WRITE | lt2k.REG_PORT_EN, 0x0B)
     device.spi_send_byte_at_address(lt2k.SPI_WRITE | lt2k.REG_SYNC_PHASE, 0x00)
     #lt2k.spi_write(device, REG_PHASE_COMP_OUT
@@ -129,19 +129,21 @@ with comm.Controller(device_info) as device:
         lt2k.register_dump(device)
 
     # 64k, loop forever
-    device.hs_fpga_write_data_at_address(lt2k.FPGA_CONTROL_REG, 0x02 | 0x00)
+    device.hs_fpga_write_data_at_address(lt2k.FPGA_CONTROL_REG, 0x20 | 0x00)
     
     sleep(sleep_time)
 
 # Demonstrates how to generate sinusoidal data. Note that the total data record length
 # contains an exact integer number of cycles.
 
-    num_cycles = 800  # Number of sine wave cycles over the entire data record
+    num_cycles = 10  # Number of sine wave cycles over the entire data record
 
-    total_samples = 65536 # n.BuffSize
+    total_samples = 65536 #16 * 1024 # n.BuffSize
     data = total_samples * [0] 
     for i in range(0, total_samples):
         data[i] = int(32000 * sin(num_cycles*2*pi*i/total_samples))
+    frequency = 2500000000 * num_cycles / (total_samples)
+    print("Output Frequency: " + str(frequency))
 
 # Demonstrate how to write generated data to a file.
     print('writing data out to file')
@@ -151,6 +153,7 @@ with comm.Controller(device_info) as device:
     outfile.close()
     print('done writing!')
 
+    device.data_set_low_byte_first()
 # Demonstrate how to read data in from a file
 # (Note that the same data[] variable is used)
     print('reading data from file')
@@ -163,7 +166,15 @@ with comm.Controller(device_info) as device:
     print('done reading!')
 
     device.hs_set_bit_mode(comm.HS_BIT_MODE_FIFO)
-    num_bytes_sent = device.data_send_uint16_values(data[0:len(data)/2]) #DAC should start running here!
+#    sleep(0.5)
+    # Send data in 256 byte chunks
+#    for i in range(0, len(data)/256):
+#        chunk = data[(i*256):((i+1)*256)]
+#        num_bytes_sent = device.data_send_uint16_values(chunk) #DAC should start running here!
+#        sleep(0.2)
+        
+    #send all data
+    num_bytes_sent = device.data_send_uint16_values(data) #DAC should start running here! 
     print 'num_bytes_sent (should be 131072) = ' + str(num_bytes_sent)
     print 'You should see a waveform at the output of the LTC2000 now!'
     
