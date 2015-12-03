@@ -44,6 +44,23 @@ The views and conclusions contained in the software and documentation are those
 of the authors and should not be interpreted as representing official policies,
 either expressed or implied, of Linear Technology Corp.
 '''
+
+class LTC2000_NumSamp:
+    def __init__(self, memSizeReg, numSamps):
+        self.MemSizeReg = memSizeReg
+        self.NumSamps = numSamps
+    
+NumSamp16k  = LTC2000_NumSamp(0x00, 16 * 1024)
+NumSamp32K  = LTC2000_NumSamp(0x10, 32 * 1024)
+NumSamp64K  = LTC2000_NumSamp(0x20, 64 * 1024)
+NumSamp128K = LTC2000_NumSamp(0x30, 128 * 1024)
+NumSamp256K = LTC2000_NumSamp(0x40, 256 * 1024)
+NumSamp512K = LTC2000_NumSamp(0x50, 512 * 1024)
+NumSamp1M   = LTC2000_NumSamp(0x60, 1024 * 1024)
+NumSamp2M   = LTC2000_NumSamp(0x70, 2048 * 1024)
+
+
+
 ###################################
 # SPI read / write bit definitions
 ###################################

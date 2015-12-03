@@ -69,6 +69,16 @@ verbose = True   # Print extra information to console
 sleep_time = 1.0
 do_reset = True  # Reset FPGA once (not necessary to reset between data loads)
 
+# Set up data record length
+n = lt2k.NumSamp128K # Set number of samples here. DC2303 options are 16k to 2M
+# Set up output frequency
+num_cycles = 1280  # Number of sine wave cycles over the entire data record
+
+# Calculate and display output frequency
+sample_rate = 2.5*10**9
+frequency = sample_rate * num_cycles / (n.NumSamps)
+print("Output Frequency: " + str(frequency))
+
 if verbose:
     print "LTC2000 Interface Program"
 
@@ -129,21 +139,18 @@ with comm.Controller(device_info) as device:
         lt2k.register_dump(device)
 
     # 64k, loop forever
-    device.hs_fpga_write_data_at_address(lt2k.FPGA_CONTROL_REG, 0x20 | 0x00)
+    device.hs_fpga_write_data_at_address(lt2k.FPGA_CONTROL_REG, n.MemSizeReg | 0x00)
     
     sleep(sleep_time)
 
 # Demonstrates how to generate sinusoidal data. Note that the total data record length
 # contains an exact integer number of cycles.
 
-    num_cycles = 10  # Number of sine wave cycles over the entire data record
-
-    total_samples = 65536 #16 * 1024 # n.BuffSize
+    total_samples = n.NumSamps #16 * 1024 # n.BuffSize
     data = total_samples * [0] 
     for i in range(0, total_samples):
         data[i] = int(32000 * sin(num_cycles*2*pi*i/total_samples))
-    frequency = 2500000000 * num_cycles / (total_samples)
-    print("Output Frequency: " + str(frequency))
+
 
 # Demonstrate how to write generated data to a file.
     print('writing data out to file')
@@ -175,6 +182,6 @@ with comm.Controller(device_info) as device:
         
     #send all data
     num_bytes_sent = device.data_send_uint16_values(data) #DAC should start running here! 
-    print 'num_bytes_sent (should be 131072) = ' + str(num_bytes_sent)
+    print 'num_bytes_sent is: ' + str(num_bytes_sent) + ' (should be ' + str(total_samples * 2) +')'
     print 'You should see a waveform at the output of the LTC2000 now!'
     
