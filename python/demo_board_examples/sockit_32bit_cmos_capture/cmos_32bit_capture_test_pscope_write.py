@@ -129,16 +129,25 @@ client.reg_write(TUNING_WORD_BASE, tuning_word) # Sweep NCO!!!
 #client.reg_write(DATAPATH_CONTROL_BASE, DC2390_FIFO_UP_DOWN_COUNT) # Capture a test pattern
 client.reg_write(DATAPATH_CONTROL_BASE, DC2390_FIFO_ADCA_NYQ) # First capture ADC A
 data = capture(client, NUM_SAMPLES, trigger = 0, timeout = 2.0)
-data_nodc = data - np.average(data)
+
+data_ch0 = np.ndarray(NUM_SAMPLES, dtype=float)
+data_ch1 = np.ndarray(NUM_SAMPLES, dtype=float)
+for i in range(0, NUM_SAMPLES):
+    data_ch0[i] = data[i] & 0x0000FFFF
+    data_ch1[i] = (data[i] & 0xFFFF0000) >> 16
+    
+
+
+data_nodc0 = data_ch0 #- np.average(data)
 #data_nodc *= np.blackman(NUM_SAMPLES)
-fftdata = np.abs(np.fft.fft(data_nodc)) / NUM_SAMPLES
-fftdb = 20*np.log10(fftdata / 2.0**31)
+#fftdata = np.abs(np.fft.fft(data_nodc)) / NUM_SAMPLES
+#fftdb = 20*np.log10(fftdata / 2.0**31)
 plt.figure(pltnum)
 pltnum +=1
 plt.subplot(2, 1, 1)
-plt.plot(data)
+plt.plot(data_ch0)
 plt.subplot(2, 1, 2)
-plt.plot(fftdb)
+plt.plot(data_ch1)
 
 data_for_pscopeA = data_nodc / 256.0
 
