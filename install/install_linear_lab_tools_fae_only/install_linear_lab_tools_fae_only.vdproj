@@ -129,6 +129,12 @@
         }
         "Entry"
         {
+        "MsmKey" = "8:_3BCB2C44E66D41F09D4F7649D9CCDBAF"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
         "MsmKey" = "8:_3CCC1E80D687459A950EB14E599DD9B2"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
@@ -184,6 +190,12 @@
         "Entry"
         {
         "MsmKey" = "8:_4EF024B989AE443A8A68DA612AE935DB"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_4FF2591433824F08ADD7D351D75C5693"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -388,6 +400,12 @@
         "Entry"
         {
         "MsmKey" = "8:_941FF8407E834E0EBC149DF90B2D72A5"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_95D9C2704C9540F9A4ACBD4461B95AF9"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -615,6 +633,12 @@
         }
         "Entry"
         {
+        "MsmKey" = "8:_EAEC75F3C42E4127AC508D6E5D3454E1"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
         "MsmKey" = "8:_EB71C97B74D04A0EB59C0CACD929895E"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
@@ -686,6 +710,19 @@
             "PrerequisitesLocation" = "2:1"
             "Url" = "8:"
             "ComponentsUrl" = "8:"
+                "Items"
+                {
+                    "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:.NETFramework,Version=v4.0,Profile=Client"
+                    {
+                    "Name" = "8:Microsoft .NET Framework 4 Client Profile (x86 and x64)"
+                    "ProductCode" = "8:.NETFramework,Version=v4.0,Profile=Client"
+                    }
+                    "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:Microsoft.Windows.Installer.3.1"
+                    {
+                    "Name" = "8:Windows Installer 3.1"
+                    "ProductCode" = "8:Microsoft.Windows.Installer.3.1"
+                    }
+                }
             }
         }
         "Release"
@@ -710,6 +747,19 @@
             "PrerequisitesLocation" = "2:1"
             "Url" = "8:"
             "ComponentsUrl" = "8:"
+                "Items"
+                {
+                    "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:.NETFramework,Version=v4.0,Profile=Client"
+                    {
+                    "Name" = "8:Microsoft .NET Framework 4 Client Profile (x86 and x64)"
+                    "ProductCode" = "8:.NETFramework,Version=v4.0,Profile=Client"
+                    }
+                    "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:Microsoft.Windows.Installer.3.1"
+                    {
+                    "Name" = "8:Windows Installer 3.1"
+                    "ProductCode" = "8:Microsoft.Windows.Installer.3.1"
+                    }
+                }
             }
         }
     }
@@ -1112,6 +1162,26 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_3BCB2C44E66D41F09D4F7649D9CCDBAF"
+            {
+            "SourcePath" = "8:..\\..\\matlab\\DemoBoardExamples\\LTC2378-20\\Ltc2378Dc2135.m"
+            "TargetName" = "8:Ltc2378Dc2135.m"
+            "Tag" = "8:"
+            "Folder" = "8:_DB9517DE7D8748C0941235D10764F4BF"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
             "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_3CCC1E80D687459A950EB14E599DD9B2"
             {
             "SourcePath" = "8:..\\..\\python\\check_linear_lab_tools_install\\LinearLogo.PNG"
@@ -1298,6 +1368,26 @@
             "TargetName" = "8:generate_sinc_data.py"
             "Tag" = "8:"
             "Folder" = "8:_535DFF19983A4D32981962020499184F"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_4FF2591433824F08ADD7D351D75C5693"
+            {
+            "SourcePath" = "8:..\\..\\python\\demo_board_examples\\ltc2378_20\\ltc2378_20_dc2135.py"
+            "TargetName" = "8:ltc2378_20_dc2135.py"
+            "Tag" = "8:"
+            "Folder" = "8:_E940DE29AFAC46368049929EE657D2AF"
             "Condition" = "8:"
             "Transitive" = "11:FALSE"
             "Vital" = "11:TRUE"
@@ -1978,6 +2068,26 @@
             "TargetName" = "8:ltc2000_functions.py"
             "Tag" = "8:"
             "Folder" = "8:_535DFF19983A4D32981962020499184F"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_95D9C2704C9540F9A4ACBD4461B95AF9"
+            {
+            "SourcePath" = "8:..\\..\\matlab\\DemoBoardExamples\\LTC2378-20\\README.txt"
+            "TargetName" = "8:README.txt"
+            "Tag" = "8:"
+            "Folder" = "8:_DB9517DE7D8748C0941235D10764F4BF"
             "Condition" = "8:"
             "Transitive" = "11:FALSE"
             "Vital" = "11:TRUE"
@@ -2732,6 +2842,26 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_EAEC75F3C42E4127AC508D6E5D3454E1"
+            {
+            "SourcePath" = "8:..\\..\\python\\demo_board_examples\\ltc2378_20\\README.txt"
+            "TargetName" = "8:README.txt"
+            "Tag" = "8:"
+            "Folder" = "8:_E940DE29AFAC46368049929EE657D2AF"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
             "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_EB71C97B74D04A0EB59C0CACD929895E"
             {
             "SourcePath" = "8:..\\..\\source\\ltc_controller_comm\\ltc_controller_comm.vcxproj"
@@ -3025,6 +3155,17 @@
                                         {
                                         }
                                     }
+                                    "{9EF0B969-E518-4E46-987F-47570745A589}:_E940DE29AFAC46368049929EE657D2AF"
+                                    {
+                                    "Name" = "8:ltc2378_20"
+                                    "AlwaysCreate" = "11:FALSE"
+                                    "Condition" = "8:"
+                                    "Transitive" = "11:FALSE"
+                                    "Property" = "8:_B1E5727F8DF2485588BE4D7F99F71A14"
+                                        "Folders"
+                                        {
+                                        }
+                                    }
                                 }
                             }
                             "{9EF0B969-E518-4E46-987F-47570745A589}:_498083AC099E41F0BF03AC6DD0CA1244"
@@ -3223,6 +3364,17 @@
                                         {
                                         }
                                     }
+                                    "{9EF0B969-E518-4E46-987F-47570745A589}:_DB9517DE7D8748C0941235D10764F4BF"
+                                    {
+                                    "Name" = "8:LTC2378-20"
+                                    "AlwaysCreate" = "11:FALSE"
+                                    "Condition" = "8:"
+                                    "Transitive" = "11:FALSE"
+                                    "Property" = "8:_24674E433C734B1A88735F197DC1FC8F"
+                                        "Folders"
+                                        {
+                                        }
+                                    }
                                     "{9EF0B969-E518-4E46-987F-47570745A589}:_DE84248F70F44708A6FDABC96482C130"
                                     {
                                     "Name" = "8:LTC2000"
@@ -3311,15 +3463,15 @@
         {
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:linear_lab_tools_fae_only"
-        "ProductCode" = "8:{CC909E88-7290-4677-BEC2-900D04FE5B5C}"
-        "PackageCode" = "8:{67CD18FE-F011-4039-A1E2-F23E5133331B}"
+        "ProductCode" = "8:{57141B41-04A3-4271-88A3-3C88CFE65772}"
+        "PackageCode" = "8:{0D681A85-B471-4237-99D4-C660A91D40C5}"
         "UpgradeCode" = "8:{0330A076-DF53-4961-A954-7BD5A22EAFD4}"
         "AspNetVersion" = "8:4.0.30319.0"
         "RestartWWWService" = "11:FALSE"
         "RemovePreviousVersions" = "11:TRUE"
         "DetectNewerInstalledVersion" = "11:TRUE"
         "InstallAllUsers" = "11:TRUE"
-        "ProductVersion" = "8:1.0.12"
+        "ProductVersion" = "8:1.0.13"
         "Manufacturer" = "8:Linear Technology"
         "ARPHELPTELEPHONE" = "8:"
         "ARPHELPLINK" = "8:"

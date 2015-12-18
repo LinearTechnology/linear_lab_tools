@@ -177,6 +177,12 @@
         }
         "Entry"
         {
+        "MsmKey" = "8:_484580810029441587315BBB4207C413"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
         "MsmKey" = "8:_540472F91C49483593426EF179347329"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
@@ -285,6 +291,12 @@
         }
         "Entry"
         {
+        "MsmKey" = "8:_7DAC014A28854218AFD025A3D8771225"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
         "MsmKey" = "8:_82BD2D9D8E1E450CA51D411CFB25D5A1"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
@@ -381,6 +393,12 @@
         }
         "Entry"
         {
+        "MsmKey" = "8:_A8F86A3EF3D74593AA82576C97E0A888"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
         "MsmKey" = "8:_A97769A74EBF4C7AB8A3E890400982EE"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
@@ -424,6 +442,12 @@
         "Entry"
         {
         "MsmKey" = "8:_CB2811BAB64A44DFB60010A1A9D13D2E"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_CFBEACAC14324D62854DE103AD08AC5D"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -1208,6 +1232,26 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_484580810029441587315BBB4207C413"
+            {
+            "SourcePath" = "8:..\\..\\matlab\\DemoBoardExamples\\LTC2378-20\\Ltc2378Dc2135.m"
+            "TargetName" = "8:Ltc2378Dc2135.m"
+            "Tag" = "8:"
+            "Folder" = "8:_FE5E540131F14A8790DEF3626968EF17"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
             "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_540472F91C49483593426EF179347329"
             {
             "SourcePath" = "8:..\\..\\python\\educational\\adc_snr_simulation.py"
@@ -1568,6 +1612,26 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_7DAC014A28854218AFD025A3D8771225"
+            {
+            "SourcePath" = "8:..\\..\\python\\demo_board_examples\\ltc2378_20\\README.txt"
+            "TargetName" = "8:README.txt"
+            "Tag" = "8:"
+            "Folder" = "8:_3E65F0035709434F8A7F7705D72A0BD3"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
             "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_82BD2D9D8E1E450CA51D411CFB25D5A1"
             {
             "SourcePath" = "8:..\\..\\matlab\\DemoBoardExamples\\LTC2387\\Ltc2387Dc2290.m"
@@ -1888,6 +1952,26 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_A8F86A3EF3D74593AA82576C97E0A888"
+            {
+            "SourcePath" = "8:..\\..\\python\\demo_board_examples\\ltc2378_20\\ltc2378_20_dc2135.py"
+            "TargetName" = "8:ltc2378_20_dc2135.py"
+            "Tag" = "8:"
+            "Folder" = "8:_3E65F0035709434F8A7F7705D72A0BD3"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
             "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_A97769A74EBF4C7AB8A3E890400982EE"
             {
             "SourcePath" = "8:..\\..\\matlab\\TestLtcControllerComm.m"
@@ -2034,6 +2118,26 @@
             "TargetName" = "8:LTC6951_DC2226A_U10.txt"
             "Tag" = "8:"
             "Folder" = "8:_A3CA9545A6734BF19AC680A138518C8A"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_CFBEACAC14324D62854DE103AD08AC5D"
+            {
+            "SourcePath" = "8:..\\..\\matlab\\DemoBoardExamples\\LTC2378-20\\README.txt"
+            "TargetName" = "8:README.txt"
+            "Tag" = "8:"
+            "Folder" = "8:_FE5E540131F14A8790DEF3626968EF17"
             "Condition" = "8:"
             "Transitive" = "11:FALSE"
             "Vital" = "11:TRUE"
@@ -2694,6 +2798,17 @@
                                         {
                                         }
                                     }
+                                    "{9EF0B969-E518-4E46-987F-47570745A589}:_3E65F0035709434F8A7F7705D72A0BD3"
+                                    {
+                                    "Name" = "8:ltc2378_20"
+                                    "AlwaysCreate" = "11:FALSE"
+                                    "Condition" = "8:"
+                                    "Transitive" = "11:FALSE"
+                                    "Property" = "8:_D3A1A3E769F54AB2822EB1110EEE7D08"
+                                        "Folders"
+                                        {
+                                        }
+                                    }
                                     "{9EF0B969-E518-4E46-987F-47570745A589}:_57E99A3AE3B340E0A1EA03756C32FBCE"
                                     {
                                     "Name" = "8:ltc2500"
@@ -2881,6 +2996,17 @@
                                         {
                                         }
                                     }
+                                    "{9EF0B969-E518-4E46-987F-47570745A589}:_FE5E540131F14A8790DEF3626968EF17"
+                                    {
+                                    "Name" = "8:LTC2378-20"
+                                    "AlwaysCreate" = "11:FALSE"
+                                    "Condition" = "8:"
+                                    "Transitive" = "11:FALSE"
+                                    "Property" = "8:_1BF7C038584041D2BE2A706F0F49F24C"
+                                        "Folders"
+                                        {
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -2914,15 +3040,15 @@
         {
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:linear_lab_tools64"
-        "ProductCode" = "8:{85FF35E6-01B2-470E-87CF-4BF5144D6735}"
-        "PackageCode" = "8:{A8FBBEE6-16EA-41B0-A074-6FB756642675}"
+        "ProductCode" = "8:{F85AA2D5-20E1-4E68-B371-0147C92D0EE5}"
+        "PackageCode" = "8:{FDD38E45-1D84-42F2-A2AC-6C130EFE5731}"
         "UpgradeCode" = "8:{34C9E896-F9F8-4563-A1D3-FB0FE69C2B22}"
         "AspNetVersion" = "8:4.0.30319.0"
         "RestartWWWService" = "11:FALSE"
         "RemovePreviousVersions" = "11:TRUE"
         "DetectNewerInstalledVersion" = "11:TRUE"
         "InstallAllUsers" = "11:TRUE"
-        "ProductVersion" = "8:1.0.12"
+        "ProductVersion" = "8:1.0.13"
         "Manufacturer" = "8:Linear Technology"
         "ARPHELPTELEPHONE" = "8:"
         "ARPHELPLINK" = "8:"
