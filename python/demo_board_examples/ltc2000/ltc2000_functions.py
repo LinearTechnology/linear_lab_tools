@@ -50,7 +50,7 @@ class LTC2000_NumSamp:
         self.MemSizeReg = memSizeReg
         self.NumSamps = numSamps
     
-NumSamp16k  = LTC2000_NumSamp(0x00, 16 * 1024)
+NumSamp16K  = LTC2000_NumSamp(0x00, 16 * 1024)
 NumSamp32K  = LTC2000_NumSamp(0x10, 32 * 1024)
 NumSamp64K  = LTC2000_NumSamp(0x20, 64 * 1024)
 NumSamp128K = LTC2000_NumSamp(0x30, 128 * 1024)
