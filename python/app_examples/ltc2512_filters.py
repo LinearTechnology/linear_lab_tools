@@ -110,12 +110,14 @@ plt.plot(ssinc_flat_64 / max(ssinc_flat_64))
 plt.xlabel('tap number')
 plt.show()
 
-# Function to calculate frequency response of a filter from its coefficients. The points_per_coeff parameter tells how many points
+# Function to calculate frequency response of a filter from its coefficients.
+# The points_per_coeff parameter tells how many points
 # in between unit circle zeros to calculate.
 #def freqz_by_fft(filter_coeffs, points_per_coeff):
 #    num_coeffs = len(filter_coeffs)
 #    fftlength = num_coeffs * points_per_coeff
-#    resp = abs(np.fft.fft(np.concatenate((filter_coeffs, np.zeros(fftlength - num_coeffs))))) # filter and a bunch more zeros
+#    resp = abs(np.fft.fft(np.concatenate((filter_coeffs,
+#               np.zeros(fftlength - num_coeffs))))) # filter and a bunch more zeros
 #    return resp
 
 if(use_fft_method == True):
