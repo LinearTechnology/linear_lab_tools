@@ -44,7 +44,7 @@ def hp34401a_lcd_disp(hp_meter, message):
     hp_meter.write("DISP:TEXT:CLE")
     hp_meter.write("DISP:TEXT '" + str(message) + "'")
 
-def hp34401a_voltage_read(hp_meter):
+def hp34401a_read_voltage(hp_meter):
     """
         Measures voltage in auto range and auto resolution
     """
