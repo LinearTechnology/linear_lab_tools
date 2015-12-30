@@ -44,7 +44,7 @@ either expressed or implied, of Linear Technology Corp.
 '''
 
 import sys
-sys.path.append("../../utils")
+sys.path.append("../utils")
 import linear_lab_tools_functions as lltf
 import numpy as np
 from matplotlib import pyplot as plt
@@ -56,6 +56,18 @@ alt = 1.0
 mean = 450.0
 sigma = 5
 noise = 0.2
+
+# ADC Noise parameters
+
+#adc_noise = (10 ** (adc_snr / 20)) * adc_range / (2*2**0.5)
+#ADC RMS noise formula: 10^(SNR / 20) * peak-to-peak input range /(2*SQRT2) = RMS Noise
+
+
+#From the datasheet: 10^(-104dB SNR / 20) * 10V/(2*SQRT2) = 22.3uVRMS
+ltc2387_noise = (10 ** (-96.0 / 20)) * 8.192 / (8.0**0.5)
+ltc2269_noise = (10 ** (-84.0 / 20)) * 2.1 / (8.0**0.5)
+print("LTC2387 RMS noise: " + str(ltc2387_noise))
+print("LTC2269 RMS noise: " + str(ltc2269_noise))
 
 def bellcurve(x,alt,mean,sigma):
     return alt*np.exp(-1*((x-mean)**2.0)/(2.0*sigma**2.0))
@@ -82,7 +94,7 @@ plt.plot(unknown_pulse)
 plt.plot(testpulse)
 plt.show()
 
-# Example wavelet transform, based on 
+# Example wavelet transform, based on example given in cwt documentation
 
 from scipy import signal
 sig = (np.random.rand(100) - 0.5) * .01
