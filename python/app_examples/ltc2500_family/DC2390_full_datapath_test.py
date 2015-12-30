@@ -11,6 +11,8 @@
 
 import sys #, os, socket, ctypes, struct
 sys.path.append("../../")
+sys.path.append("../../utils/")
+from save_for_pscope import save_for_pscope
 import numpy as np
 #from subprocess import call
 from time import sleep
@@ -18,6 +20,7 @@ from matplotlib import pyplot as plt
 # Okay, now the big one... this is the module that communicates with the SoCkit
 from mem_func_client import MemClient
 from DC2390_functions import *
+
 # Get the host from the command line argument. Can be numeric or hostname.
 #HOST = sys.argv.pop() if len(sys.argv) == 2 else '127.0.0.1'
 HOST = sys.argv[1] if len(sys.argv) == 2 else '127.0.0.1'
@@ -37,7 +40,7 @@ FOS_GAIN = 0x0002
 FOS_CLOCK = 4
 
 SYSTEM_CLOCK_DIVIDER = 199
-LUT_NCO_DIVIDER = 0xFFFE
+LUT_NCO_DIVIDER = 0xFFFF # 0xFFFF for divide by 1
 NUM_SAMPLES = 8192 #131072 #8192
 
 DEADBEEF = -559038737 # For now, need to re-justify.
@@ -50,7 +53,7 @@ N = 7 #Number of samples to average (LTC2380-24)
 
 nco_word_width = 32
 master_clock = 50000000
-bin_number = 8 # Number of cycles over the time record
+bin_number = 23 # Number of cycles over the time record
 sample_rate = master_clock / (SYSTEM_CLOCK_DIVIDER + 1) # 250ksps for 50M clock, 200 clocks per sample
 cycles_per_sample = float(bin_number) / float(NUM_SAMPLES)
 cycles_per_dac_sample = cycles_per_sample / (SYSTEM_CLOCK_DIVIDER + 1)
@@ -124,7 +127,9 @@ client.reg_write(TUNING_WORD_BASE, tuning_word) # Sweep NCO!!!
 # Capture a sine wave
 client.reg_write(DATAPATH_CONTROL_BASE, datapath_word_sines) # Sweep NCO!!!
 data = capture(client, NUM_SAMPLES, trigger = 0, timeout = 0.0)
-fftdata = np.abs(np.fft.fft(data)) / len(data)
+data_nodc = data - np.average(data)
+#data_nodc *= np.blackman(NUM_SAMPLES)
+fftdata = np.abs(np.fft.fft(data_nodc)) / NUM_SAMPLES
 fftdb = 20*np.log10(fftdata / 2.0**31)
 plt.figure(pltnum)
 pltnum +=1
@@ -132,6 +137,10 @@ plt.subplot(2, 1, 1)
 plt.plot(data)
 plt.subplot(2, 1, 2)
 plt.plot(fftdb)
+
+#(out_path, num_bits, is_bipolar, num_samples, dc_num, ltc_num, *data):
+data_for_pscope = data_nodc / 256.0
+save_for_pscope("pscope_DC2390.adc",24 ,True, NUM_SAMPLES, "2390", "2500", data_for_pscope)
 
 # Run through lookup table continuously
 client.reg_write(DATAPATH_CONTROL_BASE, datapath_word_lut_continuous)
@@ -185,7 +194,7 @@ plt.plot(data)
 
 plt.show()
 
-client.reg_write(DATAPATH_CONTROL_BASE, datapath_word_lut_continuous)
+client.reg_write(DATAPATH_CONTROL_BASE, datapath_word_dist_correction)
 
 ## Okay, here goes!! Let's try to write into the LUT:
 #print("Writing out to LUT!")

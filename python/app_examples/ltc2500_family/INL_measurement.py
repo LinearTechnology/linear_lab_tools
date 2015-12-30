@@ -38,6 +38,15 @@
 # Libraries
 ###############################################################################
 
+'''
+PyVisa is required for this script, open the Anaconda command prompt,
+and run the following:
+
+pip install -U pyvisa
+
+
+'''
+
 import visa
 import time
 import sys # os, socket, ctypes, struct
@@ -45,9 +54,11 @@ import numpy as np
 from time import sleep
 from matplotlib import pyplot as plt
 import DC2390_functions as DC2390
-import LTC2758
-sys.path.append('../../') 
+from LTC2758 import *
+sys.path.append('../../')
+sys.path.append('../../utils') 
 from mem_func_client import MemClient
+from hp_multimeters import *
 
 ###############################################################################
 # Global Constants
@@ -57,78 +68,68 @@ MASTER_CLOCK = 50000000
 SYSTEM_CLOCK_DIVIDER = 199 # 50MHz / 200 = 250 Ksps
 NUM_SAMPLES = 2**17
 DAC_VREF = 5.0 # DAC Reference voltage
-NUMBER_OF_POINTS = 200
+NUMBER_OF_POINTS = 25
 
+meter = 3458
+#meter = 34401
 
 ###############################################################################
 # Functions
 ###############################################################################
 
-def hp34401a_lcd_disp(hp_meter, message):
-    """
-        Displays up to 12 charaters on the hp33401a
-    """
-    hp34401a.write("DISP:TEXT:CLE")
-    hp34401a.write("DISP:TEXT '" + str(message) + "'")
-
-def hp34401a_voltage_read(hp_meter):
-    """
-        Measures voltage in auto range and auto resolution
-    """
-    hp_meter.write("MEAS:VOLT:DC? DEF,DEF")    
-    return float(hp_meter.read())
-
-def hp34401a_voltage_read_rng_res(hp_meter , v_range, v_resolution):
-    """
-        Measures voltage with specified range and resolution
-    """
-    hp_meter.write("MEAS:VOLT:DC? " + str(v_range) + " , " + str(v_resolution))
-    return float(hp_meter.read())
-
 def inl_test(client, hp_meter, num_pts, daca_start, daca_end, dacb_start,
              dacb_end, file_name):
-
+    print("Running INL test!")
     # Variables
     # -------------------------------------------------------------------------    
     hp_data = []
     adc_data = []
+    noise_data = []
+    dac_a_data = []
+    dac_b_data = []
     daca_voltage_step = (daca_end - daca_start) / num_pts
     dacb_voltage_step = (dacb_end - dacb_start) / num_pts
     
     # Set the DACs to the start voltages
-    code = LTC2758.LTC2758_voltage_to_code(daca_start, DAC_VREF,
-                                           LTC2758.LTC2748_UNIPOLAR_0_P5)
-    LTC2758.LTC2758_write(client, LTC2758.LTC2748_DAC_A | 
-                          LTC2758.LTC2758_WRITE_CODE_UPDATE_ALL, code)
+    code = LTC2758_voltage_to_code(daca_start, DAC_VREF,
+                                           LTC2748_UNIPOLAR_0_P5)
+    LTC2758_write(client, LTC2748_DAC_A | 
+                          LTC2758_WRITE_CODE_UPDATE_ALL, code)
     
-    code = LTC2758.LTC2758_voltage_to_code(dacb_start, DAC_VREF, 
-                                           LTC2758.LTC2748_UNIPOLAR_0_P5)
-    LTC2758.LTC2758_write(client, LTC2758.LTC2748_DAC_B | 
-                          LTC2758.LTC2758_WRITE_CODE_UPDATE_ALL, code)
+    code = LTC2758_voltage_to_code(dacb_start, DAC_VREF, 
+                                           LTC2748_UNIPOLAR_0_P5)
+    LTC2758_write(client, LTC2748_DAC_B | 
+                          LTC2758_WRITE_CODE_UPDATE_ALL, code)
         
     # Run INL Test
     # -------------------------------------------------------------------------
-    hp34401a_lcd_disp(hp_meter, "Running Test")
+    if(meter == 3458):
+        hp3458a_lcd_disp(hp_meter, "Run Tst")
+    else:
+        hp34401a_lcd_disp(hp_meter, "Running Test")
     
     for i in reversed(range(0,num_pts)):
-        
+        print("Point " + str(i + 1) + " of " + str(num_pts))
         # Set DACs
         dac_a = daca_start + daca_voltage_step * i
-        code = LTC2758.LTC2758_voltage_to_code(dac_a, DAC_VREF,
-                                               LTC2758.LTC2748_UNIPOLAR_0_P5)
-        LTC2758.LTC2758_write(client, LTC2758.LTC2748_DAC_A | 
-                              LTC2758.LTC2758_WRITE_CODE_UPDATE_ALL, code)
+        codea = LTC2758_voltage_to_code(dac_a, DAC_VREF,
+                                               LTC2748_UNIPOLAR_0_P5)
+        LTC2758_write(client, LTC2748_DAC_A | 
+                              LTC2758_WRITE_CODE_UPDATE_ALL, codea)
         
         dac_b = dacb_start + dacb_voltage_step * i
-        code = LTC2758.LTC2758_voltage_to_code(dac_b, DAC_VREF,
-                                               LTC2758.LTC2748_UNIPOLAR_0_P5)
-        LTC2758.LTC2758_write(client, LTC2758.LTC2748_DAC_B | 
-                              LTC2758.LTC2758_WRITE_CODE_UPDATE_ALL, code)
+        codeb = LTC2758_voltage_to_code(dac_b, DAC_VREF,
+                                               LTC2748_UNIPOLAR_0_P5)
+        LTC2758_write(client, LTC2748_DAC_B | 
+                              LTC2758_WRITE_CODE_UPDATE_ALL, codeb)
         
         time.sleep(0.1)
         
         # Read the Voltage of DACs from HP meter max resloutin 10v range
-        v_hp = hp34401a_voltage_read(hp_meter)
+        if(meter == 3458):
+            v_hp = hp3458a_read_voltage(hp_meter)
+        else:
+            v_hp = hp34401a_read_voltage(hp_meter)
 
         time.sleep(0.1)
         
@@ -137,21 +138,38 @@ def inl_test(client, hp_meter, num_pts, daca_start, daca_end, dacb_start,
         
         hp_data.append(v_hp)
         adc_data.append(np.average(data))
+        noise_data.append(np.std(data))
+        dac_a_data.append(codea)
+        dac_b_data.append(codeb)
     
     # Save data to file
     # -------------------------------------------------------------------------
-    
-    hp34401a_lcd_disp(hp_meter, "save 2 file")
+    if(meter == 3458):
+        hp3458a_lcd_disp(hp_meter, "sav2file")
+    else:
+        hp34401a_lcd_disp(hp_meter, "save 2 file")
+
     f = open(file_name, "w") # Create the file
-    f.write('HP (V),ADC (32-bit code)\n')
+    f.write('HP (V),ADC (32-bit code), RMS Noise (32-bit code), DAC A code, DAC B code\n')
     for x in range(len(hp_data)):
         f.write(str(hp_data[x]))
         f.write(",")
         f.write(str(adc_data[x]))
+        f.write(",")
+        f.write(str(noise_data[x]))
+        f.write(",")
+        f.write(str(dac_a_data[x]))
+        f.write(",")
+        f.write(str(dac_b_data[x]))
         f.write("\n")
+    f.write(notes)
+    f.write("\n")
     f.close() # Close the file
     
-    hp34401a_lcd_disp(hp_meter, "INL Done")
+    if(meter == 3458):
+        hp3458a_lcd_disp(hp_meter, "INLDone")
+    else:
+        hp34401a_lcd_disp(hp_meter, "INL Done")    
         
 def sampling_rate_sweep(client, hp_meter, dac_vref ,v_min, v_max, file_name):
     """
@@ -170,7 +188,10 @@ def sampling_rate_sweep(client, hp_meter, dac_vref ,v_min, v_max, file_name):
     # -------------------------------------------------------------------------
     
     # Display message to the hp34401a
-    hp34401a_lcd_disp(hp_meter, "Running Test")
+    if(meter == 3458):
+        hp3458a_lcd_disp(hp_meter, "Run Tst")
+    else:
+        hp34401a_lcd_disp(hp_meter, "Running Test")
     
     for i in range(len(sweep_rate)):
         clk_div = MASTER_CLOCK/(sweep_rate[i])
@@ -180,20 +201,23 @@ def sampling_rate_sweep(client, hp_meter, dac_vref ,v_min, v_max, file_name):
         time.sleep(.1)
         
          # Set DACs
-        code = LTC2758.LTC2758_voltage_to_code(v_min, dac_vref, 
-                                               LTC2758.LTC2748_UNIPOLAR_0_P5)
-        LTC2758.LTC2758_write(client, LTC2758.LTC2748_DAC_A | 
-                              LTC2758.LTC2758_WRITE_CODE_UPDATE_ALL, code)
+        code = LTC2758_voltage_to_code(v_min, dac_vref, 
+                                               LTC2748_UNIPOLAR_0_P5)
+        LTC2758_write(client, LTC2748_DAC_A | 
+                              LTC2758_WRITE_CODE_UPDATE_ALL, code)
         
-        code = LTC2758.LTC2758_voltage_to_code(v_max, dac_vref, 
-                                               LTC2758.LTC2748_UNIPOLAR_0_P5)
-        LTC2758.LTC2758_write(client, LTC2758.LTC2748_DAC_B | 
-                              LTC2758.LTC2758_WRITE_CODE_UPDATE_ALL, code)
+        code = LTC2758_voltage_to_code(v_max, dac_vref, 
+                                               LTC2748_UNIPOLAR_0_P5)
+        LTC2758_write(client, LTC2748_DAC_B | 
+                              LTC2758_WRITE_CODE_UPDATE_ALL, code)
         
         time.sleep(0.1)
         
         # Read the Voltage of DACs from HP meter
-        v_hp = hp34401a_voltage_read_rng_res(hp_meter, 10, 1**(-6))
+        if(meter == 3458):
+            v_hp = hp3458a_read_voltage(hp_meter)
+        else:
+            v_hp = hp34401a_voltage_read_rng_res(hp_meter, 10, 1**(-6))
         
         time.sleep(0.1)
         
@@ -204,32 +228,38 @@ def sampling_rate_sweep(client, hp_meter, dac_vref ,v_min, v_max, file_name):
         data1.append(np.average(data))
         
         # Set DACs
-        code = LTC2758.LTC2758_voltage_to_code(v_max, dac_vref, 
-                                               LTC2758.LTC2748_UNIPOLAR_0_P5)
-        LTC2758.LTC2758_write(client, LTC2758.LTC2748_DAC_A | 
-                              LTC2758.LTC2758_WRITE_CODE_UPDATE_ALL, code)
+        code = LTC2758_voltage_to_code(v_max, dac_vref, 
+                                               LTC2748_UNIPOLAR_0_P5)
+        LTC2758_write(client, LTC2748_DAC_A | 
+                              LTC2758_WRITE_CODE_UPDATE_ALL, code)
         
-        code = LTC2758.LTC2758_voltage_to_code(v_min, dac_vref, 
-                                               LTC2758.LTC2748_UNIPOLAR_0_P5)
-        LTC2758.LTC2758_write(client, LTC2758.LTC2748_DAC_B | 
-                              LTC2758.LTC2758_WRITE_CODE_UPDATE_ALL, code)        
+        code = LTC2758_voltage_to_code(v_min, dac_vref, 
+                                               LTC2748_UNIPOLAR_0_P5)
+        LTC2758_write(client, LTC2748_DAC_B | 
+                              LTC2758_WRITE_CODE_UPDATE_ALL, code)        
         
         time.sleep(0.1)
         
         # Read the Voltage of DACs from HP meter
-        v_hp = hp34401a_voltage_read(hp_meter)
-        
+        if(meter == 3458):
+            v_hp = hp3458a_read_voltage(hp_meter)
+        else:
+            v_hp = hp34401a_read_voltage(hp_meter)
+            
         time.sleep(0.1)
         
         # Capture the data
-        data = DC2390.capture(client, 2**17, trigger = 0, timeout = 1.0)
+        data = DC2390.capture(client, NUM_SAMPLES, trigger = 0, timeout = 1.0)
         
         hp_data2.append(v_hp)
         data2.append(np.average(data))
     
     # Store the data to a file
     # -------------------------------------------------------------------------
-    hp34401a_lcd_disp(hp_meter, "save 2 file")
+    if(meter == 3458):
+        hp3458a_lcd_disp(hp_meter, "sav2file")
+    else:
+        hp34401a_lcd_disp(hp_meter, "save 2 file")
     
     f = open(file_name, "w") # Create the file
     f.write("Sampling Rate Sweep \n")
@@ -247,7 +277,15 @@ def sampling_rate_sweep(client, hp_meter, dac_vref ,v_min, v_max, file_name):
         f.write("\n")
     f.close() # Close the file
     
-    hp34401a_lcd_disp(hp_meter, "Sweep Done")
+    if(meter == 3458):
+        hp3458a_lcd_disp(hp_meter, "SwpDone")
+    else:
+        hp34401a_lcd_disp(hp_meter, "Sweep Done")
+
+
+notes = """Testing notes string. Second configuration - 10 ohm - 0.47uF output RC
+0.047uF - 511 ohm feedback RC."""
+
     
 
 if __name__ == "__main__": 
@@ -273,13 +311,13 @@ if __name__ == "__main__":
         type_id = rev_id & 0x0000FFFF
         rev = (rev_id >> 16) & 0x0000FFFF
         
-        if (type_id != 0xABCD) or (rev != 0x1238):
+        if (type_id != 0xABCD) or (rev < 0x1238):
             print "Wrong FPGA bitstream on the FPGA"
-            print 'FPGA load type ID: %04X' % type_id
-            print 'FPGA load revision: %04X' % rev
+
         else:
             print "Correct bitstream file found !!"
-    
+        print 'FPGA load type ID: %04X' % type_id
+        print 'FPGA load revision: %04X' % rev
         # Set the LTC695 to 50 MHz
         DC2390.LTC6954_configure(client, 0x04)
         
@@ -320,30 +358,55 @@ if __name__ == "__main__":
         rm = visa.ResourceManager()
     
         # Connect to the HP multimeter
-        hp34401a = rm.open_resource("GPIB0::22::INSTR")
+        if(meter == 3458):
+            hp3458a = rm.open_resource("GPIB0::22::INSTR", 
+                                   read_termination = "\r\n", 
+                                   timeout = 50000)
+            hp3458a_init(hp3458a)
+        else:
+            hp34401a = rm.open_resource("GPIB0::22::INSTR")
     
-        hp34401a.timeout = 5000
-    
-        hp34401a.write("*CLS")  # Clear the LCD screen
-        hp34401a.write("*IDN?") # Read the ID name command for the meter
-        print hp34401a.read()   # Display the ID name
-        hp34401a_lcd_disp(hp34401a, "Starting Test")
+            hp34401a.timeout = 5000
         
+            hp34401a.write("*CLS")  # Clear the LCD screen
+            hp34401a.write("*IDN?") # Read the ID name command for the meter
+            print hp34401a.read()   # Display the ID name
+            hp34401a_lcd_disp(hp34401a, "Starting Test")
+            
         time.sleep(1)
         
         # Start the tests
         # ---------------------------------------------------------------------
         
         #inl_test(client, hp34401a, 100, 2.5, 5.0, "raw_data.csv")
-        inl_test(client, hp34401a, NUMBER_OF_POINTS, 5.0, 0, 0, 5.0,
-                 "raw_data.csv")
+        in_n_start = 5.0
+        in_n_end = 0.0
+        in_p_start = 0.0
+        in_p_end = 5.0
+        
+        if(meter == 3458):
+            inl_test(client, hp3458a, NUMBER_OF_POINTS, in_p_start, in_p_end,
+                     in_n_start, in_n_end, "output_data/raw_data.csv")
+        else:
+            inl_test(client, hp34401a, NUMBER_OF_POINTS, in_p_start, in_p_end,
+                     in_n_start, in_n_end, "output_data/raw_data.csv")
+        
         
         time.sleep(1)
-        
-        sampling_rate_sweep(client, hp34401a, DAC_VREF ,0.0, 5.0,
-                            "sample_sweep.csv")        
-        
-        hp34401a.close() # Disconnect the meter        
+
+
+        if(meter == 3458):
+            sampling_rate_sweep(client, hp3458a, DAC_VREF ,0.0, 5.0,
+                                "output_data/sample_sweep.csv")    
+        else:
+            sampling_rate_sweep(client, hp34401a, DAC_VREF ,0.0, 5.0,
+                                "output_data/sample_sweep.csv")    
+
+            
+        if(meter == 3458):
+            hp3458a.close()
+        else:
+            hp34401a.close() # Disconnect the meter        
         
     finally:
         
