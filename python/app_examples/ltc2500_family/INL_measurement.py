@@ -70,14 +70,29 @@ NUM_SAMPLES = 2**17
 DAC_VREF = 5.0 # DAC Reference voltage
 NUMBER_OF_POINTS = 25
 
-meter = 3458
-#meter = 34401
+meter_type = None
+#meter_type = 3458
+#meter_type = 34401
 
 ###############################################################################
 # Functions
 ###############################################################################
 
-def inl_test(client, hp_meter, num_pts, daca_start, daca_end, dacb_start,
+def vprint(s):
+    """Print string only if verbose is on"""
+    if verbose:
+        print s
+
+def meter_lcd_disp(meter_inst, message):
+    if(meter_type == None):
+        print("Meter Message: " + message)
+    elif(meter_type == 3458):
+        hp3458a_lcd_disp(meter_inst, "SwpDone")
+    else:
+        hp34401a_lcd_disp(meter_inst, "Sweep Done")
+
+
+def inl_test(client, meter_inst, num_pts, daca_start, daca_end, dacb_start,
              dacb_end, file_name):
     print("Running INL test!")
     # Variables
@@ -103,10 +118,12 @@ def inl_test(client, hp_meter, num_pts, daca_start, daca_end, dacb_start,
         
     # Run INL Test
     # -------------------------------------------------------------------------
-    if(meter == 3458):
-        hp3458a_lcd_disp(hp_meter, "Run Tst")
+    if(meter_type == 3458):
+        hp3458a_lcd_disp(meter_inst, "Run Tst")
+    elif(meter_type == 34401):
+        hp34401a_lcd_disp(meter_inst, "Running Test")
     else:
-        hp34401a_lcd_disp(hp_meter, "Running Test")
+        print("Running Test")
     
     for i in reversed(range(0,num_pts)):
         print("Point " + str(i + 1) + " of " + str(num_pts))
@@ -126,10 +143,12 @@ def inl_test(client, hp_meter, num_pts, daca_start, daca_end, dacb_start,
         time.sleep(0.1)
         
         # Read the Voltage of DACs from HP meter max resloutin 10v range
-        if(meter == 3458):
-            v_hp = hp3458a_read_voltage(hp_meter)
+        if(meter_type == 3458):
+            v_hp = hp3458a_read_voltage(meter_inst)
+        elif(meter_type == 34401):
+            v_hp = hp34401a_read_voltage(meter_inst)
         else:
-            v_hp = hp34401a_read_voltage(hp_meter)
+            v_hp = 0.0
 
         time.sleep(0.1)
         
@@ -144,10 +163,12 @@ def inl_test(client, hp_meter, num_pts, daca_start, daca_end, dacb_start,
     
     # Save data to file
     # -------------------------------------------------------------------------
-    if(meter == 3458):
-        hp3458a_lcd_disp(hp_meter, "sav2file")
+    if(meter_type == 3458):
+        hp3458a_lcd_disp(meter_inst, "sav2file")
+    elif(meter_type == 34401):
+        hp34401a_lcd_disp(meter_inst, "save 2 file")
     else:
-        hp34401a_lcd_disp(hp_meter, "save 2 file")
+        print("Saving to file")
 
     f = open(file_name, "w") # Create the file
     f.write('HP (V),ADC (32-bit code), RMS Noise (32-bit code), DAC A code, DAC B code\n')
@@ -166,12 +187,14 @@ def inl_test(client, hp_meter, num_pts, daca_start, daca_end, dacb_start,
     f.write("\n")
     f.close() # Close the file
     
-    if(meter == 3458):
-        hp3458a_lcd_disp(hp_meter, "INLDone")
+    if(meter_type == 3458):
+        hp3458a_lcd_disp(meter_inst, "INLDone")
+    elif(meter_type == 34401):
+        hp34401a_lcd_disp(meter_inst, "INL Done")
     else:
-        hp34401a_lcd_disp(hp_meter, "INL Done")    
+        print("INL test done")
         
-def sampling_rate_sweep(client, hp_meter, dac_vref ,v_min, v_max, file_name):
+def sampling_rate_sweep(client, meter_inst, dac_vref ,v_min, v_max, file_name):
     """
         Sweeps the sampling rate
     """
@@ -188,10 +211,12 @@ def sampling_rate_sweep(client, hp_meter, dac_vref ,v_min, v_max, file_name):
     # -------------------------------------------------------------------------
     
     # Display message to the hp34401a
-    if(meter == 3458):
-        hp3458a_lcd_disp(hp_meter, "Run Tst")
+    if(meter_type == 3458):
+        hp3458a_lcd_disp(meter_inst, "Run Tst")
+    elif(meter_type == 34401):
+        hp34401a_lcd_disp(meter_inst, "Running Test")
     else:
-        hp34401a_lcd_disp(hp_meter, "Running Test")
+        print("Running Test")
     
     for i in range(len(sweep_rate)):
         clk_div = MASTER_CLOCK/(sweep_rate[i])
@@ -214,15 +239,17 @@ def sampling_rate_sweep(client, hp_meter, dac_vref ,v_min, v_max, file_name):
         time.sleep(0.1)
         
         # Read the Voltage of DACs from HP meter
-        if(meter == 3458):
-            v_hp = hp3458a_read_voltage(hp_meter)
+        if(meter_type == 3458):
+            v_hp = hp3458a_read_voltage(meter_inst)
+        elif(meter_type == 34401):
+            v_hp = hp34401a_voltage_read_rng_res(meter_inst, 10, 1**(-6))
         else:
-            v_hp = hp34401a_voltage_read_rng_res(hp_meter, 10, 1**(-6))
+            v_hp = 0.0
         
         time.sleep(0.1)
-        
+        capture_time = 1.0 + (float(NUM_SAMPLES) / float(sweep_rate[i]))
         # Capture the data
-        data = DC2390.capture(client, NUM_SAMPLES, trigger = 0, timeout = 1.0)
+        data = DC2390.capture(client, NUM_SAMPLES, trigger = 0, timeout = capture_time)
         
         hp_data1.append(v_hp)
         data1.append(np.average(data))
@@ -241,25 +268,29 @@ def sampling_rate_sweep(client, hp_meter, dac_vref ,v_min, v_max, file_name):
         time.sleep(0.1)
         
         # Read the Voltage of DACs from HP meter
-        if(meter == 3458):
-            v_hp = hp3458a_read_voltage(hp_meter)
+        if(meter_type == 3458):
+            v_hp = hp3458a_read_voltage(meter_inst)
+        elif(meter_type == 34401):
+            v_hp = hp34401a_read_voltage(meter_inst)
         else:
-            v_hp = hp34401a_read_voltage(hp_meter)
+            v_hp = 0.0
             
         time.sleep(0.1)
         
         # Capture the data
-        data = DC2390.capture(client, NUM_SAMPLES, trigger = 0, timeout = 1.0)
+        data = DC2390.capture(client, NUM_SAMPLES, trigger = 0, timeout = capture_time)
         
         hp_data2.append(v_hp)
         data2.append(np.average(data))
     
     # Store the data to a file
     # -------------------------------------------------------------------------
-    if(meter == 3458):
-        hp3458a_lcd_disp(hp_meter, "sav2file")
+    if(meter_type == 3458):
+        hp3458a_lcd_disp(meter_inst, "sav2file")
+    elif(meter_type == 34401):
+        hp34401a_lcd_disp(meter_inst, "save 2 file")
     else:
-        hp34401a_lcd_disp(hp_meter, "save 2 file")
+        print("Saving to File")
     
     f = open(file_name, "w") # Create the file
     f.write("Sampling Rate Sweep \n")
@@ -277,10 +308,14 @@ def sampling_rate_sweep(client, hp_meter, dac_vref ,v_min, v_max, file_name):
         f.write("\n")
     f.close() # Close the file
     
-    if(meter == 3458):
-        hp3458a_lcd_disp(hp_meter, "SwpDone")
+    if(meter_type == 3458):
+        hp3458a_lcd_disp(meter_inst, "SwpDone")
+    elif(meter_type == 34401):
+        hp34401a_lcd_disp(meter_inst, "Sweep Done")
     else:
-        hp34401a_lcd_disp(hp_meter, "Sweep Done")
+        print("Sweep done")
+
+
 
 
 notes = """Testing notes string. Second configuration - 10 ohm - 0.47uF output RC
@@ -354,59 +389,53 @@ if __name__ == "__main__":
         # Connect to test equipment
         # ---------------------------------------------------------------------
         
-        # Connect to visa resource manager
-        rm = visa.ResourceManager()
+        
+        
     
         # Connect to the HP multimeter
-        if(meter == 3458):
-            hp3458a = rm.open_resource("GPIB0::22::INSTR", 
+        if(meter_type == 3458):
+            rm = visa.ResourceManager() # Connect to visa resource manager
+            meter_inst = rm.open_resource("GPIB0::22::INSTR", 
                                    read_termination = "\r\n", 
                                    timeout = 50000)
-            hp3458a_init(hp3458a)
+            hp3458a_init(meter_inst)
+        elif(meter_type == 34401):
+            rm = visa.ResourceManager() # Connect to visa resource manager
+            meter_inst = rm.open_resource("GPIB0::22::INSTR")
+            meter_inst.timeout = 5000    
+            meter_inst.write("*CLS")  # Clear the LCD screen
+            meter_inst.write("*IDN?") # Read the ID name command for the meter
+            print meter_inst.read()   # Display the ID name
+            hp34401a_lcd_disp(meter_inst, "Starting Test")
         else:
-            hp34401a = rm.open_resource("GPIB0::22::INSTR")
-    
-            hp34401a.timeout = 5000
-        
-            hp34401a.write("*CLS")  # Clear the LCD screen
-            hp34401a.write("*IDN?") # Read the ID name command for the meter
-            print hp34401a.read()   # Display the ID name
-            hp34401a_lcd_disp(hp34401a, "Starting Test")
+            meter_inst = None
+            print("Running test without meter...")
             
         time.sleep(1)
         
         # Start the tests
         # ---------------------------------------------------------------------
         
-        #inl_test(client, hp34401a, 100, 2.5, 5.0, "raw_data.csv")
         in_n_start = 5.0
         in_n_end = 0.0
         in_p_start = 0.0
         in_p_end = 5.0
         
-        if(meter == 3458):
-            inl_test(client, hp3458a, NUMBER_OF_POINTS, in_p_start, in_p_end,
-                     in_n_start, in_n_end, "output_data/raw_data.csv")
-        else:
-            inl_test(client, hp34401a, NUMBER_OF_POINTS, in_p_start, in_p_end,
-                     in_n_start, in_n_end, "output_data/raw_data.csv")
-        
-        
+        inl_test(client, meter_inst, NUMBER_OF_POINTS, in_p_start, in_p_end,
+                 in_n_start, in_n_end, "output_data/raw_data.csv")
+
         time.sleep(1)
 
+        sampling_rate_sweep(client, meter_inst, DAC_VREF ,0.0, 5.0,
+                            "output_data/sample_sweep.csv")    
+   
 
-        if(meter == 3458):
-            sampling_rate_sweep(client, hp3458a, DAC_VREF ,0.0, 5.0,
-                                "output_data/sample_sweep.csv")    
+        if(meter_type == 3458):
+            meter_inst.close()
+        elif(meter_type == 34401):
+            meter_inst.close() # Disconnect the meter
         else:
-            sampling_rate_sweep(client, hp34401a, DAC_VREF ,0.0, 5.0,
-                                "output_data/sample_sweep.csv")    
-
-            
-        if(meter == 3458):
-            hp3458a.close()
-        else:
-            hp34401a.close() # Disconnect the meter        
+            print("No meter to disconnect!")
         
     finally:
         

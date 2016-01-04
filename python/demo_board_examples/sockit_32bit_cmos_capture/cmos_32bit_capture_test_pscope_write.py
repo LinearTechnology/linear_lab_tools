@@ -63,8 +63,6 @@ print("Tuning Word:" + str(tuning_word))
 
 print('Starting client')
 client = MemClient(host=HOST)
-#First thing's First!! Configure clocks...
-LTC6954_configure_default(client)
 #Read FPGA type and revision
 rev_id = client.reg_read(REV_ID_BASE)
 type_id = rev_id & 0x0000FFFF
@@ -83,7 +81,6 @@ client.reg_write(PULSE_LOW_BASE, PULSE_LOW)
 client.reg_write(PULSE_HIGH_BASE, PULSE_HIGH)
 client.reg_write(PULSE_VAL_BASE, PULSE_VAL)
 
-LTC6954_configure_default(client)
 
 #datapath fields: lut_addr_select, dac_a_select, dac_b_select[1:0], fifo_data_select
 #lut addresses: 0=lut_addr_counter, 1=dac_a_data_signed, 2=0x4000, 3=0xC000
@@ -139,6 +136,7 @@ for i in range(0, NUM_SAMPLES):
 
 
 data_nodc0 = data_ch0 #- np.average(data)
+data_nodc1 = data_ch1 #- np.average(data)
 #data_nodc *= np.blackman(NUM_SAMPLES)
 #fftdata = np.abs(np.fft.fft(data_nodc)) / NUM_SAMPLES
 #fftdb = 20*np.log10(fftdata / 2.0**31)
@@ -149,14 +147,13 @@ plt.plot(data_ch0)
 plt.subplot(2, 1, 2)
 plt.plot(data_ch1)
 
-data_for_pscopeA = data_nodc / 256.0
+data_for_pscopeA = data_nodc0 / 256.0
 
 # Split out other channel here...
 
-data_for_pscopeB = data_nodc / 256.0
+data_for_pscopeB = data_nodc1 / 256.0
 
 #(out_path, num_bits, is_bipolar, num_samples, dc_num, ltc_num, *data):
-data_for_pscope = data_nodc / 256.0
 save_for_pscope("pscope_DC2390.adc",24 ,True, NUM_SAMPLES, "2390", "2500",
                 data_for_pscopeA, data_for_pscopeB)
 

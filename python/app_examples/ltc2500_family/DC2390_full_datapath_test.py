@@ -193,8 +193,9 @@ pltnum +=1
 plt.plot(data)
 
 plt.show()
-
-client.reg_write(DATAPATH_CONTROL_BASE, datapath_word_dist_correction)
+datapath_word_lut_continuous
+#client.reg_write(DATAPATH_CONTROL_BASE, datapath_word_dist_correction)
+client.reg_write(DATAPATH_CONTROL_BASE, datapath_word_lut_continuous)
 
 ## Okay, here goes!! Let's try to write into the LUT:
 #print("Writing out to LUT!")
