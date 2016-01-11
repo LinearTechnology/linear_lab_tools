@@ -66,9 +66,9 @@ from hp_multimeters import *
 
 MASTER_CLOCK = 50000000 
 SYSTEM_CLOCK_DIVIDER = 199 # 50MHz / 200 = 250 Ksps
-NUM_SAMPLES = 2**17
+NUM_SAMPLES = 2**15
 DAC_VREF = 5.0 # DAC Reference voltage
-NUMBER_OF_POINTS = 25
+NUMBER_OF_POINTS = 256
 
 meter_type = None
 #meter_type = 3458
@@ -91,14 +91,25 @@ def meter_lcd_disp(meter_inst, message):
     else:
         hp34401a_lcd_disp(meter_inst, "Sweep Done")
 
+def endpoint_inl(data):
+    inldata = []
+    xmax = len(data) -1
+#    data -= np.average(data)
+    slope = (data[xmax] - data[0]) / (xmax - 0.0)# Rise over run
+    intercept = data[xmax] - (slope * xmax)
+    for i in range(0, len(data)):
+        inldata.append(data[i] - (slope * i) + intercept)
+    return inldata
+    
 
 def inl_test(client, meter_inst, num_pts, daca_start, daca_end, dacb_start,
              dacb_end, file_name):
     print("Running INL test!")
     # Variables
-    # -------------------------------------------------------------------------    
+    # -------------------------------------------------------------------------
     hp_data = []
     adc_data = []
+    voltage_data = []
     noise_data = []
     dac_a_data = []
     dac_b_data = []
@@ -124,6 +135,15 @@ def inl_test(client, meter_inst, num_pts, daca_start, daca_end, dacb_start,
         hp34401a_lcd_disp(meter_inst, "Running Test")
     else:
         print("Running Test")
+    
+    fig1 = plt.figure()
+    plt.subplot(1, 1, 1)
+    plt.title("INL Battle! LTC2508 vs. LTC2758")
+    mng = plt.get_current_fig_manager()
+    mng.window.showMaximized()
+    plt.ion()
+    
+    
     
     for i in reversed(range(0,num_pts)):
         print("Point " + str(i + 1) + " of " + str(num_pts))
@@ -153,13 +173,30 @@ def inl_test(client, meter_inst, num_pts, daca_start, daca_end, dacb_start,
         time.sleep(0.1)
         
         # Capture the data
-        data = DC2390.capture(client, NUM_SAMPLES, trigger = 0, timeout = 1.0)
+        data = DC2390.capture(client, NUM_SAMPLES, trigger = 0, timeout = 0.25)
         
         hp_data.append(v_hp)
         adc_data.append(np.average(data))
         noise_data.append(np.std(data))
         dac_a_data.append(codea)
         dac_b_data.append(codeb)
+        
+        adc_voltage = np.average(data) * 10.0 / 2.0**32
+        print("Absolute voltage at ADC in: " + str(adc_voltage))
+        voltage_data.append(adc_voltage) #Convert to voltage
+        inldata = endpoint_inl(voltage_data)
+        plt.cla()
+        plt.title("INL Battle! LTC2508 vs. LTC2758")
+        plt.axis([0,num_pts,min(inldata), max(inldata)])
+        plt.plot(inldata, marker='o', linestyle='-', color="green")
+        plt.show()
+        plt.pause(0.0001) #Note this correction
+
+    print("Voltage_data:")
+    print(voltage_data)
+    print("INL_data:")
+    print(inldata)
+
     
     # Save data to file
     # -------------------------------------------------------------------------
@@ -426,8 +463,8 @@ if __name__ == "__main__":
 
         time.sleep(1)
 
-        sampling_rate_sweep(client, meter_inst, DAC_VREF ,0.0, 5.0,
-                            "output_data/sample_sweep.csv")    
+#        sampling_rate_sweep(client, meter_inst, DAC_VREF ,0.0, 5.0,
+#                            "output_data/sample_sweep.csv")    
    
 
         if(meter_type == 3458):
