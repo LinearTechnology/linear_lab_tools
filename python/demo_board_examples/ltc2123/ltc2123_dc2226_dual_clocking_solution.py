@@ -54,6 +54,9 @@ from dc2226_clock_configuration import * # Import clock configuration functions
 import numpy as np # Import NumPy for analysis
 
 # Initialize script operation parameters
+
+DC2666_rev = 3
+
 bitfile_id = 0xC0 # Bitfile ID
 continuous = 0 # Run continuously, or just once
 runs = 0 # Initial run count
@@ -162,7 +165,10 @@ while((runs < 1 or continuous == 1) and runs_with_errors < 100000):
     
         if(initialize_clocks == 1):
             #initialize_DC2226_version2_clocks_300(device, verbose)
-            initialize_DC2226_version2_clocks_250(device, verbose)
+            if(DC2666_rev == 3):
+                initialize_DC2226_rev_3_clocks_250(device, verbose)
+            else:
+                initialize_DC2226_version2_clocks_250(device, verbose)
             initialize_clocks = 0
 
         ################################################
@@ -255,9 +261,11 @@ while((runs < 1 or continuous == 1) and runs_with_errors < 100000):
             data_ch2 -= np.average(data_ch2)
             data_ch3 -= np.average(data_ch3)
 
-            windowscale = (fftlength) / sum(np.blackman(fftlength))
+
 
             fftlength = n.BuffSize/2
+            windowscale = (fftlength) / sum(np.blackman(fftlength))
+
             data_ch0 = data_ch0 * np.blackman(fftlength) * windowscale # Apply Blackman window
             freq_domain_ch0 = np.fft.fft(data_ch0)/(fftlength) # FFT
             freq_domain_magnitude_ch0 = np.abs(freq_domain_ch0) # Extract magnitude
