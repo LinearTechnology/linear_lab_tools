@@ -74,6 +74,11 @@ client.reg_write(NUM_SAMPLES_BASE, NUM_SAMPLES)
 
 
 LTC6954_configure_default(client)
+pll_locked = client.reg_read(DATA_READY_BASE) # Check data ready signal
+if((pll_locked & 0x02) == 0x02):
+    print("PLL is LOCKED!")
+else:
+    print("PLL is NOT locked, check power to DC2390")
 
 #datapath fields: lut_addr_select, dac_a_select, dac_b_select[1:0], fifo_data_select
 #lut addresses: 0=lut_addr_counter, 1=dac_a_data_signed, 2=0x4000, 3=0xC000
