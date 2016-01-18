@@ -33,6 +33,7 @@ import ltc_controller_comm as comm
 
 from time import sleep
 sleep_time = 0.1
+sync_time = 0.1
 
 # FPGA register addresses
 ID_REG = 0x00
@@ -99,6 +100,138 @@ def read_LTC6951_reg_dump(filename, verbose = True):
         print reg_vals
     return reg_vals
 
+def initialize_DC2226_CLOCKS_ParallelSync_250(device, verbose):
+    delay = 0x05    
+    delay_sysref = delay + 4    
+    
+    if(verbose != 0):
+        print "Configuring clock generators over SPI:"
+    device.hs_set_bit_mode(comm.HS_BIT_MODE_MPSSE)
+    
+    #LTC6954 config
+    print "Configuring LTC6954 (REF distribution)"
+    device.hs_fpga_write_data_at_address(SPI_CONFIG_REG, 0x04)
+    device.spi_send_byte_at_address(0x00 << 1, 0x00)
+    device.spi_send_byte_at_address(0x01 << 1, 0x80) # 6951-1 delay
+    device.spi_send_byte_at_address(0x02 << 1, 0x01) # 6951-1 divider
+    device.spi_send_byte_at_address(0x03 << 1, 0x80) # 6951-2 delay
+    device.spi_send_byte_at_address(0x04 << 1, 0x01) # 6951-2 divider
+    device.spi_send_byte_at_address(0x05 << 1, 0x80) # sync delay & CMSINV
+    device.spi_send_byte_at_address(0x06 << 1, 0x01) # sync divider
+    device.spi_send_byte_at_address(0x07 << 1, 0x23) #
+
+    print "SYNC LTC6954 Outputs"
+    # LTC6954 does not need a sync when all LTC6954 outputs have DIV=1, leaving in in case a different mode is tried with DIV>1
+    device.hs_fpga_write_data_at_address(SPI_CONFIG_REG, 0x10)  # LTC6954 SYNC HIGH, LTC6954 outputs with SYNC_EN=1  static during sync
+    sleep(sync_time)   # minimum 1ms required for LTC6954 sync
+    device.hs_fpga_write_data(0x00)   # LTC6954 SYNC LOw, outputs begin toggling
+
+#LTC6951config
+    print "Configuring U10 (LTC6951): FPGA CLK, ADC2 Clock & SYSREF"
+    device.hs_fpga_write_data_at_address(SPI_CONFIG_REG, 0x02)
+    device.spi_send_byte_at_address(0x01 << 1, 0xBA) #
+    device.spi_send_byte_at_address(0x02 << 1, 0x00) #
+    device.spi_send_byte_at_address(0x03 << 1, 0x74) # RAO=1
+    device.spi_send_byte_at_address(0x04 << 1, 0x93) #
+    device.spi_send_byte_at_address(0x05 << 1, 0x04) # RDIV = 1, REF = 100MHz
+    device.spi_send_byte_at_address(0x06 << 1, 0x14) # NDIV = 20, VCO=4GHz
+    device.spi_send_byte_at_address(0x07 << 1, 0x07) # ICP=11.2mA
+    device.spi_send_byte_at_address(0x08 << 1, 0x00) # PDIV=2
+    device.spi_send_byte_at_address(0x09 << 1, 0x20) # OUT0: divider=1 2GHz, output off
+    device.spi_send_byte_at_address(0x0A << 1, 0xC0) # SN=SR=1
+    device.spi_send_byte_at_address(0x0B << 1, 0xD3) # OUT1: ADC2 Clock DIV=8 250MHz 
+    device.spi_send_byte_at_address(0x0C << 1, delay) # OUT1: ADC2 Clock Delay = 5 
+    device.spi_send_byte_at_address(0x0D << 1, 0x30) # OUT2: unused, powered down
+    device.spi_send_byte_at_address(0x0E << 1, 0x00) # OUT2: unused, powered down
+    device.spi_send_byte_at_address(0x0F << 1, 0xDB) # OUT3: ADC2 SYSREF DIV=128 15.625MHz
+    device.spi_send_byte_at_address(0x10 << 1, delay_sysref) # OUT3: ADC2 SYSREF Delay = 9 
+    device.spi_send_byte_at_address(0x11 << 1, 0x95) # OUT4: FPGA Clock DIV = 16, 125MHz
+    device.spi_send_byte_at_address(0x12 << 1, delay) # OUT4: FPGA Clock Delay = 5
+    device.spi_send_byte_at_address(0x02 << 1, 0x01) # calibrate after writing all registers
+
+#LTC6951config
+    print "Configuring U13 (LTC6951): FPGA SYSREF, ADC1 Clock and SYSREF"
+    device.hs_fpga_write_data_at_address(SPI_CONFIG_REG, 0x03)
+    device.spi_send_byte_at_address(0x01 << 1, 0xBA) #
+    device.spi_send_byte_at_address(0x02 << 1, 0x00) #
+    device.spi_send_byte_at_address(0x03 << 1, 0x74) # RAO=1
+    device.spi_send_byte_at_address(0x04 << 1, 0x93) #
+    device.spi_send_byte_at_address(0x05 << 1, 0x04) # RDIV = 1, REF = 100MHz
+    device.spi_send_byte_at_address(0x06 << 1, 0x14) # NDIV = 20, VCO=4GHz
+    device.spi_send_byte_at_address(0x07 << 1, 0x07) # ICP=11.2mA
+    device.spi_send_byte_at_address(0x08 << 1, 0x00) # PDIV=2
+    device.spi_send_byte_at_address(0x09 << 1, 0x20) # OUT0: divider=1 2GHz, output off
+    device.spi_send_byte_at_address(0x0A << 1, 0xC0) # SN=SR=1
+    device.spi_send_byte_at_address(0x0B << 1, 0xD3) # OUT1: ADC1 Clock DIV=8 250MHz
+    device.spi_send_byte_at_address(0x0C << 1, delay) # OUT1: ADC1 Clock Delay = 5 
+    device.spi_send_byte_at_address(0x0D << 1, 0x30) # OUT2: unused, powered down
+    device.spi_send_byte_at_address(0x0E << 1, 0x00) # OUT2: unused, powered down
+    device.spi_send_byte_at_address(0x0F << 1, 0xDB) # OUT3: ADC1 SYSREF DIV=128 15.625MHz
+    device.spi_send_byte_at_address(0x10 << 1, delay_sysref) # OUT3: ADC1 SYSREF Delay = 9 
+    device.spi_send_byte_at_address(0x11 << 1, 0x9B) # OUT4: FPGA SYSREF DIV = 16, 125MHz
+    device.spi_send_byte_at_address(0x12 << 1, delay_sysref) # OUT4: FPGA SYSREF Delay = 9
+    device.spi_send_byte_at_address(0x02 << 1, 0x01) # calibrate after writing all registers
+
+    print "SYNC LTC6951 Outputs"
+    device.hs_fpga_write_data_at_address(SPI_CONFIG_REG, 0x08)  # LTC6951 SYNC HIGH, all output with SYNC_EN=1 static 
+    sleep(sync_time) # minimum 1ms required for LTC6951 sync
+    device.hs_fpga_write_data(0x00) # LTC6954 SYNC LOw, outputs begin toggling
+    
+    print "Configuring LTC6954: Force OUT2- LOW"
+    device.hs_fpga_write_data_at_address(SPI_CONFIG_REG, 0x04)
+    device.spi_send_byte_at_address(0x05 << 1, 0x80) # ensure CMSINV=0
+    device.spi_send_byte_at_address(0x00 << 1, 0x30) # Powerdown 6954 OUT2 (Sync), this forces teh CMOS OUT2- low when CMSINV=0 & saves power
+
+	
+def DC2226_MUTE_LTC6951_SYREF(device, verbose):
+    if(verbose != 0):
+        print "Configuring clock generators over SPI:"
+    device.hs_set_bit_mode(comm.HS_BIT_MODE_MPSSE)
+
+#LTC6951config
+    print "Configuring U10 (LTC6951): MUTE ADC2 SYSREF"
+    device.hs_fpga_write_data_at_address(SPI_CONFIG_REG, 0x02)
+    device.spi_send_byte_at_address(0x08 << 1, 0x08) # PDIV=2, MUTE3=1 ADC2 SYSREF
+
+#LTC6951config
+    print "Configuring U13 (LTC6951): MUTE FPGA SYSREF, ADC1 SYSREF"
+    device.hs_fpga_write_data_at_address(SPI_CONFIG_REG, 0x03)
+    device.spi_send_byte_at_address(0x08 << 1, 0x18) # PDIV=2, MUTE3=MUTE4=1, ADC1 & FPGA SYSREF
+
+
+def DC2226_PDOUT_LTC6951_SYREF(device, verbose):
+    if(verbose != 0):
+        print "Configuring clock generators over SPI:"
+    device.hs_set_bit_mode(comm.HS_BIT_MODE_MPSSE)
+
+#LTC6951config
+    print "Configuring U10 (LTC6951): POWER DOWN OUTPUT, ADC2 SYSREF"
+    device.hs_fpga_write_data_at_address(SPI_CONFIG_REG, 0x02)
+    device.spi_send_byte_at_address(0x0F << 1, 0xAB) # OUT3: ADC2 SYSREF DIV=128 15.625MHz
+
+#LTC6951config
+    print "Configuring U13 (LTC6951): POWER DOWN OUTPUT, FPGA SYSREF, ADC1 SYSREF"
+    device.hs_fpga_write_data_at_address(SPI_CONFIG_REG, 0x03)
+    device.spi_send_byte_at_address(0x0F << 1, 0xAB) # OUT3: ADC1 SYSREF DIV=128 15.625MHz
+    device.spi_send_byte_at_address(0x11 << 1, 0xAB) # OUT4: FPGA SYSREF DIV = 16, 125MHz
+
+def DC2226_PDDIV_LTC6951_SYREF(device, verbose):
+    if(verbose != 0):
+        print "Configuring clock generators over SPI:"
+    device.hs_set_bit_mode(comm.HS_BIT_MODE_MPSSE)
+
+#LTC6951config
+    print "Configuring U10 (LTC6951): POWER DOWN DIV & OUTPUT, ADC2 SYSREF"
+    device.hs_fpga_write_data_at_address(SPI_CONFIG_REG, 0x02)
+    device.spi_send_byte_at_address(0x0F << 1, 0xBB) # OUT3: ADC2 SYSREF DIV=128 15.625MHz
+
+#LTC6951config
+    print "Configuring U13 (LTC6951): POWER DOWN DIV & OUTPUT, FPGA SYSREF, ADC1 SYSREF"
+    device.hs_fpga_write_data_at_address(SPI_CONFIG_REG, 0x03)
+    device.spi_send_byte_at_address(0x0F << 1, 0xBB) # OUT3: ADC1 SYSREF DIV=128 15.625MHz
+    device.spi_send_byte_at_address(0x11 << 1, 0xBB) # OUT4: FPGA SYSREF DIV = 16, 125MHz
+	
+ 
 def initialize_DC2226_version2_clocks_250(device, verbose):
     if(verbose != 0):
         print "Configuring clock generators over SPI:"
@@ -189,7 +322,6 @@ def initialize_DC2226_rev_3_clocks_250(device, verbose):
     #LTC6954 config
     print "Configuring LTC6954 (REF distribution)"
     device.hs_fpga_write_data_at_address(SPI_CONFIG_REG, 0x04)
-
     device.spi_send_byte_at_address(0x00 << 1, 0x00)
     device.spi_send_byte_at_address(0x01 << 1, 0x80) # 6951-1 delay
     device.spi_send_byte_at_address(0x02 << 1, 0x01) # 6951-1 divider
@@ -198,8 +330,9 @@ def initialize_DC2226_rev_3_clocks_250(device, verbose):
     device.spi_send_byte_at_address(0x05 << 1, 0x80) # sync delay & CMSINV
     device.spi_send_byte_at_address(0x06 << 1, 0x01) # sync divider
     device.spi_send_byte_at_address(0x07 << 1, 0x23) #
-    print "Configuring U10 (LTC6951) cp"
+
 #LTC6951config
+    print "Configuring U10 (LTC6951): FPGA CLK, ADC2 Clock & SYSREF"
     device.hs_fpga_write_data_at_address(SPI_CONFIG_REG, 0x02)
     device.spi_send_byte_at_address(0x00 << 1, 0x05) #
     device.spi_send_byte_at_address(0x01 << 1, 0xBA) #
@@ -209,7 +342,7 @@ def initialize_DC2226_rev_3_clocks_250(device, verbose):
     device.spi_send_byte_at_address(0x05 << 1, 0x08) #
     device.spi_send_byte_at_address(0x06 << 1, 0x05) # 5 for 200, 6 for 300. VCO=2GHz.
     device.spi_send_byte_at_address(0x07 << 1, 0x07) #
-    device.spi_send_byte_at_address(0x08 << 1, 0x00) #
+    device.spi_send_byte_at_address(0x08 << 1, 0x01) # Mutes unused OUT0
     device.spi_send_byte_at_address(0x09 << 1, 0x13) #
     device.spi_send_byte_at_address(0x0A << 1, 0xC0) #
     device.spi_send_byte_at_address(0x0B << 1, 0x93) # ADC SYSREF 2 div, 
@@ -224,9 +357,9 @@ def initialize_DC2226_rev_3_clocks_250(device, verbose):
     device.spi_send_byte_at_address(0x12 << 1, 0x19) #
     device.spi_send_byte_at_address(0x13 << 1, 0x11) #
     device.spi_send_byte_at_address(0x02 << 1, 0x01) # calibrate after writing all registers
-	
-    print "Configuring U13 (LTC6951) cp"
+
 #LTC6951config
+    print "Configuring U13 (LTC6951): FPGA SYSREF, ADC1 Clock and SYSREF"
     device.hs_fpga_write_data_at_address(SPI_CONFIG_REG, 0x03)
     device.spi_send_byte_at_address(0x00 << 1, 0x05) #
     device.spi_send_byte_at_address(0x01 << 1, 0xBA) #
@@ -236,7 +369,7 @@ def initialize_DC2226_rev_3_clocks_250(device, verbose):
     device.spi_send_byte_at_address(0x05 << 1, 0x08) #
     device.spi_send_byte_at_address(0x06 << 1, 0x05) # 5 for 250, 6 for 300
     device.spi_send_byte_at_address(0x07 << 1, 0x07) #
-    device.spi_send_byte_at_address(0x08 << 1, 0x00) #
+    device.spi_send_byte_at_address(0x08 << 1, 0x01) # Mutes unused OUT0
     device.spi_send_byte_at_address(0x09 << 1, 0x13) #
     device.spi_send_byte_at_address(0x0A << 1, 0xC0) #
     device.spi_send_byte_at_address(0x0B << 1, 0x93) # FPGA SYSREF div, 
@@ -250,15 +383,17 @@ def initialize_DC2226_rev_3_clocks_250(device, verbose):
     device.spi_send_byte_at_address(0x13 << 1, 0x11) #
     device.spi_send_byte_at_address(0x02 << 1, 0x01) # calibrate after writing all registers
 
-    print "toggle SYNC cp"
-    # only toggle LTC6951 sync (LTC6954 does not need a sync with DIV=1)
-    sleep(sleep_time)
-    device.hs_fpga_write_data_at_address(SPI_CONFIG_REG, 0x08)
-    print "sync high"
-    sleep(sleep_time)
-    print "sync low"
-    device.hs_fpga_write_data(0x00)
-    sleep(sleep_time)
+    print "toggle SYNC LTC6954 Sync"
+    # LTC6954 does not need a sync when all LTC6954 outputs have DIV=1, leaving in in case a different mode is tried with DIV>1
+    device.hs_fpga_write_data_at_address(SPI_CONFIG_REG, 0x10)  # LTC6954 SYNC HIGH, LTC6954 outputs with SYNC_EN=1  static during sync
+    sleep(sync_time)   # minimum 1ms required for LTC6954 sync
+    device.hs_fpga_write_data(0x00)   # LTC6954 SYNC LOw, outputs begin toggling
+    sleep(sleep_time)  # wait for LTC6951 PLL to lock after LTC6954 outputs start (usually takes ~50us)
+
+    print "toggle SYNC LTC6951 Sync"
+    device.hs_fpga_write_data_at_address(SPI_CONFIG_REG, 0x08)  # LTC6951 SYNC HIGH, all output with SYNC_EN=1 static 
+    sleep(sync_time) # minimum 1ms required for LTC6951 sync
+    device.hs_fpga_write_data(0x00) # LTC6954 SYNC LOw, outputs begin toggling
 
 
 
