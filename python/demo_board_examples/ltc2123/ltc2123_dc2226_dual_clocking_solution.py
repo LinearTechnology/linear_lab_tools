@@ -128,7 +128,7 @@ for info in comm.list_controllers(comm.TYPE_HIGH_SPEED):
 if device_info is None:
     raise(comm.HardwareError('Could not find a compatible device'))
 
-
+delay=0
 while((runs < 1 or continuous == 1) and runs_with_errors < 100000):
     runs += 1
     print "Run number: " + str(runs)
@@ -163,10 +163,11 @@ while((runs < 1 or continuous == 1) and runs_with_errors < 100000):
             load_ltc212x(device, 1, verbose, did1, bid, 2, K, modes, 1, pattern1)
             initialize_adcs = 0 # Only initialize on first run
     
-        if(initialize_clocks == 1):
+        if  (initialize_clocks == 1):
             #initialize_DC2226_version2_clocks_300(device, verbose)
             if(DC2666_rev == 3):
-                initialize_DC2226_rev_3_clocks_250(device, verbose)
+                #initialize_DC2226_rev_3_clocks_250(device, verbose)
+                initialize_DC2226_CLOCKS_ParallelSync_250(device, verbose)
             else:
                 initialize_DC2226_version2_clocks_250(device, verbose)
             initialize_clocks = 0
@@ -204,6 +205,12 @@ while((runs < 1 or continuous == 1) and runs_with_errors < 100000):
             write_jesd204b_reg(device, 0x34, 0x00, 0x00, 0x00, 0x00)  # Disable error counters, error reporting by SYNC~
             write_jesd204b_reg(device, 0x04, 0x00, 0x00, 0x00, 0x01)  # Reset core
 
+        ################################################
+        # After JESD alignments complete, MUTE SYSREFs
+        # This will cleans up SYSREF clock mixing spurs
+        ################################################
+        DC2226_MUTE_LTC6951_SYREF(device, verbose)
+        
         if(verbose != 0):
             print "Capturing data and resetting..."
         data_ch0, data_ch1, data_ch2, data_ch3, nSamps_per_channel, syncErr = capture4(device, n, dumpdata, dump_pscope_data, verbose)
@@ -237,6 +244,7 @@ while((runs < 1 or continuous == 1) and runs_with_errors < 100000):
             write_1ch_32k_pscope_file(data_ch1, ("ch1_data.adc"))
             write_1ch_32k_pscope_file(data_ch2, ("ch2_data.adc"))
             write_1ch_32k_pscope_file(data_ch3, ("ch3_data.adc"))
+            delay = delay+1
             
         if((plot_data != 0) & (patterncheck == 0)):
             from matplotlib import pyplot as plt
