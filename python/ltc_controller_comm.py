@@ -122,7 +122,7 @@ class ControllerInfo(ct.Structure):
     ]
 
     def get_type(self):
-        return self._type.value
+        return self._type
 
     def get_serial_number(self):
         return self._serial_number[:SERIAL_NUMBER_BUFFER_SIZE]
