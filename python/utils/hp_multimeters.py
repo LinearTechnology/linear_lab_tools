@@ -32,44 +32,56 @@
     policies, either expressed or implied, of Linear Technology Corp.
 
     Description:
-        The purpose of this module is to measure INL for the 2500
+        The purpose of this module is to interface with hp multimeters 
 """
 
 import visa
 
 def hp34401a_lcd_disp(hp_meter, message):
-    """
-        Displays up to 12 charaters on the hp33401a
+    """Displays up to 12 charaters on the hp33401a
+       hp_meter: the instance of the meter
+       message: the 12 charaters to be displayed on the meter
     """
     hp_meter.write("DISP:TEXT:CLE")
     hp_meter.write("DISP:TEXT '" + str(message) + "'")
 
 def hp34401a_read_voltage(hp_meter):
-    """
-        Measures voltage in auto range and auto resolution
+    """Measures voltage in auto range and auto resolution
+       returns the voltage in float
+       hp_meter: the instance of the meter
     """
     hp_meter.write("MEAS:VOLT:DC? DEF,DEF")    
     return float(hp_meter.read())
 
-def hp34401a_voltage_read_rng_res(hp_meter , v_range, v_resolution):
-    """
-        Measures voltage with specified range and resolution
+def hp34401a_read_voltage_rng_res(hp_meter , v_range, v_resolution):
+    """Measures voltage with specified range and resolution
+       returns the voltage in float
+       hp_meter: the instance of the meter
+       v_range: the desired voltage range
+       v_resolution: the desired resolution
     """
     hp_meter.write("MEAS:VOLT:DC? " + str(v_range) + " , " + str(v_resolution))
     return float(hp_meter.read())
 
 
 def hp3458a_lcd_disp(hp_meter, message):
-    """
-        Displays up to 16 charaters on the hp2458a
+    """Displays up to 16 charaters on the hp2458a
+       hp_meter: the instance of the meter
+       message: the 16 charaters to be displayed on the meter
     """
     hp_meter.write("DISP 3")
     hp_meter.write("DISP 2 '" + str(message) + "'")
     
 def hp3458a_self_test(hp_meter):
+    """Starts a self test
+       hp_meter: the instance of the meter
+    """
     hp_meter.write("TEST")
     
 def hp3458a_init(hp_meter):
+    """Initializes the meter to DC voltage measurment in the 10V range
+       hp_meter: the instance of the meter
+    """
     hp_meter.write("RESET")
     hp_meter.write("TARM HOLD")
     hp_meter.write("FUNC DCV") # Set to DC voltage measurment 
@@ -80,16 +92,25 @@ def hp3458a_init(hp_meter):
     hp_meter.write("FIXEDZ ON") # Fixed input impedance 
     
 def hp3458a_read_voltage(hp_meter):
+    """Measures voltage
+       returns the voltage in float
+       hp_meter: the instance of the meter
+    """
     hp_meter.write("TARM SGL")
     return float(hp_meter.read())
+
+def resource_manager():
+    """Connect to the resource manager
+       returns the visa avalable resources
+    """
+    return visa.ResourceManager()
     
-    
-if __name__ == "__main__": 
-        # Connect to test equipment
+if __name__ == "__main__":
+    # Connect to test equipment
     # ---------------------------------------------------------------------
     
     # Connect to visa resource manager
-    rm = visa.ResourceManager()
+    rm = resource_manager()
     
     try:
         # Connect to the HP multimeter
