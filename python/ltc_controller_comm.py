@@ -31,7 +31,7 @@ To connect do something like this:
     print serial_number
     
     # open and use the device
-    with ltc.Controller(controller_info) as controller:
+    with lcc.Controller(controller_info) as controller:
         # user your controller now
 """
 
@@ -141,7 +141,6 @@ else:
     _dll_file += ".dll"
 
 _dll = ct.CDLL(_dll_file)
-
 
 def list_controllers(controller_type):
     """Returns a list of ControllerInfo structures
