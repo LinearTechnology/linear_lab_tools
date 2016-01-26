@@ -91,13 +91,14 @@ print 'Looking for a DC1371 with a DC1532A-A demoboard'
 for info in comm.list_controllers(comm.TYPE_DC1371):
     with comm.Controller(info) as controller:
         found_eeprom_id = controller.eeprom_read_string(len(expected_eeprom_id))
-        if found_eeprom_id == expected_eeprom_id:
+        if 'DC1532' in found_eeprom_id:
             if verbose:
-                print 'Found a DC1532A-A demoboard'
+                print 'Found a DC1532A-x demoboard'
             controller_info = info
             break
 if controller_info is None:
     raise(comm.HardwareError('Could not find a compatible device'))
+    
 # Open communication to the demo board
 with comm.Controller(controller_info) as controller:
 
