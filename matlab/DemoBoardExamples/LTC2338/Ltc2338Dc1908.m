@@ -90,7 +90,7 @@ function Ltc2338Dc1908(arg1NumSamples, arg2Verbose, arg3DoDemo, arg4Trigger, arg
     
     for info = deviceInfoList
         % if strcmp(EEPROM_ID(1 : eepromIdSize - 1), comm.EepromReadString(cId, eepromIdSize))
-		if ~isempty(strfind(comm.EepromReadString(cId, eepromIdSize), 'DC2290'))
+		if ~isempty(strfind(comm.EepromReadString(cId, eepromIdSize), 'DC1908'))
             break;
         end
         cId = comm.Cleanup(cId);
@@ -142,8 +142,8 @@ function Ltc2338Dc1908(arg1NumSamples, arg2Verbose, arg3DoDemo, arg4Trigger, arg
         fprintf('\nReading data');
     end
     
-    [numBytes dataBytes] = comm.DataReceiveBytes(cId, numAdcSamples * SAMPLE_BYTES);
-   
+    dataBytes = comm.DataReceiveBytes(cId, numAdcSamples * SAMPLE_BYTES);
+    
     if(verbose)
         fprintf('\nData read done, parsing data...');
     end
