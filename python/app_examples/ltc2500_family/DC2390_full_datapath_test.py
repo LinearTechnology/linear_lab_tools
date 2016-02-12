@@ -134,6 +134,7 @@ fftdb = 20*np.log10(fftdata / 2.0**31)
 plt.figure(pltnum)
 pltnum +=1
 plt.subplot(2, 1, 1)
+plt.title("Basic Sinewave test")
 plt.plot(data)
 plt.subplot(2, 1, 2)
 plt.plot(fftdb)
@@ -150,6 +151,7 @@ fftdb = 20*np.log10(fftdata / 2.0**31)
 plt.figure(pltnum)
 pltnum +=1
 plt.subplot(2, 1, 1)
+plt.title("Continuous arb. waveform")
 plt.plot(data)
 plt.subplot(2, 1, 2)
 plt.plot(fftdb)
@@ -162,6 +164,7 @@ fftdb = 20*np.log10(fftdata / 2.0**31)
 plt.figure(pltnum)
 pltnum +=1
 plt.subplot(2, 1, 1)
+plt.title("Single-shot arb. waveform")
 plt.plot(data)
 plt.subplot(2, 1, 2)
 plt.plot(fftdb)
@@ -171,12 +174,14 @@ client.reg_write(DATAPATH_CONTROL_BASE, datapath_word_dist_correction)
 data = capture(client, NUM_SAMPLES, trigger = 0, timeout = 0.0)
 plt.figure(pltnum)
 pltnum +=1
+plt.title("NCO as address to LUT")
 plt.plot(data)
 
 #PID controller
 client.reg_write(DATAPATH_CONTROL_BASE, datapath_word_pid)
 data = capture(client, NUM_SAMPLES, trigger = 0, timeout = 0.0)
 plt.figure(pltnum)
+plt.title("PID controller")
 plt.plot(data)
 
 PID_KP = 0x0010
