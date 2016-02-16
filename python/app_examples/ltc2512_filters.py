@@ -63,12 +63,19 @@ ppc = 8 # Points per coefficient, affects fft method
 num_freqencies = 65536 # Number of frequencies to evaluate, affects freqz method
 
 # Initialize arrays to hold filter coefficients. We know the number of elements ahead of time.
+ssinc_flat_4 = np.ndarray(117, dtype=float)
 ssinc_flat_8 = np.ndarray(235, dtype=float)
 ssinc_flat_16 = np.ndarray(471, dtype=float)
 ssinc_flat_32 = np.ndarray(943, dtype=float)
 ssinc_flat_64 = np.ndarray(1887, dtype=float)
 
 # Read in coefficients from files
+with open('../../common/ltc25xx_filters/ssinc_flat_4.txt', 'r') as infile:
+    for i in range(0, 117):
+        instring = infile.readline()
+        ssinc_flat_4[i] = float(instring)
+print('done reading DF 4!')
+
 with open('../../common/ltc25xx_filters/ssinc_flat_8.txt', 'r') as infile:
     for i in range(0, 235):
         instring = infile.readline()
@@ -92,7 +99,7 @@ with open('../../common/ltc25xx_filters/ssinc_flat_64.txt', 'r') as infile:
         instring = infile.readline()
         ssinc_flat_64[i] = float(instring) # Frequency Density
 print('done reading DF 64!')
-
+ssinc_flat_4 /= sum(ssinc_flat_4) #Normalize to unity gain
 ssinc_flat_8 /= sum(ssinc_flat_8) #Normalize to unity gain
 ssinc_flat_16 /= sum(ssinc_flat_16) #Normalize to unity gain
 ssinc_flat_32 /= sum(ssinc_flat_32) #Normalize to unity gain
@@ -103,6 +110,7 @@ print("Done normalizing!")
 # amplitude for a better visual picture...
 plt.figure(1)
 plt.title('LTC2512 SSinc + Flattening filter impulse responses (DF 8, 16, 32, 64)')
+plt.plot(ssinc_flat_4 / max(ssinc_flat_4))
 plt.plot(ssinc_flat_8 / max(ssinc_flat_8))
 plt.plot(ssinc_flat_16 / max(ssinc_flat_16))
 plt.plot(ssinc_flat_32 / max(ssinc_flat_32))
@@ -122,18 +130,21 @@ plt.show()
 
 if(use_fft_method == True):
     print("Calculating frequency response using zero-padded FFT method")
+    ssinc_flat_4_mag = lltf.freqz_by_fft(ssinc_flat_4, 128*ppc)
     ssinc_flat_8_mag = lltf.freqz_by_fft(ssinc_flat_8, 64*ppc)
     ssinc_flat_16_mag = lltf.freqz_by_fft(ssinc_flat_16, 16*ppc)
     ssinc_flat_32_mag = lltf.freqz_by_fft(ssinc_flat_32, 4*ppc)
     ssinc_flat_64_mag = lltf.freqz_by_fft(ssinc_flat_64, ppc)
 else:
     print("Calculating frequency response using numpy's freqz function")
+    w0, ssinc_flat_4_mag = signal.freqz(ssinc_flat_4, 1, num_freqencies)
     w1, ssinc_flat_8_mag = signal.freqz(ssinc_flat_8, 1, num_freqencies)
     w2, ssinc_flat_16_mag = signal.freqz(ssinc_flat_16, 1, num_freqencies)
     w3, ssinc_flat_32_mag = signal.freqz(ssinc_flat_32, 1, num_freqencies)
     w4, ssinc_flat_64_mag = signal.freqz(ssinc_flat_64, 1, num_freqencies)
 
 # Calculate response in dB, for later use...
+ssinc_flat_4_db = 20*np.log10(abs(ssinc_flat_4_mag))
 ssinc_flat_8_db = 20*np.log10(abs(ssinc_flat_8_mag))
 ssinc_flat_16_db = 20*np.log10(abs(ssinc_flat_16_mag))
 ssinc_flat_32_db = 20*np.log10(abs(ssinc_flat_32_mag))
@@ -141,13 +152,14 @@ ssinc_flat_64_db = 20*np.log10(abs(ssinc_flat_64_mag))
 
 # Plot frequency response, linear frequency axis
 plt.figure(2)
+plt.semilogy(ssinc_flat_4_mag, zorder=1)
 plt.semilogy(ssinc_flat_8_mag, zorder=1)
 plt.semilogy(ssinc_flat_16_mag, zorder=1)
 plt.semilogy(ssinc_flat_32_mag, zorder=1)
 plt.semilogy(ssinc_flat_64_mag, zorder=1)
 
 
-plt.title('LTC2512 SSinc filter responses (DF 8, 16, 32, 64)')
+plt.title('LTC2512 SSinc filter responses (DF 4, 8, 16, 32, 64)')
 plt.xlabel('freq.')
 plt.ylabel('log Amplitude')
 plt.axis([0, 16400, 10.0**(-150/20), 1])
