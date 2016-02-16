@@ -54,11 +54,13 @@ import numpy as np
 from time import sleep
 from matplotlib import pyplot as plt
 import DC2390_functions as DC2390
+
 from LTC2758 import *
 sys.path.append('../../')
 sys.path.append('../../utils') 
 from mem_func_client import MemClient
 from hp_multimeters import *
+from endpoint_inl import *
 
 ###############################################################################
 # Global Constants
@@ -66,9 +68,9 @@ from hp_multimeters import *
 
 MASTER_CLOCK = 50000000 
 SYSTEM_CLOCK_DIVIDER = 199 # 50MHz / 200 = 250 Ksps
-NUM_SAMPLES = 2**15
+NUM_SAMPLES = 2**10
 DAC_VREF = 5.0 # DAC Reference voltage
-NUMBER_OF_POINTS = 256
+NUMBER_OF_POINTS = 129
 
 meter_type = None
 #meter_type = 3458
@@ -91,15 +93,15 @@ def meter_lcd_disp(meter_inst, message):
     else:
         hp34401a_lcd_disp(meter_inst, "Sweep Done")
 
-def endpoint_inl(data):
-    inldata = []
-    xmax = len(data) -1
-#    data -= np.average(data)
-    slope = (data[xmax] - data[0]) / (xmax - 0.0)# Rise over run
-    intercept = data[xmax] - (slope * xmax)
-    for i in range(0, len(data)):
-        inldata.append(data[i] - (slope * i) + intercept)
-    return inldata
+#def endpoint_inl(data):
+#    inldata = []
+#    xmax = len(data) -1
+##    data -= np.average(data)
+#    slope = (data[xmax] - data[0]) / (xmax - 0.0)# Rise over run
+#    intercept = data[xmax] - (slope * xmax)
+#    for i in range(0, len(data)):
+#        inldata.append(data[i] - (slope * i) + intercept)
+#    return inldata
     
 
 def inl_test(client, meter_inst, num_pts, daca_start, daca_end, dacb_start,
@@ -143,7 +145,8 @@ def inl_test(client, meter_inst, num_pts, daca_start, daca_end, dacb_start,
     mng.window.showMaximized()
     plt.ion()
     
-    
+    maxtime = float(NUM_SAMPLES) * float(SYSTEM_CLOCK_DIVIDER + 1)   / float(MASTER_CLOCK)
+    print ("Using timeout value of " + str(maxtime))
     
     for i in reversed(range(0,num_pts)):
         print("Point " + str(i + 1) + " of " + str(num_pts))
@@ -160,7 +163,7 @@ def inl_test(client, meter_inst, num_pts, daca_start, daca_end, dacb_start,
         LTC2758_write(client, LTC2748_DAC_B | 
                               LTC2758_WRITE_CODE_UPDATE_ALL, codeb)
         
-        time.sleep(0.1)
+        time.sleep(0.01)
         
         # Read the Voltage of DACs from HP meter max resloutin 10v range
         if(meter_type == 3458):
@@ -170,10 +173,10 @@ def inl_test(client, meter_inst, num_pts, daca_start, daca_end, dacb_start,
         else:
             v_hp = 0.0
 
-        time.sleep(0.1)
+        time.sleep(0.01)
         
         # Capture the data
-        data = DC2390.capture(client, NUM_SAMPLES, trigger = 0, timeout = 0.25)
+        data = DC2390.capture(client, NUM_SAMPLES, trigger = 0, timeout = maxtime)
         
         hp_data.append(v_hp)
         adc_data.append(np.average(data))
@@ -187,7 +190,7 @@ def inl_test(client, meter_inst, num_pts, daca_start, daca_end, dacb_start,
         inldata = endpoint_inl(voltage_data)
         plt.cla()
         plt.title("INL Battle! LTC2508 vs. LTC2758")
-        plt.axis([0,num_pts,min(inldata), max(inldata)])
+        plt.axis([0,num_pts,-0.000060, 0.000060]) # ([0,num_pts,min(inldata), max(inldata)])
         plt.plot(inldata, marker='o', linestyle='-', color="green")
         plt.show()
         plt.pause(0.0001) #Note this correction

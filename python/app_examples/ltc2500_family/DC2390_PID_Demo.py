@@ -146,7 +146,7 @@ client.reg_write(PID_KD_BASE, PID_KD)
 client.reg_write(DATAPATH_CONTROL_BASE, datapath_word_pid)
 data = capture(client, NUM_SAMPLES, trigger = 0, timeout = 0.0)
 plt.figure(pltnum)
-plt.plot(data)
+plt.plot(data, color="red")
 
 PID_KP = 0x0010
 PID_KI = 0x0005
@@ -159,8 +159,9 @@ client.reg_write(DATAPATH_CONTROL_BASE, datapath_word_pid)
 data = capture(client, NUM_SAMPLES, trigger = 0, timeout = 0.0)
 plt.figure(pltnum)
 pltnum +=1
-plt.plot(data)
-
+plt.xlim([0,1500])
+plt.ylim([-0.25e8, 1.25e8])
+plt.plot(data, color="blue")
 plt.show()
 
 
