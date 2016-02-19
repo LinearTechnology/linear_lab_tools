@@ -58,17 +58,43 @@ import time
 
 
 ###############################################################################
-# Global Constants
+# Parameters
 ###############################################################################
 
-SYSTEM_CLOCK_DIVIDER = 25
-LUT_NCO_DIVIDER = 0xFFFF
-nco_word_width = 32
+# Change the parameters to run different scenarios.  
+
+# ADC U1 and U2 are Valid
+ADC = 'U1'
+
+# DF of 32, 16, 8, 4 are valid
+DF = 16
+
+if ADC == 'U1':
+    mux_port = DC2390_FIFO_ADCA_FIL
+else:
+    mux_port = DC2390_FIFO_ADCB_FIL
+
+if DF == 4:
+    down_sample_factor = LTC2500_DF_4
+elif DF == 8:
+    down_sample_factor = LTC2500_DF_8
+elif DF == 16:
+    down_sample_factor = LTC2500_DF_16
+else:
+    down_sample_factor = LTC2500_DF_32
+    
+master_clock = 50000000
+SYSTEM_CLOCK_DIVIDER = 32 
 
 # Set sample depth
 NUM_SAMPLES = 8192 
-master_clock = 50000000
 
+###############################################################################
+# Global Constants
+###############################################################################
+
+LUT_NCO_DIVIDER = 0xFFFF
+nco_word_width = 32
 
 ###############################################################################
 # Main program
@@ -78,7 +104,14 @@ print "\n/////////////////////////////////////"
 print "// LTC2512 Trace Filter Shape Demo //"
 print "/////////////////////////////////////"
 
-raw_input("\nPlease set jumper 10 and 11 to 1, \nthen hit enter")
+if DF == 4:
+    raw_input("\nPlease set jumper 10 and 11 to 0, \nthen hit enter")
+elif DF == 8:
+    raw_input("\nPlease set jumper 10 to 0 and 11 to 1, \nthen hit enter")
+elif DF == 16:
+    raw_input("\nPlease set jumper 10 to 1 and 11 to 0, \nthen hit enter")
+else:
+    raw_input("\nPlease set jumper 10 and 11 to 1, \nthen hit enter")
 
 # Get the host from the command line argument. Can be numeric or hostname.
 HOST = sys.argv[1] if len(sys.argv) == 2 else '127.0.0.1'
@@ -104,12 +137,12 @@ LTC6954_configure_default(client)
 
 # Set Mux for filtered data
 # Set Dac A for SIN and Dac B for LUT
-client.reg_write(DATAPATH_CONTROL_BASE, DC2390_FIFO_ADCA_FIL | 
+client.reg_write(DATAPATH_CONTROL_BASE, mux_port | 
                  DC2390_DAC_B_NCO_COS | DC2390_DAC_A_NCO_SIN | 
                  DC2390_LUT_ADDR_COUNT | DC2390_LUT_RUN_CONT)
 
-ltc2500_cfg_led_on  = ((LTC2500_DF_64 | LTC2500_SSCIN_FLAT_FILT)<<6) | 0x03 | (LTC2500_N_FACTOR << 16)
-ltc2500_cfg_led_off = ((LTC2500_DF_64 | LTC2500_SSCIN_FLAT_FILT)<<6) | (LTC2500_N_FACTOR << 16)
+ltc2500_cfg_led_on  = ((down_sample_factor | LTC2500_SSCIN_FLAT_FILT)<<6) | 0x03 | (LTC2500_N_FACTOR << 16)
+ltc2500_cfg_led_off = ((down_sample_factor | LTC2500_SSCIN_FLAT_FILT)<<6) | (LTC2500_N_FACTOR << 16)
 client.reg_write(LED_BASE, ltc2500_cfg_led_on)
 sleep(0.1)
 client.reg_write(LED_BASE, ltc2500_cfg_led_off)
@@ -122,7 +155,16 @@ freq_bin = []
 for x in range(1, 100):
     
     # Calculate the NCO to coherent bin
-    bin_number = x # Number of cycles over the time record
+    bin_number = x*2 # Number of cycles over the time record
+    
+    # Broduce different bin ranges based on DF
+    if DF == 4:
+        bin_number *= 8 
+    elif DF == 8:
+        bin_number *= 4 
+    elif DF == 16:
+        bin_number *= 2
+    
     sample_rate = master_clock / (SYSTEM_CLOCK_DIVIDER + 1) # 250ksps for 50M clock, 200 clocks per sample
     cycles_per_sample = float(bin_number) / float(NUM_SAMPLES)
     cycles_per_dac_sample = cycles_per_sample / (SYSTEM_CLOCK_DIVIDER + 1)
@@ -136,6 +178,9 @@ for x in range(1, 100):
     # Capture the data
     data = capture(client, NUM_SAMPLES, timeout = 1.0)
 
+    # Remove DC content
+    data -= np.average(data)
+    
     # Apply windowing to data    
     data = data * np.blackman(NUM_SAMPLES)    
     
@@ -143,7 +188,7 @@ for x in range(1, 100):
     fftdata = np.abs(np.fft.fft(data))
     
     if x == 1:
-        max_amp = np.max(fftdata)
+        max_amp = np.amax(fftdata)
     
     # Convert to dB
     fftdb = 20*np.log10(fftdata / max_amp)
@@ -152,7 +197,7 @@ for x in range(1, 100):
 
 # Plot the results
 plt.plot(freq_bin,filter_shape)
-plt.title('LTC2512 Filer Shape')
+plt.title('LTC2512 Filter Shape')
 plt.xlabel("Bin")
 plt.ylabel("dB")
 plt.show()
