@@ -63,11 +63,18 @@ import time
 
 # Change the parameters to run different scenarios.  
 
-# ADC U1 and U2 are Valid
+# ADC 'U1' and 'U2' are the choices. UN-comment selected ADC
+#ADC = 'U1'
 ADC = 'U1'
 
-# DF of 32, 16, 8, 4 are valid
-DF = 16
+# DF of 32, 16, 8, 4 are the choices for the LTC2512
+#DF = 4
+#DF = 8
+#DF = 16
+DF = 32
+
+
+
 
 if ADC == 'U1':
     mux_port = DC2390_FIFO_ADCA_FIL
@@ -105,13 +112,13 @@ print "// LTC2512 Trace Filter Shape Demo //"
 print "/////////////////////////////////////"
 
 if DF == 4:
-    raw_input("\nPlease set jumper 10 and 11 to 0, \nthen hit enter")
+    raw_input("\nPlease set SEL1, SEL0 jumpers to 0, 0 \nthen hit enter")
 elif DF == 8:
-    raw_input("\nPlease set jumper 10 to 0 and 11 to 1, \nthen hit enter")
+    raw_input("\nPlease set SEL1, SEL0 jumpers to 0, 1 \nthen hit enter")
 elif DF == 16:
-    raw_input("\nPlease set jumper 10 to 1 and 11 to 0, \nthen hit enter")
+    raw_input("\n\nPlease set SEL1, SEL0 jumpers to 1, 0 \nthen hit enter")
 else:
-    raw_input("\nPlease set jumper 10 and 11 to 1, \nthen hit enter")
+    raw_input("\n\nPlease set SEL1, SEL0 jumpers to 1, 1 \nthen hit enter")
 
 # Get the host from the command line argument. Can be numeric or hostname.
 HOST = sys.argv[1] if len(sys.argv) == 2 else '127.0.0.1'
@@ -157,7 +164,7 @@ for x in range(1, 100):
     # Calculate the NCO to coherent bin
     bin_number = x*2 # Number of cycles over the time record
     
-    # Broduce different bin ranges based on DF
+    # Produce different bin ranges based on DF
     if DF == 4:
         bin_number *= 8 
     elif DF == 8:
