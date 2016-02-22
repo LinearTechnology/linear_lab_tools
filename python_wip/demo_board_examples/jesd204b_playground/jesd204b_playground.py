@@ -74,7 +74,7 @@ verbose = 1
 did=0xAB # Device ID (programmed into ADC, read back from JEDEC core)
 bid=0x0C # Bank      (                 "                            )
 K=10     # Frames per multiframe (subclass 1 only)
-LIU = 2  # Lanes in use
+LIU = 12  # Lanes in use
 modes = 0x00 # Enable FAM, LAM (Frame / Lane alignment monitorning)
 #modes = 0x18 #Disable FAM, LAM (for testing purposes)
 
@@ -135,16 +135,28 @@ while((runs < 1 or continuous == True) and runs_with_errors < 100000):
         ################################################
 
         id = device.hs_fpga_read_data_at_address(ID_REG) # Read FPGA ID register
-        if(verbose != 0):
-            bitfile_id_warning(tx_bitfile_id, id)            
+        
+		# for TX
+		if(id == tx_bitfile_id):
+            print "Tx board detected"
+		else if(id == rx_bitfile_id):
+			print "Rx board detected"
+		else
+			print "Board not detected"
             
             
-            print "Dumping readable FPGA registers"
-#            data = device.hs_fpga_read_data_at_address(CAPTURE_STATUS_REG)
-#            print "Register 4 (capture status): 0x{:04X}".format(data)
-            data = device.hs_fpga_read_data_at_address(CLOCK_STATUS_REG)
-            print "Register 2   (Clock status): 0x{:04X}".format(data)
-            sleep(sleeptime)
+        print "Dumping readable FPGA registers"
+#       data = device.hs_fpga_read_data_at_address(CAPTURE_STATUS_REG)
+#       print "Register 4 (capture status): 0x{:04X}".format(data)
+		data = device.hs_fpga_read_data_at_address(CLOCK_STATUS_REG)
+		print "Register 2   (Clock status): 0x{:04X}".format(data)
+		
+		# for TX
+		if(data & 0x03 == 0x03):
+			print "TX FPGA board system and reference clock available"
+		else
+			print "Check TX FPGA board system and reference clock available"
+		sleep(sleeptime)
 
         ################################################
         # Configuration Flow Step 9, 10: Configure ADC
@@ -158,16 +170,32 @@ while((runs < 1 or continuous == True) and runs_with_errors < 100000):
         if(initialize_core == 1):
             if(verbose != 0):
                 print "Configuring JESD204B core!!"
+				
+			# for RX
             write_jesd204b_reg(device, 0x08, 0x00, 0x00, 0x00, 0x01)  #Enable ILA
             write_jesd204b_reg(device, 0x0C, 0x00, 0x00, 0x00, 0x00)  #Scrambling - 0 to disable, 1 to enable
             write_jesd204b_reg(device, 0x10, 0x00, 0x00, 0x00, 0x01)  # Only respond to first SYSREF (Subclass 1 only)
             write_jesd204b_reg(device, 0x18, 0x00, 0x00, 0x00, 0x00)  # Normal operation (no test modes enabled)
             write_jesd204b_reg(device, 0x20, 0x00, 0x00, 0x00, 0x01)  # 2 octets per frame
-            write_jesd204b_reg(device, 0x24, 0x00, 0x00, 0x00, K-1)   # Frames per multiframe, 1 to 32 for V6 core
-            write_jesd204b_reg(device, 0x28, 0x00, 0x00, 0x00, LIU-1) # Lanes in use - program with N-1
-            write_jesd204b_reg(device, 0x2C, 0x00, 0x00, 0x00, 0x00)  # Subclass 0
+            write_jesd204b_reg(device, 0x24, 0x00, 0x00, 0x00, 0x1F)   # Frames per multiframe, 1 to 32 for V6 core
+            write_jesd204b_reg(device, 0x28, 0x00, 0x00, 0x00, 0x0B) # Lanes in use - program with N-1
+            write_jesd204b_reg(device, 0x2C, 0x00, 0x00, 0x00, 0x01)  # Subclass 1
             write_jesd204b_reg(device, 0x30, 0x00, 0x00, 0x00, 0x00)  # RX buffer delay = 0
             write_jesd204b_reg(device, 0x34, 0x00, 0x00, 0x00, 0x00)  # Disable error counters, error reporting by SYNC~
+            write_jesd204b_reg(device, 0x04, 0x00, 0x00, 0x00, 0x01)  # Reset core
+			
+			# for TX
+            write_jesd204b_reg(device, 0x08, 0x00, 0x00, 0x00, 0x01)  #Enable ILA
+            write_jesd204b_reg(device, 0x0C, 0x00, 0x00, 0x00, 0x00)  #Scrambling - 0 to disable, 1 to enable
+            write_jesd204b_reg(device, 0x10, 0x00, 0x00, 0x00, 0x01)  # Only respond to first SYSREF (Subclass 1 only)
+			write_jesd204b_reg(device, 0x14, 0x00, 0x00, 0x00, 0x03)  # Multiframes in ILA = 4
+            write_jesd204b_reg(device, 0x18, 0x00, 0x00, 0x00, 0x00)  # Normal operation (no test modes enabled)
+            write_jesd204b_reg(device, 0x20, 0x00, 0x00, 0x00, 0x01)  # 2 octets per frame
+            write_jesd204b_reg(device, 0x24, 0x00, 0x00, 0x00, 0x1F)   # Frames per multiframe, 1 to 32 for V6 core
+            write_jesd204b_reg(device, 0x28, 0x00, 0x00, 0x00, 0x0B) # Lanes in use - program with N-1
+            write_jesd204b_reg(device, 0x2C, 0x00, 0x00, 0x00, 0x01)  # Subclass 1
+            
+			
             write_jesd204b_reg(device, 0x04, 0x00, 0x00, 0x00, 0x01)  # Reset core
 
         data = device.hs_fpga_read_data_at_address(CLOCK_STATUS_REG)
