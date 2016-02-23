@@ -178,7 +178,7 @@ cutoff_1st = 1000.0 / bin_width# 1000.0 # Bin number
 cutoff_2nd = 1000.0 / bin_width# 2000.0
 for i in range(0, len(wide_ssinc_256_mag)): # Generate first order response for each frequency in wide response
     first_order_response[i] = 1.0 / (1.0 + (i/cutoff_1st)**2.0)**0.5 # Magnitude = 1/SQRT(1 + (f/fc)^2)
-    second_order_response[i] = 1.0 / (1.0 + (i/cutoff_2nd)**4.0)**0.5 # Magnitude = 1/SQRT(1 + (f/fc)^2)
+    second_order_response[i] = 1.0 / (1.0 + (i/cutoff_2nd)**4.0)**0.5 # Magnitude = 1/SQRT(1 + (f/fc)^4)
 
 
 
@@ -196,6 +196,11 @@ plt.semilogx(x, 20*np.log10(first_order_response))
 plt.semilogx(x, 20*np.log10(second_order_response))
 #plt.loglog(np.multiply(wide_ssinc_256_mag, second_order_response))
 plt.tight_layout()
+
+# Let's get a feel for what exactly each output data point represents. Each data point
+# is a weighted sum of samples from the SAR ADC, with weightings according to the
+# filter coefficients that we loaded in. But there is overlap from one sample to the
+# next, which is what this figure shows.
 
 sscinc_shifted = ssinc_256
 
@@ -219,6 +224,42 @@ sscinc_shifted = np.concatenate((np.zeros(256), sscinc_shifted ))
 plt.plot(sscinc_shifted)
 plt.show()
 
+# So far, we've been plotting "unfolded" frequency responses. That is, what the response
+# would be if the digital filter were NOT downsampled by some factor. Let's see what
+# the DF256 filter response really is, referred to the ADC's filtered output, which 
+# has a data rate of MCLK / DF:
+
+#First, let's get the filter into a really long vector such that when we fold it,
+# there are still lots of points to plot per Nyquist zone:
+sscinc_256_padded = np.concatenate((ssinc_256, np.zeros(65536 - len(ssinc_256)) ))
+ssinc_256_mag_long = freqz_by_fft(sscinc_256_padded, 1)
+ssinc_256_mag_long_dB = 20*np.log10(abs(ssinc_256_mag_long))
+#plt.figure(5)
+#plt.plot(ssinc_256_mag_long_dB)
+#plt.show()
+
+folded_response_zones, folded_response_sum = fold_spectrum(ssinc_256_mag_long_dB[0:len(ssinc_256_mag_long_dB)/2],
+                                                                                 len(ssinc_256_mag_long_dB)/512, 128)
+plt.figure(6)
+
+plt.title("SSinc 256 filter response, first 4 nyquist zones")
+ax = plt.gca()
+ax.set_axis_bgcolor('#C0C0C0')
+lines = plt.plot(folded_response_zones[0])
+plt.setp(lines, color='#FF0000', ls='-') #Red
+lines = plt.plot(folded_response_zones[1])
+plt.setp(lines, color='#FF7F00', ls='--') #Orange
+lines = plt.plot(folded_response_zones[2])
+plt.setp(lines, color='#FFFF00', ls='-') #Yellow
+lines = plt.plot(folded_response_zones[3])
+plt.setp(lines, color='#00FF00', ls='--') #Green
+lines = plt.plot(folded_response_sum)
+plt.setp(lines, color='k', ls='-') #Black
+plt.show()
+
+
+
+plt.show()
 
 
 print "My program took", (time.time() - start_time), " seconds to run"
