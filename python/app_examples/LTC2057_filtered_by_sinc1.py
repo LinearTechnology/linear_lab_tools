@@ -97,8 +97,8 @@ sinc1resp_dB = 20*np.log10(sinc1resp)
 # now plot...
 plt.figure(1)
 plt.title('sinc1 frequency response from freqz (blue) and\n zero-padded FFT (red), N=' + str(n_factor))
-plt.xlabel('freq.')
-plt.ylabel('log Amplitude')
+plt.xlabel('frequency bin')
+plt.ylabel('Rejection (dB)')
 plt.axis([0, fftlength, -50, 0])
 lines = plt.plot(sinc1resp_freqz_dB, zorder=1)
 plt.setp(lines, color='#0000FF', ls='-') #Blue

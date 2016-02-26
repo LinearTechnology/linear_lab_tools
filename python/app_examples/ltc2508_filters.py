@@ -244,7 +244,7 @@ plt.figure(6)
 
 plt.title("SSinc 256 filter response, first 4 nyquist zones")
 ax = plt.gca()
-ax.set_axis_bgcolor('#C0C0C0')
+ax.set_axis_bgcolor('#D0D0D0')
 lines = plt.plot(folded_response_zones[0])
 plt.setp(lines, color='#FF0000', ls='-') #Red
 lines = plt.plot(folded_response_zones[1])
@@ -253,8 +253,8 @@ lines = plt.plot(folded_response_zones[2])
 plt.setp(lines, color='#FFFF00', ls='-') #Yellow
 lines = plt.plot(folded_response_zones[3])
 plt.setp(lines, color='#00FF00', ls='--') #Green
-lines = plt.plot(folded_response_sum)
-plt.setp(lines, color='k', ls='-') #Black
+#lines = plt.plot(folded_response_sum)
+#plt.setp(lines, color='k', ls='-') #Black
 plt.show()
 
 

@@ -116,7 +116,7 @@ if __name__ == "__main__":
     plt.title("First order LPF response, fc=" + str(cutoff))
     plt.semilogx(f, 20*np.log(first_order_response))
     plt.subplot(2, 1, 2)
-    plt.title("Total integ. noise from DC to x, should be (pi/2)^0.5")
+    plt.title("Total integ. noise from DC to x, should be sqrt(pi/2)")
     plt.semilogx(f, psd)
     plt.show()
     
@@ -129,7 +129,7 @@ if __name__ == "__main__":
     plt.plot(sinc1resp)
     plt.axis([0, 500, 0, max(sinc1resp)])
     plt.subplot(2, 1, 2)
-    plt.title("Total integ. noise from DC to x, should be 2^0.5")
+    plt.title("Total integ. noise from DC to x, should be sqrt(0.5)")
     plt.plot(psdsinc)
     plt.axis([0, 500, 0, max(psdsinc)])
     plt.show()
