@@ -26,7 +26,7 @@ namespace LtcControllerComm {
     } catch (domain_error& err) {                                               \
         throw gcnew InvalidOperationException(marshal_as<String^>(err.what())); \
     } catch (logic_error& err) {                                                \
-        throw gcnew LogicError(marshal_as<String^>(err.what()));                \
+        throw gcnew LogicException(marshal_as<String^>(err.what()));            \
     } catch (linear::HardwareError & err) {                                     \
         throw gcnew HardwareException(marshal_as<String^>(err.what()));         \
     } catch (exception& err) {                                                  \

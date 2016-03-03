@@ -19,12 +19,16 @@ namespace LtcControllerComm {
 
     public ref class HardwareException : Exception {
     public:
-        HardwareException(String^ msg) : Exception(msg) { }
+        HardwareException() : Exception() { }
+        HardwareException(String^ message) : Exception(message) { }
+        HardwareException(String^ message, Exception^ inner) : Exception(message, inner) { }
     };
 
-    public ref class LogicError : Exception {
+    public ref class LogicException : Exception {
     public:
-        LogicError(String^ msg) : Exception(msg) { }
+        LogicException() : Exception() { }
+        LogicException(String^ message) : Exception(message) { }
+        LogicException(String^ message, Exception^ inner) : Exception(message, inner) { }
     };
 
     public ref class Controller : IDisposable {
