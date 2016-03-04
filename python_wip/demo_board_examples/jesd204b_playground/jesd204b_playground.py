@@ -103,6 +103,7 @@ forcepattern = 0    #Don't override ADC data / PRBS selection
 sleeptime = 0.1
 
 device = None
+devices = [None] * 2
 do_reset = True  # Reset FPGA once (not necessary to reset between data loads)
 num_devices = 0
 
@@ -111,20 +112,44 @@ if verbose:
 
 # Open communication to the demo board
 descriptions = ['LTC UFO Board', 'LTC Communication Interface', 'LTC2000 Demoboard', 'LTC2000, DC2085A-A']
-device_info = []
+
+print "Devices found:"
+device_info = [None] * 2
 for info in comm.list_controllers(comm.TYPE_HIGH_SPEED):
     if info.get_description() in descriptions:
-        device_info = device_info.append( info )
+        device_info[num_devices] = info
         print device_info
         num_devices = num_devices + 1
         #break
+        
+print "No: of devices = ", num_devices
+		
 if device_info is None:
     raise(comm.HardwareError('Could not find a compatible device'))
 
-print device_info
-print num_devices
+print device_info[0]
+with comm.Controller(device_info[0]) as txdevice:
+    print txdevice.hs_fpga_read_data_at_address(ID_REG)
+
+for i in range(0, num_devices):
+    print i
+    device = devices[i]
+    print device
+    id = device.hs_fpga_read_data_at_address(ID_REG) # Read FPGA ID register
+    print id
+    if(id == tx_bitfile_id):
+        print "Tx board detected"
+        tx_board = 1
+    elif(id == rx_bitfile_id):
+        print "Rx board detected"
+        tx_board = 0
     
-with comm.Controller(device_info) as device:
+    else:
+        print "Board not detected"
+        tx_board = -1
+
+        
+with comm.Controller(device_info[0]) as device:
     ###############################################
     # Configuration Flow Step 1: Configure TX's and 
     # Rx's FTDI MPSSE mode
@@ -172,21 +197,21 @@ if(initialize_core == 1):
 # Configuration Flow Step 11: configure RX JEDEC Core
 ################################################
 # Read version
-b3, b2, b1, b0 = read_jesd204b_reg(device, 0x00)
+b3, b2, b1, b0 = read_jesd204b_reg(rxdevice, 0x00)
 # for RX
-write_jesd204b_reg(device, 0x08, 0x00, 0x00, 0x00, 0x01)  #Enable ILA
-write_jesd204b_reg(device, 0x0C, 0x00, 0x00, 0x00, 0x00)  #Scrambling - 0 to disable, 1 to enable
-write_jesd204b_reg(device, 0x10, 0x00, 0x00, 0x00, 0x01)  # Only respond to first SYSREF (Subclass 1 only)
-write_jesd204b_reg(device, 0x18, 0x00, 0x00, 0x00, 0x00)  # Normal operation (no test modes enabled)		
-write_jesd204b_reg(device, 0x20, 0x00, 0x00, 0x00, 0x01)  # 2 octets per frame
-write_jesd204b_reg(device, 0x24, 0x00, 0x00, 0x00, 0x1F)   # Frames per multiframe, 1 to 32 for V6 core
-write_jesd204b_reg(device, 0x28, 0x00, 0x00, 0x00, 0x0B) # Lanes in use - program with N-1
-write_jesd204b_reg(device, 0x2C, 0x00, 0x00, 0x00, 0x01)  # Subclass 1
-write_jesd204b_reg(device, 0x30, 0x00, 0x00, 0x00, 0x00)  # RX buffer delay = 0
-write_jesd204b_reg(device, 0x34, 0x00, 0x00, 0x00, 0x00)  # Disable error counters, error reporting by SYNC~
-write_jesd204b_reg(device, 0x04, 0x00, 0x00, 0x00, 0x01)  # Reset core
+write_jesd204b_reg(rxdevice, 0x08, 0x00, 0x00, 0x00, 0x01)  #Enable ILA
+write_jesd204b_reg(rxdevice, 0x0C, 0x00, 0x00, 0x00, 0x00)  #Scrambling - 0 to disable, 1 to enable
+write_jesd204b_reg(rxdevice, 0x10, 0x00, 0x00, 0x00, 0x01)  # Only respond to first SYSREF (Subclass 1 only)
+write_jesd204b_reg(rxdevice, 0x18, 0x00, 0x00, 0x00, 0x00)  # Normal operation (no test modes enabled)		
+write_jesd204b_reg(rxdevice, 0x20, 0x00, 0x00, 0x00, 0x01)  # 2 octets per frame
+write_jesd204b_reg(rxdevice, 0x24, 0x00, 0x00, 0x00, 0x1F)   # Frames per multiframe, 1 to 32 for V6 core
+write_jesd204b_reg(rxdevice, 0x28, 0x00, 0x00, 0x00, 0x0B) # Lanes in use - program with N-1
+write_jesd204b_reg(rxdevice, 0x2C, 0x00, 0x00, 0x00, 0x01)  # Subclass 1
+write_jesd204b_reg(rxdevice, 0x30, 0x00, 0x00, 0x00, 0x00)  # RX buffer delay = 0
+write_jesd204b_reg(rxdevice, 0x34, 0x00, 0x00, 0x00, 0x00)  # Disable error counters, error reporting by SYNC~
+write_jesd204b_reg(rxdevice, 0x04, 0x00, 0x00, 0x00, 0x01)  # Reset core
    
-while(read_jesd204b_reg(device, 0x04) == 0x00):
+while(read_jesd204b_reg(rxdevice, 0x04) == 0x00):
     time.sleep(.01)
     print "RX Core Reset complete"
 			
@@ -195,26 +220,26 @@ while(read_jesd204b_reg(device, 0x04) == 0x00):
 # Configuration Flow Step 14: configure TX JEDEC Core
 ################################################
 # Read version
-b3, b2, b1, b0 = read_jesd204b_reg(device, 0x00)
+b3, b2, b1, b0 = read_jesd204b_reg(txdevice, 0x00)
 # for TX
-write_jesd204b_reg(device, 0x08, 0x00, 0x00, 0x00, 0x01)  #Enable ILA
-write_jesd204b_reg(device, 0x0C, 0x00, 0x00, 0x00, 0x00)  #Scrambling - 0 to disable, 1 to enable
-write_jesd204b_reg(device, 0x10, 0x00, 0x00, 0x00, 0x01)  # Only respond to first SYSREF (Subclass 1 only)
-write_jesd204b_reg(device, 0x14, 0x00, 0x00, 0x00, 0x03)  # Multiframes in ILA = 4
-write_jesd204b_reg(device, 0x18, 0x00, 0x00, 0x00, 0x00)  # Normal operation (no test modes enabled)
-write_jesd204b_reg(device, 0x20, 0x00, 0x00, 0x00, 0x01)  # 2 octets per frame
-write_jesd204b_reg(device, 0x24, 0x00, 0x00, 0x00, 0x1F)   # Frames per multiframe, 1 to 32 for V6 core
-write_jesd204b_reg(device, 0x28, 0x00, 0x00, 0x00, 0x0B) # Lanes in use - program with N-1
-write_jesd204b_reg(device, 0x2C, 0x00, 0x00, 0x00, 0x01)  # Subclass 1
-write_jesd204b_reg(device, 0x80C, LIU, 0x00, bid, did)  # Subclass 1
-write_jesd204b_reg(device, 0x810, CS, Nt, N, M)  # Subclass 1
-write_jesd204b_reg(device, 0x814, 0x00, 0x00, 0x00, 0x01)  # Subclass 1
-write_jesd204b_reg(device, 0x818, 0x00, 0x00, 0x00, 0x01)  # Subclass 1
-write_jesd204b_reg(device, 0x04, 0x00, 0x00, 0x00, 0x01)  # Subclass 1
+write_jesd204b_reg(txdevice, 0x08, 0x00, 0x00, 0x00, 0x01)  #Enable ILA
+write_jesd204b_reg(txdevice, 0x0C, 0x00, 0x00, 0x00, 0x00)  #Scrambling - 0 to disable, 1 to enable
+write_jesd204b_reg(txdevice, 0x10, 0x00, 0x00, 0x00, 0x01)  # Only respond to first SYSREF (Subclass 1 only)
+write_jesd204b_reg(txdevice, 0x14, 0x00, 0x00, 0x00, 0x03)  # Multiframes in ILA = 4
+write_jesd204b_reg(txdevice, 0x18, 0x00, 0x00, 0x00, 0x00)  # Normal operation (no test modes enabled)
+write_jesd204b_reg(txdevice, 0x20, 0x00, 0x00, 0x00, 0x01)  # 2 octets per frame
+write_jesd204b_reg(txdevice, 0x24, 0x00, 0x00, 0x00, 0x1F)   # Frames per multiframe, 1 to 32 for V6 core
+write_jesd204b_reg(txdevice, 0x28, 0x00, 0x00, 0x00, 0x0B) # Lanes in use - program with N-1
+write_jesd204b_reg(txdevice, 0x2C, 0x00, 0x00, 0x00, 0x01)  # Subclass 1
+write_jesd204b_reg(txdevice, 0x80C, LIU, 0x00, bid, did)  # Subclass 1
+write_jesd204b_reg(txdevice, 0x810, CS, Nt, N, M)  # Subclass 1
+write_jesd204b_reg(txdevice, 0x814, 0x00, 0x00, 0x00, 0x01)  # Subclass 1
+write_jesd204b_reg(txdevice, 0x818, 0x00, 0x00, 0x00, 0x01)  # Subclass 1
+write_jesd204b_reg(txdevice, 0x04, 0x00, 0x00, 0x00, 0x01)  # Subclass 1
 		
-write_jesd204b_reg(device, 0x04, 0x00, 0x00, 0x00, 0x01)  # Reset core
+write_jesd204b_reg(txdevice, 0x04, 0x00, 0x00, 0x00, 0x01)  # Reset core
 
-while(read_jesd204b_reg(device, 0x04) == 0x00):
+while(read_jesd204b_reg(txdevice, 0x04) == 0x00):
     time.sleep(.01)
 print "TX Core Reset complete..."
 
@@ -222,23 +247,27 @@ print "TX Core Reset complete..."
 # Configuration Flow Step 15: Check TX JEDEC core
 # embedded PLL locked
 ################################################	
-data = device.hs_fpga_read_data_at_address(CLOCK_STATUS_REG)
+data = txdevice.hs_fpga_read_data_at_address(CLOCK_STATUS_REG)
 	
 	
-data = device.hs_fpga_read_data_at_address(CLOCK_STATUS_REG)
-print "Checking clock status after JESD204B configuration:"
+data = txdevice.hs_fpga_read_data_at_address(CLOCK_STATUS_REG)
+print "Checking TX clock status after JESD204B configuration:"
 print "Register 2   (Clock status): 0x{:04X}".format(data)
 # Check for 0b xxx1x11x 
 
-# for RX
 ################################################
 # Configuration Flow Step 17: Check JESD204B RX
 # is in sync
 ################################################	
-while(read_jesd204b_reg(device, 0x38) != 0x01):
+while(read_jesd204b_reg(rxdevice, 0x38) != 0x01):
 	time.sleep(.01)
 print "RX Core Sync complete..."
-data = device.hs_fpga_read_data_at_address(CLOCK_STATUS_REG)
+
+################################################
+# Configuration Flow Step 18: Check RX JEDEC core
+# embedded PLL locked
+################################################
+data = rxdevice.hs_fpga_read_data_at_address(CLOCK_STATUS_REG)
 print "Checking clock status after JESD204B configuration:"
 print "Register 2   (Clock status): 0x{:04X}".format(data)
 # Check for 0b xxx1x11x 
