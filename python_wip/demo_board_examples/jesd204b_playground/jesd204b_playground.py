@@ -313,11 +313,7 @@ with comm.Controller(device_info[txdevice_index]) as txdevice:
         print "TX buffer not empty"
         sleep(sleeptime)
         
-        
-        
-        
-        
-        
+ 
 if(verbose != 0):
     print "Reading JESD204B core registers..."
 
