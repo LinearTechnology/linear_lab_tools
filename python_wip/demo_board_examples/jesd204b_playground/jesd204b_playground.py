@@ -273,9 +273,10 @@ with comm.Controller(device_info[rxdevice_index]) as rxdevice:
     # Configuration Flow Step 17: Check JESD204B RX
     # is in sync
     ################################################	
-    while(read_jesd204b_reg(rxdevice, 0x38) != 0x01):
-    	time.sleep(.01)
-    print "RX Core Sync complete..."
+    time.sleep(.01)    
+    b3, b2, b1, b0 = read_jesd204b_reg(rxdevice, 0x38)
+    if(b0 & 0x01 == 0x01):
+        print "RX Sync complete..."
 
     ################################################
     # Configuration Flow Step 18: Check RX JEDEC core
@@ -291,7 +292,11 @@ with comm.Controller(device_info[rxdevice_index]) as rxdevice:
         print "Check RX JESD204B core embedded PLL"
         sleep(sleeptime)
 
-	
+    
+ 
+ 
+ 
+
 with comm.Controller(device_info[txdevice_index]) as txdevice:
     txdevice.hs_set_bit_mode(comm.HS_BIT_MODE_MPSSE)	
     
@@ -306,25 +311,33 @@ with comm.Controller(device_info[txdevice_index]) as txdevice:
     # is empty
     ################################################
     data = txdevice.hs_fpga_read_data_at_address(TX_PBK_STATUS_REG)
+    print "TX_PBK_STATUS_REG: ", data
     # Check for 0b xxxxxx00 
-    if(data & 0xFC == 0xFC):
+    if(data | 0xFC == 0xFC):
         print "TX buffer empty"
     else:
         print "TX buffer not empty"
         sleep(sleeptime)
         
+    if(verbose != 0):
+        print "\nReading TX JESD204B core registers..."
+    read_xilinx_core_config(txdevice, verbose = True)   
  
-if(verbose != 0):
-    print "Reading JESD204B core registers..."
 
 #        data, data_ch0, data_ch1, nSamps_per_channel, syncErr = capture2(device, n, dumpdata, dump_pscope_data, verbose)
 
 
 # Read back 
-if(verbose != 0):
-    read_xilinx_core_config(device, verbose = True)
-    read_xilinx_core_ilas(device, verbose = True, lane=0)
-    read_xilinx_core_ilas(device, verbose = True, lane=1)
+with comm.Controller(device_info[txdevice_index]) as rxdevice:
+    rxdevice.hs_set_bit_mode(comm.HS_BIT_MODE_MPSSE)
+    
+    if(verbose != 0):
+        print "\nReading RX JESD204B core registers..."
+
+    read_xilinx_core_config(rxdevice, verbose = True)   
+    read_xilinx_core_ilas(rxdevice, verbose = True, lane=0)
+    
+
 
 
 
