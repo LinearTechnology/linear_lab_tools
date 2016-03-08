@@ -167,35 +167,36 @@ def read_xilinx_core_ilas(device, verbose = True, lane = 0):
     print("\nILAS and stuff for lane " + str(lane) + ":")
     for i in range(0, 13):
         reg = startreg + i*4
-        byte3, byte2, byte1, byte0 = read_jesd204b_reg(device, reg)     
+        byte3, byte2, byte1, byte0 = read_jesd204b_reg(device, reg)    
+        print "\n"
         print JESD204B_XILINX_LANE_REG_NAMES[i] + ": " + ' {:02X} {:02X} {:02X} {:02X}'.format(byte3, byte2, byte1, byte0)
         if(i ==0):
-            print "   JESD204B version: ", byte1
+            print "  JESD204B version : ", byte1
         elif(i == 1):
-            print "   F (Octets per frame): ", byte0
+            print "  F (Octets per frame): ", byte0
         elif(i == 2):
-            print "   K (Frames per multiframe): ", byte0
+            print "  K (Frames per multiframe): ", byte0
         elif(i == 3):
-            print "   DID (Device ID): ", byte0
-            print "   BID (Bank ID): ", byte1
-            print "   LID (Lane ID): ", byte2
-            print "   L (Lanes per link): ", byte3
+            print "  DID (Device ID)   : ", byte0
+            print "  BID (Bank ID)     : ", byte1
+            print "  LID (Lane ID)     : ", byte2
+            print "  L (Lanes per link): ", byte3
         elif(i == 4):
-            print "   M (Convertors per device): ", byte0
-            print "   N (Convertor resolution): ", byte1
-            print "   N' (Total bits per sample): ", byte2
-            print "   CS (Control bits per sample): ", byte3 
+            print "  M (Convertors per device)   : ", byte0
+            print "  N (Convertor resolution)    : ", byte1
+            print "  N' (Total bits per sample)  : ", byte2
+            print "  CS (Control bits per sample): ", byte3 
         elif(i == 5):
-            print "   SCR (Scrambling enable): ", byte0
-            print "   S (Samples per convertor per frame): ", byte1
-            print "   HD (High Density format): ", byte2
-            print "   CF (Control Words per frame): ", byte3 
+            print "  SCR (Scrambling enable)            : ", byte0
+            print "  S (Samples per convertor per frame): ", byte1
+            print "  HD (High Density format)           : ", byte2
+            print "  CF (Control Words per frame)       : ", byte3 
         elif(i == 6):
-            print "   FCHK (Checksum): ", byte2
+            print "  FCHK (Checksum): ", byte2
         elif(i == 7):
-            print "   ADJCNT (Phase Adjust Request): ", byte0
-            print "   PHADJ (Phase Adjust Request): ", byte1
-            print "   ADJDIR (Adjust direction): ", byte2
+            print "  ADJCNT (Phase Adjust Request): ", byte0
+            print "  PHADJ (Phase Adjust Request) : ", byte1
+            print "  ADJDIR (Adjust direction)    : ", byte2
             
 
 

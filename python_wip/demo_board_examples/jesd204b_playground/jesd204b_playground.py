@@ -130,6 +130,11 @@ if device_info is None:
 print "Device Info 1: ", device_info[0]
 print "Device Info 2: ", device_info[1]
 
+###############################################
+# Configuration Flow Step 0: Turn on TX/RX
+# reference and device clock 312.5 MHz
+################################################
+
 for i in range(0, num_devices):
     with comm.Controller(device_info[i]) as device:
         ###############################################
@@ -149,64 +154,106 @@ for i in range(0, num_devices):
             rxdevice_index = i
         else:
             print "Board not detected"
-     
-     
+
+
+###############################################
+# Configuration Flow Step 3: Check TX FPGA board
+# system an reference clock available
+################################################
+with comm.Controller(device_info[txdevice_index]) as txdevice:
+    txdevice.hs_set_bit_mode(comm.HS_BIT_MODE_MPSSE)
+    data = txdevice.hs_fpga_read_data_at_address(TX_CLOCK_STATUS_REG)
+    print "\nRegister 2   (Clock status for TX): 0x{:04X}".format(data)
+    if(data & 0x06 == 0x06):
+        print "TX FPGA board system and reference clock available"
+    else:
+        print "Check TX FPGA board system and reference clock"
+        sleep(sleeptime)  
+
 with comm.Controller(device_info[rxdevice_index]) as rxdevice:
     rxdevice.hs_set_bit_mode(comm.HS_BIT_MODE_MPSSE)
-    if do_reset:
-        rxdevice.hs_fpga_toggle_reset()      
-
     ################################################
-    # Configuration Flow Step 8: RX FPGA Reset and
-    # release
-    ################################################
-    if do_reset:
-        reset_fpga(rxdevice)
-        
-    ################################################
-    # Configuration Flow Step 9: Check RX reference
-    # clock and board system
+    # Configuration Flow Step 5: Check RX FPGA board
+    # system an reference clock available
     ################################################
     data = rxdevice.hs_fpga_read_data_at_address(RX_CLOCK_STATUS_REG)
-    print "Register 6   (Clock status for RX): 0x{:04X}".format(data)
+    print "\nRegister 6   (Clock status for RX): 0x{:04X}".format(data)
     if(data & 0x06 == 0x06):
         print "RX FPGA board system and reference clock available"
     else:
         print "Check RX FPGA board system and reference clock"
         sleep(sleeptime)  
+    
+###########################################
+# Configuration Flow Step 7: TX FPGA Reset 
+###########################################
+with comm.Controller(device_info[txdevice_index]) as txdevice:
+    reset_fpga(txdevice)
+    print "\nResetting TX..."
+################################################
+# Configuration Flow Step 8: RX FPGA Reset and
+# release
+################################################
+with comm.Controller(device_info[rxdevice_index]) as rxdevice:
+    reset_fpga(rxdevice)     
+    print "Resetting RX..."
+    
+    ################################################
+    # Configuration Flow Step 9: Check RX reference
+    # clock and board system
+    ################################################
+    data = rxdevice.hs_fpga_read_data_at_address(RX_CLOCK_STATUS_REG)
+    print "\nRegister 6   (Clock status for RX): 0x{:04X}".format(data)
+    if(data & 0x06 == 0x06):
+        print "RX FPGA board system and reference clock available"
+    else:
+        print "Check RX FPGA board system and reference clock"
+        sleep(sleeptime)  
+
+
+###############################################
+# Configuration Flow Step 10: Generate RX Sysref
+# 312.5 MHz/64
+################################################
+# WAIT FOR RX SYSREF
         
     # Read version
     b3, b2, b1, b0 = read_jesd204b_reg(rxdevice, 0x00)
-    print "RX Version: ", b3, b2, b1, b0
-    # for RX
+    print "\nRX Version: ", b3, b2, b1, b0
+    print "Configuring JESD204B RX core registers..."
+    ################################################
+    # Configuration Flow Step 11: Configure JESD204B 
+    # RX core registers
+    ################################################
     write_jesd204b_reg(rxdevice, 0x08, 0x00, 0x00, 0x00, 0x01)  #Enable ILA
     write_jesd204b_reg(rxdevice, 0x0C, 0x00, 0x00, 0x00, 0x00)  #Scrambling - 0 to disable, 1 to enable
     write_jesd204b_reg(rxdevice, 0x10, 0x00, 0x00, 0x00, 0x01)  # Only respond to first SYSREF (Subclass 1 only)
     write_jesd204b_reg(rxdevice, 0x18, 0x00, 0x00, 0x00, 0x00)  # Normal operation (no test modes enabled)		
     write_jesd204b_reg(rxdevice, 0x20, 0x00, 0x00, 0x00, 0x01)  # 2 octets per frame
-    write_jesd204b_reg(rxdevice, 0x24, 0x00, 0x00, 0x00, 0x1F)   # Frames per multiframe, 1 to 32 for V6 core
-    write_jesd204b_reg(rxdevice, 0x28, 0x00, 0x00, 0x00, 0x0B) # Lanes in use - program with N-1
+    write_jesd204b_reg(rxdevice, 0x24, 0x00, 0x00, 0x00, 0x1F)  # Frames per multiframe, 1 to 32 for V6 core
+    write_jesd204b_reg(rxdevice, 0x28, 0x00, 0x00, 0x00, 0x0B)  # Lanes in use - program with N-1
     write_jesd204b_reg(rxdevice, 0x2C, 0x00, 0x00, 0x00, 0x01)  # Subclass 1
     write_jesd204b_reg(rxdevice, 0x30, 0x00, 0x00, 0x00, 0x00)  # RX buffer delay = 0
     write_jesd204b_reg(rxdevice, 0x34, 0x00, 0x00, 0x00, 0x00)  # Disable error counters, error reporting by SYNC~
     write_jesd204b_reg(rxdevice, 0x04, 0x00, 0x00, 0x00, 0x01)  # Reset core
-       
-    while(read_jesd204b_reg(rxdevice, 0x04) == 0x00):
-        time.sleep(.01)
-        print "RX Core Reset complete"    
+      
+    sleep(sleeptime)
+    b3, b2, b1, b0 = read_jesd204b_reg(rxdevice, 0x04)
+    if((b3, b2, b1, b0) == (0, 0, 0, 0)):
+        print "RX Core Reset complete!"    
+    else:
+        print "RX Core Reset not complete!"
 
 			
 with comm.Controller(device_info[txdevice_index]) as txdevice:
     txdevice.hs_set_bit_mode(comm.HS_BIT_MODE_MPSSE)
-    if do_reset:
-        txdevice.hs_fpga_toggle_reset()
-
+    
     ################################################
-    # Configuration Flow Step 12: TX FPGA Reset
+    # Configuration Flow Step 12: TX FPGA Reset and
+    # release
     ################################################
-    if do_reset:
-        reset_fpga(txdevice)
-        
+    reset_fpga(txdevice)
+    print "\nResetting TX..."    
     ################################################
     # Configuration Flow Step 13: Check TX reference
     # clock and board system
@@ -214,30 +261,26 @@ with comm.Controller(device_info[txdevice_index]) as txdevice:
     data = txdevice.hs_fpga_read_data_at_address(TX_CLOCK_STATUS_REG)
     print "Register 2   (Clock status for TX): 0x{:04X}".format(data)
     if(data & 0x06 == 0x06):
-        print "TX FPGA board system and reference clock available"
+        print "TX FPGA board system and reference clock available."
     else:
-        print "Check TX FPGA board system and reference clock"
+        print "Check TX FPGA board system and reference clock."
         sleep(sleeptime)
-    
-    if(initialize_core == 1):
-        if(verbose != 0):
-            print "Configuring TX JESD204B core!!"
     
     ################################################
     # Configuration Flow Step 14: configure TX JEDEC Core
     ################################################
     # Read version
     b3, b2, b1, b0 = read_jesd204b_reg(txdevice, 0x00)
-    print "TX Version: ", b3, b2, b1, b0
-    # for TX
+    print "\nTX Version: ", b3, b2, b1, b0
+    print "Configuring JESD204B TX core registers..."
     write_jesd204b_reg(txdevice, 0x08, 0x00, 0x00, 0x00, 0x01)  #Enable ILA
     write_jesd204b_reg(txdevice, 0x0C, 0x00, 0x00, 0x00, 0x00)  #Scrambling - 0 to disable, 1 to enable
     write_jesd204b_reg(txdevice, 0x10, 0x00, 0x00, 0x00, 0x01)  # Only respond to first SYSREF (Subclass 1 only)
     write_jesd204b_reg(txdevice, 0x14, 0x00, 0x00, 0x00, 0x03)  # Multiframes in ILA = 4
     write_jesd204b_reg(txdevice, 0x18, 0x00, 0x00, 0x00, 0x00)  # Normal operation (no test modes enabled)
     write_jesd204b_reg(txdevice, 0x20, 0x00, 0x00, 0x00, 0x01)  # 2 octets per frame
-    write_jesd204b_reg(txdevice, 0x24, 0x00, 0x00, 0x00, 0x1F)   # Frames per multiframe, 1 to 32 for V6 core
-    write_jesd204b_reg(txdevice, 0x28, 0x00, 0x00, 0x00, 0x0B) # Lanes in use - program with N-1
+    write_jesd204b_reg(txdevice, 0x24, 0x00, 0x00, 0x00, 0x1F)  # Frames per multiframe, 1 to 32 for V6 core
+    write_jesd204b_reg(txdevice, 0x28, 0x00, 0x00, 0x00, 0x0B)  # Lanes in use - program with N-1
     write_jesd204b_reg(txdevice, 0x2C, 0x00, 0x00, 0x00, 0x01)  # Subclass 1
     write_jesd204b_reg(txdevice, 0x80C, LIU, 0x00, bid, did)  # Subclass 1
     write_jesd204b_reg(txdevice, 0x810, CS, Nt, N, M)  # Subclass 1
@@ -247,16 +290,19 @@ with comm.Controller(device_info[txdevice_index]) as txdevice:
     		
     write_jesd204b_reg(txdevice, 0x04, 0x00, 0x00, 0x00, 0x01)  # Reset core
     
-    while(read_jesd204b_reg(txdevice, 0x04) == 0x00):
-        time.sleep(.01)
-    print "TX Core Reset complete..."
+    sleep(sleeptime)
+    b3, b2, b1, b0 = read_jesd204b_reg(txdevice, 0x04)
+    if((b3, b2, b1, b0) == (0, 0, 0, 0)):
+        print "TX Core Reset complete!"  
+    else:
+        print "TX Core Reset not complete!"
 
     ################################################
     # Configuration Flow Step 15: Check TX JEDEC core
     # embedded PLL locked
     ################################################		
     data = txdevice.hs_fpga_read_data_at_address(TX_CLOCK_STATUS_REG)
-    print "Checking TX clock status after JESD204B configuration:"
+    print "\nChecking TX clock status after JESD204B configuration:"
     print "Register 2   (Clock status): 0x{:04X}".format(data)
     # Check for 0b xxx1x11x 
     if(data & 0x16 == 0x16):
@@ -265,7 +311,11 @@ with comm.Controller(device_info[txdevice_index]) as txdevice:
         print "Check TX JESD204B core embedded PLL"
         sleep(sleeptime)
 
-
+###############################################
+# Configuration Flow Step 16: Generate TX Sysref
+# 312.5 MHz/64
+################################################
+# WAIT FOR TX SYSREF
 with comm.Controller(device_info[rxdevice_index]) as rxdevice:
     rxdevice.hs_set_bit_mode(comm.HS_BIT_MODE_MPSSE)
     
@@ -273,7 +323,7 @@ with comm.Controller(device_info[rxdevice_index]) as rxdevice:
     # Configuration Flow Step 17: Check JESD204B RX
     # is in sync
     ################################################	
-    time.sleep(.01)    
+    sleep(sleeptime)
     b3, b2, b1, b0 = read_jesd204b_reg(rxdevice, 0x38)
     if(b0 & 0x01 == 0x01):
         print "RX Sync complete..."
@@ -291,11 +341,6 @@ with comm.Controller(device_info[rxdevice_index]) as rxdevice:
     else:
         print "Check RX JESD204B core embedded PLL"
         sleep(sleeptime)
-
-    
- 
- 
- 
 
 with comm.Controller(device_info[txdevice_index]) as txdevice:
     txdevice.hs_set_bit_mode(comm.HS_BIT_MODE_MPSSE)	
