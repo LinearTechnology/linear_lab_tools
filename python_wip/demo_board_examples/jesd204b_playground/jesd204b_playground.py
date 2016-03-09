@@ -75,9 +75,9 @@ M = 10		# Converters per device
 N = 16 		# Converter resolution
 Nt = 16		# Total bits per sample
 CS = 0		# Control Bits per sample
-did=0x55 # Device ID (programmed into ADC, read back from JEDEC core)
+did=0x42 # Device ID (programmed into ADC, read back from JEDEC core)
 bid=0x0A # Bank      (                 "                            )
-K=10     # Frames per multiframe (subclass 1 only)
+K=16     # Frames per multiframe (subclass 1 only)
 LIU = 12  # Lanes in use
 modes = 0x00 # Enable FAM, LAM (Frame / Lane alignment monitorning)
 #modes = 0x18 #Disable FAM, LAM (for testing purposes)
@@ -104,7 +104,7 @@ device = None
 rxdevice = None
 txdevice = None
 devices = [None] * 2
-do_reset = True  # Reset FPGA once (not necessary to reset between data loads)
+do_reset = False  # Reset FPGA once (not necessary to reset between data loads)
 num_devices = 0
 
 if verbose:
@@ -188,15 +188,17 @@ with comm.Controller(device_info[rxdevice_index]) as rxdevice:
 # Configuration Flow Step 7: TX FPGA Reset 
 ###########################################
 with comm.Controller(device_info[txdevice_index]) as txdevice:
-    reset_fpga(txdevice)
-    print "\nResetting TX..."
+    if do_reset:
+        reset_fpga(txdevice)
+        print "\nResetting TX..."
 ################################################
 # Configuration Flow Step 8: RX FPGA Reset and
 # release
 ################################################
 with comm.Controller(device_info[rxdevice_index]) as rxdevice:
-    reset_fpga(rxdevice)     
-    print "Resetting RX..."
+    if do_reset:
+        reset_fpga(rxdevice)     
+        print "Resetting RX..."
     
     ################################################
     # Configuration Flow Step 9: Check RX reference
@@ -227,14 +229,14 @@ with comm.Controller(device_info[rxdevice_index]) as rxdevice:
     ################################################
     write_jesd204b_reg(rxdevice, 0x08, 0x00, 0x00, 0x00, 0x01)  #Enable ILA
     write_jesd204b_reg(rxdevice, 0x0C, 0x00, 0x00, 0x00, 0x00)  #Scrambling - 0 to disable, 1 to enable
-    write_jesd204b_reg(rxdevice, 0x10, 0x00, 0x00, 0x00, 0x01)  # Only respond to first SYSREF (Subclass 1 only)
+    write_jesd204b_reg(rxdevice, 0x10, 0x00, 0x00, 0x00, 0x00)  # Only respond to first SYSREF (Subclass 1 only)
     write_jesd204b_reg(rxdevice, 0x18, 0x00, 0x00, 0x00, 0x00)  # Normal operation (no test modes enabled)		
     write_jesd204b_reg(rxdevice, 0x20, 0x00, 0x00, 0x00, 0x01)  # 2 octets per frame
     write_jesd204b_reg(rxdevice, 0x24, 0x00, 0x00, 0x00, 0x1F)  # Frames per multiframe, 1 to 32 for V6 core
     write_jesd204b_reg(rxdevice, 0x28, 0x00, 0x00, 0x00, 0x0B)  # Lanes in use - program with N-1
     write_jesd204b_reg(rxdevice, 0x2C, 0x00, 0x00, 0x00, 0x01)  # Subclass 1
     write_jesd204b_reg(rxdevice, 0x30, 0x00, 0x00, 0x00, 0x00)  # RX buffer delay = 0
-    write_jesd204b_reg(rxdevice, 0x34, 0x00, 0x00, 0x00, 0x00)  # Disable error counters, error reporting by SYNC~
+    write_jesd204b_reg(rxdevice, 0x34, 0x00, 0x00, 0x01, 0x00)  # Disable error counters, error reporting by SYNC~
     write_jesd204b_reg(rxdevice, 0x04, 0x00, 0x00, 0x00, 0x01)  # Reset core
       
     sleep(sleeptime)
@@ -252,8 +254,9 @@ with comm.Controller(device_info[txdevice_index]) as txdevice:
     # Configuration Flow Step 12: TX FPGA Reset and
     # release
     ################################################
-    reset_fpga(txdevice)
-    print "\nResetting TX..."    
+    if do_reset:
+        reset_fpga(txdevice)
+        print "\nResetting TX..."    
     ################################################
     # Configuration Flow Step 13: Check TX reference
     # clock and board system
@@ -275,7 +278,7 @@ with comm.Controller(device_info[txdevice_index]) as txdevice:
     print "Configuring JESD204B TX core registers..."
     write_jesd204b_reg(txdevice, 0x08, 0x00, 0x00, 0x00, 0x01)  #Enable ILA
     write_jesd204b_reg(txdevice, 0x0C, 0x00, 0x00, 0x00, 0x00)  #Scrambling - 0 to disable, 1 to enable
-    write_jesd204b_reg(txdevice, 0x10, 0x00, 0x00, 0x00, 0x01)  # Only respond to first SYSREF (Subclass 1 only)
+    write_jesd204b_reg(txdevice, 0x10, 0x00, 0x00, 0x00, 0x00)  # Only respond to first SYSREF (Subclass 1 only)
     write_jesd204b_reg(txdevice, 0x14, 0x00, 0x00, 0x00, 0x03)  # Multiframes in ILA = 4
     write_jesd204b_reg(txdevice, 0x18, 0x00, 0x00, 0x00, 0x00)  # Normal operation (no test modes enabled)
     write_jesd204b_reg(txdevice, 0x20, 0x00, 0x00, 0x00, 0x01)  # 2 octets per frame
@@ -367,22 +370,48 @@ with comm.Controller(device_info[txdevice_index]) as txdevice:
     if(verbose != 0):
         print "\nReading TX JESD204B core registers..."
     read_xilinx_core_config(txdevice, verbose = True)   
- 
-
+        
 #        data, data_ch0, data_ch1, nSamps_per_channel, syncErr = capture2(device, n, dumpdata, dump_pscope_data, verbose)
 
+print("Waiting for 5 seconds to see if we accumulate some errors...")
+sleep(5.0)
 
-# Read back 
-with comm.Controller(device_info[txdevice_index]) as rxdevice:
+# Read back RX ILAS registers
+with comm.Controller(device_info[rxdevice_index]) as rxdevice:
     rxdevice.hs_set_bit_mode(comm.HS_BIT_MODE_MPSSE)
     
     if(verbose != 0):
         print "\nReading RX JESD204B core registers..."
 
     read_xilinx_core_config(rxdevice, verbose = True)   
-    read_xilinx_core_ilas(rxdevice, verbose = True, lane=0)
-    
+    for i in range(0, 2):
+        read_xilinx_core_ilas(rxdevice, verbose = True, lane=i)
+        
+## Read back TX ILAS registers
+#with comm.Controller(device_info[txdevice_index]) as txdevice:
+#    txdevice.hs_set_bit_mode(comm.HS_BIT_MODE_MPSSE)
+#    
+#    if(verbose != 0):
+#        print "\nReading TX JESD204B core registers..."
+#
+##    read_xilinx_core_config(rxdevice, verbose = True)   
+#    for i in range(0, 2):
+#        read_xilinx_core_ilas(txdevice, verbose = True, lane=i)
+#    
 
+###############################################
+# Configuration Flow Step 26: Check RX output data
+# is valid
+################################################
+with comm.Controller(device_info[rxdevice_index]) as rxdevice:
+    rxdevice.hs_set_bit_mode(comm.HS_BIT_MODE_MPSSE)
+	
+    sleep(sleeptime)
+    
+    data = rxdevice.hs_fpga_read_data_at_address(RX_CAPTURE_STATUS_REG)
+    print "\n RX Capture Status: 0x{:04X}".format(data)
+  
+    
 
 
 

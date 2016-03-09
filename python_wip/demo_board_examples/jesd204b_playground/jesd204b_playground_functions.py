@@ -92,10 +92,10 @@ JESD204B_XILINX_CONFIG_REG_NAMES = ["             Version", "               Rese
                                     "        RX buf delay", "     Error reporting", "         SYNC Status", " Link err stat, 8-11"]
 
 # Register names for per-lane information
-JESD204B_XILINX_LANE_REG_NAMES = ["  ILA config Data 0", "  ILA config Data 1", "  ILA config Data 2", "  ILA config Data 3", 
-                                  "  ILA config Data 4", "  ILA config Data 5", "  ILA config Data 6", "  ILA config Data 7", 
-                                  "  Test Mode Err cnt", "       Link Err cnt", "  Test Mode ILA cnt", "Tst Mde multif. cnt",
-                                  "      Buffer Adjust"]
+JESD204B_XILINX_LANE_REG_NAMES = ["                 ILA config Data 0", "  ILA config Data 1", "  ILA config Data 2", "  ILA config Data 3", 
+                                  "                 ILA config Data 4", "  ILA config Data 5", "  ILA config Data 6", "  ILA config Data 7", 
+                                  "                 Test Mode Err cnt", "       Link Err cnt", "  Test Mode ILA cnt", "Tst Mde multif. cnt",
+                                  "                     Buffer Adjust"]
 
 
 MOD_RPAT = [0xBE, 0xD7, 0x23, 0x47, 0x6B, 0x8F, 0xB3, 0x14, 0x5E, 0xFB, 0x35, 0x59]
@@ -163,40 +163,41 @@ def read_xilinx_core_config(device, verbose = True):
         print JESD204B_XILINX_CONFIG_REG_NAMES[i] + ": " + ' {:02X} {:02X} {:02X} {:02X}'.format(byte3, byte2, byte1, byte0)
 
 def read_xilinx_core_ilas(device, verbose = True, lane = 0):
-    startreg = 0x800 + lane * 0x040
+    startreg = 0x800 + (lane * 0x040)
     print("\nILAS and stuff for lane " + str(lane) + ":")
+    print("Starting Register: " + "{:04X}".format(startreg))
     for i in range(0, 13):
         reg = startreg + i*4
         byte3, byte2, byte1, byte0 = read_jesd204b_reg(device, reg)    
-        print "\n"
+
         print JESD204B_XILINX_LANE_REG_NAMES[i] + ": " + ' {:02X} {:02X} {:02X} {:02X}'.format(byte3, byte2, byte1, byte0)
         if(i ==0):
-            print "  JESD204B version : ", byte1
+            print "                    JESD204B version : ", (byte1 & 0x07)
         elif(i == 1):
-            print "  F (Octets per frame): ", byte0
+            print "                 F (Octets per frame): ", (byte0 & 0xFF)
         elif(i == 2):
-            print "  K (Frames per multiframe): ", byte0
+            print "            K (Frames per multiframe): ", (byte0 & 0x0F)
         elif(i == 3):
-            print "  DID (Device ID)   : ", byte0
-            print "  BID (Bank ID)     : ", byte1
-            print "  LID (Lane ID)     : ", byte2
-            print "  L (Lanes per link): ", byte3
+            print "                      DID (Device ID): ", (byte0 & 0xFF)
+            print "                        BID (Bank ID): ", (byte1 & 0x0F)
+            print "                        LID (Lane ID): ", (byte2 & 0x1F)
+            print "                   L (Lanes per link): ", (byte3 & 0x1F)
         elif(i == 4):
-            print "  M (Convertors per device)   : ", byte0
-            print "  N (Convertor resolution)    : ", byte1
-            print "  N' (Total bits per sample)  : ", byte2
-            print "  CS (Control bits per sample): ", byte3 
+            print "            M (Convertors per device): ", (byte0 & 0xFF)
+            print "             N (Convertor resolution): ", (byte1 & 0x1F)
+            print "           N' (Total bits per sample): ", (byte2 & 0x1F)
+            print "         CS (Control bits per sample): ", (byte3 & 0x03)
         elif(i == 5):
-            print "  SCR (Scrambling enable)            : ", byte0
-            print "  S (Samples per convertor per frame): ", byte1
-            print "  HD (High Density format)           : ", byte2
-            print "  CF (Control Words per frame)       : ", byte3 
+            print "              SCR (Scrambling enable): ", (byte0 & 0x01)
+            print "  S (Samples per convertor per frame): ", (byte1 & 0x1F)
+            print "             HD (High Density format): ", (byte2 & 0x01)
+            print "         CF (Control Words per frame): ", (byte3 & 0x1F)
         elif(i == 6):
-            print "  FCHK (Checksum): ", byte2
+            print "                      FCHK (Checksum): ", (byte2 & 0xFF)
         elif(i == 7):
-            print "  ADJCNT (Phase Adjust Request): ", byte0
-            print "  PHADJ (Phase Adjust Request) : ", byte1
-            print "  ADJDIR (Adjust direction)    : ", byte2
+            print "        ADJCNT (Phase Adjust Request): ", (byte0 & 0x03)
+            print "        PHADJ (Phase Adjust Request) : ", (byte1 & 0x01)
+            print "        ADJDIR (Adjust direction)    : ", (byte2 & 0x01)
             
 
 
