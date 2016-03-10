@@ -461,7 +461,7 @@ with comm.Controller(device_info[rxdevice_index]) as rxdevice:
     data = rxdevice.hs_fpga_read_data_at_address(RX_CAPTURE_STATUS_REG)
     print "RX_CAPTURE_STATUS_REG: ", data
     # Check for 0b xxxxxxx1 
-    if(data | 0x01 == 0x01):
+    if(data & 0x01 == 0x01):
         print "RX Capture done"
     else:
         print "RX Capture not done"
@@ -485,6 +485,32 @@ with comm.Controller(device_info[rxdevice_index]) as rxdevice:
     # as Sync FIFO mode
     ################################################           
     rxdevice.hs_set_bit_mode(comm.HS_BIT_MODE_FIFO) 
+    sleep(sleeptime)
+    
+    ################################################
+    # Configuration Flow Step 31: Check if RX got 
+    # all data
+    ################################################          
+    nSampsRead, rx_data = device.data_receive_uint16_values(end = (1024 * 12 + 48))
+    
+    ################################################
+    # Configuration Flow Step 32: Configure RX's FTDI
+    # as MPSSE mode
+    ################################################       
+    rxdevice.hs_set_bit_mode(comm.HS_BIT_MODE_MPSSE)    
+    
+    ################################################
+    # Configuration Flow Step 33: Reset RX capture  
+    # engine and FCLK PLL
+    ################################################
+    data = rxdevice.hs_fpga_read_data_at_address(RX_CAPTURE_RESET_REG)
+    print "RX_CAPTURE_RESET_REG: ", data
+    # Check for 0b xxxxxxx1 
+    if(data & 0x01 == 0x01):
+        print "RX Capture done"
+    else:
+        print "RX Capture not done"
+    sleep(sleeptime)
     
     
     
