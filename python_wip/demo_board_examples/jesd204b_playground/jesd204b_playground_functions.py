@@ -156,11 +156,13 @@ def read_jesd204b_reg(device, address):
     return b3, b2, b1, b0
 
 def read_xilinx_core_config(device, verbose = True):
-    print("\nJEDEC core config registers:")
+    if(verbose == True):
+        print("\nJEDEC core config registers:")
     for i in range(0, 16):
         reg = i*4
-        byte3, byte2, byte1, byte0 = read_jesd204b_reg(device, reg)                
-        print JESD204B_XILINX_CONFIG_REG_NAMES[i] + ": " + ' {:02X} {:02X} {:02X} {:02X}'.format(byte3, byte2, byte1, byte0)
+        byte3, byte2, byte1, byte0 = read_jesd204b_reg(device, reg)
+        if(verbose == True):                
+            print JESD204B_XILINX_CONFIG_REG_NAMES[i] + ": " + ' {:02X} {:02X} {:02X} {:02X}'.format(byte3, byte2, byte1, byte0)
 
 def read_xilinx_core_ilas(device, verbose = True, lane = 0):
     startreg = 0x800 + (lane * 0x040)

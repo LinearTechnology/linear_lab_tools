@@ -63,7 +63,6 @@ errorcount = 0                # Initial error count
 # Can be disabled for testing purposes.
 initialize_spi = 0
 initialize_core = 0
-initialize_reset = 1
 
 # Display time and frequency domain plots for ADC data
 plot_data = 1
@@ -78,7 +77,7 @@ CS = 0		# Control Bits per sample
 did=0x42 # Device ID (programmed into ADC, read back from JEDEC core)
 bid=0x0A # Bank      (                 "                            )
 K=16     # Frames per multiframe (subclass 1 only)
-LIU = 12  # Lanes in use
+LIU = 12 - 1  # Lanes in use minus 1
 modes = 0x00 # Enable FAM, LAM (Frame / Lane alignment monitorning)
 #modes = 0x18 #Disable FAM, LAM (for testing purposes)
 
@@ -104,7 +103,7 @@ device = None
 rxdevice = None
 txdevice = None
 devices = [None] * 2
-do_reset = False  # Reset FPGA once (not necessary to reset between data loads)
+do_reset = True  # Reset FPGA once (not necessary to reset between data loads)
 num_devices = 0
 
 if verbose:
@@ -352,7 +351,7 @@ with comm.Controller(device_info[txdevice_index]) as txdevice:
     # Configuration Flow Step 19: Configure TX buffer
     # size and transfer mode
     ################################################
-    txdevice.hs_fpga_write_data_at_address(TX_PBK_CONFIG_REG, 0x01)
+    txdevice.hs_fpga_write_data_at_address(TX_PBK_CONFIG_REG, 0x00)
     
     ################################################
     # Configuration Flow Step 20: Verify TX buffer
@@ -392,6 +391,7 @@ with comm.Controller(device_info[txdevice_index]) as txdevice:
         j+=1
         tx_data[i] = j
 
+    txdevice.data_set_high_byte_first();
     num_bytes_sent = txdevice.data_send_uint16_values(tx_data) #DAC should start running here!
     
     ################################################
@@ -453,7 +453,8 @@ with comm.Controller(device_info[rxdevice_index]) as rxdevice:
     # MEMSIZE: 1K x 12 SAmples (0000)
     # CHSEL: Channel 0 & 1 (1000)
     rxdevice.hs_fpga_write_data_at_address(RX_CAPTURE_CONFIG_REG, 0x08)   
-    
+    rxdevice.hs_fpga_write_data_at_address(RX_CAPTURE_CONTROL_REG, 0x01) 
+    sleep(sleeptime)
     ################################################
     # Configuration Flow Step 28: Verify RX buffer
     # is full
@@ -490,8 +491,43 @@ with comm.Controller(device_info[rxdevice_index]) as rxdevice:
     ################################################
     # Configuration Flow Step 31: Check if RX got 
     # all data
-    ################################################          
-    nSampsRead, rx_data = device.data_receive_uint16_values(end = (1024 * 12 + 48))
+    ################################################   
+    if(verbose != 0):
+        print "Capturing data and resetting..."
+
+    rxdevice.hs_fpga_write_data_at_address(RX_CAPTURE_CONFIG_REG, 0x08) 
+
+    rxdevice.hs_fpga_write_data_at_address(RX_CAPTURE_RESET_REG, 0x01)  #Reset
+    rxdevice.hs_fpga_write_data_at_address(RX_CAPTURE_CONTROL_REG, 0x01)  #Start!!
+    sleep(1) #wait for capture
+
+#    data = rxdevice.hs_fpga_read_data_at_address(RX_CAPTURE_STATUS_REG)
+#    syncErr = (data & 0x04) != 0
+#    if (verbose != 0):
+#        print "Reading capture status, should be 0x11 (CH0, CH1 valid, Capture done, data not fetched)"
+#        print "And it is... 0x{:04X}".format(data)
+
+    #sleep(sleeptime)
+    rxdevice.data_set_low_byte_first() #Set endian-ness
+    rxdevice.hs_set_bit_mode(comm.HS_BIT_MODE_FIFO)
+    sleep(0.1)
+    nSampsRead, rx_data = rxdevice.data_receive_uint16_values(end = (1024 * 12 + 48))
+    rxdevice.hs_set_bit_mode(comm.HS_BIT_MODE_MPSSE)
+
+    sleep(sleeptime)
+
+    if(verbose != 0):
+        print "Read out " + str(nSampsRead) + " samples"
+#        print "And " + str(extrabytecount) + " extra bytes"        
+        
+        
+    # Demonstrate how to write generated data to a file.
+    print('writing data out to file')
+    outfile = open('dacdata1.csv', 'w')
+    for i in range(0, total_samples):
+        outfile.write(str(rx_data[i] - 12265) + "\n")
+    outfile.close()
+    print('done writing!')
     
     ################################################
     # Configuration Flow Step 32: Configure RX's FTDI
@@ -512,15 +548,17 @@ with comm.Controller(device_info[rxdevice_index]) as rxdevice:
         print "RX Capture not done"
     sleep(sleeptime)
     
+
     
-    
-print("Waiting for 5 seconds to see if we accumulate some errors...")
-sleep(5.0)
+
 
 # Read back RX ILAS registers
 with comm.Controller(device_info[rxdevice_index]) as rxdevice:
     rxdevice.hs_set_bit_mode(comm.HS_BIT_MODE_MPSSE)
-    
+    print("Reading out RX registers to clear errors...")
+    read_xilinx_core_config(rxdevice, verbose = False)  
+    print("Waiting for 5 seconds to see if we accumulate some errors...")
+    sleep(5.0)
     if(verbose != 0):
         print "\nReading RX JESD204B core registers..."
 
