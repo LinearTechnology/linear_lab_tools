@@ -53,6 +53,18 @@ from time import sleep
 
 sleeptime = 0.1
 
+# Set up JESD204B parameters
+M = 12		# Converters per device
+N = 16 		# Converter resolution
+Nt = 16		# Total bits per sample
+CS = 0		# Control Bits per sample
+did=0x42 # Device ID (programmed into ADC, read back from JEDEC core)
+bid=0x0A # Bank      (                 "                            )
+K=16     # Frames per multiframe (subclass 1 only)
+LIU = 12  # Lanes in use minus 1
+modes = 0x00 # Enable FAM, LAM (Frame / Lane alignment monitorning)
+#modes = 0x18 #Disable FAM, LAM (for testing purposes)
+
 # FPGA register addresses
 ID_REG = 0x00
 
@@ -92,10 +104,10 @@ JESD204B_XILINX_CONFIG_REG_NAMES = ["             Version", "               Rese
                                     "        RX buf delay", "     Error reporting", "         SYNC Status", " Link err stat, 8-11"]
 
 # Register names for per-lane information
-JESD204B_XILINX_LANE_REG_NAMES = ["                 ILA config Data 0", "  ILA config Data 1", "  ILA config Data 2", "  ILA config Data 3", 
-                                  "                 ILA config Data 4", "  ILA config Data 5", "  ILA config Data 6", "  ILA config Data 7", 
-                                  "                 Test Mode Err cnt", "       Link Err cnt", "  Test Mode ILA cnt", "Tst Mde multif. cnt",
-                                  "                     Buffer Adjust"]
+JESD204B_XILINX_LANE_REG_NAMES = ["                  ILA config Data 0", "                  ILA config Data 1", "                  ILA config Data 2", "                  ILA config Data 3", 
+                                  "                  ILA config Data 4", "                  ILA config Data 5", "                  ILA config Data 6", "                  ILA config Data 7", 
+                                  "                  Test Mode Err cnt", "                       Link Err cnt", "                  Test Mode ILA cnt", "                Tst Mde multif. cnt",
+                                  "                     Buffer Adjust)"]
 
 
 MOD_RPAT = [0xBE, 0xD7, 0x23, 0x47, 0x6B, 0x8F, 0xB3, 0x14, 0x5E, 0xFB, 0x35, 0x59]
@@ -164,43 +176,98 @@ def read_xilinx_core_config(device, verbose = True):
         if(verbose == True):                
             print JESD204B_XILINX_CONFIG_REG_NAMES[i] + ": " + ' {:02X} {:02X} {:02X} {:02X}'.format(byte3, byte2, byte1, byte0)
 
-def read_xilinx_core_ilas(device, verbose = True, lane = 0):
+def read_xilinx_core_ilas(device, verbose = True, lane = 0, split_all = False):
     startreg = 0x800 + (lane * 0x040)
     print("\nILAS and stuff for lane " + str(lane) + ":")
     print("Starting Register: " + "{:04X}".format(startreg))
     for i in range(0, 13):
         reg = startreg + i*4
         byte3, byte2, byte1, byte0 = read_jesd204b_reg(device, reg)    
-
-        print JESD204B_XILINX_LANE_REG_NAMES[i] + ": " + ' {:02X} {:02X} {:02X} {:02X}'.format(byte3, byte2, byte1, byte0)
-        if(i ==0):
-            print "                    JESD204B version : ", (byte1 & 0x07)
-        elif(i == 1):
-            print "                 F (Octets per frame): ", (byte0 & 0xFF)
-        elif(i == 2):
-            print "            K (Frames per multiframe): ", (byte0 & 0x0F)
-        elif(i == 3):
-            print "                      DID (Device ID): ", (byte0 & 0xFF)
-            print "                        BID (Bank ID): ", (byte1 & 0x0F)
-            print "                        LID (Lane ID): ", (byte2 & 0x1F)
-            print "                   L (Lanes per link): ", (byte3 & 0x1F)
-        elif(i == 4):
-            print "            M (Convertors per device): ", (byte0 & 0xFF)
-            print "             N (Convertor resolution): ", (byte1 & 0x1F)
-            print "           N' (Total bits per sample): ", (byte2 & 0x1F)
-            print "         CS (Control bits per sample): ", (byte3 & 0x03)
-        elif(i == 5):
-            print "              SCR (Scrambling enable): ", (byte0 & 0x01)
-            print "  S (Samples per convertor per frame): ", (byte1 & 0x1F)
-            print "             HD (High Density format): ", (byte2 & 0x01)
-            print "         CF (Control Words per frame): ", (byte3 & 0x1F)
-        elif(i == 6):
-            print "                      FCHK (Checksum): ", (byte2 & 0xFF)
-        elif(i == 7):
-            print "        ADJCNT (Phase Adjust Request): ", (byte0 & 0x03)
-            print "        PHADJ (Phase Adjust Request) : ", (byte1 & 0x01)
-            print "        ADJDIR (Adjust direction)    : ", (byte2 & 0x01)
-            
+        print "\n" + JESD204B_XILINX_LANE_REG_NAMES[i] + ": " + ' {:02X} {:02X} {:02X} {:02X}'.format(byte3, byte2, byte1, byte0)
+        
+        if(split_all == True):
+            if(i ==0):
+                data = byte1 & 0x07
+                if(data == 0x01):
+                    print "                   JESD204B version:  " + str(data) + "\t\tPASS"
+                else:
+                    print "                   JESD204B version:  " + str(data) + "\t\tFAIL"
+            elif(i == 1):
+                data = (byte0 & 0xFF) + 1
+                if(data == 2):
+                    print "               F (Octets per frame):  " + str(data) + "\t\tPASS"
+                else:
+                    print "               F (Octets per frame):  " + str(data) + "\t\tFAIL"
+            elif(i == 2):
+                data = (byte0 & 0x1F) + 1
+                if(data == 32):
+                    print "          K (Frames per multiframe):  " + str(data) + "\t\tPASS"
+                else:
+                    print "          K (Frames per multiframe):  " + str(data) + "\t\tFAIL"
+                
+            elif(i == 3):
+                data = byte0 & 0xFF
+                if(data == did):
+                    print "                    DID (Device ID):  0x" + '{:02X}'.format(data) + "\t\tPASS"
+                else:
+                    print "                    DID (Device ID):  0x" + '{:02X}'.format(data) + "\t\tFAIL"
+                
+                data = byte1 & 0x0F
+                if(data == bid):
+                    print "                      BID (Bank ID):  0x" + '{:02X}'.format(data) + "\t\tPASS"
+                else:
+                    print "                      BID (Bank ID):  0x" + '{:02X}'.format(data) + "\t\tFAIL"
+                
+                data = byte2 & 0x1F
+                if(data == lane):
+                    print "                      LID (Lane ID):  " + str(data) + "\t\tPASS"
+                else:
+                    print "                      LID (Lane ID):  " + str(data) + "\t\tFAIL"
+                
+                data = (byte3 & 0x1F) + 1
+                if(data == LIU):
+                    print "                 L (Lanes per link):  " + str(data) + "\t\tPASS"
+                else:
+                    print "                 L (Lanes per link):  " + str(data) + "\t\tFAIL"
+                
+                
+            elif(i == 4):
+                data = (byte0 & 0xFF) + 1
+                if(data == M):
+                    print "          M (Convertors per device):  " + str(data) + "\t\tPASS"
+                else:
+                    print "          M (Convertors per device):  " + str(data) + "\t\tFAIL"
+                
+                data = byte1 & 0x1F
+                if(data == N):
+                    print "           N (Convertor resolution):  " + str(data) + "\t\tPASS"
+                else:
+                    print "           N (Convertor resolution):  " + str(data) + "\t\tFAIL"
+                
+                data = byte2 & 0x1F
+                if(data == Nt):
+                    print "         N' (Total bits per sample):  " + str(data) + "\t\tPASS"
+                else:
+                    print "         N' (Total bits per sample):  " + str(data) + "\t\tFAIL"
+                
+                data = byte3 & 0x03
+                if(data == Nt):
+                    print "       CS (Control bits per sample):  " + str(data) + "\t\tPASS"
+                else:
+                    print "       CS (Control bits per sample):  " + str(data) + "\t\tFAIL"
+ 
+            elif(i == 5):
+                print "            SCR (Scrambling enable):  0x" + '{:02X}'.format(byte0 & 0x01)
+                print "S (Samples per convertor per frame):  0x" + '{:02X}'.format(byte1 & 0x1F)
+                print "           HD (High Density format):  0x" + '{:02X}'.format(byte2 & 0x01)
+                print "       CF (Control Words per frame):  0x" + '{:02X}'.format(byte3 & 0x1F)
+            elif(i == 6):
+                print "                    FCHK (Checksum):  0x" + '{:02X}'.format(byte2 & 0xFF)
+            elif(i == 7):
+                print "      ADJCNT (Phase Adjust Request):  0x" + '{:02X}'.format(byte0 & 0x03)
+                print "      PHADJ (Phase Adjust Request) :  0x" + '{:02X}'.format(byte1 & 0x01)
+                print "      ADJDIR (Adjust direction)    :  0x" + '{:02X}'.format(byte2 & 0x01)
+        
 
 
 def hexStr(data):
