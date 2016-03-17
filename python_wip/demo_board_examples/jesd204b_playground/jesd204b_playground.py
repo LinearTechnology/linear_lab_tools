@@ -525,7 +525,7 @@ with comm.Controller(device_info[rxdevice_index]) as rxdevice:
     print('writing data out to file')
     outfile = open('dacdata1.csv', 'w')
     for i in range(0, total_samples):
-        outfile.write(str(rx_data[i] - 12265) + "\n")
+        outfile.write(str(rx_data[i]) + "\n")
     outfile.close()
     print('done writing!')
     
