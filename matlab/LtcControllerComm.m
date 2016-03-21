@@ -565,14 +565,18 @@ classdef LtcControllerComm < handle
       
         % TODO %
         
-        function DC1371SetGenericConfig(self, did, generic_config)
+        function DC1371SetGenericConfig(self, did, genericConfig)
             % todo
-            self.Call(did, 'Lcc1371SetGenericConfig', generic_config);
+            self.Call(did, 'Lcc1371SetGenericConfig', genericConfig);
         end
         
-        function DC1371SetDemoConfig(self, did, demo_config)
+        function DC1371SetDemoConfig(self, did, demoConfig)
             % todo
-            self.Call(did, 'Lcc1371SetDemoConfig', demo_config);
+            self.Call(did, 'Lcc1371SetDemoConfig', demoConfig);
+        end
+        
+        function DC1371SpiChooseChipSelect(self, did, newChipSelect)
+            self.Call(did, 'Lcc1371SpiChooseChipSelect', newChipSelect);
         end
         
         function DC890GpioSetByte(self, did, byte)
@@ -590,10 +594,7 @@ classdef LtcControllerComm < handle
             self.Call(did, 'Lcc890Flush');
         end
             
-%     LTC_CONTROLLER_COMM_API int Lcc1371SetGenericConfig(LccHandle handle, uint32_t generic_config);
-% 
-%     LTC_CONTROLLER_COMM_API int Lcc1371SetDemoConfig(LccHandle handle, uint32_t demo_config);
-% 
+
 %     // Set the chip select used to be LCC_1371_CHIP_SELECT_ONE or LCC_1371_CHIP_SELECT_TWO
 %     // ONE is the most common value and is used if this function is never called.
 %     LTC_CONTROLLER_COMM_API int Lcc1371SpiChooseChipSelect(LccHandle handle, int new_chip_select);
