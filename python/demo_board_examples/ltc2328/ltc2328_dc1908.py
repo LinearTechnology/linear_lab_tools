@@ -160,6 +160,7 @@ def ltc2328_dc1908(num_samples, verbose=True, do_demo=True):
             plt.plot(freq_domain_magnitude_db)
     
             plt.show()
+        return(data)
 
 if __name__ == '__main__':
     # How many points to capture, un-comment one line

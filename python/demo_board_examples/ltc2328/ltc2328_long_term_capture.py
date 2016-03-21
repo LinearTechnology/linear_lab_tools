@@ -41,7 +41,25 @@ import numpy as np
 from ltc2328_dc1908 import ltc2328_dc1908
 
 # Print extra information to console
-verbose = True
-plot_data = True
 
-ltc2328_dc1908(32*1024, verbose=True, do_demo=True)
+num_points = 128
+delay = 1.0
+
+averages = [0] * num_points
+stdevs = [0] * num_points
+
+for i in range (0, num_points):
+    print("Capturing point " + str(i) + " of " + str(num_points))
+    capturedata = ltc2328_dc1908(32*1024, verbose=False, do_demo=False)
+    averages[i] = np.average(capturedata)
+    stdevs[i] = np.std(capturedata)
+    sleep(delay)
+
+
+
+
+
+print('Writing data to file')
+with open('longterm_data.txt', 'w') as f:
+    for i in range (0, num_points):
+        f.write(str(averages[i]) + "," + str(stdevs[i]) + '\n')
