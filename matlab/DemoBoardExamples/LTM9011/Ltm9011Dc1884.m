@@ -1,4 +1,5 @@
-function Ltm9011Dc1884(arg1NumSamples, arg2Verbose, arg3DoDemo)
+function [ch1Ret, ch2Ret, ch3Ret, ch4Ret, ch5Ret, ch6Ret, ch7Ret, ch8Ret] = ...
+    Ltm9011Dc1884(arg1NumSamples, arg2Verbose, arg3DoDemo)
     if(~nargin)
         numAdcSamples = 8 * 1024;
         % Print extra information to console
@@ -23,7 +24,7 @@ function Ltm9011Dc1884(arg1NumSamples, arg2Verbose, arg3DoDemo)
     
     totalAdcSamples = 8 * numAdcSamples;    % two channel part
     %change this to collect real or test pattern data
-    useTestData = False;
+    useTestData = false;
     % change this to set the output when using the test pattern
     testDataValue = 10922;
     
@@ -176,6 +177,16 @@ function Ltm9011Dc1884(arg1NumSamples, arg2Verbose, arg3DoDemo)
     dataCh6(1 : numAdcSamples) = data(6 : 8 : totalAdcSamples);
     dataCh7(1 : numAdcSamples) = data(7 : 8 : totalAdcSamples);
     dataCh8(1 : numAdcSamples) = data(8 : 8 : totalAdcSamples);
+    
+    % Data to be returned
+    ch1Ret = dataCh1;
+    ch2Ret = dataCh2;
+    ch3Ret = dataCh3;
+    ch4Ret = dataCh4;
+    ch5Ret = dataCh5;
+    ch6Ret = dataCh6;
+    ch7Ret = dataCh7;
+    ch8Ret = dataCh8;
     
     if(writeToFile)
         if(verbose)
