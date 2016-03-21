@@ -31,12 +31,14 @@ function Ltm9011Dc1884(arg1NumSamples, arg2Verbose, arg3DoDemo)
     comm = LtcControllerComm();  
     
     % find demo board with correct ID
-    EEPROM_ID = '[0071 DEMO 10 DC1884A-F LTM9006 D9011\r\n + \
-    ADC 14 14 8 0000 00 00 00 00\r\n + \
-    DBFLG 0003 28 32 10 00\r\n + \
-    FPGA S9011 T4\r\n + \
-    A94E]';
-    eepromIdSize = length(EEPROM_ID);
+%     EEPROM_ID = '[0071 DEMO 10 DC1884A-F LTM9006 D9011\r\n + \
+%     ADC 14 14 8 0000 00 00 00 00\r\n + \
+%     DBFLG 0003 28 32 10 00\r\n + \
+%     FPGA S9011 T4\r\n + \
+%     A94E]';
+    
+    eepromIdSize = 141;
+    % eepromIdSize = length(EEPROM_ID);
     fprintf('Looking for a DC1371 with a DC1884 demoboard');
  
     deviceInfoList = comm.ListControllers(comm.TYPE_DC1371, 1);
@@ -167,7 +169,7 @@ function Ltm9011Dc1884(arg1NumSamples, arg2Verbose, arg3DoDemo)
     dataCh8 = zeros(1, numAdcSamples);
     
     dataCh1(1 : numAdcSamples) = data(1 : 8 : totalAdcSamples);
-    dataCh2(1 : numAdcSamples) = data(2 : 2 : totalAdcSamples);
+    dataCh2(1 : numAdcSamples) = data(2 : 8 : totalAdcSamples);
     dataCh3(1 : numAdcSamples) = data(3 : 8 : totalAdcSamples);
     dataCh4(1 : numAdcSamples) = data(4 : 8 : totalAdcSamples);
     dataCh5(1 : numAdcSamples) = data(5 : 8 : totalAdcSamples);
