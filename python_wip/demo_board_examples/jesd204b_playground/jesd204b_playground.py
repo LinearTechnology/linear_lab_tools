@@ -275,7 +275,7 @@ with comm.Controller(device_info[txdevice_index]) as txdevice:
     write_jesd204b_reg(txdevice, 0x28, 0x00, 0x00, 0x00, 0x0B)  # Lanes in use - program with N-1
     write_jesd204b_reg(txdevice, 0x2C, 0x00, 0x00, 0x00, 0x01)  # Subclass 1
     write_jesd204b_reg(txdevice, 0x80C, (LIU - 1), 0x00, bid, did)  # Subclass 1
-    write_jesd204b_reg(txdevice, 0x810, CS, Nt, N, (M - 1))  # Subclass 1
+    write_jesd204b_reg(txdevice, 0x810, CS, (Nt - 1), (N - 1), (M - 1))  # Subclass 1
     write_jesd204b_reg(txdevice, 0x814, 0x00, 0x00, 0x00, 0x01)  # Subclass 1
     write_jesd204b_reg(txdevice, 0x818, 0x00, 0x00, 0x00, 0x01)  # Subclass 1
     write_jesd204b_reg(txdevice, 0x04, 0x00, 0x00, 0x00, 0x01)  # Subclass 1
@@ -358,7 +358,7 @@ with comm.Controller(device_info[txdevice_index]) as txdevice:
         
     if(verbose != 0):
         print "\nReading TX JESD204B core registers..."
-    read_xilinx_core_config(txdevice, verbose = True)   
+    read_xilinx_core_config(txdevice, verbose = True, read_link_erroe = False)   
         
     ################################################
     # Configuration Flow Step 21: Configure TX's FTDI
@@ -546,13 +546,13 @@ with comm.Controller(device_info[rxdevice_index]) as rxdevice:
 with comm.Controller(device_info[rxdevice_index]) as rxdevice:
     rxdevice.hs_set_bit_mode(comm.HS_BIT_MODE_MPSSE)
     print("Reading out RX registers to clear errors...")
-    read_xilinx_core_config(rxdevice, verbose = False)  
+    read_xilinx_core_config(rxdevice, verbose = False, read_link_erroe = False)  
     print("Waiting for 5 seconds to see if we accumulate some errors...")
     sleep(5.0)
     if(verbose != 0):
         print "\nReading RX JESD204B core registers..."
 
-    read_xilinx_core_config(rxdevice, verbose = True)   
+    read_xilinx_core_config(rxdevice, verbose = True, read_link_erroe = True)   
     for i in range(0, 2):
         read_xilinx_core_ilas(rxdevice, verbose = True, lane=i, split_all = True)
         

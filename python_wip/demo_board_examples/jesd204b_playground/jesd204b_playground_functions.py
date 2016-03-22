@@ -107,7 +107,7 @@ JESD204B_XILINX_CONFIG_REG_NAMES = ["             Version", "               Rese
 JESD204B_XILINX_LANE_REG_NAMES = ["                  ILA config Data 0", "                  ILA config Data 1", "                  ILA config Data 2", "                  ILA config Data 3", 
                                   "                  ILA config Data 4", "                  ILA config Data 5", "                  ILA config Data 6", "                  ILA config Data 7", 
                                   "                  Test Mode Err cnt", "                       Link Err cnt", "                  Test Mode ILA cnt", "                Tst Mde multif. cnt",
-                                  "                     Buffer Adjust)"]
+                                  "                      Buffer Adjust"]
 
 
 MOD_RPAT = [0xBE, 0xD7, 0x23, 0x47, 0x6B, 0x8F, 0xB3, 0x14, 0x5E, 0xFB, 0x35, 0x59]
@@ -167,14 +167,19 @@ def read_jesd204b_reg(device, address):
     b0 = device.hs_fpga_read_data_at_address(JESD204B_RB0_REG)
     return b3, b2, b1, b0
 
-def read_xilinx_core_config(device, verbose = True):
+def read_xilinx_core_config(device, verbose = True, read_link_erroe = False):
     if(verbose == True):
         print("\nJEDEC core config registers:")
     for i in range(0, 16):
         reg = i*4
         byte3, byte2, byte1, byte0 = read_jesd204b_reg(device, reg)
+        if(reg == 0x1C):
+            err_status1 = (byte0 | (byte1 << 8) | (byte2 << 16) | (byte3 << 24))
         if(verbose == True):                
-            print JESD204B_XILINX_CONFIG_REG_NAMES[i] + ": " + ' {:02X} {:02X} {:02X} {:02X}'.format(byte3, byte2, byte1, byte0)
+            print JESD204B_XILINX_CONFIG_REG_NAMES[i] + ": " + ' {:02X} {:02X} {:02X} {:02X}'.format(byte3, byte2, byte1, byte0)        
+    if(read_link_erroe == True):
+        err_status2 = (byte0 | (byte1 << 8))
+        check_link_error_status(err_status1, err_status2)
 
 def read_xilinx_core_ilas(device, verbose = True, lane = 0, split_all = False):
     startreg = 0x800 + (lane * 0x040)
@@ -238,37 +243,114 @@ def read_xilinx_core_ilas(device, verbose = True, lane = 0, split_all = False):
                 else:
                     print "          M (Convertors per device):  " + str(data) + "\t\tFAIL"
                 
-                data = byte1 & 0x1F
+                data = (byte1 & 0x1F) + 1
                 if(data == N):
                     print "           N (Convertor resolution):  " + str(data) + "\t\tPASS"
                 else:
                     print "           N (Convertor resolution):  " + str(data) + "\t\tFAIL"
                 
-                data = byte2 & 0x1F
+                data = (byte2 & 0x1F) + 1
                 if(data == Nt):
                     print "         N' (Total bits per sample):  " + str(data) + "\t\tPASS"
                 else:
                     print "         N' (Total bits per sample):  " + str(data) + "\t\tFAIL"
                 
                 data = byte3 & 0x03
-                if(data == Nt):
+                if(data == CS):
                     print "       CS (Control bits per sample):  " + str(data) + "\t\tPASS"
                 else:
                     print "       CS (Control bits per sample):  " + str(data) + "\t\tFAIL"
  
             elif(i == 5):
-                print "            SCR (Scrambling enable):  0x" + '{:02X}'.format(byte0 & 0x01)
-                print "S (Samples per convertor per frame):  0x" + '{:02X}'.format(byte1 & 0x1F)
-                print "           HD (High Density format):  0x" + '{:02X}'.format(byte2 & 0x01)
-                print "       CF (Control Words per frame):  0x" + '{:02X}'.format(byte3 & 0x1F)
+                data = byte0 & 0x01
+                if(data == 1):
+                    print "            SCR (Scrambling enable):  " + str(data) + "\t\tENABLED"
+                else:
+                    print "            SCR (Scrambling enable):  " + str(data) + "\t\tDISABLED"
+                
+                data = byte1 & 0x1F
+                if(data == 0):
+                    print "S (Samples per convertor per frame):  " + str(data) + "\t\tPASS"
+                else:
+                    print "S (Samples per convertor per frame):  " + str(data) + "\t\tFAIL"
+                
+                data = byte2 & 0x01
+                if(data == 0):
+                    print "           HD (High Density format):  " + str(data) + "\t\tPASS"
+                else:
+                    print "           HD (High Density format):  " + str(data) + "\t\tFAIL"
+                
+                data = byte3 & 0x1F
+                if(data == 0):
+                    print "       CF (Control Words per frame):  " + str(data) + "\t\tPASS"
+                else:
+                    print "       CF (Control Words per frame):  " + str(data) + "\t\tFAIL"
+                    
             elif(i == 6):
-                print "                    FCHK (Checksum):  0x" + '{:02X}'.format(byte2 & 0xFF)
+                data = byte2 & 0xFF
+                print "                    FCHK (Checksum):  0x" + '{:02X}'.format(data)
             elif(i == 7):
-                print "      ADJCNT (Phase Adjust Request):  0x" + '{:02X}'.format(byte0 & 0x03)
-                print "      PHADJ (Phase Adjust Request) :  0x" + '{:02X}'.format(byte1 & 0x01)
-                print "      ADJDIR (Adjust direction)    :  0x" + '{:02X}'.format(byte2 & 0x01)
-        
+                data = byte0 & 0x03
+                if(data == 0):
+                    print "      ADJCNT (Phase Adjust Request):  0x" + '{:02X}'.format(byte0 & 0x03) + "\t\tPASS"
+                else:
+                    print "      ADJCNT (Phase Adjust Request):  0x" + '{:02X}'.format(byte0 & 0x03) + "\t\tFAIL"
+                
+                data = byte1 & 0x01
+                if(data == 0):
+                    print "      PHADJ (Phase Adjust Request) :  0x" + '{:02X}'.format(byte1 & 0x01) + "\t\tPASS"
+                else:
+                    print "      PHADJ (Phase Adjust Request) :  0x" + '{:02X}'.format(byte1 & 0x01) + "\t\tFAIL"
+                
+                data = byte2 & 0x01
+                if(data == 0):
+                    print "      ADJDIR (Adjust direction)    :  0x" + '{:02X}'.format(byte2 & 0x01) + "\t\tPASS"
+                else:
+                    print "      ADJDIR (Adjust direction)    :  0x" + '{:02X}'.format(byte2 & 0x01) + "\t\tFAIL"
+                
 
+def check_link_error_status(err_status1, err_status2): 
+    print "\nCHECKING LINK ERRORS... \n"   
+    error = 0;
+    
+    bit_position = 1;
+    for lane in range(0, 8):
+        print "Lane: ", lane,
+        if(err_status1 & bit_position):
+            print "\t- Not in Table Error received"
+            error = 1;
+        bit_position = bit_position << 1
+        if(err_status1 & bit_position):
+            print "\t- Disparity Error received"
+            error = 1;
+        bit_position = bit_position << 1
+        if(err_status1 & bit_position):
+            print "\t- Unexpected K-character received"
+            error = 1;
+        bit_position = bit_position << 1
+        if(error == 0):
+            print "\t- No Error received"
+        error = 0
+    
+    bit_position = 1
+    for lane in range(8, 12):
+        print "Lane: ", lane,
+        if(err_status2 & bit_position):
+            print "\t- Not in Table Error received"
+            error = 1;
+        bit_position = bit_position << 1
+        if(err_status2 & bit_position):
+            print "\t- Disparity Error received"
+            error = 1;
+        bit_position = bit_position << 1
+        if(err_status2 & bit_position):
+            print "\t- Unexpected K-character received"
+            error = 1;
+        bit_position = bit_position << 1
+        if(error == 0):
+            print "\t- No Error received"
+        error = 0
+                            
 
 def hexStr(data):
     return '0x' + '{:04X}'.format(data)
