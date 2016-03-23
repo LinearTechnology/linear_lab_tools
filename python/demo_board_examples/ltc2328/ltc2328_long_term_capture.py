@@ -60,9 +60,6 @@ for i in range (0, num_points):
     sleep(delay)
 
 
-
-
-
 print('Writing data to file')
 with open('longterm_data.txt', 'w') as f:
     for i in range (0, num_points):

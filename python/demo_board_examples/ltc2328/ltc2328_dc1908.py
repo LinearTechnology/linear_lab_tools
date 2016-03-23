@@ -86,16 +86,21 @@ def ltc2328_dc1908(num_samples, verbose=True, do_demo=True):
     # Full EEPROM string is 'LTC2328-18,D2315,DC1908A-D,YII101Q,NONE,--------'
     device_info = None
     print 'Looking for a DC718 with a DC1908 demoboard'
-    for info in comm.list_controllers(comm.TYPE_DC718):
-        with comm.Controller(info) as device:
-            eeprom_id = device.eeprom_read_string(EEPROM_ID_SIZE)
-            if 'DC1908' in eeprom_id:
-                if verbose:
-                    print 'Found a DC1908 demoboard'
-                device_info = info
-                break
+    for trys in range(0, 10):    
+        for info in comm.list_controllers(comm.TYPE_DC718):
+            with comm.Controller(info) as device:
+                eeprom_id = device.eeprom_read_string(EEPROM_ID_SIZE)
+                if 'DC1908' in eeprom_id:
+                    if verbose:
+                        print 'Found a DC1908 demoboard'
+                    device_info = info
+                    break
+        if device_info:
+            print("Found device on try " + str(trys))
+            break
     if device_info is None:
         raise(comm.HardwareError('Could not find a compatible device'))
+            
     # Open communication to the demo board
     with comm.Controller(device_info) as controller:
     
