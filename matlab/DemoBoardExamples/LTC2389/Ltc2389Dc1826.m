@@ -119,7 +119,7 @@ function Ltc2389Dc1826(arg1NumSamples, arg2Verbose, arg3DoDemo, arg4Trigger, arg
     else
         comm.DataStartCollect(cId, numSamples, comm.TRIGGER_NONE);
         for i = 1:10
-            isDone = comm.DataIsCollectDone();
+            isDone = comm.DataIsCollectDone(cId);
             if(isDone)
                 break;
             end
