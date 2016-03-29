@@ -50,11 +50,13 @@ sys.path.append("../../utils/")
 import numpy as np
 #from subprocess import call
 from time import sleep
+import time
 from matplotlib import pyplot as plt
 # Okay, now the big one... this is the module that communicates with the SoCkit
 from mem_func_client import MemClient
 from DC2390_functions import *
-import time
+from LTC2758 import *
+
 
 
 ###############################################################################
@@ -66,8 +68,17 @@ LUT_NCO_DIVIDER = 0xFFFF
 nco_word_width = 32
 
 # Set sample depth
-NUM_SAMPLES = 2**15
+NUM_FLT_SAMPLES = 2**12
+NUM_NYQ_SAMPLES = 2**20
 master_clock = 50000000
+
+DF_LIST = [LTC2500_DF_4, LTC2500_DF_8, LTC2500_DF_16, LTC2500_DF_32, LTC2500_DF_64,
+           LTC2500_DF_128, LTC2500_DF_256, LTC2500_DF_512,   LTC2500_DF_1024, LTC2500_DF_2048,
+           LTC2500_DF_4096, LTC2500_DF_8192, LTC2500_DF_16384] # 13 downsample factors to test
+DF_TXT = ["4", "8", "16", "32", "64", "128", "256", "512", "1024", "2048", "4096", "8192", "16384"]
+DF_VALS = [4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384]
+
+GAIN = "18"
 
 
 ###############################################################################
@@ -91,37 +102,61 @@ start_time = time.time();
 
 print("Setting up system parameters.\n");
 client.reg_write(SYSTEM_CLOCK_BASE, ((LUT_NCO_DIVIDER << 16) | SYSTEM_CLOCK_DIVIDER))
-client.reg_write(NUM_SAMPLES_BASE, NUM_SAMPLES)
+client.reg_write(NUM_SAMPLES_BASE, NUM_NYQ_SAMPLES)
 
 LTC6954_configure_default(client)
 
-# Set Mux for filtered data
-# Set Dac A for SIN and Dac B for LUT
-client.reg_write(DATAPATH_CONTROL_BASE, DC2390_FIFO_ADCB_FIL | 
+
+LTC2758_write(client, LTC2748_DAC_A | 
+                      LTC2758_WRITE_CODE_UPDATE_ALL, 2**17) #Set DACs to half scale on 0-5V range
+
+LTC2758_write(client, LTC2748_DAC_B | 
+                      LTC2758_WRITE_CODE_UPDATE_ALL, 2**17)
+
+###########################
+# Set Mux for Nyquist data
+###########################
+client.reg_write(DATAPATH_CONTROL_BASE, DC2390_FIFO_ADCA_NYQ |  # DC2390_FIFO_ADCB_FIL or DC2390_FIFO_ADCB_NYQ
                  DC2390_DAC_B_CONS_HC000 | DC2390_DAC_A_PULSE_VAL | 
                  DC2390_LUT_ADDR_COUNT | DC2390_LUT_RUN_ONCE)
 
-ltc2500_cfg_led_on  = ((LTC2500_DF_16384 | LTC2500_SINC_FILT)<<6) | 0x03 | (LTC2500_N_FACTOR << 16)
-ltc2500_cfg_led_off = ((LTC2500_DF_16384 | LTC2500_SINC_FILT)<<6) | (LTC2500_N_FACTOR << 16)
+ltc2500_cfg_led_on  = ((LTC2500_DF_4 | LTC2500_SINC_FILT)<<6) | 0x03 | (LTC2500_N_FACTOR << 16)
+ltc2500_cfg_led_off = ((LTC2500_DF_4 | LTC2500_SINC_FILT)<<6) | (LTC2500_N_FACTOR << 16)
 client.reg_write(LED_BASE, ltc2500_cfg_led_on)
 sleep(0.1)
 client.reg_write(LED_BASE, ltc2500_cfg_led_off)
 sleep(0.1)
 
+# timeout = (SYSTEM_CLOCK_DIVIDER) / master_clock
+for run in range(0, 16):
+    data = capture(client, NUM_NYQ_SAMPLES, timeout = 4.0) # Enough time to capture a megapoint...
+    print("Capturing nyquist data, run " + str(run))
+    with open("DC2390_noise_meas\Nyq_gain_" + GAIN + "_run_" + str(run) + ".csv" , "w") as myfile:
+        for i in range(len(data)):
+            myfile.write(str(data[i]) + '\n')
 
-data = capture(client, NUM_SAMPLES, timeout = 30.0)
-
-# Apply windowing to data    
-#data = data * np.blackman(NUM_SAMPLES)    
-
-# Convert time domain data to frequncy domain
-fftdata = np.abs(np.fft.fft(data)) / len(data)
-fftdb = 20*np.log10(fftdata / 2.0**31)
-#
-plt.plot(fftdb)
-#
-
-with open("Filt_gain_18_df_16384.csv" , "w") as myfile:
-    for i in range(len(data)):
-        myfile.write(str(data[i]) + '\n')
-
+############################
+# Set Mux for Filtered data
+############################
+client.reg_write(DATAPATH_CONTROL_BASE, DC2390_FIFO_ADCA_FIL |  # DC2390_FIFO_ADCB_FIL or DC2390_FIFO_ADCB_NYQ
+                 DC2390_DAC_B_CONS_HC000 | DC2390_DAC_A_PULSE_VAL | 
+                 DC2390_LUT_ADDR_COUNT | DC2390_LUT_RUN_ONCE)
+                 
+numdfs = 13
+for df in range(0, numdfs):
+    t_o = 1000000.0 * float(DF_VALS[df] * (SYSTEM_CLOCK_DIVIDER + 1)) / float(master_clock)
+    print("Calculated timeout: " + str(t_o))
+    ltc2500_cfg_led_on  = ((DF_LIST[df] | LTC2500_SINC_FILT)<<6) | 0x03 | (LTC2500_N_FACTOR << 16)
+    ltc2500_cfg_led_off = ((DF_LIST[df] | LTC2500_SINC_FILT)<<6) | (LTC2500_N_FACTOR << 16)
+    client.reg_write(LED_BASE, ltc2500_cfg_led_on)
+    sleep(0.1)
+    client.reg_write(LED_BASE, ltc2500_cfg_led_off)
+    sleep(0.1)
+    
+    # timeout = (SYSTEM_CLOCK_DIVIDER) / master_clock
+    data = capture(client, NUM_FLT_SAMPLES, timeout = (t_o + 10.0))  # Timeout, with some buffer...
+    
+    with open("DC2390_noise_meas\Filt_gain_" + GAIN + "_df_" + DF_TXT[df] +  ".csv" , "w") as myfile:
+        for i in range(len(data)):
+            myfile.write(str(data[i]) + '\n')
+                 
