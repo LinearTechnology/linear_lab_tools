@@ -97,6 +97,16 @@ I2C_ACCESS_REG = 0x11
 JESD204B_W2INDEX_REG = 0x12
 JESD204B_R2INDEX_REG = 0x13
 
+# Test Modes
+TEST_MODE0 = 0      # Normal operation
+TEST_MODE1 = 1      # Transmit/Receive/K28.5 indefinitely
+TEST_MODE2 = 2      # Synchronize as normal then transmit/receive repeated ILA sequences
+TEST_MODE3 = 3      # Transmit/Receive/D21.5 indefinitely
+TEST_MODE4 = 5      # Transmit Modified Random Pattern (RPAT) [TX ONLY]
+TEST_MODE5 = 7      # Transmit Scrambled Jitter Pattern (JSPAT) [TX ONLY]
+
+
+
 # Register names for basic configuration
 JESD204B_XILINX_CONFIG_REG_NAMES = ["             Version", "               Reset", "         ILA Support", "          Scrambling",
                                     "     SYSREF Handling", "         Reserved...", "          Test Modes", "  Link err stat, 0-7",

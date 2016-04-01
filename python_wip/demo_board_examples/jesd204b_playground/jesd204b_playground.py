@@ -95,6 +95,7 @@ txdevice = None
 devices = [None] * 2
 do_reset = True  # Reset FPGA once (not necessary to reset between data loads)
 num_devices = 0
+test_mode = TEST_MODE0
 
 if verbose:
     print "JESD204B Playground Test Script!"
@@ -219,7 +220,7 @@ with comm.Controller(device_info[rxdevice_index]) as rxdevice:
     write_jesd204b_reg(rxdevice, 0x08, 0x00, 0x00, 0x00, 0x01)  #Enable ILA
     write_jesd204b_reg(rxdevice, 0x0C, 0x00, 0x00, 0x00, 0x00)  #Scrambling - 0 to disable, 1 to enable
     write_jesd204b_reg(rxdevice, 0x10, 0x00, 0x00, 0x00, 0x00)  # Only respond to first SYSREF (Subclass 1 only)
-    write_jesd204b_reg(rxdevice, 0x18, 0x00, 0x00, 0x00, 0x00)  # Normal operation (no test modes enabled)		
+    write_jesd204b_reg(rxdevice, 0x18, 0x00, 0x00, 0x00, test_mode)  # Select Test modes		
     write_jesd204b_reg(rxdevice, 0x20, 0x00, 0x00, 0x00, 0x01)  # 2 octets per frame
     write_jesd204b_reg(rxdevice, 0x24, 0x00, 0x00, 0x00, 0x1F)  # Frames per multiframe, 1 to 32 for V6 core
     write_jesd204b_reg(rxdevice, 0x28, 0x00, 0x00, 0x00, 0x0B)  # Lanes in use - program with N-1
@@ -265,11 +266,11 @@ with comm.Controller(device_info[txdevice_index]) as txdevice:
     b3, b2, b1, b0 = read_jesd204b_reg(txdevice, 0x00)
     print "\nTX Version: ", b3, b2, b1, b0
     print "Configuring JESD204B TX core registers..."
-    write_jesd204b_reg(txdevice, 0x08, 0x00, 0x00, 0x00, 0x01)  #Enable ILA
-    write_jesd204b_reg(txdevice, 0x0C, 0x00, 0x00, 0x00, 0x00)  #Scrambling - 0 to disable, 1 to enable
+    write_jesd204b_reg(txdevice, 0x08, 0x00, 0x00, 0x00, 0x01)  # Enable ILA
+    write_jesd204b_reg(txdevice, 0x0C, 0x00, 0x00, 0x00, 0x00)  # Scrambling - 0 to disable, 1 to enable
     write_jesd204b_reg(txdevice, 0x10, 0x00, 0x00, 0x00, 0x00)  # Only respond to first SYSREF (Subclass 1 only)
     write_jesd204b_reg(txdevice, 0x14, 0x00, 0x00, 0x00, 0x03)  # Multiframes in ILA = 4
-    write_jesd204b_reg(txdevice, 0x18, 0x00, 0x00, 0x00, 0x00)  # Normal operation (no test modes enabled)
+    write_jesd204b_reg(txdevice, 0x18, 0x00, 0x00, 0x00, test_mode)  # Select Test modes	
     write_jesd204b_reg(txdevice, 0x20, 0x00, 0x00, 0x00, 0x01)  # 2 octets per frame
     write_jesd204b_reg(txdevice, 0x24, 0x00, 0x00, 0x00, 0x1F)  # Frames per multiframe, 1 to 32 for V6 core
     write_jesd204b_reg(txdevice, 0x28, 0x00, 0x00, 0x00, 0x0B)  # Lanes in use - program with N-1
@@ -553,7 +554,7 @@ with comm.Controller(device_info[rxdevice_index]) as rxdevice:
         print "\nReading RX JESD204B core registers..."
 
     read_xilinx_core_config(rxdevice, verbose = True, read_link_erroe = True)   
-    for i in range(0, 2):
+    for i in range(0, 4):
         read_xilinx_core_ilas(rxdevice, verbose = True, lane=i, split_all = True)
         
 ## Read back TX ILAS registers
