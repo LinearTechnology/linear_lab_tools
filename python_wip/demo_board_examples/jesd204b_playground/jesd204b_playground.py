@@ -46,9 +46,32 @@ import sys
 sys.path.append("../../")
 import ltc_controller_comm as comm
 from jesd204b_playground_functions import *
+from matplotlib import pyplot as plt
 import numpy as np
 
-
+def generate_counter_data(total_samples):
+    from matplotlib import pyplot as plt
+    #Generate funky SINC data
+    data = total_samples * [0] 
+    j = 0
+    for i in range(0, total_samples):
+        data[i] = j
+        j = j+1
+    
+    plt.figure(1)
+    plt.plot(data)
+    plt.show()
+    
+    # Testing file I/O
+    
+    print('writing data out to file')
+    outfile = open('dacdata_counter.csv', 'w')
+    for i in range(0, total_samples):
+        outfile.write(str(data[i]) + "\n")
+    outfile.close()
+    print('done writing!')
+    return
+    
 # Initialize script operation parameters
 tx_bitfile_id = 0xB7 # TX side Bitfile ID
 rx_bitfile_id = 0xB8
@@ -95,7 +118,7 @@ txdevice = None
 devices = [None] * 2
 do_reset = True  # Reset FPGA once (not necessary to reset between data loads)
 num_devices = 0
-test_mode = TEST_MODE0
+test_mode = TEST_MODE4
 
 if verbose:
     print "JESD204B Playground Test Script!"
@@ -220,7 +243,7 @@ with comm.Controller(device_info[rxdevice_index]) as rxdevice:
     write_jesd204b_reg(rxdevice, 0x08, 0x00, 0x00, 0x00, 0x01)  #Enable ILA
     write_jesd204b_reg(rxdevice, 0x0C, 0x00, 0x00, 0x00, 0x00)  #Scrambling - 0 to disable, 1 to enable
     write_jesd204b_reg(rxdevice, 0x10, 0x00, 0x00, 0x00, 0x00)  # Only respond to first SYSREF (Subclass 1 only)
-    write_jesd204b_reg(rxdevice, 0x18, 0x00, 0x00, 0x00, test_mode)  # Select Test modes		
+    write_jesd204b_reg(rxdevice, 0x18, 0x00, 0x00, 0x00, TEST_MODE0)  # Select Test modes		
     write_jesd204b_reg(rxdevice, 0x20, 0x00, 0x00, 0x00, 0x01)  # 2 octets per frame
     write_jesd204b_reg(rxdevice, 0x24, 0x00, 0x00, 0x00, 0x1F)  # Frames per multiframe, 1 to 32 for V6 core
     write_jesd204b_reg(rxdevice, 0x28, 0x00, 0x00, 0x00, 0x0B)  # Lanes in use - program with N-1
@@ -270,7 +293,7 @@ with comm.Controller(device_info[txdevice_index]) as txdevice:
     write_jesd204b_reg(txdevice, 0x0C, 0x00, 0x00, 0x00, 0x00)  # Scrambling - 0 to disable, 1 to enable
     write_jesd204b_reg(txdevice, 0x10, 0x00, 0x00, 0x00, 0x00)  # Only respond to first SYSREF (Subclass 1 only)
     write_jesd204b_reg(txdevice, 0x14, 0x00, 0x00, 0x00, 0x03)  # Multiframes in ILA = 4
-    write_jesd204b_reg(txdevice, 0x18, 0x00, 0x00, 0x00, test_mode)  # Select Test modes	
+    write_jesd204b_reg(txdevice, 0x18, 0x00, 0x00, 0x00, TEST_MODE0)  # Select Test modes	
     write_jesd204b_reg(txdevice, 0x20, 0x00, 0x00, 0x00, 0x01)  # 2 octets per frame
     write_jesd204b_reg(txdevice, 0x24, 0x00, 0x00, 0x00, 0x1F)  # Frames per multiframe, 1 to 32 for V6 core
     write_jesd204b_reg(txdevice, 0x28, 0x00, 0x00, 0x00, 0x0B)  # Lanes in use - program with N-1
@@ -372,16 +395,20 @@ with comm.Controller(device_info[txdevice_index]) as txdevice:
     # FTDI buffer to send data
     ################################################  
     
-    # Demonstrates how to generate sinusoidal data. Note that the total data record length
+    # Demonstrates how to generate rpat data. Note that the total data record length
     # contains an exact integer number of cycles.
     
     total_samples = (1024 * 12) + 48 
+    # Generating data and writing into a file
+    generate_counter_data(total_samples)
     tx_data = total_samples * [0] 
-    j = 0;
+    print('reading data from file')
+    infile = open('dacdata_counter.csv', 'r')  # UNcomment this line for funky SINC waveform
     for i in range(0, total_samples):
-        j+=1
-        tx_data[i] = j
-
+        tx_data[i] = int(infile.readline())
+    infile.close()
+    print('done reading!')
+    
     txdevice.data_set_high_byte_first();
     num_bytes_sent = txdevice.data_send_uint16_values(tx_data) #DAC should start running here!
     
