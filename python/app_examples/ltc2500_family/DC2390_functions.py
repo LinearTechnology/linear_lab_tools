@@ -45,6 +45,7 @@ November, 2014
 '''
 
 from time import sleep
+import time
 import ctypes
 
 # Map out your registers here. These correspond directly to base addresses
@@ -219,12 +220,16 @@ def capture(client, recordlength, trigger = 0, timeout = 0.0):
 #    client.reg_write(CONTROL_BASE, (CW_EN_TRIG)) # Drive trigger enable high, then low.
 
 #    client.reg_write(CONTROL_BASE, CW_START)
-    sleep(timeout) #sleep for a second
-    
+#    sleep(timeout) #sleep for a second
+    cap_start_time = time.time();
     ready = client.reg_read(DATA_READY_BASE) # Check data ready signal
     while((ready & 0x01) == 1):
         ready = client.reg_read(DATA_READY_BASE) # Check data ready signal
-#        print('ready signal is %d' % ready)
+    cap_time = time.time() - cap_start_time
+    print('ready signal is %d' % ready)
+    print("After " + str(cap_time) + " Seconds...")
+    if(cap_time > timeout):
+        print("TIMED OUT!!")
     client.reg_write(CONTROL_BASE, 0x0)
 #    print("Control system execution finished.\n")
 #    print("Pulling START signal low.")

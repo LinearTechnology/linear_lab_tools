@@ -47,7 +47,7 @@ pip install -U pyvisa
 
 '''
 
-import visa
+
 import time
 import sys # os, socket, ctypes, struct
 import numpy as np
@@ -59,7 +59,7 @@ from LTC2758 import *
 sys.path.append('../../')
 sys.path.append('../../utils') 
 from mem_func_client import MemClient
-from hp_multimeters import *
+
 from endpoint_inl import *
 
 ###############################################################################
@@ -76,6 +76,9 @@ meter_type = None
 #meter_type = 3458
 #meter_type = 34401
 
+if meter_type != None:
+    import visa
+    from hp_multimeters import *
 ###############################################################################
 # Functions
 ###############################################################################
