@@ -46,8 +46,9 @@ November, 2014
 from matplotlib import pyplot as plt
 import numpy as np
 
-def generate_sinc_data(total_samples):
+def generate_sinc_data(total_samples):     
     #Generate funky SINC data
+    total_samples = 65536 # n.BuffSize
     data = total_samples * [0] 
     for i in range(0, total_samples):
         x = ((i - 32768) / (512.0)) + 0.0001 # Add a tiny offset to avoid divide by zero
@@ -65,4 +66,4 @@ def generate_sinc_data(total_samples):
         outfile.write(str(data[i]) + "\n")
     outfile.close()
     print('done writing!')
-    return
+        

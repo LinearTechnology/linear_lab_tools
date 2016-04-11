@@ -46,7 +46,7 @@ either expressed or implied, of Linear Technology Corp.
 import sys
 sys.path.append("../../")
 import ltc_controller_comm as comm
-
+from matplotlib import pyplot as plt
 import time
 
 from time import sleep
@@ -727,4 +727,3 @@ def bitfile_id_warning(id_shouldbe, id_is):
         print("Bitfile ID is 0x" + '{:02X}'.format(id_is))
         print("All good!!")
         print("***********************************\n")
-

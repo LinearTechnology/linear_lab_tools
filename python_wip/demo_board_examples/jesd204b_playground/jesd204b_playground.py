@@ -49,29 +49,6 @@ from jesd204b_playground_functions import *
 from matplotlib import pyplot as plt
 import numpy as np
 
-def generate_counter_data(total_samples):
-    from matplotlib import pyplot as plt
-    #Generate funky SINC data
-    data = total_samples * [0] 
-    j = 0
-    for i in range(0, total_samples):
-        data[i] = j
-        j = j+1
-    
-    plt.figure(1)
-    plt.plot(data)
-    plt.show()
-    
-    # Testing file I/O
-    
-    print('writing data out to file')
-    outfile = open('dacdata_counter.csv', 'w')
-    for i in range(0, total_samples):
-        outfile.write(str(data[i]) + "\n")
-    outfile.close()
-    print('done writing!')
-    return
-    
 # Initialize script operation parameters
 tx_bitfile_id = 0xB7 # TX side Bitfile ID
 rx_bitfile_id = 0xB8
@@ -400,15 +377,20 @@ with comm.Controller(device_info[txdevice_index]) as txdevice:
     
     total_samples = (1024 * 12) + 48 
     # Generating data and writing into a file
-    generate_counter_data(total_samples)
+    #generate_rpat_data(total_samples)
     tx_data = total_samples * [0] 
-    print('reading data from file')
-    infile = open('dacdata_counter.csv', 'r')  # UNcomment this line for funky SINC waveform
-    for i in range(0, total_samples):
-        tx_data[i] = int(infile.readline())
-    infile.close()
-    print('done reading!')
+#    print('reading data from file')
+#    infile = open('dacdata_counter.csv', 'r')  # UNcomment this line for funky SINC waveform
+#    for i in range(0, total_samples):
+#        tx_data[i] = int(infile.readline(), base = 16)
+#    infile.close()
+#    print('done reading!')
     
+    j = 0
+    for i in range(0, total_samples):
+        tx_data[i] = j
+        j = j+1
+        
     txdevice.data_set_high_byte_first();
     num_bytes_sent = txdevice.data_send_uint16_values(tx_data) #DAC should start running here!
     
@@ -526,7 +508,7 @@ with comm.Controller(device_info[rxdevice_index]) as rxdevice:
 #        print "And it is... 0x{:04X}".format(data)
 
     #sleep(sleeptime)
-    rxdevice.data_set_low_byte_first() #Set endian-ness
+    rxdevice.data_set_high_byte_first() #Set endian-ness
     rxdevice.hs_set_bit_mode(comm.HS_BIT_MODE_FIFO)
     sleep(0.1)
     nSampsRead, rx_data = rxdevice.data_receive_uint16_values(end = (1024 * 12 + 48))
@@ -541,9 +523,9 @@ with comm.Controller(device_info[rxdevice_index]) as rxdevice:
         
     # Demonstrate how to write generated data to a file.
     print('writing data out to file')
-    outfile = open('dacdata1.csv', 'w')
+    outfile = open('dacdata_received.csv', 'w')
     for i in range(0, total_samples):
-        outfile.write(str(rx_data[i]) + "\n")
+        outfile.write(str(hex(rx_data[i])) + "\n")
     outfile.close()
     print('done writing!')
     

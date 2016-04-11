@@ -45,25 +45,26 @@ November, 2014
 
 
 
-def generate_counter_data(total_samples):
-    from matplotlib import pyplot as plt
-    #Generate funky SINC data
-    data = total_samples * [0] 
-    j = 0
-    for i in range(0, total_samples):
-        data[i] = j
-        j = j+1
-    
-    plt.figure(1)
-    plt.plot(data)
-    plt.show()
-    
-    # Testing file I/O
-    
-    print('writing data out to file')
-    outfile = open('dacdata_counter.csv', 'w')
-    for i in range(0, total_samples):
-        outfile.write(str(data[i]) + "\n")
-    outfile.close()
-    print('done writing!')
-    return
+
+from matplotlib import pyplot as plt
+total_samples = (1024 * 12) + 48
+#Generate funky SINC data
+data = total_samples * [0] 
+j = 0
+for i in range(0, total_samples):
+    data[i] = j
+    j = j+1
+
+plt.figure(1)
+plt.plot(data)
+plt.show()
+
+# Testing file I/O
+
+print('writing data out to file')
+outfile = open('dacdata_counter.csv', 'w')
+for i in range(0, total_samples):
+    outfile.write(str(hex(data[i])) + "\n")
+outfile.close()
+print('done writing!')
+

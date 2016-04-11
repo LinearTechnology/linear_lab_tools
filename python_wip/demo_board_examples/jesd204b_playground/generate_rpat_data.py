@@ -45,25 +45,25 @@ November, 2014
 
 from matplotlib import pyplot as plt
 
-def generate_rpat_data(total_samples):
-    #Generate RPAT data
-    rpat = [0xBE, 0xD7, 0x23, 0x47, 0x6B, 0x8F, 0xB3, 0x14, 0x5E, 0xFB, 0x35, 0x59]
-    data = total_samples * [0] 
-    j = 0
-    for i in range(0, total_samples):
-        data[i] = rpat[j%12]
-        j = j+1
-    
-    plt.figure(1)
-    plt.plot(data)
-    plt.show()
-    
-    # Testing file I/O
-    
-    print('writing data out to file')
-    outfile = open('dacdata_counter.csv', 'w')
-    for i in range(0, total_samples):
-        outfile.write(str(data[i]) + "\n")
-    outfile.close()
-    print('done writing!')
-    return
+total_samples = (1024 * 12) + 48 
+#Generate RPAT data
+rpat = [0xBE, 0xD7, 0x23, 0x47, 0x6B, 0x8F, 0xB3, 0x14, 0x5E, 0xFB, 0x35, 0x59]
+data = total_samples * [0] 
+j = 0
+for i in range(0, total_samples):
+    data[i] = rpat[j%12]
+    j = j+1
+
+plt.figure(1)
+plt.plot(data)
+plt.show()
+
+# Testing file I/O
+
+print('writing data out to file')
+outfile = open('dacdata_rpat.csv', 'w')
+for i in range(0, total_samples):
+    outfile.write(str(hex(data[i])) + "\n")
+outfile.close()
+print('done writing!')
+
