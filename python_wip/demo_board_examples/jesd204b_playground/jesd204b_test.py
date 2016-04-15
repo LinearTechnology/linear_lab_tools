@@ -1,5 +1,21 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Fri Apr 15 14:20:23 2016
+
+@author: MSajikumar
+"""
+
 '''
-JESD204B Playground
+JESD204B Playground - Test Description:
+
+Put TX and RX on test mode 0. Transmit payload data.
+Check for error count. 
+Put RX on tets mode 1.
+Check for error count. This would accumulate errors since TX is set to test mode 0.
+Put TX on test mode 1.
+Check for error count.
+Error count should not change much since the errors accumulated will be lesser.
+
 This program demonstrates how to 
 Tested with Python 2.7, Anaconda distribution available from Continuum Analytics,
 http://www.continuum.io/
@@ -46,8 +62,6 @@ import sys
 sys.path.append("../../")
 import ltc_controller_comm as comm
 from jesd204b_playground_functions import *
-from matplotlib import pyplot as plt
-import numpy as np
 
 # Initialize script operation parameters
 tx_bitfile_id = 0xB7 # TX side Bitfile ID
@@ -67,7 +81,7 @@ initialize_core = 0
 # Display time and frequency domain plots for ADC data
 plot_data = 1
 # Display lots of debug messages
-verbose = 1
+
 
 
 
@@ -100,32 +114,36 @@ number_of_lanes_tested = 4
 transmit = False
 receive = False
 
-read_config = True;
+read_config = False;
 read_ilas = True;
-read_test_mode_error = False;
+read_testmode_error = True;
 
-if verbose:
-    print "JESD204B Playground Test Script!"
+verbose = False
+def vprint(s):
+    """Print string only if verbose is on"""
+    if verbose:
+        print s
+
+print "JESD204B Playground Test Script!"
 
 # Open communication to the demo board
 descriptions = ['LTC UFO Board', 'LTC Communication Interface', 'LTC2000 Demoboard', 'LTC2000, DC2085A-A']
 
-print "Devices found:"
 device_info = [None] * 2
 for info in comm.list_controllers(comm.TYPE_HIGH_SPEED):
     if info.get_description() in descriptions:
         device_info[num_devices] = info
-        print device_info
         num_devices = num_devices + 1
         #break
         
-print "No: of devices = ", num_devices
+print "No: of devices found = ", num_devices
 		
 if device_info is None:
     raise(comm.HardwareError('Could not find a compatible device'))
 
-print "Device Info 1: ", device_info[0]
-print "Device Info 2: ", device_info[1]
+if(verbose == True):
+    print "Device Info 1: ", device_info[0]
+    print "Device Info 2: ", device_info[1]
 
 ###############################################
 # Configuration Flow Step 0: Turn on TX/RX
@@ -142,7 +160,7 @@ for i in range(0, num_devices):
         if do_reset:
             device.hs_fpga_toggle_reset() 
         id = device.hs_fpga_read_data_at_address(ID_REG) # Read FPGA ID register
-        print "Device ID: ", id
+        print "\nDevice ID: ", id
         if(id == tx_bitfile_id):
             print "Tx board detected"
             txdevice_index = i
@@ -326,7 +344,7 @@ with comm.Controller(device_info[rxdevice_index]) as rxdevice:
     sleep(sleeptime)
     b3, b2, b1, b0 = read_jesd204b_reg(rxdevice, 0x38)
     if(b0 & 0x01 == 0x01):
-        print "RX Sync complete..."
+        print "\nRX Sync complete..."
 
     ################################################
     # Configuration Flow Step 18: Check RX JEDEC core
@@ -356,7 +374,7 @@ with comm.Controller(device_info[txdevice_index]) as txdevice:
     # is empty
     ################################################
     data = txdevice.hs_fpga_read_data_at_address(TX_PBK_STATUS_REG)
-    print "TX_PBK_STATUS_REG: ", data
+    print "\nTX_PBK_STATUS_REG: ", data
     # Check for 0b xxxxxx00 
     if(data | 0xFC == 0xFC):
         print "TX buffer empty"
@@ -364,9 +382,10 @@ with comm.Controller(device_info[txdevice_index]) as txdevice:
         print "TX buffer not empty"
     sleep(sleeptime)
         
-    if(verbose != 0):
+    if(verbose == True):
         print "\nReading TX JESD204B core registers..."
-    read_xilinx_core_config(txdevice, verbose = True, read_link_erroe = False)   
+    
+    read_xilinx_core_config(txdevice, verbose = False, read_link_erroe = False)   
         
     ################################################
     # Configuration Flow Step 21: Configure TX's FTDI
@@ -573,15 +592,16 @@ with comm.Controller(device_info[rxdevice_index]) as rxdevice:
     if(verbose != 0):
         print "\nReading RX JESD204B core registers..."
 
-    if(read_cofig == True):
+    if(read_config == True):
         read_xilinx_core_config(rxdevice, verbose = True, read_link_erroe = True)   
     if(read_ilas == True):
         for i in range(0, number_of_lanes_tested):
             read_xilinx_core_ilas(rxdevice, verbose = True, lane=i, split_all = True)
 
-    if(read_test_mode_error == True):
+    if(read_testmode_error == True):
         for i in range(0, number_of_lanes_tested):
-            read_test_mode_error(rxdevice, verbose = True, lane=i)
+            read_test_mode_error(rxdevice, i)
+            
 ## Read back TX ILAS registers
 #with comm.Controller(device_info[txdevice_index]) as txdevice:
 #    txdevice.hs_set_bit_mode(comm.HS_BIT_MODE_MPSSE)

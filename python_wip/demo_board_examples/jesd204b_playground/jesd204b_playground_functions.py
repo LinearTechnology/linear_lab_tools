@@ -191,6 +191,12 @@ def read_xilinx_core_config(device, verbose = True, read_link_erroe = False):
         err_status2 = (byte0 | (byte1 << 8))
         check_link_error_status(err_status1, err_status2)
 
+def read_test_mode_error(device, lane = 0):
+    startreg = 0x800 + (lane * 0x040)
+    reg = startreg + 7*4
+    byte3, byte2, byte1, byte0 = read_jesd204b_reg(device, reg)    
+    print "\nTest Mode Error count for lane " + str(lane) + ":" + ' {:02X} {:02X} {:02X} {:02X}'.format(byte3, byte2, byte1, byte0)
+        
 def read_xilinx_core_ilas(device, verbose = True, lane = 0, split_all = False):
     startreg = 0x800 + (lane * 0x040)
     print("\nILAS and stuff for lane " + str(lane) + ":")
