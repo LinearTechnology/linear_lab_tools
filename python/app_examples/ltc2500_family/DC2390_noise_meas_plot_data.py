@@ -86,10 +86,12 @@ if __name__ == "__main__":
     bin_width = 2.0 * samplerate / float(nyq_dat_len)
     print("Bin width: " + str(float(bin_width)))
     
-    df8_filt = np.concatenate(((np.ones(8)/8.0), np.zeros(nyq_dat_len-8)))
-    df4k_filt = np.concatenate(((np.ones(4096)/4096.0), np.zeros(nyq_dat_len-4096)))
-    df8_filt_mag = np.fft.fft(df8_filt)
-    df4k_filt_mag = np.fft.fft(df4k_filt)
+    df8_filt = np.concatenate(((np.ones(8)), np.zeros(nyq_dat_len-8)))
+    df4k_filt = np.concatenate(((np.ones(4096)), np.zeros(nyq_dat_len-4096)))
+    df8_filt_mag = abs(np.fft.fft(df8_filt))
+    df8_filt_mag /= df8_filt_mag[0] # Normalize to unity gain at DC
+    df4k_filt_mag = abs(np.fft.fft(df4k_filt))
+    df4k_filt_mag /= df4k_filt_mag[0] # Normalize to unity gain at DC
 
     # Keep track of start time
     start_time = time.time();
@@ -195,11 +197,15 @@ if __name__ == "__main__":
     plotnum = 1
     plt.figure(plotnum)    
 #    plt.subplot(2, 1, 1)
-    plt.title("Some Gain 18 Data")
+    plt.title("Gain 19 Data, DF4 - DF16k")
     plt.ylabel('volts')
-    plt.plot(filt_data_18[0])
-    plt.plot(filt_data_18[1])
-    plt.plot(filt_data_18[12])
+    plt.plot(filt_data_18[0], color='black')
+    plt.plot(filt_data_18[2], color='red')
+    plt.plot(filt_data_18[4], color='blue')
+    plt.plot(filt_data_18[6], color='yellow')
+    plt.plot(filt_data_18[8], color='magenta')
+    plt.plot(filt_data_18[10], color='black')
+    plt.plot(filt_data_18[12], color='lime')
 #    plt.xlim([xmin,xmax])
 #    plt.ylim([-2, 8])
 #    plt.subplot(2, 1, 2)
@@ -209,24 +215,35 @@ if __name__ == "__main__":
 #    plt.ylim([-100, 100])
     #plt.tight_layout()
     
+    sfactor = 10**9 #Convert to Nanovolts    
+    
     plotnum += 1
     plt.figure(plotnum)
+    plt.title("PSD, G=19, G=37, and DF8, DF4k filter responses")
+    plt.ylabel('nV/rootHz')
+    plt.xlabel('Bin number')
 
-    plt.plot(nyq_psd_gain_31)
-    plt.plot(nyq_psd_gain_18)
-    plt.plot(ltc2500_psd)
-#     plt.plot(df8_filt_mag[0:nyq_dat_len/2] * np.max(nyq_psd_gain_31))
-#     plt.plot(df4k_filt_mag[0:nyq_dat_len/2] * np.max(nyq_psd_gain_31))
-#    plt.xlim([xmin,xmax])
-    plt.ylim([0,0.00001])
+    plt.plot(nyq_psd_gain_31 * sfactor)
+    plt.plot(nyq_psd_gain_18 * sfactor)
+    plt.plot(ltc2500_psd * sfactor)
+    plt.plot(df8_filt_mag[0:nyq_dat_len/2] * 0.0000015 * sfactor)
+    plt.plot(df4k_filt_mag[0:nyq_dat_len/2] * 0.0000015 * sfactor)
+    plt.xlim([0,nyq_dat_len/2])
+    plt.ylim([0,1500])
 
     plt.show()
     
     plotnum += 1
     plt.figure(plotnum)
-    plt.plot(rms_noise_18)
-    plt.plot(rms_noise_31)
+    plt.loglog(DF_VALS, rms_noise_18)
+    plt.loglog(DF_VALS, rms_noise_31)
     plt.show()
+    
+    
+    print("RMS noise vs. downsample factor")
+    print("DF, G=19 noise, G=37 noise")
+    for df in range(0, 13):
+        print(str(DF_VALS[df]) + ", " + str(rms_noise_18[df]) + ", " + str(rms_noise_31[df]) )
     
     
     print "The program took", (time.time() - start_time)/60, "min to run"
