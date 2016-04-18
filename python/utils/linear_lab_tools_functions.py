@@ -151,4 +151,5 @@ if __name__ == "__main__":
     
     ltspice_totalnoise = integrate_psd(ltspice_psd, bw_per_point)
     print("total noise of LTSpice sim: " + str(ltspice_totalnoise[numpoints-1]))
+    print("(Control-click in output plot in LTSpice and compare.)")
 

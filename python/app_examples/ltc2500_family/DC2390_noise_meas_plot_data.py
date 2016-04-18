@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-    Plot data saved from DC2390 noise measurement program.
+    Plot data saved from DC2390_noise_meas.py program.
 
 
     Created by: Mark Thoren
@@ -59,12 +59,12 @@ from mem_func_client import MemClient
 # Parameters for running different tests
 ###############################################################################
 
-SYSTEM_CLOCK_DIVIDER = 99 # 50MHz / 200 = 250 Ksps
+SYSTEM_CLOCK_DIVIDER = 99 # 50MHz / 100 = 500 Ksps
 NUM_SAMPLES = 2**20
 SINC_LEN = 2048
 FILTER_TYPE = 1
 
-FIRSTRUN = 0
+FIRSTRUN = 1
 
 
 
@@ -232,12 +232,7 @@ if __name__ == "__main__":
     plt.ylim([0,1500])
 
     plt.show()
-    
-    plotnum += 1
-    plt.figure(plotnum)
-    plt.loglog(DF_VALS, rms_noise_18)
-    plt.loglog(DF_VALS, rms_noise_31)
-    plt.show()
+
     
     
     print("RMS noise vs. downsample factor")
@@ -246,4 +241,4 @@ if __name__ == "__main__":
         print(str(DF_VALS[df]) + ", " + str(rms_noise_18[df]) + ", " + str(rms_noise_31[df]) )
     
     
-    print "The program took", (time.time() - start_time)/60, "min to run"
+    print "The program took", (time.time() - start_time), "seconds  to run"

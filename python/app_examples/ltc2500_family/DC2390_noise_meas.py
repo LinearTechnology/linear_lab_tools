@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 """
+    Capture data for a thorough analysis of signal chain noise.
+
     Created by: Noe Quintero
     E-mail: nquintero@linear.com
 
@@ -63,7 +65,7 @@ from LTC2758 import *
 # Global Constants
 ###############################################################################
 
-SYSTEM_CLOCK_DIVIDER = 99
+SYSTEM_CLOCK_DIVIDER = 99 # 50MHz / 100 = 500 Ksps
 LUT_NCO_DIVIDER = 0xFFFF
 nco_word_width = 32
 

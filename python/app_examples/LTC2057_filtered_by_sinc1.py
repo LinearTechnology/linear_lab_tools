@@ -10,6 +10,11 @@
     This program also demonstrates how to read in Power Spectral Density data
     from an LTSpice simulation and measure the effect that the digital filter
     has on the total integrated noise.
+    
+    Open "\common\LTSpice\LTC2057_noisesim_2Meg.asc", run simulation and probe
+    node Vout2. Select output graph, then click "File -> Export" and save to
+    same directory. This will generate the noise data file required for this
+    script to execute.
 
     Created by: Mark Thoren
     E-mail: mthoren@linear.com

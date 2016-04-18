@@ -1,5 +1,9 @@
 # -*- coding: utf-8 -*-
 """
+    INL measurement program for DC2390. LTC2758 demo board must be connected
+    to auzilliary QuikEval header, with outputs connected to input of signal
+    chain under test.
+
     Created by: Noe Quintero
     E-mail: nquintero@linear.com
 

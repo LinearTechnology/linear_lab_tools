@@ -179,8 +179,8 @@ numpoints = 2**20 # Start with a million noisy data points, RMS = 1.0
 noisydata = np.random.normal(loc=0, scale=1.0, size=numpoints)
 rms_noise = np.std(noisydata) # Actual noise will vary a bit... double-check
 print("RMS noise of original data: " + str(rms_noise))
-filtered_data_8 = np.convolve(filter2check, noisydata, 'valid') # Filter the data
-filtered_noise = np.std(filtered_data_8) # Find RMS noise of filtered data
+filtered_data_16 = np.convolve(filter2check, noisydata, 'valid') # Filter the data
+filtered_noise = np.std(filtered_data_16) # Find RMS noise of filtered data
 print("RMS noise of filtered data: " + str(filtered_noise))
 print("noise was reduced by a factor of " + str(filtered_noise/rms_noise))
 print("Effective bandwidth of filter: " + str((filtered_noise/rms_noise)**2.0))
