@@ -1,0 +1,25 @@
+October, 2015:
+Initial Release
+
+April, 2016:
+\Common\LTspice:
+Notes and corrections to existing simulations
+Add: noise generator simulation
+Add: \Common\ltc25xx_filters
+Filter coefficients for oversampling SAR ADCs
+
+Additional demo boards supported, both Matlab and Python:
+LTC2328 (DC1908)
+LTC2378-20 (DC1925 and DC2135)
+LTC2338 (DC1908)
+LTC2389 (DC1826)
+LTM9011 (DC1751 and DC1884)
+LTC2123 (DC2226 with onboard clocking)
+
+Additional demo boards supported, Python only:
+LTC2185 (DC1620)
+
+Additional educational programs, Python only:
+adc_snr_simulation.py
+dac_concepts.py
+distortion_extraction.py
