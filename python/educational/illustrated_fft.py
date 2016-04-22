@@ -108,7 +108,7 @@ for f in range (0, num_bins):
         plt.figure(1)
     else:
         plt.figure(2)
-    plt.subplot(4, 4, (f+1) % 16) # % to take care of bins > 15
+    plt.subplot(4, 4, ((f) % 16)+1) # % to take care of bins > 15
     plt.title("Bin " + str(f) , fontsize=12)
     lines = plt.plot(test_cosines[f], color='#0000FF', marker=".") #Blue
     lines = plt.plot(test_sines[f], color='#FF0000', marker=".") #Red
