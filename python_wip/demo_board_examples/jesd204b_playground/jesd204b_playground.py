@@ -95,14 +95,7 @@ txdevice = None
 devices = [None] * 2
 do_reset = True  # Reset FPGA once (not necessary to reset between data loads)
 num_devices = 0
-test_mode = TEST_MODE1
-number_of_lanes_tested = 4
-transmit = False
-receive = False
-
-read_config = True;
-read_ilas = True;
-read_test_mode_error = False;
+test_mode = TEST_MODE0
 
 if verbose:
     print "JESD204B Playground Test Script!"
@@ -398,8 +391,7 @@ with comm.Controller(device_info[txdevice_index]) as txdevice:
 #        tx_data[i] = j
 #        j = j+1
     txdevice.data_set_high_byte_first();
-    if(transmit == True):
-        num_bytes_sent = txdevice.data_send_uint16_values(tx_data) #DAC should start running here!
+    num_bytes_sent = txdevice.data_send_uint16_values(tx_data) #DAC should start running here!
     
     ################################################
     # Configuration Flow Step 23: Configure TX's FTDI
@@ -520,8 +512,7 @@ with comm.Controller(device_info[rxdevice_index]) as rxdevice:
     sleep(0.1)
     rx_data = total_samples * [0] 
     
-    if(receive == True):
-        nSampsRead, rx_data = rxdevice.data_receive_uint16_values(end = (total_samples))
+    nSampsRead, rx_data = rxdevice.data_receive_uint16_values(end = (total_samples))
 
     rxdevice.hs_set_bit_mode(comm.HS_BIT_MODE_MPSSE)
 
@@ -573,15 +564,10 @@ with comm.Controller(device_info[rxdevice_index]) as rxdevice:
     if(verbose != 0):
         print "\nReading RX JESD204B core registers..."
 
-    if(read_cofig == True):
-        read_xilinx_core_config(rxdevice, verbose = True, read_link_erroe = True)   
-    if(read_ilas == True):
-        for i in range(0, number_of_lanes_tested):
-            read_xilinx_core_ilas(rxdevice, verbose = True, lane=i, split_all = True)
+    read_xilinx_core_config(rxdevice, verbose = True, read_link_erroe = True)   
+    for i in range(0, 4):
+        read_xilinx_core_ilas(rxdevice, verbose = True, lane=i, split_all = True)
 
-    if(read_test_mode_error == True):
-        for i in range(0, number_of_lanes_tested):
-            read_test_mode_error(rxdevice, verbose = True, lane=i)
 ## Read back TX ILAS registers
 #with comm.Controller(device_info[txdevice_index]) as txdevice:
 #    txdevice.hs_set_bit_mode(comm.HS_BIT_MODE_MPSSE)
