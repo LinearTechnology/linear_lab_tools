@@ -96,6 +96,7 @@ devices = [None] * 2
 do_reset = True  # Reset FPGA once (not necessary to reset between data loads)
 num_devices = 0
 test_mode = TEST_MODE0
+SCR = 1
 
 if verbose:
     print "JESD204B Playground Test Script!"
@@ -218,7 +219,7 @@ with comm.Controller(device_info[rxdevice_index]) as rxdevice:
     # RX core registers
     ################################################
     write_jesd204b_reg(rxdevice, 0x08, 0x00, 0x00, 0x00, 0x01)  #Enable ILA
-    write_jesd204b_reg(rxdevice, 0x0C, 0x00, 0x00, 0x00, 0x00)  #Scrambling - 0 to disable, 1 to enable
+    write_jesd204b_reg(rxdevice, 0x0C, 0x00, 0x00, 0x00, SCR)  #Scrambling - 0 to disable, 1 to enable
     write_jesd204b_reg(rxdevice, 0x10, 0x00, 0x00, 0x00, 0x00)  # Only respond to first SYSREF (Subclass 1 only)
     write_jesd204b_reg(rxdevice, 0x18, 0x00, 0x00, 0x00, test_mode)  # Select Test modes		
     write_jesd204b_reg(rxdevice, 0x20, 0x00, 0x00, 0x00, 0x01)  # 2 octets per frame
@@ -267,7 +268,7 @@ with comm.Controller(device_info[txdevice_index]) as txdevice:
     print "\nTX Version: ", b3, b2, b1, b0
     print "Configuring JESD204B TX core registers..."
     write_jesd204b_reg(txdevice, 0x08, 0x00, 0x00, 0x00, 0x01)  # Enable ILA
-    write_jesd204b_reg(txdevice, 0x0C, 0x00, 0x00, 0x00, 0x00)  # Scrambling - 0 to disable, 1 to enable
+    write_jesd204b_reg(txdevice, 0x0C, 0x00, 0x00, 0x00, SCR)  # Scrambling - 0 to disable, 1 to enable
     write_jesd204b_reg(txdevice, 0x10, 0x00, 0x00, 0x00, 0x00)  # Only respond to first SYSREF (Subclass 1 only)
     write_jesd204b_reg(txdevice, 0x14, 0x00, 0x00, 0x00, 0x03)  # Multiframes in ILA = 4
     write_jesd204b_reg(txdevice, 0x18, 0x00, 0x00, 0x00, test_mode)  # Select Test modes	
@@ -380,7 +381,7 @@ with comm.Controller(device_info[txdevice_index]) as txdevice:
     #generate_rpat_data(total_samples)
     tx_data = total_samples * [0] 
     print('reading data from file')
-    infile = open('dacdata_counter.csv', 'r')  # UNcomment this line for funky SINC waveform
+    infile = open('dacdata_rpat.csv', 'r')  # UNcomment this line for funky SINC waveform
     for i in range(0, total_samples):
         tx_data[i] = int(infile.readline(), base = 16)
     infile.close()
@@ -525,11 +526,11 @@ with comm.Controller(device_info[rxdevice_index]) as rxdevice:
         
     # Demonstrate how to write generated data to a file.
     print('writing data out to file')
-    outfile = open('dacdata_received.csv', 'w')
-    for i in range(0, total_samples):
-        outfile.write(str(hex(rx_data[i])) + "\n")
-    outfile.close()
-    print('done writing!')
+#    outfile = open('dacdata_received.csv', 'w')
+#    for i in range(0, total_samples):
+#        outfile.write(str(hex(rx_data[i])) + "\n")
+#    outfile.close()
+#    print('done writing!')
     
     ################################################
     # Configuration Flow Step 32: Configure RX's FTDI
@@ -592,7 +593,225 @@ with comm.Controller(device_info[rxdevice_index]) as rxdevice:
     data = rxdevice.hs_fpga_read_data_at_address(RX_CAPTURE_STATUS_REG)
     print "\n RX Capture Status: 0x{:04X}".format(data)
   
+    print "\n\n          CONVERTING TO TEST MODE 3....."
+    
+    write_jesd204b_reg(rxdevice, 0x18, 0x00, 0x00, 0x00, TEST_MODE3)  # Select Test modes	
+    #write_jesd204b_reg(rxdevice, 0x04, 0x00, 0x00, 0x00, 0x01)  # Reset core
+    sleep(sleeptime)
+    b3, b2, b1, b0 = read_jesd204b_reg(rxdevice, 0x04)
+    if((b3, b2, b1, b0) == (0, 0, 0, 0)):
+        print "RX Core Reset complete!"    
+    else:
+        print "RX Core Reset not complete!"
+
+with comm.Controller(device_info[txdevice_index]) as txdevice:
+    txdevice.hs_set_bit_mode(comm.HS_BIT_MODE_MPSSE)
+    sleep(sleeptime)
+    write_jesd204b_reg(txdevice, 0x18, 0x00, 0x00, 0x00, TEST_MODE3)  # Select Test modes	
+    #write_jesd204b_reg(txdevice, 0x04, 0x00, 0x00, 0x00, 0x01)  # Reset core
+    sleep(sleeptime)
+    
+    ################################################
+    # Configuration Flow Step 19: Configure TX buffer
+    # size and transfer mode
+    ################################################
+    txdevice.hs_fpga_write_data_at_address(TX_PBK_CONFIG_REG, 0x00)
+    
+    ################################################
+    # Configuration Flow Step 20: Verify TX buffer
+    # is empty
+    ################################################
+    data = txdevice.hs_fpga_read_data_at_address(TX_PBK_STATUS_REG)
+    print "TX_PBK_STATUS_REG: ", data
+    # Check for 0b xxxxxx00 
+    if(data | 0xFC == 0xFC):
+        print "TX buffer empty"
+    else:
+        print "TX buffer not empty"
+    sleep(sleeptime)
+    
+    if(verbose != 0):
+        print "\nReading TX JESD204B core registers..."
+    read_xilinx_core_config(txdevice, verbose = True, read_link_erroe = False)   
+    
+    txdevice.hs_set_bit_mode(comm.HS_BIT_MODE_FIFO)
+    tx_data_1 = total_samples * [0] 
+    print('reading data from file')
+    infile = open('dacdata_counter.csv', 'r')  # UNcomment this line for funky SINC waveform
+    for i in range(0, total_samples):
+        tx_data_1[i] = int(infile.readline(), base = 16)
+    infile.close()
+    print('done reading!')
+    
+    txdevice.data_set_high_byte_first();
+    num_bytes_sent = txdevice.data_send_uint16_values(tx_data_1) #DAC should start running here!
+    
+    ################################################
+    # Configuration Flow Step 23: Configure TX's FTDI
+    # as MPSSE mode
+    ################################################ 
+    txdevice.hs_set_bit_mode(comm.HS_BIT_MODE_MPSSE)	
+    
+    ################################################
+    # Configuration Flow Step 24: Check TX loading
+    # is done
+    ################################################	
+    data = txdevice.hs_fpga_read_data_at_address(TX_PBK_STATUS_REG)
+    print "\nChecking TX loading is done:"
+    print "Register 5 (Playback status register): 0x{:04X}".format(data)
+    # Check for 0b xxxxxx1x
+    if(data & 0x02 == 0x02):
+        print "TX loading is done"
+    else:
+        print "TX loading not done"
+    sleep(sleeptime)
+    
+    ################################################
+    # Configuration Flow Step 25: Check TX start
+    # playback
+    ################################################	
+    data = txdevice.hs_fpga_read_data_at_address(TX_PBK_STATUS_REG)
+    print "\nChecking TX start playback:"
+    print "Register 5 (Playback status register): 0x{:04X}".format(data)
+    # Check for 0b xxx1xx1x
+    if(data & 0x12 == 0x12):
+        print "TX Playback started"
+    else:
+        print "TX playback not started"
+    sleep(sleeptime)
     
 
+with comm.Controller(device_info[rxdevice_index]) as rxdevice:
+    rxdevice.hs_set_bit_mode(comm.HS_BIT_MODE_MPSSE)    
+    
+    ################################################
+    # Configuration Flow Step 26: Check RX JESD204B
+    # data outputs valid
+    ################################################	
+    data = rxdevice.hs_fpga_read_data_at_address(RX_CAPTURE_STATUS_REG)
+    print "Checking RX JESD204B data outputs valid:"
+    print "Register 4   (Capture Status Register): 0x{:04X}".format(data)
+    # Check for 0b 0001xxxx
+    if(data >> 4 == 0x01):
+        print "RX Data valid"
+    else:
+        print "RX Data not valid"
+    sleep(sleeptime)
+    
+    ################################################
+    # Configuration Flow Step 27: Configure TRX buffer
+    # size and start capture
+    ################################################
+    # MEMSIZE: 1K x 12 SAmples (0000)
+    # CHSEL: Channel 0 & 1 (1000)
+    rxdevice.hs_fpga_write_data_at_address(RX_CAPTURE_CONFIG_REG, 0x08)   
+    rxdevice.hs_fpga_write_data_at_address(RX_CAPTURE_CONTROL_REG, 0x01) 
+    sleep(sleeptime)
+    ################################################
+    # Configuration Flow Step 28: Verify RX buffer
+    # is full
+    ################################################
+    data = rxdevice.hs_fpga_read_data_at_address(RX_CAPTURE_STATUS_REG)
+    print "RX_CAPTURE_STATUS_REG: ", data
+    # Check for 0b xxxxxxx1 
+    if(data & 0x01 == 0x01):
+        print "RX Capture done"
+    else:
+        print "RX Capture not done"
+    sleep(sleeptime)
+    
+with comm.Controller(device_info[txdevice_index]) as txdevice:
+    txdevice.hs_set_bit_mode(comm.HS_BIT_MODE_MPSSE)	    
+    
+    ################################################
+    # Configuration Flow Step 29: Reset TX Playback
+    # engine and FCLK PLL
+    ################################################
+    data = txdevice.hs_fpga_read_data_at_address(TX_PBK_RESET_REG)
+    txdevice.hs_fpga_write_data_at_address(TX_PBK_CONFIG_REG, (data | 0x01))
+    print "Writing 1 to CTRLRST bit of TX_PBK_RESET_REG..."
+    print "TX Playback done..."
+    
+with comm.Controller(device_info[rxdevice_index]) as rxdevice:
+    ################################################
+    # Configuration Flow Step 30: Configure RX's FTDI
+    # as Sync FIFO mode
+    ################################################           
+    rxdevice.hs_set_bit_mode(comm.HS_BIT_MODE_FIFO) 
+    sleep(sleeptime)
+    
+    ################################################
+    # Configuration Flow Step 31: Check if RX got 
+    # all data
+    ################################################   
+    if(verbose != 0):
+        print "Capturing data and resetting..."
 
+    rxdevice.hs_fpga_write_data_at_address(RX_CAPTURE_CONFIG_REG, 0x08) 
 
+    rxdevice.hs_fpga_write_data_at_address(RX_CAPTURE_RESET_REG, 0x01)  #Reset
+    rxdevice.hs_fpga_write_data_at_address(RX_CAPTURE_CONTROL_REG, 0x01)  #Start!!
+    sleep(1) #wait for capture
+
+#    data = rxdevice.hs_fpga_read_data_at_address(RX_CAPTURE_STATUS_REG)
+#    syncErr = (data & 0x04) != 0
+#    if (verbose != 0):
+#        print "Reading capture status, should be 0x11 (CH0, CH1 valid, Capture done, data not fetched)"
+#        print "And it is... 0x{:04X}".format(data)
+
+    #sleep(sleeptime)
+    rxdevice.data_set_high_byte_first() #Set endian-ness
+    rxdevice.hs_set_bit_mode(comm.HS_BIT_MODE_FIFO)
+    sleep(0.1)
+    rx_data_1 = total_samples * [0] 
+    
+    nSampsRead, rx_data_1 = rxdevice.data_receive_uint16_values(end = (total_samples))
+
+    rxdevice.hs_set_bit_mode(comm.HS_BIT_MODE_MPSSE)
+
+    sleep(sleeptime)
+
+    if(verbose != 0):
+        print "Read out " + str(nSampsRead) + " samples"
+#        print "And " + str(extrabytecount) + " extra bytes"        
+        
+        
+    # Demonstrate how to write generated data to a file.
+    print('writing data out to file')
+    outfile = open('dacdata_received_1.csv', 'w')
+    for i in range(0, total_samples):
+        outfile.write(str(hex(rx_data_1[i])) + "\n")
+    outfile.close()
+    print('done writing!')
+    
+    ################################################
+    # Configuration Flow Step 32: Configure RX's FTDI
+    # as MPSSE mode
+    ################################################       
+    rxdevice.hs_set_bit_mode(comm.HS_BIT_MODE_MPSSE)    
+    
+    ################################################
+    # Configuration Flow Step 33: Reset RX capture  
+    # engine and FCLK PLL
+    ################################################
+    data = rxdevice.hs_fpga_read_data_at_address(RX_CAPTURE_RESET_REG)
+    print "RX_CAPTURE_RESET_REG: ", data
+    # Check for 0b xxxxxxx1 
+    if(data & 0x01 == 0x01):
+        print "RX Capture done"
+    else:
+        print "RX Capture not done"
+    sleep(sleeptime)
+    
+
+    rxdevice.hs_set_bit_mode(comm.HS_BIT_MODE_MPSSE)
+    print("Reading out RX registers to clear errors...")
+    read_xilinx_core_config(rxdevice, verbose = False, read_link_erroe = False)  
+    print("Waiting for 5 seconds to see if we accumulate some errors...")
+    sleep(5.0)
+    if(verbose != 0):
+        print "\nReading RX JESD204B core registers..."
+
+    read_xilinx_core_config(rxdevice, verbose = True, read_link_erroe = True)   
+    for i in range(0, 4):
+        read_xilinx_core_ilas(rxdevice, verbose = True, lane=i, split_all = True)
