@@ -97,6 +97,7 @@ do_reset = True  # Reset FPGA once (not necessary to reset between data loads)
 num_devices = 0
 test_mode = TEST_MODE0
 SCR = 1
+new_data = total_samples * [0] 
 
 if verbose:
     print "JESD204B Playground Test Script!"
@@ -628,7 +629,14 @@ with comm.Controller(device_info[txdevice_index]) as txdevice:
         print "TX buffer empty"
     else:
         print "TX buffer not empty"
-    sleep(sleeptime)
+        sleep(sleeptime)
+        
+    # Check for 0b xxxxxx00 
+    if(data | 0xFC == 0xFC):
+        print "TX buffer empty"
+    else:
+        print "TX buffer not empty"
+        sleep(sleeptime)
     
     if(verbose != 0):
         print "\nReading TX JESD204B core registers..."
@@ -644,7 +652,7 @@ with comm.Controller(device_info[txdevice_index]) as txdevice:
     print('done reading!')
     
     txdevice.data_set_high_byte_first();
-    num_bytes_sent = txdevice.data_send_uint16_values(tx_data_1) #DAC should start running here!
+    #num_bytes_sent = txdevice.data_send_uint16_values(tx_data_1) #DAC should start running here!
     
     ################################################
     # Configuration Flow Step 23: Configure TX's FTDI
@@ -763,9 +771,9 @@ with comm.Controller(device_info[rxdevice_index]) as rxdevice:
     rxdevice.data_set_high_byte_first() #Set endian-ness
     rxdevice.hs_set_bit_mode(comm.HS_BIT_MODE_FIFO)
     sleep(0.1)
-    rx_data_1 = total_samples * [0] 
+    new_data = total_samples * [0] 
     
-    nSampsRead, rx_data_1 = rxdevice.data_receive_uint16_values(end = (total_samples))
+    nSampsRead, new_data = rxdevice.data_receive_uint16_values(end = (total_samples))
 
     rxdevice.hs_set_bit_mode(comm.HS_BIT_MODE_MPSSE)
 
@@ -780,7 +788,7 @@ with comm.Controller(device_info[rxdevice_index]) as rxdevice:
     print('writing data out to file')
     outfile = open('dacdata_received_1.csv', 'w')
     for i in range(0, total_samples):
-        outfile.write(str(hex(rx_data_1[i])) + "\n")
+        outfile.write(str(hex(new_data[i])) + "\n")
     outfile.close()
     print('done writing!')
     
