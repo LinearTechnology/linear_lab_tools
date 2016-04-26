@@ -477,7 +477,7 @@ with comm.Controller(device_info[txdevice_index]) as txdevice:
     data = txdevice.hs_fpga_read_data_at_address(TX_PBK_RESET_REG)
     txdevice.hs_fpga_write_data_at_address(TX_PBK_CONFIG_REG, (data | 0x01))
     print "Writing 1 to CTRLRST bit of TX_PBK_RESET_REG..."
-    print "TX Playback done..."\
+    print "TX Playback done..."
     
 with comm.Controller(device_info[rxdevice_index]) as rxdevice:
     ################################################
