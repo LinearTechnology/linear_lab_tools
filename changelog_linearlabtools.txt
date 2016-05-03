@@ -23,3 +23,8 @@ Additional educational programs, Python only:
 adc_snr_simulation.py
 dac_concepts.py
 distortion_extraction.py
+
+Added Avalon_bus_example.py in app example and supporting files in utils
+
+Added demo board support, Python only:
+LTC1668
