@@ -50,7 +50,7 @@ import connect_to_linduino as duino
 # Send 32 bit SPI data to the DC2459A from the Linduino
 def send_raw_code(dc2026, code):
     # Construct the string for the Linduino
-    string_data = "MSxS" + format((code>>24)&0xFF, '02x') + 'S' +\
+    string_data = "GMSxS" + format((code>>24)&0xFF, '02x') + 'S' +\
                   format((code>>16)&0xFF, '02x') + 'S' + \
                   format((code>>8)&0xFF, '02x') + 'S' + \
                   format(code&0xFF, '02x') + 'X'
