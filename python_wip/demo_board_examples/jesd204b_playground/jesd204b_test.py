@@ -239,22 +239,26 @@ check_PLL_lock(comm.Controller(device_info[rxdevice_index]), RX_CLOCK_STATUS_REG
 with comm.Controller(device_info[txdevice_index]) as txdevice:
     print("\nReading TX JESD204B core registers...")
     read_xilinx_core_config(txdevice, verbose = True, read_link_erroe = False)
-
+    
+# Demonstrates how to generate rpat data. Note that the total data record length
+# contains an exact integer number of cycles.
 total_samples = (1024 * 12)
-transmit_file_data(comm.Controller(device_info[txdevice_index]), 'dacdata_counter.csv', total_samples)
+# Generating data and writing into a file
+#generate_rpat_data(total_samples)
+tx_data = total_samples * [1]
+print('reading data from file')
+infile = open('dacdata_counter.csv', 'r')  # UNcomment this line for funky SINC waveform
 
-#rx_data = receive_data(comm.Controller(device_info[rxdevice_index]), total_samples)
-rx_data = read_rx_data(comm.Controller(device_info[rxdevice_index]), verbose = True)    
-    
-# Demonstrate how to write generated data to a file.
-print('writing data out to file')
-outfile = open('dacdata_received.csv', 'w')
 for i in range(0, total_samples):
-    outfile.write(str(hex(rx_data[i])) + "\n")
-outfile.close()
-print('done writing!')
-    
+    #tx_data[i] = int(infile.readline(), base = 16)
+    tx_data[i] = int(i)
+print('done reading!')
 
+transmit_file_data(comm.Controller(device_info[txdevice_index]), total_samples, tx_data)
+
+rx_data = receive_data(comm.Controller(device_info[rxdevice_index]), total_samples)
+ 
+write_rx_data_file('dacdata_received.csv', rx_data)
 
 # Read back RX ILAS registers
 with comm.Controller(device_info[rxdevice_index]) as rxdevice:
