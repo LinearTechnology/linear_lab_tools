@@ -51,6 +51,8 @@ CHANNEL = ADC_B_CAPTURE
 
 N = 7 #Number of samples to average (LTC2380-24)
 
+vfs = 10.0 # Full-scale voltage, VREF * 2 for LTC25xx family
+
 nco_word_width = 32
 master_clock = 50000000
 bin_number = 23 # Number of cycles over the time record
@@ -127,8 +129,10 @@ client.reg_write(TUNING_WORD_BASE, tuning_word) # Sweep NCO!!!
 # Capture a sine wave
 client.reg_write(DATAPATH_CONTROL_BASE, datapath_word_sines) # Sweep NCO!!!
 data = capture(client, NUM_SAMPLES, trigger = 0, timeout = 0.0)
+rms = np.std(data)
+print("Standard Deviation: " + str(rms))
 data_nodc = data - np.average(data)
-#data_nodc *= np.blackman(NUM_SAMPLES)
+data_nodc *= np.blackman(NUM_SAMPLES)
 fftdata = np.abs(np.fft.fft(data_nodc)) / NUM_SAMPLES
 fftdb = 20*np.log10(fftdata / 2.0**31)
 plt.figure(pltnum)
@@ -139,6 +143,12 @@ plt.plot(data)
 plt.subplot(2, 1, 2)
 plt.plot(fftdb)
 
+data_ndarray = np.array(data)
+data_volts = data_ndarray * (vfs / 2.0**32.0) # Convert to voltage
+datarms = np.std(data_volts)
+datap_p = np.max(data_volts) - np.min(data_volts)
+print("RMS voltage: " + str(datarms))
+print("Peak-to-Peak voltage: " + str(datap_p))
 #(out_path, num_bits, is_bipolar, num_samples, dc_num, ltc_num, *data):
 data_for_pscope = data_nodc / 256.0
 save_for_pscope("pscope_DC2390.adc",24 ,True, NUM_SAMPLES, "2390", "2500", data_for_pscope)
