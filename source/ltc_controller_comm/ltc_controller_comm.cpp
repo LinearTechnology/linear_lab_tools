@@ -53,7 +53,7 @@ do {                                                                       \
     return ToErrorCode([&] { return controller->func(__VA_ARGS__); }, *val, *es);
 
 LTC_CONTROLLER_COMM_API int LccGetNumControllers(int controller_types, int max_controllers,
-        int* num_controllers) {
+                                                 int* num_controllers) {
     try {
         if (controller_types & LCC_TYPE_DC1371) {
             *num_controllers = Dc1371::GetNumControllers(Min(max_controllers, Dc1371::MAX_CONTROLLERS));
@@ -114,6 +114,48 @@ LTC_CONTROLLER_COMM_API int LccGetControllerList(int controller_types,
         return LCC_ERROR_UNKNOWN;
     } catch (...) {
         return LCC_ERROR_UNKNOWN;
+    }
+}
+
+LTC_CONTROLLER_COMM_API int LccGetControllerInfoFromId(int controller_type, const char* id,
+                                                       LccControllerInfo* controller_info) {
+    switch (controller_type) {
+        case LCC_TYPE_DC1371:
+        {
+            if (Dc1371::IsDc1371(id[0])) {
+                *controller_info = Dc1371::MakeControllerInfo(id[0]);
+                return LCC_ERROR_OK;
+            } else {
+                return LCC_ERROR_HARDWARE;
+            }
+        }
+        case LCC_TYPE_DC718:
+        case LCC_TYPE_DC890:
+        case LCC_TYPE_HIGH_SPEED:
+        {
+            // we could make this more efficient in the future
+            int num_controllers = 0;
+            auto result = LccGetNumControllers(controller_type, 100, &num_controllers);
+            if (result != LCC_ERROR_OK) {
+                return result;
+            }
+            vector<LccControllerInfo> info_list(num_controllers);
+            result = LccGetControllerList(controller_type, info_list.data(), info_list.size());
+            if (result != LCC_ERROR_OK) {
+                return result;
+            }
+
+            for (auto&& info: info_list) {
+                if (strcmp(info.serial_number, id) == 0) {
+                    *controller_info = info;
+                    return LCC_ERROR_OK;
+                }
+            }
+
+            return LCC_ERROR_HARDWARE;
+        }
+        default:
+            return LCC_ERROR_INVALID_ARG;
     }
 }
 

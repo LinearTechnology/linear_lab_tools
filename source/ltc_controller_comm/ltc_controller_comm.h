@@ -129,6 +129,11 @@ extern "C" {
     LTC_CONTROLLER_COMM_API int LccGetControllerList(int controller_types,
         LccControllerInfo* controller_info_list, int num_controllers);
 
+    // Returns a single LccController info given the type and ID of the controller. Cannot be used
+    // with multiple types
+    LTC_CONTROLLER_COMM_API int LccGetControllerInfoFromId(int controller_type, const char* id,
+                                                           LccControllerInfo* controller_info);
+
     // General functions.
 
     // Given a LccControllerInfo struct and a pointer to an LccHandle, this function initializes the
