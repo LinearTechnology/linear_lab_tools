@@ -39,21 +39,21 @@ namespace linear {
         }
 
     protected:
-        template <typename Obj, typename T>
-        static int DataRead(Obj& object, bool swap_bytes, T* values, int num_values) {
-            int num_read = object.ReadBytes(reinterpret_cast<uint8_t*>(values), num_values * sizeof(T));
+        template <typename R, typename T>
+        static int DataRead(R& reader, bool swap_bytes, T* values, int num_values) {
+            int num_read = reader.ReadBytes(reinterpret_cast<uint8_t*>(values), num_values * sizeof(T));
             if (swap_bytes) {
                 SwapBytes(values, num_values);
             }
             return num_read;
         }
 
-        template <typename Obj, typename T>
-        static int DataWrite(Obj& object, bool swap_bytes, T* values, int num_values) {
+        template <typename W, typename T>
+        static int DataWrite(W& writer, bool swap_bytes, T* values, int num_values) {
             if (swap_bytes) {
                 SwapBytes(values, num_values);
             }
-            int num_written = object.WriteBytes(reinterpret_cast<uint8_t*>(values), num_values * sizeof(T));
+            int num_written = writer.WriteBytes(reinterpret_cast<uint8_t*>(values), num_values * sizeof(T));
             // need to swap back or else user will still have their array to use,
             // but the contents will be wrong
             if (swap_bytes) {
