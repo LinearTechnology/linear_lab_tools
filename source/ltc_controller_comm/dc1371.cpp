@@ -57,24 +57,38 @@ namespace linear {
 
 #define SPI_MUST_NOT_BE_TOO_LARGE(offset, maximum) if ((offset) > (maximum)) { throw invalid_argument("SPI transaction too large."); }
 
-    int Dc1371::GetNumControllers(int max_controllers) {
-        MUST_BE_POSITIVE(max_controllers);
-        MUST_NOT_BE_LARGER(max_controllers, MAX_CONTROLLERS);
-
+    bool Dc1371::IsDc1371(char drive_letter) {
         const int DRIVE_STRINGS_SIZE = 20;
         char root_path_name[DRIVE_STRINGS_SIZE] = " :\\";
         char volume_name[DRIVE_STRINGS_SIZE] = "";
         char file_system_name[DRIVE_STRINGS_SIZE] = "";
         DWORD dummy_value;
 
+        root_path_name[0] = drive_letter;
+        if (!GetVolumeInformationA(root_path_name, volume_name, DRIVE_STRINGS_SIZE, &dummy_value,
+                                   &dummy_value, &dummy_value, file_system_name, DRIVE_STRINGS_SIZE)) {
+            return false;
+        }
+        return _strcmpi(volume_name, "pstache") == 0;
+    }
+
+    LccControllerInfo Dc1371::MakeControllerInfo(char drive_letter) {
+        auto info = Controller::MakeControllerInfo(Type::DC1371, DESCRIPTION, "", drive_letter);
+        {
+            Dc1371 dc1371(info);
+            CopyToBuffer(info.serial_number, sizeof(info.serial_number),
+                         dc1371.GetSerialNumber().c_str());
+        }
+        return info;
+    }
+
+    int Dc1371::GetNumControllers(int max_controllers) {
+        MUST_BE_POSITIVE(max_controllers);
+        MUST_NOT_BE_LARGER(max_controllers, MAX_CONTROLLERS);
+
         int num_controllers = 0;
         for (char drive_letter = 'D'; drive_letter <= 'Z'; drive_letter++) {
-            root_path_name[0] = drive_letter;
-            if (!GetVolumeInformationA(root_path_name, volume_name, DRIVE_STRINGS_SIZE, &dummy_value,
-                &dummy_value, &dummy_value, file_system_name, DRIVE_STRINGS_SIZE)) {
-                continue;
-            }
-            if (_strcmpi(volume_name, "pstache") == 0) {
+            if (IsDc1371(drive_letter)) {
                 ++num_controllers;
                 if (num_controllers >= max_controllers) {
                     break;
@@ -88,27 +102,10 @@ namespace linear {
         MUST_BE_POSITIVE(max_controllers);
         MUST_NOT_BE_LARGER(max_controllers, MAX_CONTROLLERS);
 
-        const int DRIVE_STRINGS_SIZE = 20;
-        char root_path_name[DRIVE_STRINGS_SIZE] = " :\\";
-        char volume_name[DRIVE_STRINGS_SIZE] = "";
-        char file_system_name[DRIVE_STRINGS_SIZE] = "";
-        DWORD dummy_value;
-
         vector<LccControllerInfo> info_list;
         for (char drive_letter = 'D'; drive_letter <= 'Z'; drive_letter++) {
-            root_path_name[0] = drive_letter;
-            if (!GetVolumeInformationA(root_path_name, volume_name, DRIVE_STRINGS_SIZE, &dummy_value,
-                &dummy_value, &dummy_value, file_system_name, DRIVE_STRINGS_SIZE)) {
-                continue;
-            }
-            if (_strcmpi(volume_name, "pstache") == 0) {
-                auto info = Controller::MakeControllerInfo(Type::DC1371, DESCRIPTION, "", drive_letter);
-                {
-                    Dc1371 dc1371(info);
-                    CopyToBuffer(info.serial_number, sizeof(info.serial_number), 
-                        dc1371.GetSerialNumber().c_str());
-                }
-                info_list.push_back(info);
+            if (IsDc1371(drive_letter)) {
+                info_list.push_back(MakeControllerInfo(drive_letter));
                 if (info_list.size() >= unsigned(max_controllers)) {
                     break;
                 }
