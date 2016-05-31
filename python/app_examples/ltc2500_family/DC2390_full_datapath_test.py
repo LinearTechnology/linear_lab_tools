@@ -231,7 +231,7 @@ register_list = [
 'SPI_SS               ']
 
 print ('\nReading register block:')
-dummy, block = client.reg_read_block(REV_ID_BASE, 22)
+block = client.reg_read_block(REV_ID_BASE, 22)
 data_reg = (ctypes.c_int * 22).from_buffer(bytearray(block))
 for i in range(0, 22):
     print (register_list[i] + ': %08X'  % data_reg[i])
