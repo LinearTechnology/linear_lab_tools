@@ -44,7 +44,7 @@ namespace linear {
     }
 
     size_t GetFileSize(const wstring& file_name) {
-        HANDLE file = CreateFile(file_name.c_str(), GENERIC_READ, 
+        HANDLE file = CreateFileW(file_name.c_str(), GENERIC_READ, 
             FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr, OPEN_EXISTING,
             FILE_ATTRIBUTE_NORMAL, nullptr);
         if (file == INVALID_HANDLE_VALUE) {
@@ -61,7 +61,7 @@ namespace linear {
     }
 
     bool DoesFileExist(const wstring& file_name) {
-        HANDLE file = CreateFile(file_name.c_str(), GENERIC_READ,
+        HANDLE file = CreateFileW(file_name.c_str(), GENERIC_READ,
             FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr, OPEN_EXISTING,
             FILE_ATTRIBUTE_NORMAL, nullptr);
         if (file == INVALID_HANDLE_VALUE) {
@@ -80,14 +80,14 @@ namespace linear {
         }
         path += L"*.*";
 
-        WIN32_FIND_DATA find_data;
+        WIN32_FIND_DATAW find_data;
         HANDLE hFind = FindFirstFileW(path.c_str(), &find_data);
         if (hFind != INVALID_HANDLE_VALUE) {
             do {
                 if (!(find_data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)) {
                     names.push_back(find_data.cFileName);
                 }
-            } while (FindNextFile(hFind, &find_data));
+            } while (FindNextFileW(hFind, &find_data));
             FindClose(hFind);
         }
         return names;
