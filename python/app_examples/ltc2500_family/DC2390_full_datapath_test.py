@@ -18,7 +18,8 @@ import numpy as np
 from time import sleep
 from matplotlib import pyplot as plt
 # Okay, now the big one... this is the module that communicates with the SoCkit
-from mem_func_client import MemClient
+sys.path.append('C:\Users\MSajikumar\Documents\LT_soc_framework')
+from mem_func_client_2 import MemClient
 from DC2390_functions import *
 
 # Get the host from the command line argument. Can be numeric or hostname.
@@ -211,6 +212,29 @@ plt.show()
 datapath_word_lut_continuous
 #client.reg_write(DATAPATH_CONTROL_BASE, datapath_word_dist_correction)
 client.reg_write(DATAPATH_CONTROL_BASE, datapath_word_lut_continuous)
+
+rev_id = client.reg_read(REV_ID_BASE)
+print ('FPGA load revision: %04X' % rev_id)
+rev_id = client.reg_read(CONTROL_BASE)
+print ('CONTROL_BASE: %04X' % rev_id)
+rev_id = client.reg_read(DATA_READY_BASE)
+print ('DATA_READY_BASE: %04X' % rev_id)
+
+register_list = [
+'REV_ID_BASE          ', 'CONTROL_BASE         ', 'DATA_READY_BASE      ',
+'LED_BASE             ', 'NUM_SAMPLES_BASE     ', 'PID_KP_BASE          ',
+'PID_KI_BASE          ', 'PID_KD_BASE          ', 'PULSE_LOW_BASE       ',
+'PULSE_HIGH_BASE      ', 'PULSE_VAL_BASE       ', 'SYSTEM_CLOCK_BASE    ',
+'DATAPATH_CONTROL_BASE', 'LUT_ADDR_DATA_BASE   ', 'TUNING_WORD_BASE     ',
+'BUFFER_ADDRESS_BASE  ', 'SPI_PORT_BASE        ', 'SPI_RXDATA           ',
+'SPI_TXDATA           ', 'SPI_STATUS           ', 'SPI_CONTROL          ',
+'SPI_SS               ']
+
+print ('\nReading register block:')
+dummy, block = client.reg_read_block(REV_ID_BASE, 22)
+data_reg = (ctypes.c_int * 22).from_buffer(bytearray(block))
+for i in range(0, 22):
+    print (register_list[i] + ': %08X'  % data_reg[i])
 
 ## Okay, here goes!! Let's try to write into the LUT:
 #print("Writing out to LUT!")
