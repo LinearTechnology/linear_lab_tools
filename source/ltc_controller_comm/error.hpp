@@ -83,17 +83,17 @@ namespace linear {
 #define CAT(x, y) x ## y
 #endif
 
-#define MUST_BE_POSITIVE(arg)                                      \
+#define ASSERT_POSITIVE(arg)                                       \
 if ((arg) < 1) {                                                   \
     throw invalid_argument(CAT(QUOTE(arg), " must be positive.")); \
 }
 
-#define MUST_NOT_BE_NEGATIVE(arg)                                      \
+#define ASSERT_NOT_NEGATIVE(arg)                                       \
 if ((arg) < 0) {                                                       \
     throw invalid_argument(CAT(QUOTE(arg), " must not be negative.")); \
 }
 
-#define MUST_BE_SMALLER(arg, size)                                                           \
+#define ASSERT_SMALLER(arg, size)                                                            \
 do {                                                                                         \
     auto MACRO_SIZE_ = size;                                                                 \
     if ((arg) >= MACRO_SIZE_) {                                                              \
@@ -101,7 +101,7 @@ do {                                                                            
     }                                                                                        \
 } while(0)
 
-#define MUST_NOT_BE_SMALLER(arg, size)                                                           \
+#define ASSERT_NOT_SMALLER(arg, size)                                                            \
 do {                                                                                             \
     auto MACRO_SIZE_ = size;                                                                     \
     if ((arg) < MACRO_SIZE_) {                                                                   \
@@ -109,7 +109,7 @@ do {                                                                            
     }                                                                                            \
 } while(0)
 
-#define MUST_BE_LARGER(arg, size)                                                           \
+#define ASSERT_LARGER(arg, size)                                                            \
 do {                                                                                        \
     auto MACRO_SIZE_ = size;                                                                \
     if ((arg) <= MACRO_SIZE_) {                                                             \
@@ -117,7 +117,7 @@ do {                                                                            
     }                                                                                       \
 } while(0)
 
-#define MUST_NOT_BE_LARGER(arg, size)                                                           \
+#define ASSERT_NOT_LARGER(arg, size)                                                            \
 do {                                                                                            \
     auto MACRO_SIZE_ = size;                                                                    \
     if ((arg) > MACRO_SIZE_) {                                                                  \
@@ -125,7 +125,7 @@ do {                                                                            
     }                                                                                           \
 } while(0)
 
-#define MUST_NOT_BE_NULL(arg)                                      \
+#define ASSERT_NOT_NULL(arg)                                       \
 if ((arg) == nullptr) {                                            \
     throw invalid_argument(CAT(QUOTE(arg), " must not be null.")); \
 }
