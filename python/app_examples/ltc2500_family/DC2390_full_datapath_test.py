@@ -18,7 +18,7 @@ import numpy as np
 from time import sleep
 from matplotlib import pyplot as plt
 # Okay, now the big one... this is the module that communicates with the SoCkit
-sys.path.append('C:\Users\MSajikumar\Documents\LT_soc_framework')
+#sys.path.append('C:\Users\MSajikumar\Documents\LT_soc_framework')
 from mem_func_client_2 import MemClient
 from DC2390_functions import *
 
@@ -235,6 +235,22 @@ block = client.reg_read_block(REV_ID_BASE, 22)
 data_reg = (ctypes.c_int * 22).from_buffer(bytearray(block))
 for i in range(0, 22):
     print (register_list[i] + ': %08X'  % data_reg[i])
+
+
+# Okay, now let's try writing the lookup table remotely!
+cDataType = ctypes.c_uint * 65536
+cData     = cDataType()
+
+print("Writing downward ramp to LUT!")
+for i in range(0, 65536): # Reverse ramp...
+    cData[i] = (i << 16 | (65535 - i))
+
+client.reg_write(DATAPATH_CONTROL_BASE, datapath_word_lut_continuous) 
+
+client.reg_write(CONTROL_BASE, 0x00000020) # Enable writing from blob side...
+client.reg_write_block(LUT_ADDR_DATA_BASE, 65536, cData)
+client.reg_write(CONTROL_BASE, 0x00000000) # Disable writing from blob side...
+print("Done!")
 
 ## Okay, here goes!! Let's try to write into the LUT:
 #print("Writing out to LUT!")
