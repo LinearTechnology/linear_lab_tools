@@ -83,6 +83,29 @@ HighSpeed::HighSpeed(const Ftdi& ftdi, const LccControllerInfo& info) : ftdi(ftd
 HighSpeed::~HighSpeed() {
     Close();
     delete[] command_buffer;
+    command_buffer = nullptr;
+}
+
+// TODO: make all fields that need to be RAII, so we can just use the default move constructor
+HighSpeed::HighSpeed(HighSpeed&& other) : ftdi(std::move(other.ftdi)),
+    index_a(std::move(other.index_a)),
+    index_b(std::move(other.index_b)),
+    description(std::move(other.description)),
+    serial_number_a(std::move(other.serial_number_a)),
+    serial_number_b(std::move(other.serial_number_b)),
+    spi_mode(std::move(other.spi_mode)),
+    i2c_bit_bang_register(std::move(other.i2c_bit_bang_register)),
+    channel_a(std::move(other.channel_a)),
+    channel_b(std::move(other.channel_b)),
+    command_buffer(std::move(other.command_buffer)),
+    is_repeated_start(std::move(other.is_repeated_start)),
+    swap_bytes(std::move(other.swap_bytes)) {
+
+    other.index_a = 0;
+    other.index_b = 0;
+    other.channel_a = nullptr;
+    other.channel_b = nullptr;
+    other.command_buffer = nullptr;
 }
 
 static bool OpenByIndex(const Ftdi& ftdi, WORD index_a, WORD index_b,
@@ -127,8 +150,8 @@ void HighSpeed::OpenIfNeeded() {
         auto info_list = ftdi.ListControllers(LCC_TYPE_HIGH_SPEED, 100);
         for (auto info_iter = info_list.begin(); info_iter != info_list.end(); ++info_iter) {
             if (info_iter->type == FT_DEVICE_2232H &&
-                    (serial_number_a.substr(0, serial_number_a.size() - 1) ==
-                     info_iter->serial_number) && (description == info_iter->description)) {
+                (serial_number_a.substr(0, serial_number_a.size() - 1) ==
+                 info_iter->serial_number) && (description == info_iter->description)) {
                 index_a = info_iter->id & 0xFFFF;
                 index_b = info_iter->id >> 16;
                 return OpenIfNeeded();
