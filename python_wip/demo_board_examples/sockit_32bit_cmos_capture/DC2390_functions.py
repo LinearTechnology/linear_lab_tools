@@ -225,7 +225,7 @@ def capture(client, recordlength, trigger = 0, timeout = 0.0):
 
 #    print("attempting to read stop address...")
     stopaddress = client.reg_read(BUFFER_ADDRESS_BASE)
-#    print("Ending address of ring buffer: " + str(stopaddress))
+    print("Ending address of ring buffer: " + str(stopaddress))
     read_start_address = stopaddress - 4*recordlength - 128*4
 #    read_start_address = stopaddress - 16*NUM_SAMPLES # Trying to find triggered data!!
     

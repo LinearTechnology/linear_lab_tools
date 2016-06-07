@@ -11,7 +11,7 @@
 
 import sys #, os, socket, ctypes, struct
 sys.path.append("../../")
-sys.path.append("../../utils/")
+sys.path.append("../../../python/utils/")
 from save_for_pscope import save_for_pscope
 import numpy as np
 #from subprocess import call
@@ -41,7 +41,7 @@ FOS_CLOCK = 4
 
 SYSTEM_CLOCK_DIVIDER = 199
 LUT_NCO_DIVIDER = 0xFFFF # 0xFFFF for divide by 1
-NUM_SAMPLES = 65536 #131072 #8192
+NUM_SAMPLES = 2**20#65536 #131072 #8192
 
 DEADBEEF = -559038737 # For now, need to re-justify.
 
@@ -69,17 +69,6 @@ type_id = rev_id & 0x0000FFFF
 rev = (rev_id >> 16) & 0x0000FFFF
 print ('FPGA load type ID: %04X' % type_id)
 print ('FPGA load revision: %04X' % rev)
-
-print("Setting up system parameters.\n");
-client.reg_write(SYSTEM_CLOCK_BASE, SYSTEM_CLOCK_DIVIDER)
-client.reg_write(SYSTEM_CLOCK_BASE, (LUT_NCO_DIVIDER << 16 | SYSTEM_CLOCK_DIVIDER))
-client.reg_write(NUM_SAMPLES_BASE, NUM_SAMPLES)
-client.reg_write(PID_KP_BASE, PID_KP)
-client.reg_write(PID_KI_BASE, PID_KI)
-client.reg_write(PID_KD_BASE, PID_KD)
-client.reg_write(PULSE_LOW_BASE, PULSE_LOW)
-client.reg_write(PULSE_HIGH_BASE, PULSE_HIGH)
-client.reg_write(PULSE_VAL_BASE, PULSE_VAL)
 
 
 #datapath fields: lut_addr_select, dac_a_select, dac_b_select[1:0], fifo_data_select
@@ -120,52 +109,41 @@ client.reg_write(LED_BASE, (N << 16) | 0x00) #Was 234
 sleep(0.1)
 
 
-client.reg_write(TUNING_WORD_BASE, tuning_word) # Sweep NCO!!!
 # Capture a sine wave
-
-#client.reg_write(DATAPATH_CONTROL_BASE, DC2390_FIFO_UP_DOWN_COUNT) # Capture a test pattern
 client.reg_write(DATAPATH_CONTROL_BASE, DC2390_FIFO_ADCA_NYQ) # First capture ADC A
 data = capture(client, NUM_SAMPLES, trigger = 0, timeout = 2.0)
 
 data_ch0 = np.ndarray(NUM_SAMPLES, dtype=float)
-data_ch1 = np.ndarray(NUM_SAMPLES, dtype=float)
 for i in range(0, NUM_SAMPLES):
-    data_ch0[i] = data[i] & 0x0000FFFF
-    data_ch1[i] = (data[i] & 0xFFFF0000) >> 16
-    
-
+    data_ch0[i] = (data[i] & 0x0003FFFF)
+    if(data_ch0[i] > 2**17):
+        data_ch0[i] -= 2**18
 
 data_nodc0 = data_ch0 #- np.average(data)
-data_nodc1 = data_ch1 #- np.average(data)
+
 #data_nodc *= np.blackman(NUM_SAMPLES)
 #fftdata = np.abs(np.fft.fft(data_nodc)) / NUM_SAMPLES
 #fftdb = 20*np.log10(fftdata / 2.0**31)
 plt.figure(pltnum)
 pltnum +=1
-plt.subplot(2, 1, 1)
 plt.plot(data_ch0)
-plt.subplot(2, 1, 2)
-plt.plot(data_ch1)
-
 data_for_pscopeA = data_nodc0 / 256.0
-
-# Split out other channel here...
-
-data_for_pscopeB = data_nodc1 / 256.0
 
 #(out_path, num_bits, is_bipolar, num_samples, dc_num, ltc_num, *data):
 save_for_pscope("pscope_DC2390.adc",24 ,True, NUM_SAMPLES, "2390", "2500",
-                data_for_pscopeA, data_for_pscopeB)
+                data_for_pscopeA)
 
 
+client.reg_write(DATAPATH_CONTROL_BASE, DC2390_FIFO_UP_DOWN_COUNT) # Capture a test pattern
+data = capture(client, NUM_SAMPLES, trigger = 0, timeout = 2.0)
 
-## Okay, here goes!! Let's try to write into the LUT:
-#print("Writing out to LUT!")
-#client.reg_write(CONTROL_BASE, 0x00000020); # Enable writing from blob side...
-#for i in range(0, 65536):
-#    client.reg_write(LUT_ADDR_DATA_BASE, (i << 16 | i))
-#client.reg_write(CONTROL_BASE, 0x00000000); # Disable writing from blob side...
-#print("Done writing to LUT! Hope it went okay!")
 
+#data_nodc *= np.blackman(NUM_SAMPLES)
+#fftdata = np.abs(np.fft.fft(data_nodc)) / NUM_SAMPLES
+#fftdb = 20*np.log10(fftdata / 2.0**31)
+plt.figure(pltnum)
+plt.axis([0, NUM_SAMPLES, -1*(2**31), 2**31])
+plt.plot(data)
+print data[0:10]
 
 
