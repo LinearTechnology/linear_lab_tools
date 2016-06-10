@@ -48,23 +48,22 @@ November, 2014
 
 from matplotlib import pyplot as plt
 total_samples = (1024 * 12) + 48
-#Generate funky SINC data
-data = total_samples * [0] 
+# data = total_samples * [0] 
 j = 0
-for i in range(0, total_samples):
-    data[i] = j
-    j = j+1
-
-plt.figure(1)
-plt.plot(data)
-plt.show()
-
-# Testing file I/O
-
 print('writing data out to file')
 outfile = open('dacdata_counter.csv', 'w')
+
 for i in range(0, total_samples):
-    outfile.write(str(hex(data[i])) + "\n")
+    data = (j << 8) | (j + 1)
+    j = j+2
+    if (data == 0xfeff):
+        j = 0
+    outfile.write(str(hex(data)) + "\n")
+
 outfile.close()
 print('done writing!')
+#plt.figure(1)
+#plt.plot(data)
+#plt.show()
+
 
