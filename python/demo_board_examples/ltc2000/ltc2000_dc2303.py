@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 '''
-DC2085 / LTC2000 Interface Example
+DC2303 / LTC2000 Interface Example
 This program demonstrates how to communicate with the LTC2000 demo board through Python.
 Examples are provided for generating sinusoidal data from within the program, as well
 as writing and reading pattern data from a file.
 
-Board setup is described in Demo Manual 2085. Follow the procedure in this manual, and
+Board setup is described in Demo Manual 2303. Follow the procedure in this manual, and
 verify operation with the LTDACGen software. Once operation is verified, exit LTDACGen
 and run this script.
 
@@ -13,7 +13,7 @@ Tested with Python 2.7, Anaconda distribution available from Continuum Analytics
 http://www.continuum.io/
 
 Demo board documentation:
-http://www.linear.com/demo/2085
+http://www.linear.com/demo/2303
 http://www.linear.com/product/LTC2000#demoboards
 
 LTC2000 product page
@@ -54,7 +54,7 @@ either expressed or implied, of Linear Technology Corp.
 
 # Import standard Python library functions
 from time import sleep
-from math import sin, pi
+from math import sin, cos, pi
 
 # Import communication library
 import sys
@@ -66,13 +66,16 @@ import ltc_controller_comm as comm
 import ltc2000_functions as lt2k
 
 verbose = True   # Print extra information to console
-sleep_time = 1.0
+sleep_time = 0.1
 do_reset = True  # Reset FPGA once (not necessary to reset between data loads)
 
 # Set up data record length
-n = lt2k.NumSamp128K # Set number of samples here. DC2303 options are 16k to 2M
+n = lt2k.NumSamp64K # Set number of samples here. DC2303 options are 16k to 2M
+# FOR DEBUG ONLY!!
+half_n = lt2k.NumSamp32K
+
 # Set up output frequency
-num_cycles = 1280  # Number of sine wave cycles over the entire data record
+num_cycles = 14  # Number of sine wave cycles over the entire data record
 
 # Calculate and display output frequency
 sample_rate = 2.5*10**9
@@ -81,6 +84,33 @@ print("Output Frequency: " + str(frequency))
 
 if verbose:
     print "LTC2000 Interface Program"
+
+# Demonstrates how to generate sinusoidal data. Note that the total data record length
+# contains an exact integer number of cycles.
+
+total_samples = n.NumSamps #16 * 1024 # n.BuffSize
+data = total_samples * [0]
+upper = 32767
+lower = 24576
+incdec = 1
+start = 28672
+
+for i in range(0, total_samples):
+    data[i] = int(32000 * cos(num_cycles*2*pi*i/total_samples)) # Sinewave
+
+
+# Make byte data.
+data_bytes = (len(data) * 2) * [0]
+
+for i in range(0, len(data)):
+#    data_bytes[2*i] = ((data[i] >> 8) & 0x00FF )
+#    data_bytes[(2*i) + 1] = data[i] & 0x00FF
+    data_bytes[2*i] = data[i] & 0x00FF
+    data_bytes[(2*i) + 1] = ((data[i] >> 8) & 0x00FF )
+
+
+bytes2send = 0 * [0x0]
+bytes2send.extend(data_bytes)
 
 # Open communication to the demo board
 descriptions = ['LTC UFO Board', 'LTC Communication Interface', 'LTC2000 Demoboard', 'LTC2000, DC2085A-A']
@@ -94,22 +124,21 @@ if device_info is None:
 
 with comm.Controller(device_info) as device:
     device.hs_set_bit_mode(comm.HS_BIT_MODE_MPSSE)
-    if do_reset:
-        device.hs_fpga_toggle_reset()
+#    device.hs_fpga_toggle_reset()
+
+#    # Read out PLL status
+#    print "Reading PLL status BEFORE powering up DAC, should be 0x02"
+#    reg = device.hs_fpga_read_data_at_address(lt2k.FPGA_STATUS_REG)
+#    print "And it is... 0x{:02X}".format(reg)
 
     # Read FPGA ID register
     id = device.hs_fpga_read_data_at_address(lt2k.FPGA_ID_REG)
-    if verbose:
-        print "FPGA Load ID: 0x{:04X}".format(id)    # Check FPGA PLL status
-        print "Turning on DAC..."
-
-    # Turn on DAC (Discrete I/O line from FPGA to LTC2000
-    device.hs_fpga_write_data_at_address(lt2k.FPGA_DAC_PD, 0x01)
+    print("FPGA Load ID: 0x{:02X}".format(id))    # Check ID register...
 
     sleep(sleep_time)
 
-    if verbose:
-        print "Configuring ADC over SPI:"
+
+    print "Configuring ADC over SPI:"
 # Initial register values can be taken directly from LTDACGen.
 # Refer to LTC2000 datasheet for detailed register descriptions.
     device.spi_send_byte_at_address(lt2k.SPI_WRITE | lt2k.REG_RESET_PD, 0x00)
@@ -125,63 +154,148 @@ with comm.Controller(device_info) as device:
     device.spi_send_byte_at_address(lt2k.SPI_WRITE | lt2k.REG_TEMP_SELECT, 0x00)
     device.spi_send_byte_at_address(lt2k.SPI_WRITE | lt2k.REG_PATTERN_ENABLE, 0x00)
     #lt2k.spi_write(device, REG_PATTERN_DATA
-       
+    device.hs_fpga_toggle_reset()
     sleep(sleep_time) # Give some time for things to spin up...
+    
+    print "Reading PLL status AFTER DAC power-up/config, should be 0x06"
+    reg = device.hs_fpga_read_data_at_address(lt2k.FPGA_STATUS_REG)
+    print "And it is... 0x{:02X}".format(reg)
 
-    if verbose:
-        print "Reading PLL status, should be 0x06"
-        data = device.hs_fpga_read_data_at_address(lt2k.FPGA_STATUS_REG)
-        print "And it is... 0x{:04X}".format(data)
+    lt2k.register_dump(device)
 
-
-
-    if verbose: # Optionally read back all registers
-        lt2k.register_dump(device)
-
-    # 64k, loop forever
+    # 512k, loop forever, NOTE that for debug we're setting to 256k below, after writing data
     device.hs_fpga_write_data_at_address(lt2k.FPGA_CONTROL_REG, n.MemSizeReg | 0x00)
     
     sleep(sleep_time)
 
-# Demonstrates how to generate sinusoidal data. Note that the total data record length
-# contains an exact integer number of cycles.
-
-    total_samples = n.NumSamps #16 * 1024 # n.BuffSize
-    data = total_samples * [0] 
-    for i in range(0, total_samples):
-        data[i] = int(32000 * sin(num_cycles*2*pi*i/total_samples))
-
-
-# Demonstrate how to write generated data to a file.
-    print('writing data out to file')
-    outfile = open('dacdata.csv', 'w')
-    for i in range(0, total_samples):
-        outfile.write(str(data[i]) + "\n")
-    outfile.close()
-    print('done writing!')
-
     device.data_set_low_byte_first()
-# Demonstrate how to read data in from a file
-# (Note that the same data[] variable is used)
-    print('reading data from file')
-    infile = open('dacdata.csv', 'r')  # UNcomment this line for sine wave (generated above)
-    # Run "generate_sinc_data.py" file before uncommenting the line below.
-#    infile = open('dacdata_sinc.csv', 'r')  # UNcomment this line for funky SINC waveform
-    for i in range(0, total_samples):
-        data[i] = int(infile.readline())
-    infile.close()
-    print('done reading!')
-
     device.hs_set_bit_mode(comm.HS_BIT_MODE_FIFO)
-#    sleep(0.5)
-    # Send data in 256 byte chunks
-#    for i in range(0, len(data)/256):
-#        chunk = data[(i*256):((i+1)*256)]
-#        num_bytes_sent = device.data_send_uint16_values(chunk) #DAC should start running here!
-#        sleep(0.2)
-        
-    #send all data
-    num_bytes_sent = device.data_send_uint16_values(data) #DAC should start running here! 
+    sleep(sleep_time)
+    num_bytes_sent = device.data_send_bytes(bytes2send)
+    device.hs_set_bit_mode(comm.HS_BIT_MODE_MPSSE)
+
+    # WE'RE DOING THIS FOR DEBUG ONLY!!!
+    device.hs_fpga_write_data_at_address(lt2k.FPGA_CONTROL_REG, half_n.MemSizeReg | 0x00)
+    
+    
+    print 'num_bytes_sent is: ' + str(num_bytes_sent) + ' (should be ' + str(total_samples * 2) +')'
+#    num_bytes_sent = device.data_send_uint16_values(data) #DAC should start running here!
+#    num_bytes_sent = device.data_send_uint16_values([data[0]]) #DAC should start running here!
     print 'num_bytes_sent is: ' + str(num_bytes_sent) + ' (should be ' + str(total_samples * 2) +')'
     print 'You should see a waveform at the output of the LTC2000 now!'
-    
+
+
+# Send again...
+#    device.hs_set_bit_mode(comm.HS_BIT_MODE_MPSSE)
+##    device.hs_fpga_toggle_reset()
+#    device.hs_fpga_write_data_at_address(lt2k.FPGA_CONTROL_REG, n.MemSizeReg | 0x02)
+#    device.hs_set_bit_mode(comm.HS_BIT_MODE_FIFO)    
+#    num_bytes_sent = device.data_send_bytes(bytes2send)
+#    device.hs_set_bit_mode(comm.HS_BIT_MODE_MPSSE)
+#    s = raw_input('Enter anything to continue...')
+
+
+## Demonstrate how to write generated data to a file.
+#    print('writing data out to file')
+#    outfile = open('dacdata.csv', 'w')
+#    for i in range(0, total_samples):
+#        outfile.write(str(data[i]) + "\n")
+#    outfile.close()
+#    print('done writing!')
+
+
+## Demonstrate how to read data in from a file
+## (Note that the same data[] variable is used)
+#    print('reading data from file')
+#    infile = open('dacdata.csv', 'r')  # UNcomment this line for sine wave (generated above)
+#    # Run "generate_sinc_data.py" file before uncommenting the line below.
+##    infile = open('dacdata_sinc.csv', 'r')  # UNcomment this line for funky SINC waveform
+#    for i in range(0, total_samples):
+#        data[i] = int(infile.readline())
+#    infile.close()
+#    print('done reading!')
+
+
+
+# A bunch of stuff we used to debug an issue with 
+#     data[i] = 0x8000 # Constant full-scale
+#     data[i] = i-(total_samples/2) #ramp
+
+#     data[i] = start
+#     if incdec == 1:
+#         start += 1
+#     else:
+#         start -= 1
+#     if start == upper:
+#         incdec = 0
+#     if start == lower:
+#         incdec = 1
+#data[0] = 1000
+#data[1] = 1000
+#data[2] = 1000
+#data[3] = 1000
+#data[4] = 1000
+#data[5] = 1000
+#data[6] = 1000
+#data[7] = 1000
+#data[8] = 1000
+#data[9] = 1000
+#data[10] = 1000
+#data[11] = 1000
+#data[12] = 1000
+#data[13] = 1000
+#data[14] = 1000
+#data[15] = 1000
+#data[16] = 1000
+#data[17] = 1000
+#data[18] = 1000
+#data[19] = 1000
+#data[20] = 1000
+#data[21] = 1000
+#data[22] = 1000
+#data[23] = 1000
+#data[24] = 1000
+#data[25] = 1000
+#data[26] = 1000
+#data[27] = 1000
+###
+#data[total_samples - 1] = 1000
+#data[total_samples - 2] = 1000
+#data[total_samples - 3] = 1000
+#data[total_samples - 4] = 1000
+#data[total_samples - 5] = 1000
+#data[total_samples - 6] = 1000
+#data[total_samples - 7] = 1000
+#data[total_samples - 8] = 1000
+#data[total_samples - 9] = 1000
+#data[total_samples - 10] = 1000
+#data[total_samples - 11] = 1000
+#data[total_samples - 12] = 1000
+#data[total_samples - 13] = 1000
+#data[total_samples - 14] = 1000
+#data[total_samples - 15] = 1000
+#data[total_samples - 16] = 1000
+#data[total_samples - 17] = 1000
+#data[total_samples - 18] = 1000
+#data[total_samples - 19] = 1000
+#data[total_samples - 20] = 1000
+#data[total_samples - 21] = 1000
+#data[total_samples - 22] = 1000
+#data[total_samples - 23] = 1000
+#data[total_samples - 24] = 1000
+#data[total_samples - 25] = 1000
+#data[total_samples - 26] = 1000
+#data[total_samples - 27] = 1000
+#data[total_samples - 28] = 1000
+#data[total_samples - 29] = 1000
+#data[total_samples - 30] = 1000
+#data[total_samples - 31] = 1000
+#data[16] = 0
+#data[32] = 0
+#data[33] = 0
+#data[64] = 0
+#data[65] = 0
+#data[66] = 0
+#data[67] = 0
+#data[8192] = 0
+#data.extend(8 * [0x8000])
