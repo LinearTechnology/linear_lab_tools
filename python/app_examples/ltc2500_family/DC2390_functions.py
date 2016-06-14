@@ -322,3 +322,62 @@ def LTC6954_configure(client, divisor):
     client.reg_write(CONTROL_BASE, 0x00000010);
     sleep(0.1)
     client.reg_write(CONTROL_BASE, 0x00000000);
+    
+    
+def ramp_test(client, recordlength, trigger = 0, timeout = 0.0):
+#    print("Starting Capture system...\n");
+    client.reg_write(NUM_SAMPLES_BASE, recordlength)
+    client.reg_write(CONTROL_BASE, CW_START)
+    sleep(0.1) #sleep for a second
+    client.reg_write(CONTROL_BASE, CW_EN_TRIG|CW_START)
+
+# First, capture pattern data
+    cap_start_time = time.time();
+    ready = client.reg_read(DATA_READY_BASE) # Check data ready signal
+    while((ready & 0x01) == 1):
+        ready = client.reg_read(DATA_READY_BASE) # Check data ready signal
+    cap_time = time.time() - cap_start_time
+    print('ready signal is %d' % ready)
+    print("After " + str(cap_time) + " Seconds...")
+    if(cap_time > timeout):
+        print("TIMED OUT!!")
+    client.reg_write(CONTROL_BASE, 0x0)
+    stopaddress = client.reg_read(BUFFER_ADDRESS_BASE)
+    read_start_address = stopaddress - 4*recordlength
+    if(read_start_address < 0):
+        print("Original Memory starting address: %d" % read_start_address)
+        read_start_address += 2**30
+        print("Rolling over zero, let's see if we can deal with it!")
+    print("Memory starting address: %d" % read_start_address)
+
+# Calculate number of 1M blocks
+    numblocks = 1
+    if(recordlength >= 2**20):
+        numblocks = recordlength / 2**20 # Separate into blocks of a megapoint
+    print("Testing " + str(numblocks) + "blocks")
+
+    errors = 0
+    firstblock = True
+    blocklength = recordlength / numblocks
+    for blocknum in range (0, numblocks):
+        print("Testing block " + str(blocknum))
+    
+    
+    #    print('Reading a block...')
+        dummy, block = client.mem_read_block(read_start_address, blocklength)
+        read_start_address += (4 * blocklength)
+    #    dummy, block = client.mem_read_block(stopaddress, NUM_SAMPLES) # Trying to find triggered data!!
+        data = (ctypes.c_int * (blocklength)).from_buffer(bytearray(block))
+        print('Got a %d byte block back' % len(block))
+        print('First value: %d' % data[0])
+        print(' Last value: %d' % data[blocklength - 1])
+        if(firstblock == True):
+            seed = data[0]
+            firstblock = False
+    #    print("First seed: " + str(seed))
+        for i in range (0, (recordlength / numblocks)):
+            if(data[i] - 1 != seed):
+                errors += 1
+            seed = data[i]
+    #    print("next seed: " + str(seed))
+    return errors
