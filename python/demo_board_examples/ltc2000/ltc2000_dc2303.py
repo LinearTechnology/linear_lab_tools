@@ -70,12 +70,10 @@ sleep_time = 0.1
 do_reset = True  # Reset FPGA once (not necessary to reset between data loads)
 
 # Set up data record length
-n = lt2k.NumSamp64K # Set number of samples here. DC2303 options are 16k to 2M
-# FOR DEBUG ONLY!!
-half_n = lt2k.NumSamp32K
+n = lt2k.NumSamp32K # Set number of samples here. DC2303 options are 16k to 512K
 
 # Set up output frequency
-num_cycles = 14  # Number of sine wave cycles over the entire data record
+num_cycles = 3  # Number of sine wave cycles over the entire data record
 
 # Calculate and display output frequency
 sample_rate = 2.5*10**9
@@ -95,22 +93,9 @@ lower = 24576
 incdec = 1
 start = 28672
 
+# Generate cosine data
 for i in range(0, total_samples):
-    data[i] = int(32000 * cos(num_cycles*2*pi*i/total_samples)) # Sinewave
-
-
-# Make byte data.
-data_bytes = (len(data) * 2) * [0]
-
-for i in range(0, len(data)):
-#    data_bytes[2*i] = ((data[i] >> 8) & 0x00FF )
-#    data_bytes[(2*i) + 1] = data[i] & 0x00FF
-    data_bytes[2*i] = data[i] & 0x00FF
-    data_bytes[(2*i) + 1] = ((data[i] >> 8) & 0x00FF )
-
-
-bytes2send = 0 * [0x0]
-bytes2send.extend(data_bytes)
+    data[i] = int(32000 * cos(num_cycles*2*pi*i/total_samples)) # Cosinewave
 
 # Open communication to the demo board
 descriptions = ['LTC UFO Board', 'LTC Communication Interface', 'LTC2000 Demoboard', 'LTC2000, DC2085A-A']
@@ -126,17 +111,11 @@ with comm.Controller(device_info) as device:
     device.hs_set_bit_mode(comm.HS_BIT_MODE_MPSSE)
 #    device.hs_fpga_toggle_reset()
 
-#    # Read out PLL status
-#    print "Reading PLL status BEFORE powering up DAC, should be 0x02"
-#    reg = device.hs_fpga_read_data_at_address(lt2k.FPGA_STATUS_REG)
-#    print "And it is... 0x{:02X}".format(reg)
-
     # Read FPGA ID register
     id = device.hs_fpga_read_data_at_address(lt2k.FPGA_ID_REG)
     print("FPGA Load ID: 0x{:02X}".format(id))    # Check ID register...
 
     sleep(sleep_time)
-
 
     print "Configuring ADC over SPI:"
 # Initial register values can be taken directly from LTDACGen.
@@ -161,9 +140,9 @@ with comm.Controller(device_info) as device:
     reg = device.hs_fpga_read_data_at_address(lt2k.FPGA_STATUS_REG)
     print "And it is... 0x{:02X}".format(reg)
 
-    lt2k.register_dump(device)
+    lt2k.register_dump(device) # Print out all LTC2000 register values
 
-    # 512k, loop forever, NOTE that for debug we're setting to 256k below, after writing data
+    # Set buffer size, loop forever
     device.hs_fpga_write_data_at_address(lt2k.FPGA_CONTROL_REG, n.MemSizeReg | 0x00)
     
     sleep(sleep_time)
@@ -171,18 +150,28 @@ with comm.Controller(device_info) as device:
     device.data_set_low_byte_first()
     device.hs_set_bit_mode(comm.HS_BIT_MODE_FIFO)
     sleep(sleep_time)
-    num_bytes_sent = device.data_send_bytes(bytes2send)
-    device.hs_set_bit_mode(comm.HS_BIT_MODE_MPSSE)
 
-    # WE'RE DOING THIS FOR DEBUG ONLY!!!
-    device.hs_fpga_write_data_at_address(lt2k.FPGA_CONTROL_REG, half_n.MemSizeReg | 0x00)
+    extrabytes = [0] * 8 #bytes2send[(num_bytes-9):(num_bytes-1)]
+    num_bytes_sent = device.data_send_uint16_values(data) #DAC should start running here!
+#    num_bytes_sent = device.data_send_bytes(data_bytes)
+    device.data_send_bytes(extrabytes)
+    device.hs_set_bit_mode(comm.HS_BIT_MODE_MPSSE)
     
-    
-    print 'num_bytes_sent is: ' + str(num_bytes_sent) + ' (should be ' + str(total_samples * 2) +')'
-#    num_bytes_sent = device.data_send_uint16_values(data) #DAC should start running here!
-#    num_bytes_sent = device.data_send_uint16_values([data[0]]) #DAC should start running here!
     print 'num_bytes_sent is: ' + str(num_bytes_sent) + ' (should be ' + str(total_samples * 2) +')'
     print 'You should see a waveform at the output of the LTC2000 now!'
+
+
+
+
+
+## Make byte data, for debug purposes only.
+#data_bytes = (len(data) * 2) * [0]
+#for i in range(0, len(data)):
+##    data_bytes[2*i] = ((data[i] >> 8) & 0x00FF )
+##    data_bytes[(2*i) + 1] = data[i] & 0x00FF
+#    data_bytes[2*i] = data[i] & 0x00FF
+#    data_bytes[(2*i) + 1] = ((data[i] >> 8) & 0x00FF )
+
 
 
 # Send again...
