@@ -11,7 +11,7 @@ using std::to_string;
 
 namespace linear {
 
-static const int MAX_FIFO_READ_SIZE = 64 * 1024;
+static const int MAX_FIFO_READ_SIZE = 32 * 1024;
 static const int MAX_FIFO_WRITE_SIZE = MAX_FIFO_READ_SIZE;
 static const int COMMAND_BUFFER_SIZE = 4 * 1024;
 static const int COMMAND_PREFIX_3_BYTES = 3;
@@ -163,7 +163,7 @@ void HighSpeed::OpenIfNeeded() {
     SetTimeouts();
     ftdi.DisableEventChar(channel_a);
     ftdi.EnableEventChar(channel_b);
-    const int FTDI_MAX_BUFFER_SIZE = 64 * 1024;
+    const int FTDI_MAX_BUFFER_SIZE = 64 * 1024 - 1;
     ftdi.SetUSBParameters(channel_a, FTDI_MAX_BUFFER_SIZE, 0);
     ftdi.SetUSBParameters(channel_b, FTDI_MAX_BUFFER_SIZE, 0);
 }
@@ -225,6 +225,10 @@ void HighSpeed::PurgeIo() {
         Close();
         throw;
     }
+}
+
+void HighSpeed::Open() {
+    OpenIfNeeded();
 }
 
 void HighSpeed::Close() {
@@ -379,10 +383,16 @@ void HighSpeed::SpiTransceiveNoChipSelect(uint8_t* send_values, uint8_t* receive
 }
 
 // Fpga functions (via GPIO)
+
+void HighSpeed::FpgaSetResetLow(bool low) {
+    auto byte = GPIO_LOW_BASE & (low ? FPGA_RESET_MASK : 0xFF);
+    GpioWriteLowByte(byte);
+}
+
 void HighSpeed::FpgaToggleReset() {
-    GpioWriteLowByte(GPIO_LOW_BASE & FPGA_RESET_MASK);
+    FpgaSetResetLow();
     sleep_for(milliseconds(20));
-    GpioWriteLowByte(GPIO_LOW_BASE);
+    FpgaSetResetLow(false);
 }
 void HighSpeed::FpgaWriteAddress(uint8_t address) {
     OpenIfNeeded();

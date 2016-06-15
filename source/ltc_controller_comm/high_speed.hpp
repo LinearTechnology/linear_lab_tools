@@ -42,6 +42,7 @@ public:
     void SetBitMode(BitMode mode);
     void PurgeIo();
     void Close() override;
+    void Open();
 
     // Data functions
     void DataSetHighByteFirst() override { swap_bytes = true; }
@@ -98,6 +99,7 @@ public:
                                    int num_values) override;
 
     // Fpga functions (via GPIO)
+    void FpgaSetResetLow(bool low = true);
     void FpgaToggleReset();
     void FpgaWriteAddress(uint8_t address);
     void FpgaWriteData(uint8_t value);
