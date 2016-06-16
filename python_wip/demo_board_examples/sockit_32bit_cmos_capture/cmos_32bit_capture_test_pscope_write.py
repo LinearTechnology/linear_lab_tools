@@ -12,6 +12,7 @@
 import sys #, os, socket, ctypes, struct
 sys.path.append("../../")
 sys.path.append("../../../python/utils/")
+sys.path.append("../../../python/app_examples\ltc2500_family/")
 from save_for_pscope import save_for_pscope
 import numpy as np
 #from subprocess import call
