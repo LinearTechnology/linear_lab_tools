@@ -52,7 +52,7 @@ import time
 # Import Linear Lab Tools utility funcitons
 import sys
 sys.path.append("../utils")
-from linear_lab_tools_functions import *
+import linear_lab_tools_functions as lltf
 
 start_time = time.time();
 
@@ -131,10 +131,10 @@ plt.show()
 
 if(use_fft_method == True):
     print("Calculating frequency response using zero-padded FFT method")
-    ssinc_256_mag = freqz_by_fft(ssinc_256, 64*ppc)
-    ssinc_1024_mag = freqz_by_fft(ssinc_1024, 16*ppc)
-    ssinc_4096_mag = freqz_by_fft(ssinc_4096, 4*ppc)
-    ssinc_16384_mag = freqz_by_fft(ssinc_16384, ppc)
+    ssinc_256_mag = lltf.freqz_by_fft(ssinc_256, 64*ppc)
+    ssinc_1024_mag = lltf.freqz_by_fft(ssinc_1024, 16*ppc)
+    ssinc_4096_mag = lltf.freqz_by_fft(ssinc_4096, 4*ppc)
+    ssinc_16384_mag = lltf.freqz_by_fft(ssinc_16384, ppc)
 else:
     print("Calculating frequency response using numpy's freqz function")
     w1, ssinc_256_mag = signal.freqz(ssinc_256, 1, num_freqencies)
@@ -232,13 +232,13 @@ plt.show()
 #First, let's get the filter into a really long vector such that when we fold it,
 # there are still lots of points to plot per Nyquist zone:
 sscinc_256_padded = np.concatenate((ssinc_256, np.zeros(65536 - len(ssinc_256)) ))
-ssinc_256_mag_long = freqz_by_fft(sscinc_256_padded, 1)
+ssinc_256_mag_long = lltf.freqz_by_fft(sscinc_256_padded, 1)
 ssinc_256_mag_long_dB = 20*np.log10(abs(ssinc_256_mag_long))
 #plt.figure(5)
 #plt.plot(ssinc_256_mag_long_dB)
 #plt.show()
 
-folded_response_zones, folded_response_sum = fold_spectrum(ssinc_256_mag_long_dB[0:len(ssinc_256_mag_long_dB)/2],
+folded_response_zones, folded_response_sum = lltf.fold_spectrum(ssinc_256_mag_long_dB[0:len(ssinc_256_mag_long_dB)/2],
                                                                                  len(ssinc_256_mag_long_dB)/512, 128)
 plt.figure(6)
 
@@ -257,9 +257,38 @@ plt.setp(lines, color='#00FF00', ls='--') #Green
 #plt.setp(lines, color='k', ls='-') #Black
 plt.show()
 
+# Next, let's see what the noise reduction properties of the filters are,
+# first using "brute force", that is, create an array of noisy data with a
+# known RMS value, then see how much the filter reduces the noise. For example,
+# if the noise is reduced by a factor of 2, then the bandwidth has been reduced
+# by a factor of 4. You don't necessarily know which FREQUENCIES were cut out,
+# but the EFFECTIVE noise bandwidth is what we're after.
+# Next, we'll double check by actually integrating the filter's noise response.
 
+filter2check = ssinc_16384 # Choose which filter to check...
+filtermag2check = ssinc_16384_mag # And its magnitude response
+numpoints = 2**20 # Start with a million noisy data points, RMS = 1.0
+noisydata = np.random.normal(loc=0, scale=1.0, size=numpoints)
+rms_noise = np.std(noisydata) # Actual noise will vary a bit... double-check
+print("RMS noise of original data: " + str(rms_noise))
+filtered_data_16 = np.convolve(filter2check, noisydata, 'valid') # Filter the data
+filtered_noise = np.std(filtered_data_16) # Find RMS noise of filtered data
+print("RMS noise of filtered data: " + str(filtered_noise))
+print("noise was reduced by a factor of " + str(filtered_noise/rms_noise))
+print("Effective bandwidth of filter: " + str((filtered_noise/rms_noise)**2.0))
+# Now let's integrate the filter's magnitude response. Dig into the function
+# definition for details, but it basically squares the response, integrates,
+# then takes the square-root at each point. The second argument is the
+# bandwidth that each point represents, so we'll normalize to unity.
 
+integral = lltf.integrate_psd(filtermag2check, 1.0/len(filtermag2check))
+plt.figure(7)
+plt.title("Integrated Noise")
+plt.plot(integral)
 plt.show()
+# The last element is the total noise that "gets through" the filter
+enbw = integral[(len(integral))-1] ** 2.0
+print("Effective bandwidth by integrating PSD: " + str(enbw))
 
 
 print "My program took", (time.time() - start_time), " seconds to run"
