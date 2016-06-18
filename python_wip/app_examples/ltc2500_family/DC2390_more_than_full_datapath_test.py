@@ -11,14 +11,14 @@
 
 import sys #, os, socket, ctypes, struct
 sys.path.append("../../")
-sys.path.append("../../utils/")
+sys.path.append("../../../python/utils/")
 from save_for_pscope import save_for_pscope
 import numpy as np
 #from subprocess import call
 from time import sleep
 from matplotlib import pyplot as plt
 # Okay, now the big one... this is the module that communicates with the SoCkit
-from mem_func_client import MemClient
+from mem_func_client_2 import MemClient
 from DC2390_functions import *
 
 # Get the host from the command line argument. Can be numeric or hostname.
@@ -39,7 +39,7 @@ FOS_TAU = 0x8000
 FOS_GAIN = 0x0002
 FOS_CLOCK = 4
 
-SYSTEM_CLOCK_DIVIDER = 199
+SYSTEM_CLOCK_DIVIDER = 499
 LUT_NCO_DIVIDER = 0xFFFF # 0xFFFF for divide by 1
 NUM_SAMPLES = 8192 #131072 #8192
 
@@ -50,6 +50,8 @@ ADC_B_CAPTURE = 0x00
 CHANNEL = ADC_B_CAPTURE
 
 N = 7 #Number of samples to average (LTC2380-24)
+
+vfs = 10.0 # Full-scale voltage, VREF * 2 for LTC25xx family
 
 nco_word_width = 32
 master_clock = 50000000
@@ -103,7 +105,8 @@ LTC6954_configure_default(client)
 # 2 = Counters
 # 3 = DEADBEEF
 
-datapath_word_sines = 0x00000000
+datapath_word_sines_ADC1 = 0x00000000
+datapath_word_sines_ADC2 = 0x00000001
 datapath_word_pid = 0x00000100
 datapath_word_lut_run_once = 0x00008011
 datapath_word_lut_continuous = 0x00000011 #counter as LUT address, run once
@@ -124,24 +127,41 @@ sleep(0.1)
 
 client.reg_write(TUNING_WORD_BASE, tuning_word) # Sweep NCO!!!
 
-# Capture a sine wave
-client.reg_write(DATAPATH_CONTROL_BASE, datapath_word_sines) # Sweep NCO!!!
-data = capture(client, NUM_SAMPLES, trigger = 0, timeout = 0.0)
-data_nodc = data - np.average(data)
-#data_nodc *= np.blackman(NUM_SAMPLES)
-fftdata = np.abs(np.fft.fft(data_nodc)) / NUM_SAMPLES
-fftdb = 20*np.log10(fftdata / 2.0**31)
-plt.figure(pltnum)
-pltnum +=1
-plt.subplot(2, 1, 1)
-plt.title("Basic Sinewave test")
-plt.plot(data)
-plt.subplot(2, 1, 2)
-plt.plot(fftdb)
+def capture_nyquist_and_plot(datapath, file_suffix, plotnum):
+    NUM_SAMPLES = 2**20 #131072
+    # Capture a sine wave
+    client.reg_write(DATAPATH_CONTROL_BASE, datapath) # Sweep NCO!!!
+    data = capture(client, NUM_SAMPLES, trigger = 0, timeout = 0.0)
+    rms = np.std(data)
+    print("Standard Deviation: " + str(rms))
+    data_nodc = data - np.average(data)
+    #data_nodc *= np.blackman(NUM_SAMPLES)
+    fftdata = np.abs(np.fft.fft(data_nodc)) / NUM_SAMPLES
+    fftdb = 20*np.log10(fftdata / 2.0**31)
+    plt.figure(plotnum)
+    plt.subplot(2, 1, 1)
+    plt.title("Basic Sinewave test, " + file_suffix)
+    plt.plot(data)
+    plt.subplot(2, 1, 2)
+    plt.plot(fftdb)
+    
+    #Do some statistics on captured data
+    data_ndarray = np.array(data)
+    data_volts = data_ndarray * (vfs / 2.0**32.0) # Convert to voltage
+    datarms = np.std(data_volts)
+    datap_p = np.max(data_volts) - np.min(data_volts)
+    print("RMS voltage: " + str(datarms))
+    print("Peak-to-Peak voltage: " + str(datap_p))
+    
+    #(out_path, num_bits, is_bipolar, num_samples, dc_num, ltc_num, *data):
+    data_for_pscope = data_nodc / 256.0
+    save_for_pscope("pscope_DC2390_" + file_suffix + ".adc",24 ,True, NUM_SAMPLES, "2390", "2500", data_for_pscope)
 
-#(out_path, num_bits, is_bipolar, num_samples, dc_num, ltc_num, *data):
-data_for_pscope = data_nodc / 256.0
-save_for_pscope("pscope_DC2390.adc",24 ,True, NUM_SAMPLES, "2390", "2500", data_for_pscope)
+capture_nyquist_and_plot(datapath_word_sines_ADC1, "adc1" , pltnum)
+pltnum +=1
+capture_nyquist_and_plot(datapath_word_sines_ADC2, "adc2" , pltnum)
+pltnum +=1
+
 
 # Run through lookup table continuously
 client.reg_write(DATAPATH_CONTROL_BASE, datapath_word_lut_continuous)
