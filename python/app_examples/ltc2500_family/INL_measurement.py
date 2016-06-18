@@ -62,7 +62,7 @@ import DC2390_functions as DC2390
 from LTC2758 import *
 sys.path.append('../../')
 sys.path.append('../../utils') 
-from mem_func_client import MemClient
+from mem_func_client_2 import MemClient
 
 from endpoint_inl import *
 

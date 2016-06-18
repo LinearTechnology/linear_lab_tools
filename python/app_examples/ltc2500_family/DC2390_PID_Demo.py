@@ -18,7 +18,7 @@ import numpy as np
 from time import sleep
 from matplotlib import pyplot as plt
 # Okay, now the big one... this is the module that communicates with the SoCkit
-from mem_func_client import MemClient
+from mem_func_client_2 import MemClient
 from DC2390_functions import *
 
 # Get the host from the command line argument. Can be numeric or hostname.

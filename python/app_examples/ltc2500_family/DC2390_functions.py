@@ -374,10 +374,9 @@ def ramp_test(client, recordlength, trigger = 0, timeout = 0.0):
         if(firstblock == True):
             seed = data[0]
             firstblock = False
-    #    print("First seed: " + str(seed))
         for i in range (0, (recordlength / numblocks)):
             if(data[i] - 1 != seed):
                 errors += 1
             seed = data[i]
-    #    print("next seed: " + str(seed))
+    print("Pardon the Obi-One error, we'll fix it shortly... we promise.")
     return errors
