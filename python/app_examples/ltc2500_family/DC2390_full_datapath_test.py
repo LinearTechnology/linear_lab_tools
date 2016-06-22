@@ -18,7 +18,7 @@ import numpy as np
 from time import sleep
 from matplotlib import pyplot as plt
 # Okay, now the big one... this is the module that communicates with the SoCkit
-sys.path.append('C:\Users\MSajikumar\Documents\LT_soc_framework')
+# sys.path.append('C:\Users\MSajikumar\Documents\LT_soc_framework')
 from mem_func_client_2 import MemClient
 from DC2390_functions import *
 
@@ -252,6 +252,12 @@ client.reg_write_LUT(LUT_ADDR_DATA_BASE, 65535, cData)
 client.reg_write(CONTROL_BASE, 0x00000000) # Disable writing from blob side...
 print("Done!")
 
+client.reg_write(DATAPATH_CONTROL_BASE, DC2390_FIFO_UP_DOWN_COUNT) # Capture a test pattern
+
+print("Ramp test!")
+errors = ramp_test(client, 2**21, trigger = 0, timeout = 1.0)
+print("Number of errors: " + str(errors))
+
 ## Okay, here goes!! Let's try to write into the LUT:
 #print("Writing out to LUT!")
 #client.reg_write(CONTROL_BASE, 0x00000020); # Enable writing from blob side...
@@ -263,7 +269,7 @@ print("Done!")
 choice = raw_input('Shutdown: y/n? ')
 if(choice == 'y'):
     print 'Shutting down ...'
-    time.sleep(30)
+#    time.sleep(30)
     client.shutdown()
 
 
