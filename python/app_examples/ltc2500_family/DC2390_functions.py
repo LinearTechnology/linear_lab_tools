@@ -254,6 +254,8 @@ def capture(client, recordlength, trigger = 0, timeout = 0.0):
 #    print("went this many samples further:" + str(newaddress - stopaddress))
 
 #    print('Reading a block...')
+    print 'Starting address: '
+    print read_start_address
     dummy, block = client.mem_read_block(read_start_address, recordlength)
 #    dummy, block = client.mem_read_block(stopaddress, NUM_SAMPLES) # Trying to find triggered data!!
     data = (ctypes.c_int * recordlength).from_buffer(bytearray(block))

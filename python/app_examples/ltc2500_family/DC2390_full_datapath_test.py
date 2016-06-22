@@ -18,7 +18,7 @@ import numpy as np
 from time import sleep
 from matplotlib import pyplot as plt
 # Okay, now the big one... this is the module that communicates with the SoCkit
-#sys.path.append('C:\Users\MSajikumar\Documents\LT_soc_framework')
+sys.path.append('C:\Users\MSajikumar\Documents\LT_soc_framework')
 from mem_func_client_2 import MemClient
 from DC2390_functions import *
 
@@ -260,5 +260,10 @@ print("Done!")
 #client.reg_write(CONTROL_BASE, 0x00000000); # Disable writing from blob side...
 #print("Done writing to LUT! Hope it went okay!")
 
+choice = raw_input('Shutdown: y/n? ')
+if(choice == 'y'):
+    print 'Shutting down ...'
+    time.sleep(30)
+    client.shutdown()
 
 
