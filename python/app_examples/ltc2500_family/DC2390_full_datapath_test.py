@@ -250,13 +250,25 @@ client.reg_write(DATAPATH_CONTROL_BASE, datapath_word_lut_continuous)
 client.reg_write(CONTROL_BASE, 0x00000020) # Enable writing from blob side...
 client.reg_write_LUT(LUT_ADDR_DATA_BASE, 65535, cData)
 client.reg_write(CONTROL_BASE, 0x00000000) # Disable writing from blob side...
-print("Done!")
+print("Done writing to LUT! Hope it went okay!")
 
 client.reg_write(DATAPATH_CONTROL_BASE, DC2390_FIFO_UP_DOWN_COUNT) # Capture a test pattern
 
-print("Ramp test!")
+print("Ramp test at original divisor of " + str(SYSTEM_CLOCK_DIVIDER))
 errors = ramp_test(client, 2**21, trigger = 0, timeout = 1.0)
 print("Number of errors: " + str(errors))
+
+client.reg_write(SYSTEM_CLOCK_BASE, (LUT_NCO_DIVIDER << 16 | 5)) # 50M / 5 = 10MSPS
+print("Ramp test at divisor of 5 (10Msps)")
+errors = ramp_test(client, 2**21, trigger = 0, timeout = 1.0)
+print("Number of errors: " + str(errors))
+
+client.reg_write(SYSTEM_CLOCK_BASE, (LUT_NCO_DIVIDER << 16 | 1)) # 50M / 3 = 16.6MSPS
+print("Ramp test at original divisor of 2 (25Msps)")
+errors = ramp_test(client, 2**21, trigger = 0, timeout = 1.0)
+print("Number of errors: " + str(errors))
+# Set back to original divisor
+client.reg_write(SYSTEM_CLOCK_BASE, (LUT_NCO_DIVIDER << 16 | SYSTEM_CLOCK_DIVIDER)) # 50M / 5 = 10MSPS
 
 ## Okay, here goes!! Let's try to write into the LUT:
 #print("Writing out to LUT!")
@@ -266,7 +278,8 @@ print("Number of errors: " + str(errors))
 #client.reg_write(CONTROL_BASE, 0x00000000); # Disable writing from blob side...
 #print("Done writing to LUT! Hope it went okay!")
 
-choice = raw_input('Shutdown: y/n? ')
+choice = 'n'
+#choice = raw_input('Shutdown: y/n? ')
 if(choice == 'y'):
     print 'Shutting down ...'
 #    time.sleep(30)
