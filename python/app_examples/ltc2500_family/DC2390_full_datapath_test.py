@@ -129,7 +129,7 @@ client.reg_write(TUNING_WORD_BASE, tuning_word) # Sweep NCO!!!
 
 # Capture a sine wave
 client.reg_write(DATAPATH_CONTROL_BASE, datapath_word_sines) # Sweep NCO!!!
-data = capture(client, NUM_SAMPLES, trigger = 0, timeout = 0.0)
+data = uns32_to_signed32(capture(client, NUM_SAMPLES, trigger = 0, timeout = 0.0))
 rms = np.std(data)
 print("Standard Deviation: " + str(rms))
 data_nodc = data - np.average(data)
@@ -156,7 +156,7 @@ save_for_pscope("pscope_DC2390.adc",24 ,True, NUM_SAMPLES, "2390", "2500", data_
 
 # Run through lookup table continuously
 client.reg_write(DATAPATH_CONTROL_BASE, datapath_word_lut_continuous)
-data = capture(client, NUM_SAMPLES, trigger = 0, timeout = 0.0)
+data = uns32_to_signed32(capture(client, NUM_SAMPLES, trigger = 0, timeout = 0.0))
 fftdata = np.abs(np.fft.fft(data)) / len(data)
 fftdb = 20*np.log10(fftdata / 2.0**31)
 plt.figure(pltnum)
@@ -169,7 +169,7 @@ plt.plot(fftdb)
 
 # Run through lookup table once (pulse test)
 client.reg_write(DATAPATH_CONTROL_BASE, datapath_word_lut_run_once)
-data = capture(client, NUM_SAMPLES, trigger = 0, timeout = 0.0)
+data = uns32_to_signed32(capture(client, NUM_SAMPLES, trigger = 0, timeout = 0.0))
 fftdata = np.abs(np.fft.fft(data)) / len(data)
 fftdb = 20*np.log10(fftdata / 2.0**31)
 plt.figure(pltnum)
@@ -182,7 +182,7 @@ plt.plot(fftdb)
 
 # Use DAC A data as lookup table address (Distortion correction mode)
 client.reg_write(DATAPATH_CONTROL_BASE, datapath_word_dist_correction)
-data = capture(client, NUM_SAMPLES, trigger = 0, timeout = 0.0)
+data = uns32_to_signed32(capture(client, NUM_SAMPLES, trigger = 0, timeout = 0.0))
 plt.figure(pltnum)
 pltnum +=1
 plt.title("NCO as address to LUT")
@@ -190,7 +190,7 @@ plt.plot(data)
 
 #PID controller
 client.reg_write(DATAPATH_CONTROL_BASE, datapath_word_pid)
-data = capture(client, NUM_SAMPLES, trigger = 0, timeout = 0.0)
+data = uns32_to_signed32(capture(client, NUM_SAMPLES, trigger = 0, timeout = 0.0))
 plt.figure(pltnum)
 plt.title("PID controller")
 plt.plot(data)
@@ -203,7 +203,7 @@ client.reg_write(PID_KI_BASE, PID_KI)
 client.reg_write(PID_KD_BASE, PID_KD)
 
 client.reg_write(DATAPATH_CONTROL_BASE, datapath_word_pid)
-data = capture(client, NUM_SAMPLES, trigger = 0, timeout = 0.0)
+data = uns32_to_signed32(capture(client, NUM_SAMPLES, trigger = 0, timeout = 0.0))
 plt.figure(pltnum)
 pltnum +=1
 plt.plot(data)
@@ -232,7 +232,7 @@ register_list = [
 
 print ('\nReading register block:')
 block = client.reg_read_block(REV_ID_BASE, 22)
-data_reg = (ctypes.c_int * 22).from_buffer(bytearray(block))
+data_reg = block#(ctypes.c_int * 22).from_buffer(bytearray(block))
 for i in range(0, 22):
     print (register_list[i] + ': %08X'  % data_reg[i])
 
@@ -263,20 +263,12 @@ print("Ramp test at divisor of 5 (10Msps)")
 errors = ramp_test(client, 2**21, trigger = 0, timeout = 1.0)
 print("Number of errors: " + str(errors))
 
-client.reg_write(SYSTEM_CLOCK_BASE, (LUT_NCO_DIVIDER << 16 | 1)) # 50M / 3 = 16.6MSPS
+client.reg_write(SYSTEM_CLOCK_BASE, (LUT_NCO_DIVIDER << 16 | 1)) # 50M / 2 = 25MSPS
 print("Ramp test at original divisor of 2 (25Msps)")
 errors = ramp_test(client, 2**21, trigger = 0, timeout = 1.0)
 print("Number of errors: " + str(errors))
 # Set back to original divisor
 client.reg_write(SYSTEM_CLOCK_BASE, (LUT_NCO_DIVIDER << 16 | SYSTEM_CLOCK_DIVIDER)) # 50M / 5 = 10MSPS
-
-## Okay, here goes!! Let's try to write into the LUT:
-#print("Writing out to LUT!")
-#client.reg_write(CONTROL_BASE, 0x00000020); # Enable writing from blob side...
-#for i in range(0, 65536):
-#    client.reg_write(LUT_ADDR_DATA_BASE, (i << 16 | i))
-#client.reg_write(CONTROL_BASE, 0x00000000); # Disable writing from blob side...
-#print("Done writing to LUT! Hope it went okay!")
 
 choice = 'n'
 #choice = raw_input('Shutdown: y/n? ')

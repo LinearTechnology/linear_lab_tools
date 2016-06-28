@@ -256,16 +256,24 @@ def capture(client, recordlength, trigger = 0, timeout = 0.0):
 #    print('Reading a block...')
     print 'Starting address: '
     print read_start_address
-    dummy, block = client.mem_read_block(read_start_address, recordlength)
+    block = client.mem_read_block(read_start_address, recordlength)
 #    dummy, block = client.mem_read_block(stopaddress, NUM_SAMPLES) # Trying to find triggered data!!
-    data = (ctypes.c_int * recordlength).from_buffer(bytearray(block))
+#    data = (ctypes.c_int * recordlength).from_buffer(bytearray(block))
 #    print('Got a %d byte block back' % len(block))
 #    print('first 16 values:')
 #    for j in range(0, 16):
 #        print('value %d' % data[j])
 #    print('and the last value: %d' % data[recordlength - 1])
-    return data
     
+    return block#data
+
+# A handy function to turn unsigned values from mem_read_block to signed
+# 32-bit values
+def uns32_to_signed32(data):
+    for i in range(0, len(data)):    
+        if(data[i] > 0x7FFFFFFF):
+            data[i] -= 0xFFFFFFFF
+    return data
     
 def LTC6954_configure(client, divisor):
     client.reg_write(SPI_PORT_BASE | SPI_SS, 0x00000001) # CS[0]
@@ -366,10 +374,10 @@ def ramp_test(client, recordlength, trigger = 0, timeout = 0.0):
     
     
     #    print('Reading a block...')
-        dummy, block = client.mem_read_block(read_start_address, blocklength)
+        block = client.mem_read_block(read_start_address, blocklength)
         read_start_address += (4 * blocklength)
     #    dummy, block = client.mem_read_block(stopaddress, NUM_SAMPLES) # Trying to find triggered data!!
-        data = (ctypes.c_int * (blocklength)).from_buffer(bytearray(block))
+        data = block#(ctypes.c_int * (blocklength)).from_buffer(bytearray(block))
         print('Got a %d byte block back' % len(block))
         print('First value: %d' % data[0])
         print(' Last value: %d' % data[blocklength - 1])
