@@ -258,7 +258,7 @@ print("Ramp test at original divisor of " + str(SYSTEM_CLOCK_DIVIDER))
 errors = ramp_test(client, 2**21, trigger = 0, timeout = 1.0)
 print("Number of errors: " + str(errors))
 
-client.reg_write(SYSTEM_CLOCK_BASE, (LUT_NCO_DIVIDER << 16 | 5)) # 50M / 5 = 10MSPS
+client.reg_write(SYSTEM_CLOCK_BASE, (LUT_NCO_DIVIDER << 16 | 4)) # 50M / 5 = 10MSPS
 print("Ramp test at divisor of 5 (10Msps)")
 errors = ramp_test(client, 2**21, trigger = 0, timeout = 1.0)
 print("Number of errors: " + str(errors))
