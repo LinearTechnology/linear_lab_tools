@@ -144,7 +144,8 @@ client.reg_write(PID_KD_BASE, PID_KD)
 
 #PID controller
 client.reg_write(DATAPATH_CONTROL_BASE, datapath_word_pid)
-data = capture(client, NUM_SAMPLES, trigger = 0, timeout = 0.0)
+#data = capture(client, NUM_SAMPLES, trigger = 0, timeout = 0.0)
+data = uns32_to_signed32(capture(client, NUM_SAMPLES, trigger = 0, timeout = 0.0))
 plt.figure(pltnum)
 plt.plot(data, color="red")
 
@@ -156,7 +157,8 @@ client.reg_write(PID_KI_BASE, PID_KI)
 client.reg_write(PID_KD_BASE, PID_KD)
 
 client.reg_write(DATAPATH_CONTROL_BASE, datapath_word_pid)
-data = capture(client, NUM_SAMPLES, trigger = 0, timeout = 0.0)
+#data = capture(client, NUM_SAMPLES, trigger = 0, timeout = 0.0)
+data = uns32_to_signed32(capture(client, NUM_SAMPLES, trigger = 0, timeout = 0.0))
 plt.figure(pltnum)
 pltnum +=1
 plt.xlim([0,1500])
