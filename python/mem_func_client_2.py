@@ -49,6 +49,8 @@ class MemClient(object):
     MEM_READ_TO_FILE = 9
     MEM_WRITE_FROM_FILE = 10
     REG_WRITE_LUT = 11
+    I2C_TESTING = 12
+    I2C_WRITE_BYTE = 17
     SHUTDOWN = 1024
 
     ERROR = 0x80000000
@@ -287,6 +289,46 @@ class MemClient(object):
         return last_location
         
 
+    def i2c_testing(self, dummy = False):
+        command = MemClient.I2C_TESTING | MemClient.COMMAND_SENT
+        length = 12
+        if (dummy == True):
+            command = command | MemClient.DUMMY_FUNC
+        val = 0xFF
+        sock_msg = struct.pack('III', command, length, val)
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.connect((self.host, self.port))
+        s.sendall(sock_msg)
+        response = recvall(s, 12)
+        s.close()
+        (response_command, response_length, val) = struct.unpack('III', response)
+        if(val == 0xFF):
+            return True
+        else:
+            return False
+     
+    def i2c_write_byte(self, slave_address, part_command, num_of_bytes, val, dummy = False):       
+        length = 20 + num_of_bytes * 4
+        command = MemClient.I2C_WRITE_BYTE | MemClient.COMMAND_SENT
+        if (dummy == True):
+            command = command | MemClient.DUMMY_FUNC
+        sock_msg = struct.pack('IIIII', command, length, slave_address, part_command, num_of_bytes)
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.connect((self.host, self.port))
+        s.sendall(sock_msg)
+
+        # transmit each value as a string (32 bits)
+        for i in range(0, num_of_bytes):
+            value = struct.pack('I', val[i])            
+            s.sendall(value)
+
+        response = recvall(s, 12)
+        # third parameter is the register location that was last written into
+        (response_command, response_length, response_val) = struct.unpack('III', response)
+        s.close()
+
+        return response_val
+        
 
     def shutdown(self, dummy = False):
         command = MemClient.SHUTDOWN | MemClient.COMMAND_SENT
@@ -300,7 +342,11 @@ class MemClient(object):
         s.sendall(sock_msg)
         response = recvall(s, 12)
         s.close()
- 
+        (response_command, response_length, halt_command) = struct.unpack('III', response)
+        if(halt_command == 0x48414C54):
+            return True
+        else:
+            return False
 
 #    def handle_command(self, command, length, payload):
 #        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
