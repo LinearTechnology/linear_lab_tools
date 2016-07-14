@@ -27,6 +27,8 @@ from DC2390_functions import *
 HOST = sys.argv[1] if len(sys.argv) == 2 else '127.0.0.1'
 
 
+mem_bw_test = False
+
 # Parameters for PID example
 PID_KP = 0x0010
 PID_KI = 0x0040
@@ -56,7 +58,7 @@ vfs = 10.0 # Full-scale voltage, VREF * 2 for LTC25xx family
 
 nco_word_width = 32
 master_clock = 50000000
-bin_number = 23 # Number of cycles over the time record
+bin_number = 50 # Number of cycles over the time record
 sample_rate = master_clock / (SYSTEM_CLOCK_DIVIDER + 1) # 250ksps for 50M clock, 200 clocks per sample
 cycles_per_sample = float(bin_number) / float(NUM_SAMPLES)
 cycles_per_dac_sample = cycles_per_sample / (SYSTEM_CLOCK_DIVIDER + 1)
@@ -252,23 +254,24 @@ client.reg_write_LUT(LUT_ADDR_DATA_BASE, 65535, cData)
 client.reg_write(CONTROL_BASE, 0x00000000) # Disable writing from blob side...
 print("Done writing to LUT! Hope it went okay!")
 
-client.reg_write(DATAPATH_CONTROL_BASE, DC2390_FIFO_UP_DOWN_COUNT) # Capture a test pattern
-
-print("Ramp test at original divisor of " + str(SYSTEM_CLOCK_DIVIDER))
-errors = ramp_test(client, 2**21, trigger = 0, timeout = 1.0)
-print("Number of errors: " + str(errors))
-
-client.reg_write(SYSTEM_CLOCK_BASE, (LUT_NCO_DIVIDER << 16 | 4)) # 50M / 5 = 10MSPS
-print("Ramp test at divisor of 5 (10Msps)")
-errors = ramp_test(client, 2**21, trigger = 0, timeout = 1.0)
-print("Number of errors: " + str(errors))
-
-client.reg_write(SYSTEM_CLOCK_BASE, (LUT_NCO_DIVIDER << 16 | 1)) # 50M / 2 = 25MSPS
-print("Ramp test at original divisor of 2 (25Msps)")
-errors = ramp_test(client, 2**21, trigger = 0, timeout = 1.0)
-print("Number of errors: " + str(errors))
-# Set back to original divisor
-client.reg_write(SYSTEM_CLOCK_BASE, (LUT_NCO_DIVIDER << 16 | SYSTEM_CLOCK_DIVIDER)) # 50M / 5 = 10MSPS
+if(mem_bw_test == True):
+    client.reg_write(DATAPATH_CONTROL_BASE, DC2390_FIFO_UP_DOWN_COUNT) # Capture a test pattern
+    
+    print("Ramp test at original divisor of " + str(SYSTEM_CLOCK_DIVIDER))
+    errors = ramp_test(client, 2**21, trigger = 0, timeout = 1.0)
+    print("Number of errors: " + str(errors))
+    
+    client.reg_write(SYSTEM_CLOCK_BASE, (LUT_NCO_DIVIDER << 16 | 4)) # 50M / 5 = 10MSPS
+    print("Ramp test at divisor of 5 (10Msps)")
+    errors = ramp_test(client, 2**21, trigger = 0, timeout = 1.0)
+    print("Number of errors: " + str(errors))
+    
+    client.reg_write(SYSTEM_CLOCK_BASE, (LUT_NCO_DIVIDER << 16 | 1)) # 50M / 2 = 25MSPS
+    print("Ramp test at original divisor of 2 (25Msps)")
+    errors = ramp_test(client, 2**21, trigger = 0, timeout = 1.0)
+    print("Number of errors: " + str(errors))
+    # Set back to original divisor
+    client.reg_write(SYSTEM_CLOCK_BASE, (LUT_NCO_DIVIDER << 16 | SYSTEM_CLOCK_DIVIDER)) # 50M / 5 = 10MSPS
 
 choice = 'n'
 #choice = raw_input('Shutdown: y/n? ')
