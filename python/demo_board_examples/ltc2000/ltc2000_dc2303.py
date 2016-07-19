@@ -154,7 +154,7 @@ with comm.Controller(device_info) as device:
     extrabytes = [0] * 8 #bytes2send[(num_bytes-9):(num_bytes-1)]
     num_bytes_sent = device.data_send_uint16_values(data) #DAC should start running here!
 #    num_bytes_sent = device.data_send_bytes(data_bytes)
-    device.data_send_bytes(extrabytes)
+#    device.data_send_bytes(extrabytes)
     device.hs_set_bit_mode(comm.HS_BIT_MODE_MPSSE)
     
     print 'num_bytes_sent is: ' + str(num_bytes_sent) + ' (should be ' + str(total_samples * 2) +')'
