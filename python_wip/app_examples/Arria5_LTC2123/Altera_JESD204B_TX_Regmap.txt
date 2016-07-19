@@ -1,0 +1,41 @@
+Address
+Instance Name
+0x0 altera_jesd204_tx_regmap.lane_ctrl_common
+0x4 altera_jesd204_tx_regmap.lane_ctrl_0
+0x8 altera_jesd204_tx_regmap.lane_ctrl_1
+0xC altera_jesd204_tx_regmap.lane_ctrl_2
+0x10 altera_jesd204_tx_regmap.lane_ctrl_3
+0x14 altera_jesd204_tx_regmap.lane_ctrl_4
+0x18 altera_jesd204_tx_regmap.lane_ctrl_5
+0x1C altera_jesd204_tx_regmap.lane_ctrl_6
+0x20 altera_jesd204_tx_regmap.lane_ctrl_7
+0x24 - 0x4F reserved
+0x50 altera_jesd204_tx_regmap.dll_ctrl
+0x54 altera_jesd204_tx_regmap.syncn_sysref_ctrl
+0x58 altera_jesd204_tx_regmap.ctrl_reserve
+0x5C - 0x5F reserved
+0x60 altera_jesd204_tx_regmap.tx_err
+0x64 altera_jesd204_tx_regmap.tx_err_mask
+0x68 - 0x7F reserved
+0x80 altera_jesd204_tx_regmap.tx_status0
+0x84 altera_jesd204_tx_regmap.tx_status1
+0x88 altera_jesd204_tx_regmap.tx_status2
+0x8C altera_jesd204_tx_regmap.tx_status3
+0x90 altera_jesd204_tx_regmap.ilas_data0
+0x94 altera_jesd204_tx_regmap.ilas_data1
+0x98 altera_jesd204_tx_regmap.ilas_data2
+0x9C altera_jesd204_tx_regmap.ilas_data3
+0xA0 altera_jesd204_tx_regmap.ilas_data4
+0xA4 altera_jesd204_tx_regmap.ilas_data5
+0xA8 - 0xAF reserved
+0xB0 altera_jesd204_tx_regmap.ilas_data8
+0xB4 altera_jesd204_tx_regmap.ilas_data9
+0xB8 - 0xBF reserved
+0xC0 altera_jesd204_tx_regmap.ilas_data12
+0xC4 - 0xCF reserved
+0xD0 altera_jesd204_tx_regmap.tx_test
+0xD4 altera_jesd204_tx_regmap.user_test_pattern_a
+0xD8 altera_jesd204_tx_regmap.user_test_pattern_b
+0xDC altera_jesd204_tx_regmap.user_test_pattern_c
+0xE0 altera_jesd204_tx_regmap.user_test_pattern_d
+0xE4 - 0x3FF reserved
