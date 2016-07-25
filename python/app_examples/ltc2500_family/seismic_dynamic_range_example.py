@@ -48,8 +48,10 @@ import numpy as np
 from time import sleep
 from matplotlib import pyplot as plt
 import DC2390_functions as DC2390
-sys.path.append('../../') 
-from mem_func_client import MemClient
+sys.path.append('../../../python')
+sys.path.append("../../utils/")
+from mem_func_client_2 import MemClient
+from sockit_system_functions import *
 
 
 ###############################################################################
@@ -112,7 +114,7 @@ def capture_seismic_data(client, filter_type):
                                                   DC2390.DC2390_LUT_RUN_ONCE)
     sleep(2.5) # Allow LUT to run through until end...
     # Capture the data
-    nyq_data_c = DC2390.capture(client, NUM_SAMPLES, trigger = 0, timeout = 1.0)
+    nyq_data_c = sockit_uns32_to_signed32(sockit_capture(client, NUM_SAMPLES, trigger = 0, timeout = 1.0))
     nyq_data = np.zeros(len(nyq_data_c))
     nyq_data += nyq_data_c
     nyq_data *= (5.0 / 2147483648.0)
@@ -132,8 +134,8 @@ def capture_seismic_data(client, filter_type):
     sleep(0.25)
                                                   
     # Capture the data
-    filt_25xx_data_c = DC2390.capture(client, NUM_SAMPLES/length, trigger = 0, 
-                          timeout = 1)
+    filt_25xx_data_c = sockit_uns32_to_signed32(sockit_capture(client, NUM_SAMPLES/length, trigger = 0, 
+                          timeout = 1))
     filt_25xx_data = np.zeros(len(filt_25xx_data_c))
     filt_25xx_data += filt_25xx_data_c
     filt_25xx_data *= (5.0 / 2147483648.0)
@@ -195,7 +197,7 @@ def capture_plot(client, plot, gain, filter_type):
                                                   DC2390.DC2390_LUT_RUN_ONCE)
     
     # Capture the data
-    data = DC2390.capture(client, NUM_SAMPLES, trigger = 0, timeout = 1.0)
+    data = sockit_uns32_to_signed32(sockit_capture(client, NUM_SAMPLES, trigger = 0, timeout = 1.0))
     avg = np.average(data[len(data)-1002:len(data)-2])
     data -= avg
     data *= gain
@@ -228,8 +230,8 @@ def capture_plot(client, plot, gain, filter_type):
                                                    DC2390.DC2390_LUT_RUN_ONCE)
     sleep(1.0) # Let any wiggles in progress die out
     # Capture the data
-    data = DC2390.capture(client, NUM_SAMPLES/length, trigger = 0, 
-                          timeout = 1)
+    data = sockit_uns32_to_signed32(sockit_capture(client, NUM_SAMPLES/length, trigger = 0, 
+                          timeout = 1))
     avg = np.average(data[len(data)-6:len(data)-2])
     data = data - avg
     data = data * gain

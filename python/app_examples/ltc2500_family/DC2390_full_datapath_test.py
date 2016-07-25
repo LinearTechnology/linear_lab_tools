@@ -21,6 +21,7 @@ from matplotlib import pyplot as plt
 # sys.path.append('C:\Users\MSajikumar\Documents\LT_soc_framework')
 from mem_func_client_2 import MemClient
 from DC2390_functions import *
+from sockit_system_functions import *
 
 # Get the host from the command line argument. Can be numeric or hostname.
 #HOST = sys.argv.pop() if len(sys.argv) == 2 else '127.0.0.1'
@@ -129,9 +130,12 @@ sleep(0.1)
 
 client.reg_write(TUNING_WORD_BASE, tuning_word) # Sweep NCO!!!
 
+NUM_SAMPLES_SAV = NUM_SAMPLES
+NUM_SAMPLES = 2**21
 # Capture a sine wave
 client.reg_write(DATAPATH_CONTROL_BASE, datapath_word_sines) # Sweep NCO!!!
-data = uns32_to_signed32(capture(client, NUM_SAMPLES, trigger = 0, timeout = 0.0))
+data = sockit_uns32_to_signed32(sockit_capture(client, NUM_SAMPLES, trigger = 0, timeout = 0.0))
+#data = sockit_uns32_to_signed32(sockit_capture(client, 2**21, trigger = 0, timeout = 0.0))
 rms = np.std(data)
 print("Standard Deviation: " + str(rms))
 data_nodc = data - np.average(data)
@@ -146,6 +150,9 @@ plt.plot(data)
 plt.subplot(2, 1, 2)
 plt.plot(fftdb)
 
+NUM_SAMPLES = NUM_SAMPLES_SAV
+
+
 data_ndarray = np.array(data)
 data_volts = data_ndarray * (vfs / 2.0**32.0) # Convert to voltage
 datarms = np.std(data_volts)
@@ -158,7 +165,7 @@ save_for_pscope("pscope_DC2390.adc",24 ,True, NUM_SAMPLES, "2390", "2500", data_
 
 # Run through lookup table continuously
 client.reg_write(DATAPATH_CONTROL_BASE, datapath_word_lut_continuous)
-data = uns32_to_signed32(capture(client, NUM_SAMPLES, trigger = 0, timeout = 0.0))
+data = sockit_uns32_to_signed32(sockit_capture(client, NUM_SAMPLES, trigger = 0, timeout = 0.0))
 fftdata = np.abs(np.fft.fft(data)) / len(data)
 fftdb = 20*np.log10(fftdata / 2.0**31)
 plt.figure(pltnum)
@@ -171,7 +178,7 @@ plt.plot(fftdb)
 
 # Run through lookup table once (pulse test)
 client.reg_write(DATAPATH_CONTROL_BASE, datapath_word_lut_run_once)
-data = uns32_to_signed32(capture(client, NUM_SAMPLES, trigger = 0, timeout = 0.0))
+data = sockit_uns32_to_signed32(sockit_capture(client, NUM_SAMPLES, trigger = 0, timeout = 0.0))
 fftdata = np.abs(np.fft.fft(data)) / len(data)
 fftdb = 20*np.log10(fftdata / 2.0**31)
 plt.figure(pltnum)
@@ -184,7 +191,7 @@ plt.plot(fftdb)
 
 # Use DAC A data as lookup table address (Distortion correction mode)
 client.reg_write(DATAPATH_CONTROL_BASE, datapath_word_dist_correction)
-data = uns32_to_signed32(capture(client, NUM_SAMPLES, trigger = 0, timeout = 0.0))
+data = sockit_uns32_to_signed32(sockit_capture(client, NUM_SAMPLES, trigger = 0, timeout = 0.0))
 plt.figure(pltnum)
 pltnum +=1
 plt.title("NCO as address to LUT")
@@ -192,7 +199,7 @@ plt.plot(data)
 
 #PID controller
 client.reg_write(DATAPATH_CONTROL_BASE, datapath_word_pid)
-data = uns32_to_signed32(capture(client, NUM_SAMPLES, trigger = 0, timeout = 0.0))
+data = sockit_uns32_to_signed32(sockit_capture(client, NUM_SAMPLES, trigger = 0, timeout = 0.0))
 plt.figure(pltnum)
 plt.title("PID controller")
 plt.plot(data)
@@ -205,7 +212,7 @@ client.reg_write(PID_KI_BASE, PID_KI)
 client.reg_write(PID_KD_BASE, PID_KD)
 
 client.reg_write(DATAPATH_CONTROL_BASE, datapath_word_pid)
-data = uns32_to_signed32(capture(client, NUM_SAMPLES, trigger = 0, timeout = 0.0))
+data = sockit_uns32_to_signed32(sockit_capture(client, NUM_SAMPLES, trigger = 0, timeout = 0.0))
 plt.figure(pltnum)
 pltnum +=1
 plt.plot(data)
