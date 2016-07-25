@@ -49,8 +49,10 @@ class MemClient(object):
     MEM_READ_TO_FILE = 9
     MEM_WRITE_FROM_FILE = 10
     REG_WRITE_LUT = 11
-    I2C_TESTING = 12
+    I2C_IENTIFY = 12
     I2C_WRITE_BYTE = 17
+    I2C_TESTING = 18
+    I2C_READ = 19
     SHUTDOWN = 1024
 
     ERROR = 0x80000000
@@ -287,26 +289,24 @@ class MemClient(object):
         s.close()
 
         return last_location
-        
-
-    def i2c_testing(self, dummy = False):
-        command = MemClient.I2C_TESTING | MemClient.COMMAND_SENT
+     
+    def i2c_identify(self, dummy = False):
         length = 12
+        command = MemClient.I2C_IENTIFY | MemClient.COMMAND_SENT
+        val = 0xFF
         if (dummy == True):
             command = command | MemClient.DUMMY_FUNC
-        val = 0xFF
         sock_msg = struct.pack('III', command, length, val)
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.connect((self.host, self.port))
         s.sendall(sock_msg)
         response = recvall(s, 12)
+        
+        # third parameter is the register location that was written into
+        (response_command, response_length, count) = struct.unpack('III', response)
         s.close()
-        (response_command, response_length, val) = struct.unpack('III', response)
-        if(val == 0xFF):
-            return True
-        else:
-            return False
-     
+        return count
+        
     def i2c_write_byte(self, slave_address, part_command, num_of_bytes, val, dummy = False):       
         length = 20 + num_of_bytes * 4
         command = MemClient.I2C_WRITE_BYTE | MemClient.COMMAND_SENT
@@ -326,10 +326,45 @@ class MemClient(object):
         # third parameter is the register location that was last written into
         (response_command, response_length, response_val) = struct.unpack('III', response)
         s.close()
-
         return response_val
         
-
+    def i2c_testing(self, dummy = False):
+        print 'In I2C testing...'
+        command = MemClient.I2C_TESTING | MemClient.COMMAND_SENT
+        length = 12
+        if (dummy == True):
+            command = command | MemClient.DUMMY_FUNC
+        val = 0xFF
+        sock_msg = struct.pack('III', command, length, val)
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.connect((self.host, self.port))
+        s.sendall(sock_msg)
+        response = recvall(s, 12)
+        s.close()
+        (response_command, response_length, val) = struct.unpack('III', response)
+        if(val == 0xFF):
+            return True
+        else:
+            return False
+          
+    def i2c_read(self, dummy = False):
+        command = MemClient.I2C_READ | MemClient.COMMAND_SENT
+        length = 12
+        if (dummy == True):
+            command = command | MemClient.DUMMY_FUNC
+        val = 0xFF
+        sock_msg = struct.pack('III', command, length, val)
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.connect((self.host, self.port))
+        s.sendall(sock_msg)
+        response = recvall(s, 12)
+        s.close()
+        (response_command, response_length, val) = struct.unpack('III', response)
+        if(val == 0xFF):
+            return True
+        else:
+            return False       
+        
     def shutdown(self, dummy = False):
         command = MemClient.SHUTDOWN | MemClient.COMMAND_SENT
         length = 12

@@ -5,6 +5,8 @@
 # This script tests all the dummy functions
 
 import sys
+sys.path.append("../../")
+sys.path.append("../../utils/")
 from mem_func_client_2 import MemClient
 
 # Get the host from the command line argument. Can be numeric or hostname.
@@ -102,6 +104,9 @@ client.mem_write_from_file(starting_address + 100, number_of_reads, 'hello.txt',
 values = client.mem_read_block(starting_address + 100, number_of_reads, dummy = False)
 print values
 
+#print 'Detecting I2C devices. Number of device: ',
+#print client.i2c_identify()
+
 print 'I2C Testing... ',
 print client.i2c_testing()
 
@@ -111,6 +116,9 @@ num_of_bytes = 2
 vals = [0x00, 0x00]
 print 'I2C write byte... ',
 print client.i2c_write_byte(slave_address, part_command, num_of_bytes, vals, dummy = False)
+
+print 'I2C read EEPROM... ',
+print client.i2c_read()
 
 choice = raw_input('Shutdown: y/n? ')
 if(choice == 'y'):
