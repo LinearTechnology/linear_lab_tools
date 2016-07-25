@@ -29,7 +29,7 @@ def check_address_range(address):
         print('Address needs to be word aligned.')
         return 0
 
-    if (address > 0x100000):
+    if (address > 0x10000000):
         print('Address out of range. Must be less than 0x100000')
         return 0
 
