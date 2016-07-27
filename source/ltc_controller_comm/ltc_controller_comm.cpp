@@ -4,6 +4,7 @@
 #include "dc1371.hpp"
 #include "dc718.hpp"
 #include "dc890.hpp"
+#include "soc_kit.hpp"
 #include "error.hpp"
 using namespace linear;
 
@@ -53,14 +54,14 @@ do {                                                                       \
     return ToErrorCode([&] { return controller->func(__VA_ARGS__); }, *val, *es);
 
 LTC_CONTROLLER_COMM_API int LccGetNumControllers(int controller_types, int max_controllers,
-        int* num_controllers) {
+                                                 int* num_controllers) {
     try {
         if (controller_types & LCC_TYPE_DC1371) {
             *num_controllers = Dc1371::GetNumControllers(Min(max_controllers, Dc1371::MAX_CONTROLLERS));
         }
         if (*num_controllers < max_controllers) {
             *num_controllers += ftdi.GetNumControllers(controller_types,
-                                max_controllers - *num_controllers);
+                                                       max_controllers - *num_controllers);
         }
         return LCC_ERROR_OK;
     } catch (invalid_argument&) {
@@ -79,7 +80,7 @@ LTC_CONTROLLER_COMM_API int LccGetNumControllers(int controller_types, int max_c
 }
 
 LTC_CONTROLLER_COMM_API int LccGetControllerList(int controller_types,
-        LccControllerInfo* controller_info_list, int num_controllers) {
+                                                 LccControllerInfo* controller_info_list, int num_controllers) {
     try {
         int index = 0;
         if (controller_types & LCC_TYPE_DC1371) {
@@ -96,7 +97,7 @@ LTC_CONTROLLER_COMM_API int LccGetControllerList(int controller_types,
         if (controller_types & ~LCC_TYPE_DC1371) {
             auto ftdis = ftdi.ListControllers(controller_types, num_controllers - index);
             for (auto ft_itr = ftdis.begin();
-                    index < num_controllers && ft_itr != ftdis.end(); ++ft_itr) {
+                 index < num_controllers && ft_itr != ftdis.end(); ++ft_itr) {
                 controller_info_list[index] = *ft_itr;
                 ++index;
             }
@@ -118,7 +119,7 @@ LTC_CONTROLLER_COMM_API int LccGetControllerList(int controller_types,
 }
 
 LTC_CONTROLLER_COMM_API int LccGetControllerInfoFromId(int controller_type, const char* id,
-        LccControllerInfo* controller_info) {
+                                                       LccControllerInfo* controller_info) {
     switch (controller_type) {
     case LCC_TYPE_DC1371: {
         if (Dc1371::IsDc1371(id[0])) {
@@ -159,7 +160,7 @@ LTC_CONTROLLER_COMM_API int LccGetControllerInfoFromId(int controller_type, cons
 }
 
 LTC_CONTROLLER_COMM_API int LccInitController(LccHandle* handle,
-        LccControllerInfo* controller_info) {
+                                              LccControllerInfo* controller_info) {
     C_MUST_NOT_BE_NULL(handle);
     C_MUST_NOT_BE_NULL(controller_info);
     auto new_handle = new Handle(nullptr);
@@ -183,12 +184,19 @@ LTC_CONTROLLER_COMM_API int LccInitController(LccHandle* handle,
         return code;
     }
     case LCC_TYPE_DC890: {
-        int code = ToErrorCode([&] {return new Dc890(ftdi, *controller_info); },
+        int code = ToErrorCode([&] { return new Dc890(ftdi, *controller_info); },
                                new_handle->controller, new_handle->error_string);
         *handle = new_handle;
         return code;
     }
-    default:
+    case LCC_TYPE_SOC_KIT: {
+        int code = ToErrorCode([&] { return new SocKit(*controller_info); },
+                               new_handle->controller, new_handle->error_string);
+        *handle = new_handle;
+        return code;
+    }
+
+    default        :
         new_handle->error_string = "Invalid device type in device info.";
         return LCC_ERROR_INVALID_ARG;
     }
@@ -202,7 +210,7 @@ LTC_CONTROLLER_COMM_API int LccCleanup(LccHandle* handle) {
 }
 
 LTC_CONTROLLER_COMM_API int LccGetDescription(LccHandle handle, char* description_buffer,
-        int description_buffer_size) {
+                                              int description_buffer_size) {
     GET(handle, controller, Controller, error_string);
     string description;
     int code = ToErrorCode(
@@ -219,7 +227,7 @@ LTC_CONTROLLER_COMM_API int LccGetDescription(LccHandle handle, char* descriptio
 }
 
 LTC_CONTROLLER_COMM_API int LccGetSerialNumber(LccHandle handle, char* serial_number_buffer,
-        int serial_number_buffer_size) {
+                                               int serial_number_buffer_size) {
     GET(handle, controller, Controller, error_string);
     string serial_number;
     int code = ToErrorCode(
@@ -251,7 +259,7 @@ LTC_CONTROLLER_COMM_API int LccClose(LccHandle handle) {
 }
 
 LTC_CONTROLLER_COMM_API int LccGetErrorInfo(LccHandle handle, char* message_buffer,
-        int buffer_size) {
+                                            int buffer_size) {
     if (handle == nullptr) {
         string error_string = "LccHandle is null.";
         if (Narrow<int>(error_string.size()) > buffer_size) {
@@ -281,50 +289,50 @@ LTC_CONTROLLER_COMM_API int LccDataSetLowByteFirst(LccHandle handle) {
 }
 
 LTC_CONTROLLER_COMM_API int LccDataSetCharacteristics(LccHandle handle, bool is_multichannel,
-        int sample_bytes, bool is_positive_clock) {
+                                                      int sample_bytes, bool is_positive_clock) {
     GET(handle, controller, FtdiAdc, error_string);
     CALL(controller, error_string, DataSetCharacteristics, is_multichannel, sample_bytes,
          is_positive_clock);
 }
 
 LTC_CONTROLLER_COMM_API int LccDataSendBytes(LccHandle handle, uint8_t* values, int num_values,
-        int* num_sent) {
+                                             int* num_sent) {
     GET(handle, controller, IDataSend, error_string);
     CALL_VAL(controller, error_string, num_sent, DataSend, values, num_values);
 }
 
 LTC_CONTROLLER_COMM_API int LccDataReceiveBytes(LccHandle handle, uint8_t* values,
-        int num_values, int* num_received) {
+                                                int num_values, int* num_received) {
     GET(handle, controller, IDataReceive, error_string);
     CALL_VAL(controller, error_string, num_received, DataReceive, values, num_values);
 }
 
 LTC_CONTROLLER_COMM_API int LccDataSendUint16Values(LccHandle handle, uint16_t* values,
-        int num_values, int* num_bytes_sent) {
+                                                    int num_values, int* num_bytes_sent) {
     GET(handle, controller, IDataSend, error_string);
     CALL_VAL(controller, error_string, num_bytes_sent, DataSend, values, num_values);
 }
 
 LTC_CONTROLLER_COMM_API int LccDataReceiveUint16Values(LccHandle handle, uint16_t* values,
-        int num_values, int* num_bytes_received) {
+                                                       int num_values, int* num_bytes_received) {
     GET(handle, controller, IDataReceive, error_string);
     CALL_VAL(controller, error_string, num_bytes_received, DataReceive, values, num_values);
 }
 
 LTC_CONTROLLER_COMM_API int LccDataSendUint32Values(LccHandle handle, uint32_t* values,
-        int num_values, int* num_bytes_sent) {
+                                                    int num_values, int* num_bytes_sent) {
     GET(handle, controller, IDataSend, error_string);
     CALL_VAL(controller, error_string, num_bytes_sent, DataSend, values, num_values);
 }
 
 LTC_CONTROLLER_COMM_API int LccDataReceiveUint32Values(LccHandle handle, uint32_t* values,
-        int num_values, int* num_bytes_received) {
+                                                       int num_values, int* num_bytes_received) {
     GET(handle, controller, IDataReceive, error_string);
     CALL_VAL(controller, error_string, num_bytes_received, DataReceive, values, num_values);
 }
 
 LTC_CONTROLLER_COMM_API int LccDataStartCollect(LccHandle handle, int total_samples,
-        int trigger) {
+                                                int trigger) {
     GET(handle, controller, ICollect, error_string);
     CALL(controller, error_string, DataStartCollect, total_samples, ICollect::Trigger(trigger));
 }
@@ -338,43 +346,43 @@ LTC_CONTROLLER_COMM_API int LccDataCancelCollect(LccHandle handle) {
 }
 
 LTC_CONTROLLER_COMM_API int LccSpiSendBytes(LccHandle handle, uint8_t* values,
-        int num_values) {
+                                            int num_values) {
     GET(handle, controller, ISpiSendOnly, error_string);
     CALL(controller, error_string, SpiSend, values, num_values);
 }
 
 LTC_CONTROLLER_COMM_API int LccSpiReceiveBytes(LccHandle handle, uint8_t* values,
-        int num_values) {
+                                               int num_values) {
     GET(handle, controller, ISpi, error_string);
     CALL(controller, error_string, SpiReceive, values, num_values);
 }
 
 LTC_CONTROLLER_COMM_API int LccSpiTransceiveBytes(LccHandle handle, uint8_t* send_values,
-        uint8_t* receive_values, int num_values) {
+                                                  uint8_t* receive_values, int num_values) {
     GET(handle, controller, ISpi, error_string);
     CALL(controller, error_string, SpiTransceive, send_values, receive_values, num_values);
 }
 
 LTC_CONTROLLER_COMM_API int LccSpiSendByteAtAddress(LccHandle handle, uint8_t address,
-        uint8_t value) {
+                                                    uint8_t value) {
     GET(handle, controller, ISpiSendOnly, error_string);
     CALL(controller, error_string, SpiSendAtAddress, address, value);
 }
 
 LTC_CONTROLLER_COMM_API int LccSpiSendBytesAtAddress(LccHandle handle, uint8_t address,
-        uint8_t* values, int num_values) {
+                                                     uint8_t* values, int num_values) {
     GET(handle, controller, ISpiSendOnly, error_string);
     CALL(controller, error_string, SpiSendAtAddress, address, values, num_values);
 }
 
 LTC_CONTROLLER_COMM_API int LccSpiReceiveByteAtAddress(LccHandle handle, uint8_t address,
-        uint8_t* value) {
+                                                       uint8_t* value) {
     GET(handle, controller, ISpi, error_string);
     CALL_VAL(controller, error_string, value, SpiReceiveAtAddress, address);
 }
 
 LTC_CONTROLLER_COMM_API int LccSpiReceiveBytesAtAddress(LccHandle handle, uint8_t address,
-        uint8_t* values, int num_values) {
+                                                        uint8_t* values, int num_values) {
     GET(handle, controller, ISpi, error_string);
     CALL(controller, error_string, SpiReceiveAtAddress, address, values, num_values);
 }
@@ -385,26 +393,26 @@ LTC_CONTROLLER_COMM_API int LccSpiSetCsState(LccHandle handle, int chip_select_s
 }
 
 LTC_CONTROLLER_COMM_API int LccSpiSendNoChipSelect(LccHandle handle, uint8_t* values,
-        int num_values) {
+                                                   int num_values) {
     GET(handle, controller, ISpiSendOnly, error_string);
     CALL(controller, error_string, SpiSendNoChipSelect, values, num_values);
 }
 
 LTC_CONTROLLER_COMM_API int LccSpiReceiveNoChipSelect(LccHandle handle, uint8_t* values,
-        int num_values) {
+                                                      int num_values) {
     GET(handle, controller, ISpi, error_string);
     CALL(controller, error_string, SpiReceiveNoChipSelect, values, num_values);
 }
 
 LTC_CONTROLLER_COMM_API int LccSpiTransceiveNoChipSelect(LccHandle handle,
-        uint8_t * send_values, uint8_t* receive_values, int num_values) {
+                                                         uint8_t * send_values, uint8_t* receive_values, int num_values) {
     GET(handle, controller, ISpi, error_string);
     CALL(controller, error_string, SpiTransceiveNoChipSelect, send_values,
          receive_values, num_values);
 }
 
 LTC_CONTROLLER_COMM_API int LccFpgaGetIsLoaded(LccHandle handle, const char* fpga_filename,
-        bool* is_loaded) {
+                                               bool* is_loaded) {
     GET(handle, controller, IFpgaLoad, error_string);
     CALL_VAL(controller, error_string, is_loaded, FpgaGetIsLoaded, fpga_filename);
 }
@@ -415,7 +423,7 @@ LTC_CONTROLLER_COMM_API int LccFpgaLoadFile(LccHandle handle, const char* fpga_f
 }
 
 LTC_CONTROLLER_COMM_API int LccFpgaLoadFileChunked(LccHandle handle, const char* fpga_filename,
-        int* progress) {
+                                                   int* progress) {
     GET(handle, controller, IFpgaLoad, error_string);
     CALL_VAL(controller, error_string, progress, FpgaLoadFileChunked, fpga_filename);
 }
@@ -426,7 +434,7 @@ LTC_CONTROLLER_COMM_API int LccFpgaCancelLoad(LccHandle handle) {
 }
 
 LTC_CONTROLLER_COMM_API int LccEepromReadString(LccHandle handle, char* buffer,
-        int buffer_size) {
+                                                int buffer_size) {
     GET(handle, controller, Controller, error_string);
     CALL(controller, error_string, EepromReadString, buffer, buffer_size);
 }
@@ -457,13 +465,13 @@ LTC_CONTROLLER_COMM_API int LccHsFpgaReadData(LccHandle handle, uint8_t* value) 
 }
 
 LTC_CONTROLLER_COMM_API int LccHsFpgaWriteDataAtAddress(LccHandle handle, uint8_t address,
-        uint8_t value) {
+                                                        uint8_t value) {
     GET(handle, controller, HighSpeed, error_string);
     CALL(controller, error_string, FpgaWriteDataAtAddress, address, value);
 }
 
 LTC_CONTROLLER_COMM_API int LccHsFpgaReadDataAtAddress(LccHandle handle, uint8_t address,
-        uint8_t* value) {
+                                                       uint8_t* value) {
     GET(handle, controller, HighSpeed, error_string);
     CALL_VAL(controller, error_string, value, FpgaReadDataAtAddress, address);
 }
@@ -489,7 +497,7 @@ LTC_CONTROLLER_COMM_API int LccHsGpioReadLowByte(LccHandle handle, uint8_t* valu
 }
 
 LTC_CONTROLLER_COMM_API int LccHsFpgaEepromSetBitBangRegister(LccHandle handle,
-        uint8_t register_address) {
+                                                              uint8_t register_address) {
     GET(handle, controller, HighSpeed, error_string);
     CALL(controller, error_string, FpgaEepromSetBitBangRegister, register_address);
 }
@@ -514,7 +522,7 @@ LTC_CONTROLLER_COMM_API int Lcc890GpioSetByte(LccHandle handle, uint8_t byte) {
 }
 
 LTC_CONTROLLER_COMM_API int Lcc890GpioSpiSetBits(LccHandle handle, int cs_bit,
-        int sck_bit, int sdi_bit) {
+                                                 int sck_bit, int sdi_bit) {
     GET(handle, controller, Dc890, error_string);
     CALL(controller, error_string, GpioSpiSetBits, cs_bit, sck_bit, sdi_bit);
 }
