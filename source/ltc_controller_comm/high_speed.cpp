@@ -363,7 +363,7 @@ void HighSpeed::SpiReceiveNoChipSelect(uint8_t* values, int num_values) {
     Read(channel_b, values, num_values, nullptr);
 }
 void HighSpeed::SpiTransceiveNoChipSelect(uint8_t* send_values, uint8_t* receive_values,
-        int num_values) {
+                                          int num_values) {
     ASSERT_POSITIVE(num_values);
     ASSERT_NOT_LARGER(num_values, COMMAND_BUFFER_SIZE - COMMAND_PREFIX_3_BYTES);
     ASSERT_NOT_NULL(send_values);
