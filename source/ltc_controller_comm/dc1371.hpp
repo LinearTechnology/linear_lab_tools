@@ -75,7 +75,7 @@ public:
     static bool IsDc1371(char drive_letter);
     static LccControllerInfo MakeControllerInfo(char drive_letter);
 
-    Dc1371(const LccControllerInfo& info) : drive_letter(char(info.id)) { }
+    Dc1371(const LccControllerInfo& info) : drive_letter(Narrow<char>(info.id)) { }
     Dc1371(const Dc1371&) = delete;
     Dc1371(Dc1371&&) = default;
     Dc1371& operator=(const Dc1371& other) = delete;
