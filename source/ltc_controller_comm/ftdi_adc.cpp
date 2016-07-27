@@ -8,8 +8,7 @@ using std::this_thread::sleep_for;
 using std::chrono::milliseconds;
 
 namespace linear {
-const int MAX_CONTROLLER_BYTES_PER_CHANNEL = 128 * 1024;
-const int MAX_CONTROLLER_BYTES = 2 * MAX_CONTROLLER_BYTES_PER_CHANNEL;
+const int MAX_CONTROLLER_BYTES = 512 * 1024;
 
 void FtdiAdc::DataStartCollect(int total_samples, Trigger trigger) {
     ASSERT_NOT_SMALLER(sample_bytes, 2);
@@ -22,11 +21,7 @@ void FtdiAdc::DataStartCollect(int total_samples, Trigger trigger) {
     }
     ASSERT_NOT_SMALLER(total_samples, 1024);
     auto total_bytes = sample_bytes * total_samples;
-    if (is_multichannel) {
-        ASSERT_NOT_LARGER(total_bytes, MAX_CONTROLLER_BYTES);
-    } else {
-        ASSERT_NOT_LARGER(total_bytes, MAX_CONTROLLER_BYTES_PER_CHANNEL);
-    }
+    ASSERT_NOT_LARGER(total_bytes, MAX_CONTROLLER_BYTES);
     if (total_samples % 1024 != 0) {
         throw invalid_argument("total_samples must be a multiple of 1024");
     }
@@ -134,7 +129,7 @@ void FtdiAdc::Reset() {
 
         SetTimeouts();
 
-        if (strcmp("hello\n", hello_string) != 0) {
+        if (strcmp("hello\n", hello_string) == 0) {
             success = true;
         } else {
             Close();
@@ -230,8 +225,8 @@ void FtdiAdc::OpenIfNeeded() {
         auto info_list = ftdi.ListControllers(Narrow<int>(GetType()), 100);
         for (auto info_iter = info_list.begin(); info_iter != info_list.end(); ++info_iter) {
             if (info_iter->type == FT_DEVICE_BM &&
-                    (serial_number.substr(0, serial_number.size() - 1) ==
-                     info_iter->serial_number) && (description == info_iter->description)) {
+                (serial_number.substr(0, serial_number.size() - 1) ==
+                 info_iter->serial_number) && (description == info_iter->description)) {
                 index = info_iter->id;
                 return OpenIfNeeded();
             }
