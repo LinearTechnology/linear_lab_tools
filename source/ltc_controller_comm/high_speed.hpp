@@ -15,7 +15,8 @@ namespace linear {
 using std::string;
 using std::vector;
 
-class HighSpeed : public IClose, IDataEndian, IDataReceive, IDataSend, ISpi {
+class HighSpeed : public IClose, public IDataEndian,
+    public IDataReceive, public IDataSend, public ISpi {
 public:
     enum class BitMode : uint8_t {
         MPSSE = FT_BITMODE_MPSSE,
