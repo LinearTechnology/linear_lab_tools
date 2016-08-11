@@ -45,6 +45,7 @@
 ###############################################################################
 
 import sys #, os, socket, ctypes, struct
+sys.path.append("../../../")
 sys.path.append("../../")
 sys.path.append("../../utils/")
 import numpy as np
@@ -52,8 +53,9 @@ import numpy as np
 from time import sleep
 from matplotlib import pyplot as plt
 # Okay, now the big one... this is the module that communicates with the SoCkit
-from mem_func_client import MemClient
+from mem_func_client_2 import MemClient ## Updated to client_2
 from DC2390_functions import *
+from sockit_system_functions import *
 import time
 
 
@@ -91,10 +93,10 @@ else:
     down_sample_factor = LTC2500_DF_32
     
 master_clock = 50000000
-SYSTEM_CLOCK_DIVIDER = 32 
+SYSTEM_CLOCK_DIVIDER = 199 
 
 # Set sample depth
-NUM_SAMPLES = 8192 
+NUM_SAMPLES = 8192
 
 ###############################################################################
 # Global Constants
@@ -160,7 +162,7 @@ sleep(0.1)
 filter_shape = []
 freq_bin = []
 for x in range(1, 100):
-    
+    print("Data point: " + str(x))
     # Calculate the NCO to coherent bin
     bin_number = x*2 # Number of cycles over the time record
     
@@ -183,8 +185,10 @@ for x in range(1, 100):
     client.reg_write(TUNING_WORD_BASE, tuning_word)
     
     # Capture the data
-    data = capture(client, NUM_SAMPLES, timeout = 1.0)
-
+#    data = capture(client, NUM_SAMPLES, timeout = 1.0) # Updating to new capture...
+    data_pre = sockit_capture(client, NUM_SAMPLES, trigger = 0, timeout = 1.0)
+    data = sockit_uns32_to_signed32(data_pre)
+    
     # Remove DC content
     data -= np.average(data)
     
