@@ -94,6 +94,9 @@ def sockit_capture(client, recordlength, trigger = 0, timeout = 0.0):
     cap_start_time = time.time();
     ready = client.reg_read(DATA_READY_BASE) # Check data ready signal
     while((ready & 0x01) == 1):
+        time.sleep(0.5) ########## VERY IMPORTANT - It's NOT a good idea to keep hammering on a
+        ########################## port in a tight busy loop - it (may) leave the port in a
+        ########################## "half-open" state too many times...
         ready = client.reg_read(DATA_READY_BASE) # Check data ready signal
     cap_time = time.time() - cap_start_time
     print('ready signal is %d' % ready)
