@@ -129,8 +129,8 @@ def sockit_capture(client, recordlength, trigger = 0, timeout = 0.0):
 
     else: # Length less than 1M
         print("Reading a block of less than 1M points")
-        block[0:(recordlength-1)] = client.mem_read_block(read_start_address, recordlength)
-
+        #block[0:(recordlength-1)] = client.mem_read_block(read_start_address, recordlength)
+        block = client.mem_read_block(read_start_address, recordlength)
     return block
 
 
