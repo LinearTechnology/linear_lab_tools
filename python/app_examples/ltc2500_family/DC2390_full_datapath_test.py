@@ -131,7 +131,7 @@ sleep(0.1)
 client.reg_write(TUNING_WORD_BASE, tuning_word) # Sweep NCO!!!
 
 NUM_SAMPLES_SAV = NUM_SAMPLES
-NUM_SAMPLES = 2**21
+NUM_SAMPLES = NUM_SAMPLES#2**21
 # Capture a sine wave
 client.reg_write(DATAPATH_CONTROL_BASE, datapath_word_sines) # Sweep NCO!!!
 data = sockit_uns32_to_signed32(sockit_capture(client, NUM_SAMPLES, trigger = 0, timeout = 0.0))
@@ -250,16 +250,19 @@ for i in range(0, 22):
 cDataType = ctypes.c_uint * 65536
 cData     = cDataType()
 
-print("Writing downward ramp to LUT!")
-for i in range(0, 65536): # Reverse ramp...
-    cData[i] = (i << 16 | (65535 - i))
+test_LUT_write = True
 
-client.reg_write(DATAPATH_CONTROL_BASE, datapath_word_lut_continuous) 
-
-client.reg_write(CONTROL_BASE, 0x00000020) # Enable writing from blob side...
-client.reg_write_LUT(LUT_ADDR_DATA_BASE, 65535, cData)
-client.reg_write(CONTROL_BASE, 0x00000000) # Disable writing from blob side...
-print("Done writing to LUT! Hope it went okay!")
+if(test_LUT_write == True):
+    print("Writing downward ramp to LUT!")
+    for i in range(0, 65536): # Reverse ramp...
+        cData[i] = (i << 16 | (65535 - i))
+    
+    client.reg_write(DATAPATH_CONTROL_BASE, datapath_word_lut_continuous) 
+    
+    client.reg_write(CONTROL_BASE, 0x00000020) # Enable writing from blob side...
+    client.reg_write_LUT(LUT_ADDR_DATA_BASE, 65535, cData)
+    client.reg_write(CONTROL_BASE, 0x00000000) # Disable writing from blob side...
+    print("Done writing to LUT! Hope it went okay!")
 
 if(mem_bw_test == True):
     client.reg_write(DATAPATH_CONTROL_BASE, DC2390_FIFO_UP_DOWN_COUNT) # Capture a test pattern

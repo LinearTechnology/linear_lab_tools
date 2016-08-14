@@ -20,15 +20,20 @@ from time import sleep
 from matplotlib import pyplot as plt
 # Okay, now the big one... this is the module that communicates with the SoCkit
 from mem_func_client_2 import MemClient
-from DC2390_functions import *
-
+#from DC2390_functions import *
+from sockit_system_functions import *
 # Get the host from the command line argument. Can be numeric or hostname.
 #HOST = sys.argv.pop() if len(sys.argv) == 2 else '127.0.0.1'
 HOST = sys.argv[1] if len(sys.argv) == 2 else '127.0.0.1'
 
-NUM_SAMPLES = 2**20#65536 #131072 #8192
+
+mem_bw_test = False # Set to true to run a ramp test after ADC capture
+NUM_SAMPLES = 2**16#65536 #131072 #8192
 
 DEADBEEF = -559038737 # For now, need to re-justify.
+
+ADC_DATA       = 0x00000000
+RAMP_DATA  = 0x00000004
 
 CONTROL_LOOP = 0x02
 ADC_B_CAPTURE = 0x00
@@ -75,8 +80,8 @@ sleep(0.1)
 
 
 # Capture a sine wave
-client.reg_write(DATAPATH_CONTROL_BASE, DC2390_FIFO_ADCA_NYQ) # First capture ADC A
-data = capture(client, NUM_SAMPLES, trigger = 0, timeout = 2.0)
+client.reg_write(DATAPATH_CONTROL_BASE, ADC_DATA) # First capture ADC A
+data = sockit_uns32_to_signed32(sockit_capture(client, NUM_SAMPLES, trigger = 0, timeout = 2.0))
 
 data_ch0 = np.ndarray(NUM_SAMPLES, dtype=float)
 
@@ -107,9 +112,9 @@ data_for_pscopeA = data_nodc0 / 256.0
 save_for_pscope("pscope_DC2390.adc",24 ,True, NUM_SAMPLES, "2390", "2500",
                 data_for_pscopeA)
 
-
-client.reg_write(DATAPATH_CONTROL_BASE, DC2390_FIFO_UP_DOWN_COUNT) # Capture a test pattern
-
-print("Ramp test!")
-errors = ramp_test(client, 2**21, trigger = 0, timeout = 1.0)
-print("Number of errors: " + str(errors))
+if(mem_bw_test == True):
+    client.reg_write(DATAPATH_CONTROL_BASE, RAMP_DATA) # Capture a test pattern
+    print("Ramp test!")
+    errors = sockit_ramp_test(client, 2**21, trigger = 0, timeout = 1.0)
+    print("Number of errors: " + str(errors))
+    client.reg_write(DATAPATH_CONTROL_BASE, ADC_DATA) # Set datapath back to ADC

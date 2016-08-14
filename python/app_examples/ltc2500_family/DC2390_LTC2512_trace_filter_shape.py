@@ -150,8 +150,8 @@ client.reg_write(DATAPATH_CONTROL_BASE, mux_port |
                  DC2390_DAC_B_NCO_COS | DC2390_DAC_A_NCO_SIN | 
                  DC2390_LUT_ADDR_COUNT | DC2390_LUT_RUN_CONT)
 
-ltc2500_cfg_led_on  = ((down_sample_factor | LTC2500_SSCIN_FLAT_FILT)<<6) | 0x03 | (LTC2500_N_FACTOR << 16)
-ltc2500_cfg_led_off = ((down_sample_factor | LTC2500_SSCIN_FLAT_FILT)<<6) | (LTC2500_N_FACTOR << 16)
+ltc2500_cfg_led_on  = ((down_sample_factor | LTC2500_SSCIN_FLAT_FILT)<<6) | 0x03# | (LTC2500_N_FACTOR << 16)
+ltc2500_cfg_led_off = ((down_sample_factor | LTC2500_SSCIN_FLAT_FILT)<<6)# | (LTC2500_N_FACTOR << 16)
 client.reg_write(LED_BASE, ltc2500_cfg_led_on)
 sleep(0.1)
 client.reg_write(LED_BASE, ltc2500_cfg_led_off)
@@ -164,7 +164,7 @@ freq_bin = []
 for x in range(1, 100):
     print("Data point: " + str(x))
     # Calculate the NCO to coherent bin
-    bin_number = x*2 # Number of cycles over the time record
+    bin_number = x*8 # Number of cycles over the time record
     
     # Produce different bin ranges based on DF
     if DF == 4:
@@ -186,6 +186,7 @@ for x in range(1, 100):
     
     # Capture the data
 #    data = capture(client, NUM_SAMPLES, timeout = 1.0) # Updating to new capture...
+    sleep(0.5)
     data_pre = sockit_capture(client, NUM_SAMPLES, trigger = 0, timeout = 1.0)
     data = sockit_uns32_to_signed32(data_pre)
     
@@ -205,6 +206,7 @@ for x in range(1, 100):
     fftdb = 20*np.log10(fftdata / max_amp)
     
     filter_shape.append(np.amax(fftdb[5:NUM_SAMPLES/2-1]))
+
 
 # Plot the results
 plt.plot(freq_bin,filter_shape)
