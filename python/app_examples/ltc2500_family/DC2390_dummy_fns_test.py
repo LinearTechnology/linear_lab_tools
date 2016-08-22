@@ -104,24 +104,35 @@ client.mem_write_from_file(starting_address + 100, number_of_reads, 'hello.txt',
 values = client.mem_read_block(starting_address + 100, number_of_reads, dummy = False)
 print values
 
+#testing file transfer
+file_to_read = "hello.txt"
+file_write_path = "/home/sockit/LT_soc_framework/hello2.txt"
+path_size = 64
+client.file_transfer(file_to_read, file_write_path, path_size)
+
+
+
+
+#### I2C stuff - to be tested again. #####
+
 #print 'Detecting I2C devices. Number of device: ',
 #print client.i2c_identify()
 
-print 'I2C Testing... ',
-print client.i2c_testing()
-
-slave_address = 0x73  # Globoal 7-bit address: 111 0011
-part_command = 0x2F      # 0010 (write and update all) 1111 (all DACs)
-num_of_bytes = 2
-vals = [0x00, 0x00]
-print 'I2C write byte... ',
-print client.i2c_write_byte(slave_address, part_command, num_of_bytes, vals, dummy = False)
-
-print 'I2C read EEPROM... ',
-print client.i2c_read()
-
-choice = raw_input('Shutdown: y/n? ')
-if(choice == 'y'):
-    shut = client.shutdown(dummy = False)
-    print('Shutting down...' if shut == True else 'Shutdown Failed!')
+#print 'I2C Testing... ',
+#print client.i2c_testing()
+#
+#slave_address = 0x73  # Globoal 7-bit address: 111 0011
+#part_command = 0x2F      # 0010 (write and update all) 1111 (all DACs)
+#num_of_bytes = 2
+#vals = [0x00, 0x00]
+#print 'I2C write byte... ',
+#print client.i2c_write_byte(slave_address, part_command, num_of_bytes, vals, dummy = True)
+#
+#print 'I2C read EEPROM... ',
+#print client.i2c_read()
+#
+#choice = raw_input('Shutdown: y/n? ')
+#if(choice == 'y'):
+#    shut = client.shutdown(dummy = True)
+#    print('Shutting down...' if shut == True else 'Shutdown Failed!')
     

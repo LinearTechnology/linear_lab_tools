@@ -49,10 +49,14 @@ class MemClient(object):
     MEM_READ_TO_FILE = 9
     MEM_WRITE_FROM_FILE = 10
     REG_WRITE_LUT = 11
+    
     I2C_IENTIFY = 12
     I2C_WRITE_BYTE = 17
     I2C_TESTING = 18
-    I2C_READ = 19
+    I2C_READ_EEPROM = 19
+    
+    FILE_TRANSFER = 80
+    
     SHUTDOWN = 1024
 
     ERROR = 0x80000000
@@ -336,7 +340,7 @@ class MemClient(object):
             command = command | MemClient.DUMMY_FUNC
         val = 0xFF
         sock_msg = struct.pack('III', command, length, val)
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s = socket.socket(socket.AF_INET, socket.SOCK_STR/EAM)
         s.connect((self.host, self.port))
         s.sendall(sock_msg)
         response = recvall(s, 12)
@@ -347,8 +351,8 @@ class MemClient(object):
         else:
             return False
           
-    def i2c_read(self, dummy = False):
-        command = MemClient.I2C_READ | MemClient.COMMAND_SENT
+    def i2c_read_eeprom(self, dummy = False):
+        command = MemClient.I2C_READ_EEPROM | MemClient.COMMAND_SENT
         length = 12
         if (dummy == True):
             command = command | MemClient.DUMMY_FUNC
@@ -364,6 +368,43 @@ class MemClient(object):
             return True
         else:
             return False       
+        
+    def file_transfer(self, file_to_read, file_write_path, path_size, dummy = False):
+        
+        file_write_path = file_write_path.ljust(path_size)
+        
+        # Read the file to be transferred
+        file_data = ''
+        fp = open(file_to_read, "rb")
+        l = fp.read(1024)
+        while(l):
+            file_data = file_data.join(l)
+            l = fp.read(1024)
+        fp.close()  
+        
+        # Size of the file transferred
+        size = len(file_data)        
+        command = MemClient.FILE_TRANSFER | MemClient.COMMAND_SENT
+        length = 8 + len(file_write_path) + size
+        if (dummy == True):
+            command = command | MemClient.DUMMY_FUNC        
+
+        sock_msg = struct.pack('II', command, length)
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.connect((self.host, self.port))
+        s.sendall(sock_msg)
+
+        # Transfer file_path and the file
+        s.send(file_write_path)
+        s.send(file_data)
+
+        response = recvall(s, 12)
+        (response_command, response_length, val) = struct.unpack('III', response)
+        s.close()
+
+        return val
+        
+        
         
     def shutdown(self, dummy = False):
         command = MemClient.SHUTDOWN | MemClient.COMMAND_SENT
