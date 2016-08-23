@@ -101,7 +101,7 @@ if device_info is None:
 with comm.Controller(device_info) as controller:
 
     vprint('Starting data collect')
-    controller.data_set_characteristics(False, SAMPLE_BYTES, False)
+    controller.data_set_characteristics(False, SAMPLE_BYTES, True)
     controller.data_start_collect(num_samples, comm.TRIGGER_NONE)
 
     for i in range(10):
