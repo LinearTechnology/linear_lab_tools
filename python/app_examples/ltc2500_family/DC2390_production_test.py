@@ -1,12 +1,12 @@
 #!/usr/bin/python
-# Example application for running tests on the Arrow SoCkit board
-# using the LT_soc_framework
+'''
+Run with SoCkit IP address as argument.
 
-# Big update 6/29/2015!!
-# Switching to true ring buffer operation using Noe's FPGA code
-
-# 7/23/2015 - All data paths in FPGA design are in place!!
-# Splitting out a bunch of stuff into DC2390_functions.py module
+Production test script. Capture two channels of Nyquist data,
+First with SR1 providing 2kHz signal,
+Next, with ADC performance verified, use onboard LTC1668
+DACs as signal source (to verify DAC performance.)
+'''
 
 
 import sys #, os, socket, ctypes, struct
@@ -22,8 +22,6 @@ from mem_func_client_2 import MemClient
 from DC2390_functions import *
 from sockit_system_functions import *
 
-# Get the host from the command line argument. Can be numeric or hostname.
-#HOST = sys.argv.pop() if len(sys.argv) == 2 else '127.0.0.1'
 HOST = sys.argv[1] if len(sys.argv) == 2 else '127.0.0.1'
 
 
