@@ -133,12 +133,13 @@ uint8_t GetFpgaLoadIdFromFile(string fpga_filename) {
     // File names are "S2157.sqz", "S2175.sqz", "S2195.sqz", "S2274.sqz", "S9011.sqz"
 
     auto fpga_path = Path(ToUtf16(fpga_filename));
-
-    if ((fpga_path.BaseName()[0] & 0xDF) != 'S') {
+    string load = ToUtf8(fpga_path.BaseName());
+    if ((load[0] & 0xDF) != 'S') {
         throw invalid_argument(fpga_filename + "is not a valid FPGA load file");
     }
 
-    long number = strtol(fpga_filename.c_str() + 1, nullptr, 10);
+    
+    long number = strtol(load.c_str() + 1, nullptr, 10);
 
     switch (number) {
     case 2274:

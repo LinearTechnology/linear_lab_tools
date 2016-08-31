@@ -22,6 +22,7 @@ public:
     void EepromReadString(char* buffer, int buffer_size) override {
         return FtdiAdc::EepromReadString(buffer, buffer_size);
     }
+    string FpgaGetPath(const string& load_filename, const string& folder = "");
     bool FpgaGetIsLoaded(const string& fpga_filename) override;
     int FpgaLoadFileChunked(const string& fpga_filename) override;
     void FpgaCancelLoad() override;
@@ -79,7 +80,6 @@ private:
 
     int FpgaFileToFlashChunked(const wstring& path);
     bool FpgaFlashToLoaded(uint16_t load_id, uint8_t revision);
-    wstring FpgaGetPath(const string& load_filename);
     FpgaLoad GetFpgaLoadIdFromFile(const string& fpga_filename);
     void GpioSendByte(uint8_t byte);
     uint8_t base_byte = 0;

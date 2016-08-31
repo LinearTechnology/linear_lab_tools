@@ -17,7 +17,7 @@ Dc890::FpgaLoad Dc890::GetFpgaLoadIdFromFile(const string& fpga_filename) {
     } else if (CompareI(fpga_filename, "lvds")) {
         return FpgaLoad(1, 0);
     }
-    auto fpga_path = Path(FpgaGetPath(fpga_filename));
+    auto fpga_path = Path(ToUtf16(FpgaGetPath(fpga_filename)));
 
     int revision = Last<wchar_t>(fpga_path.BaseName()) - L'0';
 
@@ -235,24 +235,43 @@ void Dc890::FpgaCancelLoad() {
     Close();
 }
 
-wstring Dc890::FpgaGetPath(const string& load_filename) {
+static std::tuple<bool, string> FindFile(const Path& path, const string& folder) {
+    
+    auto folder16 = ToUtf16(folder);
+    for (auto& path_name : ListFiles(folder16)) {
+        Path file_path(path_name);
+        if (StartsWithI(file_path.BaseName(), path.BaseName())) {
+            return std::make_tuple(true, ToUtf8(Path(folder16, file_path.BaseName(), L".sqz").Fullpath()));
+        }
+    }
+    return std::make_tuple(false, "");
+}
+
+string Dc890::FpgaGetPath(const string& load_filename, const string& folder) {
     if (CompareI(load_filename, "cmos") || CompareI(load_filename, "lvds")) {
-        return ToUtf16(load_filename);
+        return load_filename;
     }
     string load_name;
     Path path(ToUtf16(load_filename));
     if (DoesFileExist(path.Fullpath())) {
-        load_name = ToUtf8(path.BaseName());
-    } else {
-        auto location = GetPathFromRegistry(L"SOFTWARE\\Linear Technology\\LinearLabTools") +
-                        L"fpga_loads";
-        for (auto& path_name : ListFiles(location)) {
-            Path file_path(path_name);
-            if (StartsWithI(file_path.BaseName(), path.BaseName())) {
-                return Path(location, file_path.BaseName(), L".sqz").Fullpath();
-            }
+        return ToUtf8(path.Fullpath());
+    }
+
+    if (!folder.empty()) {
+        auto result = FindFile(path, folder);
+        if (std::get<0>(result)) {
+            return std::get<1>(result);
         }
     }
+
+    auto location = GetPathFromRegistry(L"SOFTWARE\\Linear Technology\\LinearLabTools") +
+                    L"fpga_loads";
+
+    auto result = FindFile(path, ToUtf8(location));
+    if (std::get<0>(result)) {
+        return std::get<1>(result);
+    }
+    
     throw invalid_argument("Invalid load file name.");
 }
 
@@ -265,14 +284,14 @@ int Dc890::FpgaLoadFileChunked(const string& fpga_filename) {
         if ((load.load_id == 1 || load.load_id == 2) && !flash_result) {
             Close();
             throw HardwareError(
-                "Load routine did not report error, but couldn't find built in load.");
+                "Couldn't find builtin load but load routine did not report error.");
         }
 
         if (flash_result) {
             return 0;
         }
     }
-    auto fpga_path = FpgaGetPath(fpga_filename);
+    auto fpga_path = ToUtf16(FpgaGetPath(fpga_filename));
     auto progress = FpgaFileToFlashChunked(fpga_path);
     if (progress == 0) {
         fpga_load_started = false;
@@ -280,7 +299,7 @@ int Dc890::FpgaLoadFileChunked(const string& fpga_filename) {
         bool is_loaded = FpgaFlashToLoaded(load.load_id, load.revision);
         if (!is_loaded) {
             Close();
-            throw HardwareError("Load routine did not report error, but couldn't find load.");
+            throw HardwareError("Couldn't find load in flash but load routine did not report error.");
         }
     }
     return progress;

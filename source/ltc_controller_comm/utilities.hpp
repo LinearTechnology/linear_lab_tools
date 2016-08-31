@@ -118,13 +118,13 @@ public:
         folder = path.substr(0, j);
         PathFixSeparator(folder);
     }
-    wstring Fullpath() {
+    wstring Fullpath() const {
         auto result = folder + base_name + extension;
         return result;
     }
-    wstring Folder() { return folder; }
-    wstring BaseName() { return base_name; }
-    wstring Extension() { return extension; }
+    wstring Folder() const { return folder; }
+    wstring BaseName() const { return base_name; }
+    wstring Extension() const { return extension; }
 private:
     wstring folder;
     wstring base_name;
