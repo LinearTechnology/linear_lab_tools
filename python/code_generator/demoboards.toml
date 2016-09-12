@@ -1,0 +1,1113 @@
+# List of supported demo boards
+
+#############
+### DC718 ###
+#############
+
+["LTC2208 DC854D-A"]
+part_number           = "LTC2208"
+controller            = "DC718"
+dc_number             = "DC854" 
+num_channels          = 1
+is_positive_clock     = true 
+num_bits              = 16 
+alignment             = 16
+is_bipolar            = true
+
+# Suspect!!!
+["LTC2208 DC14D-B"]
+part_number           = "LTC2208-14"
+controller            = "DC718"
+dc_number             = "DC854" 
+num_channels          = 1
+is_positive_clock     = true 
+num_bits              = 14
+alignment             = 16
+is_bipolar            = true
+
+["LTC2208 DC14D-C"]
+part_number           = "LTC2208-14"
+controller            = "DC718"
+dc_number             = "DC854" 
+num_channels          = 1
+is_positive_clock     = true 
+num_bits              = 14
+alignment             = 16
+is_bipolar            = true
+
+["LTC2203 DC1058A-A"]
+part_number = "LTC2203"
+dc_number = "DC1058A-A"
+controller = "DC718"
+is_positive_clock = true
+num_bits = 16
+alignment = 16
+is_bipolar = true
+
+["LTC2207 DC1058A-B"]
+part_number = "LTC2207"
+dc_number = "DC1058A-B"
+controller = "DC718"
+is_positive_clock = true
+num_bits = 16
+alignment = 16
+is_bipolar = true
+
+["LTC2207 DC1058A-C"]
+part_number = "LTC2207"
+dc_number = "DC1058A-C"
+controller = "DC718"
+is_positive_clock = true
+num_bits = 16
+alignment = 16
+is_bipolar = true
+
+["LTC2207 DC1058A-D"]
+part_number = "LTC2207"
+dc_number = "DC1058A-D"
+controller = "DC718"
+is_positive_clock = true
+num_bits = 16
+alignment = 16
+is_bipolar = true
+
+["LTC2207 DC1058A-E"]
+part_number = "LTC2207"
+dc_number = "DC1058A-E"
+controller = "DC718"
+is_positive_clock = true
+num_bits = 16
+alignment = 16
+is_bipolar = true
+
+["LTC2203 DC1058A-F"]
+part_number = "LTC2203"
+dc_number = "DC1058A-F"
+controller = "DC718"
+is_positive_clock = true
+num_bits = 16
+alignment = 16
+is_bipolar = true
+
+["LTC1605 DC1255A-A"]
+part_number = "LTC1605"
+dc_number = "DC1255A-A"
+controller = "DC718"
+is_positive_clock = false
+num_bits = 16
+alignment = 16
+is_bipolar = true
+
+["LTC1606 DC1255A-B"]
+part_number = "LTC1606"
+dc_number = "DC1255A-B"
+controller = "DC718"
+is_positive_clock = false
+num_bits = 16
+alignment = 16
+is_bipolar = true
+
+["LTC2393 DC1500A-A"]
+part_number = "LTC2393"
+dc_number = "DC1500A-A"
+controller = "DC718"
+is_positive_clock = false
+num_bits = 16
+alignment = 16
+is_bipolar = false
+
+["LTC2392 DC1500A-B"]
+part_number = "LTC2392"
+dc_number = "DC1500A-B"
+controller = "DC718"
+is_positive_clock = false
+num_bits = 16
+alignment = 16
+is_bipolar = false
+
+["LTC2391 DC1500A-C"]
+part_number = "LTC2391"
+dc_number = "DC1500A-C"
+controller = "DC718"
+is_positive_clock = false
+num_bits = 16
+alignment = 16
+is_bipolar = false
+
+["LTC2393 DC1500A-D"]
+part_number = "LTC2393"
+dc_number = "DC1500A-D"
+controller = "DC718"
+is_positive_clock = false
+num_bits = 18
+alignment = 18
+is_bipolar = false
+
+["LTC2392 DC1500A-E"]
+part_number = "LTC2392"
+dc_number = "DC1500A-E"
+controller = "DC718"
+is_positive_clock = false
+num_bits = 18
+alignment = 18
+is_bipolar = false
+
+["LTC2391 DC1500A-F"]
+part_number = "LTC2391"
+dc_number = "DC1500A-F"
+controller = "DC718"
+is_positive_clock = false
+num_bits = 18
+alignment = 18
+is_bipolar = false
+
+["LTC2393 DC1501A-A"]
+part_number = "LTC2393"
+dc_number = "DC1501A-A"
+controller = "DC718"
+is_positive_clock = false
+num_bits = 16
+alignment = 16
+is_bipolar = false
+
+["LTC2392 DC1501A-B"]
+part_number = "LTC2392"
+dc_number = "DC1501A-B"
+controller = "DC718"
+is_positive_clock = false
+num_bits = 16
+alignment = 16
+is_bipolar = false
+
+["LTC2391 DC1501A-C"]
+part_number = "LTC2391"
+dc_number = "DC1501A-C"
+controller = "DC718"
+is_positive_clock = false
+num_bits = 16
+alignment = 16
+is_bipolar = false
+
+["LTC2393 DC1501A-D"]
+part_number = "LTC2393"
+dc_number = "DC1501A-D"
+controller = "DC718"
+is_positive_clock = false
+num_bits = 18
+alignment = 18
+is_bipolar = false
+
+["LTC2392 DC1501A-E"]
+part_number = "LTC2392"
+dc_number = "DC1501A-E"
+controller = "DC718"
+is_positive_clock = false
+num_bits = 18
+alignment = 18
+is_bipolar = false
+
+["LTC2391 DC1501A-F"]
+part_number = "LTC2391"
+dc_number = "DC1501A-F"
+controller = "DC718"
+is_positive_clock = false
+num_bits = 18
+alignment = 18
+is_bipolar = false
+
+["LTC2315 DC1563A-A"]
+part_number = "LTC2315"
+dc_number = "DC1563A-A"
+controller = "DC718"
+is_positive_clock = true
+num_bits = 12
+alignment = 12
+is_bipolar = false
+
+["LTC2313-12 DC1563A-B"]
+part_number = "LTC2313-12"
+dc_number = "DC1563A-B"
+controller = "DC718"
+is_positive_clock = true
+num_bits = 12
+alignment = 12
+is_bipolar = false
+
+["LTC2312-12 DC1563A-C"]
+part_number = "LTC2312-12"
+dc_number = "DC1563A-C"
+controller = "DC718"
+is_positive_clock = true
+num_bits = 12
+alignment = 12
+is_bipolar = false
+
+["LTC2311-12 DC1563A-D"]
+part_number = "LTC2311-12"
+dc_number = "DC1563A-D"
+controller = "DC718"
+is_positive_clock = true
+num_bits = 12
+alignment = 12
+is_bipolar = false
+
+["LTC2310-12 DC1563A-E"]
+part_number = "LTC2310-12"
+dc_number = "DC1563A-E"
+controller = "DC718"
+is_positive_clock = true
+num_bits = 12
+alignment = 12
+is_bipolar = false
+
+["LTC2314 DC1563A-F"]
+part_number = "LTC2314"
+dc_number = "DC1563A-F"
+controller = "DC718"
+is_positive_clock = true
+num_bits = 14
+alignment = 14
+is_bipolar = false
+
+["LTC2313-14 DC1563A-G"]
+part_number = "LTC2313-14"
+dc_number = "DC1563A-G"
+controller = "DC718"
+is_positive_clock = true
+num_bits = 14
+alignment = 14
+is_bipolar = false
+
+["LTC2312-14 DC1563A-H"]
+part_number = "LTC2312-14"
+dc_number = "DC1563A-H"
+controller = "DC718"
+is_positive_clock = true
+num_bits = 14
+alignment = 14
+is_bipolar = false
+
+["LTC2311-14 DC1563A-I"]
+part_number = "LTC2311-14"
+dc_number = "DC1563A-I"
+controller = "DC718"
+is_positive_clock = true
+num_bits = 14
+alignment = 14
+is_bipolar = false
+
+["LTC2310-14 DC1563A-J"]
+part_number = "LTC2310-14"
+dc_number = "DC1563A-J"
+controller = "DC718"
+is_positive_clock = true
+num_bits = 14
+alignment = 14
+is_bipolar = false
+
+["LTC2383 DC1571A-A"]
+part_number = "LTC2383"
+dc_number = "DC1571A-A"
+controller = "DC718"
+is_positive_clock = false
+num_bits = 16
+alignment = 16
+is_bipolar = true
+
+["LTC2382 DC1571A-B"]
+part_number = "LTC2382"
+dc_number = "DC1571A-B"
+controller = "DC718"
+is_positive_clock = false
+num_bits = 16
+alignment = 16
+is_bipolar = true
+
+["LTC2381 DC1571A-C"]
+part_number = "LTC2381"
+dc_number = "DC1571A-C"
+controller = "DC718"
+is_positive_clock = false
+num_bits = 16
+alignment = 16
+is_bipolar = true
+
+["LTC2380 DC1783A-A"]
+part_number = "LTC2380"
+dc_number = "DC1783A-A"
+controller = "DC718"
+is_positive_clock = false
+num_bits = 16
+alignment = 16
+is_bipolar = true
+
+["LTC2378-16 DC1783A-B"]
+part_number = "LTC2378-16"
+dc_number = "DC1783A-B"
+controller = "DC718"
+is_positive_clock = false
+num_bits = 16
+alignment = 16
+is_bipolar = true
+
+["LTC2377-16 DC1783A-C"]
+part_number = "LTC2377-16"
+dc_number = "DC1783A-C"
+controller = "DC718"
+is_positive_clock = false
+num_bits = 16
+alignment = 16
+is_bipolar = true
+
+["LTC2376-16 DC1783A-D"]
+part_number = "LTC2376-16"
+dc_number = "DC1783A-D"
+controller = "DC718"
+is_positive_clock = false
+num_bits = 16
+alignment = 16
+is_bipolar = true
+
+["LTC2379 DC1783A-E"]
+part_number = "LTC2379"
+dc_number = "DC1783A-E"
+controller = "DC718"
+is_positive_clock = false
+num_bits = 18
+alignment = 18
+is_bipolar = true
+
+["LTC2378-18 DC1783A-F"]
+part_number = "LTC2378-18"
+dc_number = "DC1783A-F"
+controller = "DC718"
+is_positive_clock = false
+num_bits = 18
+alignment = 18
+is_bipolar = true
+
+["LTC2377-18 DC1783A-G"]
+part_number = "LTC2377-18"
+dc_number = "DC1783A-G"
+controller = "DC718"
+is_positive_clock = false
+num_bits = 18
+alignment = 18
+is_bipolar = true
+
+["LTC2376-18 DC1783A-H"]
+part_number = "LTC2376-18"
+dc_number = "DC1783A-H"
+controller = "DC718"
+is_positive_clock = false
+num_bits = 18
+alignment = 18
+is_bipolar = true
+
+["LTC2370 DC1796A-A"]
+part_number = "LTC2370"
+dc_number = "DC1796A-A"
+controller = "DC718"
+is_positive_clock = false
+num_bits = 16
+alignment = 16
+is_bipolar = false
+
+["LTC2368-16 DC1796A-B"]
+part_number = "LTC2368-16"
+dc_number = "DC1796A-B"
+controller = "DC718"
+is_positive_clock = false
+num_bits = 16
+alignment = 16
+is_bipolar = false
+
+["LTC2367-16 DC1796A-C"]
+part_number = "LTC2367-16"
+dc_number = "DC1796A-C"
+controller = "DC718"
+is_positive_clock = false
+num_bits = 16
+alignment = 16
+is_bipolar = false
+
+["LTC2364-16 DC1796A-D"]
+part_number = "LTC2364-16"
+dc_number = "DC1796A-D"
+controller = "DC718"
+is_positive_clock = false
+num_bits = 16
+alignment = 16
+is_bipolar = false
+
+["LTC2369 DC1796A-E"]
+part_number = "LTC2369"
+dc_number = "DC1796A-E"
+controller = "DC718"
+is_positive_clock = false
+num_bits = 18
+alignment = 18
+is_bipolar = false
+
+["LTC2368-18 DC1796A-F"]
+part_number = "LTC2368-18"
+dc_number = "DC1796A-F"
+controller = "DC718"
+is_positive_clock = false
+num_bits = 18
+alignment = 18
+is_bipolar = false
+
+["LTC2367-18 DC1796A-G"]
+part_number = "LTC2367-18"
+dc_number = "DC1796A-G"
+controller = "DC718"
+is_positive_clock = false
+num_bits = 18
+alignment = 18
+is_bipolar = false
+
+["LTC2364-18 DC1796A-H"]
+part_number = "LTC2364-18"
+dc_number = "DC1796A-H"
+controller = "DC718"
+is_positive_clock = false
+num_bits = 18
+alignment = 18
+is_bipolar = false
+
+["LTC2380 DC1805A-A"]
+part_number = "LTC2380"
+dc_number = "DC1805A-A"
+controller = "DC718"
+is_positive_clock = false
+num_bits = 16
+alignment = 16
+is_bipolar = true
+
+["LTC2378-16 DC1805A-B"]
+part_number = "LTC2378-16"
+dc_number = "DC1805A-B"
+controller = "DC718"
+is_positive_clock = false
+num_bits = 16
+alignment = 16
+is_bipolar = true
+
+["LTC2377-16 DC1805A-C"]
+part_number = "LTC2377-16"
+dc_number = "DC1805A-C"
+controller = "DC718"
+is_positive_clock = false
+num_bits = 16
+alignment = 16
+is_bipolar = true
+
+["LTC2376-16 DC1805A-D"]
+part_number = "LTC2376-16"
+dc_number = "DC1805A-D"
+controller = "DC718"
+is_positive_clock = false
+num_bits = 16
+alignment = 16
+is_bipolar = true
+
+["LTC2379 DC1805A-E"]
+part_number = "LTC2379"
+dc_number = "DC1805A-E"
+controller = "DC718"
+is_positive_clock = false
+num_bits = 18
+alignment = 18
+is_bipolar = true
+
+["LTC2378-18 DC1805A-F"]
+part_number = "LTC2378-18"
+dc_number = "DC1805A-F"
+controller = "DC718"
+is_positive_clock = false
+num_bits = 18
+alignment = 18
+is_bipolar = true
+
+["LTC2377-18 DC1805A-G"]
+part_number = "LTC2377-18"
+dc_number = "DC1805A-G"
+controller = "DC718"
+is_positive_clock = false
+num_bits = 18
+alignment = 18
+is_bipolar = true
+
+["LTC2376-18 DC1805A-H"]
+part_number = "LTC2376-18"
+dc_number = "DC1805A-H"
+controller = "DC718"
+is_positive_clock = false
+num_bits = 18
+alignment = 18
+is_bipolar = true
+
+["LTC2370 DC1813A-A"]
+part_number = "LTC2370"
+dc_number = "DC1813A-A"
+controller = "DC718"
+is_positive_clock = false
+num_bits = 16
+alignment = 16
+is_bipolar = false
+
+["LTC2368-16 DC1813A-B"]
+part_number = "LTC2368-16"
+dc_number = "DC1813A-B"
+controller = "DC718"
+is_positive_clock = false
+num_bits = 16
+alignment = 16
+is_bipolar = false
+
+["LTC2367-16 DC1813A-C"]
+part_number = "LTC2367-16"
+dc_number = "DC1813A-C"
+controller = "DC718"
+is_positive_clock = false
+num_bits = 16
+alignment = 16
+is_bipolar = false
+
+["LTC2364-16 DC1813A-D"]
+part_number = "LTC2364-16"
+dc_number = "DC1813A-D"
+controller = "DC718"
+is_positive_clock = false
+num_bits = 16
+alignment = 16
+is_bipolar = false
+
+["LTC2369 DC1813A-E"]
+part_number = "LTC2369"
+dc_number = "DC1813A-E"
+controller = "DC718"
+is_positive_clock = false
+num_bits = 18
+alignment = 18
+is_bipolar = false
+
+["LTC2368-18 DC1813A-F"]
+part_number = "LTC2368-18"
+dc_number = "DC1813A-F"
+controller = "DC718"
+is_positive_clock = false
+num_bits = 18
+alignment = 18
+is_bipolar = false
+
+["LTC2367-18 DC1813A-G"]
+part_number = "LTC2367-18"
+dc_number = "DC1813A-G"
+controller = "DC718"
+is_positive_clock = false
+num_bits = 18
+alignment = 18
+is_bipolar = false
+
+["LTC2364-18 DC1813A-H"]
+part_number = "LTC2364-18"
+dc_number = "DC1813A-H"
+controller = "DC718"
+is_positive_clock = false
+num_bits = 18
+alignment = 18
+is_bipolar = false
+
+["LTC2389 DC1826A-A"]
+part_number = "LTC2389"
+dc_number = "DC1826A-A"
+controller = "DC718"
+is_positive_clock = false
+num_bits = 18
+alignment = 18
+is_bipolar = true
+
+["LTC2388 DC1826A-B"]
+part_number = "LTC2388"
+dc_number = "DC1826A-B"
+controller = "DC718"
+is_positive_clock = false
+num_bits = 18
+alignment = 18
+is_bipolar = true
+
+["LTC2387 DC1826A-C"]
+part_number = "LTC2387"
+dc_number = "DC1826A-C"
+controller = "DC718"
+is_positive_clock = false
+num_bits = 18
+alignment = 18
+is_bipolar = true
+
+["LTC2386 DC1826A-D"]
+part_number = "LTC2386"
+dc_number = "DC1826A-D"
+controller = "DC718"
+is_positive_clock = false
+num_bits = 18
+alignment = 18
+is_bipolar = true
+
+["LTC2389 DC1826A-E"]
+part_number = "LTC2389"
+dc_number = "DC1826A-E"
+controller = "DC718"
+is_positive_clock = false
+num_bits = 16
+alignment = 16
+is_bipolar = true
+
+["LTC2388 DC1826A-F"]
+part_number = "LTC2388"
+dc_number = "DC1826A-F"
+controller = "DC718"
+is_positive_clock = false
+num_bits = 16
+alignment = 16
+is_bipolar = true
+
+["LTC2387 DC1826A-G"]
+part_number = "LTC2387"
+dc_number = "DC1826A-G"
+controller = "DC718"
+is_positive_clock = false
+num_bits = 16
+alignment = 16
+is_bipolar = true
+
+["LTC2386 DC1826A-H"]
+part_number = "LTC2386"
+dc_number = "DC1826A-H"
+controller = "DC718"
+is_positive_clock = false
+num_bits = 16
+alignment = 16
+is_bipolar = true
+
+["LTC2338 DC1908A-A"]
+part_number = "LTC2338"
+dc_number = "DC1908A-A"
+controller = "DC718"
+is_positive_clock = false
+num_bits = 18
+alignment = 18
+is_bipolar = true
+
+["LTC2337 DC1908A-B"]
+part_number = "LTC2337"
+dc_number = "DC1908A-B"
+controller = "DC718"
+is_positive_clock = false
+num_bits = 18
+alignment = 18
+is_bipolar = true
+
+["LTC2336 DC1908A-C"]
+part_number = "LTC2336"
+dc_number = "DC1908A-C"
+controller = "DC718"
+is_positive_clock = false
+num_bits = 18
+alignment = 18
+is_bipolar = true
+
+["LTC2328-18 DC1908A-D"]
+part_number = "LTC2328-18"
+dc_number = "DC1908A-D"
+controller = "DC718"
+is_positive_clock = false
+num_bits = 18
+alignment = 18
+is_bipolar = true
+
+["LTC2327-18 DC1908A-E"]
+part_number = "LTC2327-18"
+dc_number = "DC1908A-E"
+controller = "DC718"
+is_positive_clock = false
+num_bits = 18
+alignment = 18
+is_bipolar = true
+
+["LTC2326-18 DC1908A-F"]
+part_number = "LTC2326-18"
+dc_number = "DC1908A-F"
+controller = "DC718"
+is_positive_clock = false
+num_bits = 18
+alignment = 18
+is_bipolar = true
+
+["LTC2328-16 DC1908A-G"]
+part_number = "LTC2328-16"
+dc_number = "DC1908A-G"
+controller = "DC718"
+is_positive_clock = false
+num_bits = 16
+alignment = 16
+is_bipolar = true
+
+["LTC2327-16 DC1908A-H"]
+part_number = "LTC2327-16"
+dc_number = "DC1908A-H"
+controller = "DC718"
+is_positive_clock = false
+num_bits = 16
+alignment = 16
+is_bipolar = true
+
+["LTC2326-16 DC1908A-I"]
+part_number = "LTC2326-16"
+dc_number = "DC1908A-I"
+controller = "DC718"
+is_positive_clock = false
+num_bits = 16
+alignment = 16
+is_bipolar = true
+
+["LTC2387 DC2290A-A"]
+part_number = "LTC2387"
+dc_number = "DC2290A"
+controller = "DC718"
+is_positive_clock = false
+num_bits = 18
+alignment = 18
+is_bipolar = true
+
+["LTC2387 DC2290A-B"]
+part_number = "LTC2387"
+dc_number = "DC2290A"
+controller = "DC718"
+is_positive_clock = false
+num_bits = 16
+alignment = 16
+is_bipolar = true
+
+["LTC2328-18 DC2405A-A"]
+part_number = "LTC2328-18"
+dc_number = "DC2405A-A"
+controller = "DC718"
+is_positive_clock = false
+num_bits = 18
+alignment = 18
+is_bipolar = true
+
+["LTC2217 DC854D-E"]
+part_number = "LTC2217"
+dc_number = "DC854D-E"
+controller = "DC718"
+is_positive_clock = true
+num_bits = 16
+alignment = 16
+is_bipolar = true
+
+["LTC2217 DC854D-F"]
+part_number = "LTC2217"
+dc_number = "DC854D-F"
+controller = "DC718"
+is_positive_clock = true
+num_bits = 16
+alignment = 16
+is_bipolar = true
+
+["LTC2216 DC854D-G"]
+part_number = "LTC2216"
+dc_number = "DC854D-G"
+controller = "DC718"
+is_positive_clock = true
+num_bits = 16
+alignment = 16
+is_bipolar = true
+
+["LTC2216 DC854D-H"]
+part_number = "LTC2216"
+dc_number = "DC854D-H"
+controller = "DC718"
+is_positive_clock = true
+num_bits = 16
+alignment = 16
+is_bipolar = true
+
+["LTC2215 DC854D-I"]
+part_number = "LTC2215"
+dc_number = "DC854D-I"
+controller = "DC718"
+is_positive_clock = true
+num_bits = 16
+alignment = 16
+is_bipolar = true
+
+["LTC2215 DC854D-J"]
+part_number = "LTC2215"
+dc_number = "DC854D-J"
+controller = "DC718"
+is_positive_clock = true
+num_bits = 16
+alignment = 16
+is_bipolar = true
+
+["LTC2249 DC782A-A"]
+part_number = "LTC2249"
+dc_number = "DC782A-A"
+controller = "DC718"
+is_positive_clock = false
+num_bits = 14
+alignment = 14
+is_bipolar = true
+
+["LTC2248 DC782A-B"]
+part_number = "LTC2248"
+dc_number = "DC782A-B"
+controller = "DC718"
+is_positive_clock = false
+num_bits = 14
+alignment = 14
+is_bipolar = true
+
+["LTC2247 DC782A-C"]
+part_number = "LTC2247"
+dc_number = "DC782A-C"
+controller = "DC718"
+is_positive_clock = false
+num_bits = 14
+alignment = 14
+is_bipolar = true
+
+["LTC2246 DC782A-D"]
+part_number = "LTC2246"
+dc_number = "DC782A-D"
+controller = "DC718"
+is_positive_clock = true
+num_bits = 14
+alignment = 14
+is_bipolar = true
+
+["LTC2245 DC782A-E"]
+part_number = "LTC2245"
+dc_number = "DC782A-E"
+controller = "DC718"
+is_positive_clock = true
+num_bits = 14
+alignment = 14
+is_bipolar = true
+
+["LTC2229 DC782A-F"]
+part_number = "LTC2229"
+dc_number = "DC782A-F"
+controller = "DC718"
+is_positive_clock = false
+num_bits = 12
+alignment = 14
+is_bipolar = true
+
+["LTC2228 DC782A-G"]
+part_number = "LTC2228"
+dc_number = "DC782A-G"
+controller = "DC718"
+is_positive_clock = false
+num_bits = 12
+alignment = 14
+is_bipolar = true
+
+["LTC2227 DC782A-H"]
+part_number = "LTC2227"
+dc_number = "DC782A-H"
+controller = "DC718"
+is_positive_clock = false
+num_bits = 12
+alignment = 14
+is_bipolar = true
+
+["LTC2226 DC782A-J"]
+part_number = "LTC2226"
+dc_number = "DC782A-J"
+controller = "DC718"
+is_positive_clock = false
+num_bits = 12
+alignment = 14
+is_bipolar = true
+
+["LTC2225 DC782A-K"]
+part_number = "LTC2225"
+dc_number = "DC782A-F"
+controller = "DC718"
+is_positive_clock = false
+num_bits = 12
+alignment = 14
+is_bipolar = true
+
+["LTC2239 DC782A-L"]
+part_number = "LTC2239"
+dc_number = "DC782A-L"
+controller = "DC718"
+is_positive_clock = false
+num_bits = 10
+alignment = 14
+is_bipolar = true
+
+["LTC2238 DC782A-M"]
+part_number = "LTC2238"
+dc_number = "DC782A-M"
+controller = "DC718"
+is_positive_clock = false
+num_bits = 10
+alignment = 14
+is_bipolar = true
+
+["LTC2237 DC782A-N"]
+part_number = "LTC2237"
+dc_number = "DC782A-N"
+controller = "DC718"
+is_positive_clock = false
+num_bits = 10
+alignment = 14
+is_bipolar = true
+
+["LTC2236 DC782A-P"]
+part_number = "LTC2236"
+dc_number = "DC782A-P"
+controller = "DC718"
+is_positive_clock = false
+num_bits = 10
+alignment = 14
+is_bipolar = true
+
+["LTC2249 DC782A-Q"]
+part_number = "LTC2249"
+dc_number = "DC782A-Q"
+controller = "DC718"
+is_positive_clock = false
+num_bits = 14
+alignment = 14
+is_bipolar = true
+
+["LTC2248 DC782A-R"]
+part_number = "LTC2248"
+dc_number = "DC782A-R"
+controller = "DC718"
+is_positive_clock = false
+num_bits = 14
+alignment = 14
+is_bipolar = true
+
+["LTC2255 DC782A-S"]
+part_number = "LTC2255"
+dc_number = "DC782A-S"
+controller = "DC718"
+is_positive_clock = false
+num_bits = 14
+alignment = 14
+is_bipolar = true
+
+["LTC2254 DC782A-T"]
+part_number = "LTC2254"
+dc_number = "DC782A-T"
+controller = "DC718"
+is_positive_clock = false
+num_bits = 14
+alignment = 14
+is_bipolar = true
+
+["LTC2253 DC782A-U"]
+part_number = "LTC2253"
+dc_number = "DC782A-U"
+controller = "DC718"
+is_positive_clock = false
+num_bits = 12
+alignment = 14
+is_bipolar = true
+
+["LTC2252 DC782A-V"]
+part_number = "LTC2252"
+dc_number = "DC782A-V"
+controller = "DC718"
+is_positive_clock = false
+num_bits = 12
+alignment = 14
+is_bipolar = true
+
+["LTC2251 DC782A-W"]
+part_number = "LTC2251"
+dc_number = "DC782A-W"
+controller = "DC718"
+is_positive_clock = false
+num_bits = 10
+alignment = 14
+is_bipolar = true
+
+["LTC2250 DC782A-X"]
+part_number = "LTC2250"
+dc_number = "DC782A-X"
+controller = "DC718"
+is_positive_clock = false
+num_bits = 10
+alignment = 14
+is_bipolar = true
+
+
+
+
+
+
+
+
+
+#############
+### DC890 ###
+#############
+
+["LTC2261 DC1369A-A"]
+part_number = "LTC2261"
+dc_number = "DC1369A-A"
+controller = "DC890"
+num_channels = 2
+channels = "data"
+is_positive_clock = true
+num_bits = 14
+alignment = 14
+is_bipolar = false
+data_correction_code = """data = data[0] # Keep only one channel
+"""
+fpga_load = 'DLVDS'
+spi_reg = "0x00, 0x80, 0x01, 0x00, 0x02, 0x00,0x03, 0x71, 0x04, 0x00"
+
+
+
+["LTC2351 DC1278A"]
+part_number = "LTC2351"
+dc_number = "DC1278A"
+controller = "DC890"
+num_channels = 6
+channels = "ch0, ch1, ch2, ch3, ch4, ch5"
+is_positive_clock = false
+num_bits = 14
+alignment = 14
+is_bipolar = false
+data_correction_code = ""
+fpga_load = 'S1408'
+spi_reg = ""
+
+##############
+### DC1370 ###
+##############
+
+["LTC2268 DC1532A"]
+part_number = "LTC2268"
+dc_number = "DC1532A"
+controller = "DC1371"
+num_channels = 2
+channels = "ch0, ch1"
+num_bits = 14
+alignment = 14
+is_bipolar = false
+fpga_load = "S2175"
+demo_config = "0x28000000"
+spi_reg = "0x00, 0x80, 0x01, 0x00, 0x02, 0x00, 0x03, 0x00, 0x04, 0x00"
