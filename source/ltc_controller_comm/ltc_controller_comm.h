@@ -132,8 +132,9 @@ LTC_CONTROLLER_COMM_API int LccGetControllerList(int controller_types,
 
 // Returns a single LccController info given the type and ID of the controller. Cannot be used
 // with multiple types
-LTC_CONTROLLER_COMM_API int LccGetControllerInfoFromId(int controller_type, const char* id,
-                                                       LccControllerInfo* controller_info);
+// comming soon...
+// LTC_CONTROLLER_COMM_API int LccGetControllerInfoFromId(int controller_type, const char* id,
+//                                                       LccControllerInfo* controller_info);
 
 // General functions.
 
