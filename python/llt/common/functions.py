@@ -177,9 +177,7 @@ def start_collect(controller_board, num_samples, trigger, timeout = 5):
         controller_board.controller.data_start_collect(num_samples, trigger)
         SLEEP_TIME = 0.2 
         for i in range(int(math.ceil(timeout/SLEEP_TIME))):
-            is_done = controller_board.controller.data_is_collect_done()
-            if is_done:
-                break
+            if controller_board.controller.data_is_collect_done()
+                return
             time.sleep(SLEEP_TIME)
-        if not is_done:
-            raise err.HardwareError('Data collect timed out (missing clock?)')
+        raise err.HardwareError('Data collect timed out (missing clock?)')
