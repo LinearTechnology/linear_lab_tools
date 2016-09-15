@@ -12,15 +12,13 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "make_matlab_header", "make_
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LtcControllerComm", "LtcControllerComm\LtcControllerComm.vcxproj", "{3FE2A959-BF2E-4F21-80A5-6F3366FB2A4C}"
 EndProject
-Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "install_linear_lab_tools", "install_linear_lab_tools\install_linear_lab_tools.vdproj", "{B221BEF7-650B-4792-8B0B-94A3F933F569}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test_soc_kit", "test_soc_kit\test_soc_kit.vcxproj", "{A22FB583-E1C2-4337-A063-4674D1807C7D}"
 EndProject
-Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "install_linear_lab_tools64", "install_linear_lab_tools64\install_linear_lab_tools64.vdproj", "{516AFD44-CC0E-4F8C-BCAA-AB87141085D6}"
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "install_linear_lab_tools", "install_linear_lab_tools\install_linear_lab_tools.vdproj", "{01C41468-34AE-438F-BDB7-CEB9F24DE35C}"
+EndProject
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "install_linear_lab_tools64", "install_linear_lab_tools64\install_linear_lab_tools64.vdproj", "{6E61542C-37E0-4B76-947F-65C1DB5F369E}"
 EndProject
 Global
-	GlobalSection(SubversionScc) = preSolution
-		Svn-Managed = True
-		Manager = AnkhSVN - Subversion Support for Visual Studio
-	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
 		Debug|x64 = Debug|x64
@@ -52,16 +50,30 @@ Global
 		{3FE2A959-BF2E-4F21-80A5-6F3366FB2A4C}.Release|Win32.Build.0 = Release|Win32
 		{3FE2A959-BF2E-4F21-80A5-6F3366FB2A4C}.Release|x64.ActiveCfg = Release|x64
 		{3FE2A959-BF2E-4F21-80A5-6F3366FB2A4C}.Release|x64.Build.0 = Release|x64
-		{B221BEF7-650B-4792-8B0B-94A3F933F569}.Debug|Win32.ActiveCfg = Debug
-		{B221BEF7-650B-4792-8B0B-94A3F933F569}.Debug|x64.ActiveCfg = Debug
-		{B221BEF7-650B-4792-8B0B-94A3F933F569}.Release|Win32.ActiveCfg = Release
-		{B221BEF7-650B-4792-8B0B-94A3F933F569}.Release|Win32.Build.0 = Release
-		{B221BEF7-650B-4792-8B0B-94A3F933F569}.Release|x64.ActiveCfg = Release
-		{516AFD44-CC0E-4F8C-BCAA-AB87141085D6}.Debug|Win32.ActiveCfg = Debug
-		{516AFD44-CC0E-4F8C-BCAA-AB87141085D6}.Debug|x64.ActiveCfg = Debug
-		{516AFD44-CC0E-4F8C-BCAA-AB87141085D6}.Release|Win32.ActiveCfg = Release
-		{516AFD44-CC0E-4F8C-BCAA-AB87141085D6}.Release|x64.ActiveCfg = Release
-		{516AFD44-CC0E-4F8C-BCAA-AB87141085D6}.Release|x64.Build.0 = Release
+		{A22FB583-E1C2-4337-A063-4674D1807C7D}.Debug|Win32.ActiveCfg = Debug|Win32
+		{A22FB583-E1C2-4337-A063-4674D1807C7D}.Debug|Win32.Build.0 = Debug|Win32
+		{A22FB583-E1C2-4337-A063-4674D1807C7D}.Debug|x64.ActiveCfg = Debug|x64
+		{A22FB583-E1C2-4337-A063-4674D1807C7D}.Debug|x64.Build.0 = Debug|x64
+		{A22FB583-E1C2-4337-A063-4674D1807C7D}.Release|Win32.ActiveCfg = Release|Win32
+		{A22FB583-E1C2-4337-A063-4674D1807C7D}.Release|Win32.Build.0 = Release|Win32
+		{A22FB583-E1C2-4337-A063-4674D1807C7D}.Release|x64.ActiveCfg = Release|x64
+		{A22FB583-E1C2-4337-A063-4674D1807C7D}.Release|x64.Build.0 = Release|x64
+		{01C41468-34AE-438F-BDB7-CEB9F24DE35C}.Debug|Win32.ActiveCfg = Debug
+		{01C41468-34AE-438F-BDB7-CEB9F24DE35C}.Debug|Win32.Build.0 = Debug
+		{01C41468-34AE-438F-BDB7-CEB9F24DE35C}.Debug|x64.ActiveCfg = Debug
+		{01C41468-34AE-438F-BDB7-CEB9F24DE35C}.Debug|x64.Build.0 = Debug
+		{01C41468-34AE-438F-BDB7-CEB9F24DE35C}.Release|Win32.ActiveCfg = Release
+		{01C41468-34AE-438F-BDB7-CEB9F24DE35C}.Release|Win32.Build.0 = Release
+		{01C41468-34AE-438F-BDB7-CEB9F24DE35C}.Release|x64.ActiveCfg = Release
+		{01C41468-34AE-438F-BDB7-CEB9F24DE35C}.Release|x64.Build.0 = Release
+		{6E61542C-37E0-4B76-947F-65C1DB5F369E}.Debug|Win32.ActiveCfg = Debug
+		{6E61542C-37E0-4B76-947F-65C1DB5F369E}.Debug|Win32.Build.0 = Debug
+		{6E61542C-37E0-4B76-947F-65C1DB5F369E}.Debug|x64.ActiveCfg = Debug
+		{6E61542C-37E0-4B76-947F-65C1DB5F369E}.Debug|x64.Build.0 = Debug
+		{6E61542C-37E0-4B76-947F-65C1DB5F369E}.Release|Win32.ActiveCfg = Release
+		{6E61542C-37E0-4B76-947F-65C1DB5F369E}.Release|Win32.Build.0 = Release
+		{6E61542C-37E0-4B76-947F-65C1DB5F369E}.Release|x64.ActiveCfg = Release
+		{6E61542C-37E0-4B76-947F-65C1DB5F369E}.Release|x64.Build.0 = Release
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

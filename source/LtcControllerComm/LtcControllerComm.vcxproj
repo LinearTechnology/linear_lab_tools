@@ -108,8 +108,10 @@
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>Advapi32.lib</AdditionalDependencies>
-      <SubSystem>Windows</SubSystem>
-      <MinimumRequiredVersion>5.01</MinimumRequiredVersion>
+      <SubSystem>NotSet</SubSystem>
+      <MinimumRequiredVersion>
+      </MinimumRequiredVersion>
+      <AdditionalOptions>/SUBSYSTEM:WINDOWS,"5.02" %(AdditionalOptions)</AdditionalOptions>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -133,8 +135,10 @@
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>Advapi32.lib</AdditionalDependencies>
-      <SubSystem>Windows</SubSystem>
-      <MinimumRequiredVersion>5.01</MinimumRequiredVersion>
+      <SubSystem>NotSet</SubSystem>
+      <MinimumRequiredVersion>
+      </MinimumRequiredVersion>
+      <AdditionalOptions>/SUBSYSTEM:WINDOWS,"5.02" %(AdditionalOptions)</AdditionalOptions>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -161,6 +165,8 @@
     <ClInclude Include="..\ltc_controller_comm\i_reset.hpp" />
     <ClInclude Include="..\ltc_controller_comm\i_spi.hpp" />
     <ClInclude Include="..\ltc_controller_comm\i_spi_send_only.hpp" />
+    <ClInclude Include="..\ltc_controller_comm\soc_kit.hpp" />
+    <ClInclude Include="..\ltc_controller_comm\tcp_client_socket.hpp" />
     <ClInclude Include="..\ltc_controller_comm\utilities.hpp" />
     <ClInclude Include="LtcControllerComm.h" />
     <ClInclude Include="resource.h" />
@@ -201,6 +207,13 @@
       <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</CompileAsManaged>
       <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</CompileAsManaged>
       <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</CompileAsManaged>
+    </ClCompile>
+    <ClCompile Include="..\ltc_controller_comm\soc_kit.cpp">
+      <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</CompileAsManaged>
+      <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsManaged>
+    </ClCompile>
+    <ClCompile Include="..\ltc_controller_comm\tcp_client_socket.cpp">
+      <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</CompileAsManaged>
     </ClCompile>
     <ClCompile Include="..\ltc_controller_comm\utilties.cpp">
       <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsManaged>

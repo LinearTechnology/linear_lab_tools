@@ -14,7 +14,7 @@
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
     <Filter Include="Interfaces">
-      <UniqueIdentifier>{de876200-6ebc-4067-add5-5f5dc806673c}</UniqueIdentifier>
+      <UniqueIdentifier>{77f122c8-a033-4613-8970-279799f0e72c}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -45,6 +45,21 @@
     <ClInclude Include="utilities.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ftd2xx.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ftdi.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="i_close.hpp">
+      <Filter>Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="i_collect.hpp">
+      <Filter>Interfaces</Filter>
+    </ClInclude>
     <ClInclude Include="i_data_endian.hpp">
       <Filter>Interfaces</Filter>
     </ClInclude>
@@ -54,31 +69,22 @@
     <ClInclude Include="i_data_send.hpp">
       <Filter>Interfaces</Filter>
     </ClInclude>
-    <ClInclude Include="i_reset.hpp">
-      <Filter>Interfaces</Filter>
-    </ClInclude>
     <ClInclude Include="i_fpga_load.hpp">
       <Filter>Interfaces</Filter>
     </ClInclude>
-    <ClInclude Include="i_collect.hpp">
-      <Filter>Interfaces</Filter>
-    </ClInclude>
-    <ClInclude Include="i_close.hpp">
-      <Filter>Interfaces</Filter>
-    </ClInclude>
-    <ClInclude Include="i_spi_send_only.hpp">
+    <ClInclude Include="i_reset.hpp">
       <Filter>Interfaces</Filter>
     </ClInclude>
     <ClInclude Include="i_spi.hpp">
       <Filter>Interfaces</Filter>
     </ClInclude>
-    <ClInclude Include="ftd2xx.h">
+    <ClInclude Include="i_spi_send_only.hpp">
+      <Filter>Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="tcp_client_socket.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ftdi.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="resource.h">
+    <ClInclude Include="soc_kit.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -105,6 +111,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="dllmain.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="tcp_client_socket.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="soc_kit.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

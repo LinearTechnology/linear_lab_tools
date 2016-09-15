@@ -112,11 +112,12 @@
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <Link>
-      <SubSystem>Windows</SubSystem>
+      <SubSystem>NotSet</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>
       </AdditionalLibraryDirectories>
       <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalOptions>/SUBSYSTEM:WINDOWS,"5.02" %(AdditionalOptions)</AdditionalOptions>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -139,6 +140,7 @@
       <AdditionalLibraryDirectories>
       </AdditionalLibraryDirectories>
       <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <LinkTimeCodeGeneration>UseFastLinkTimeCodeGeneration</LinkTimeCodeGeneration>
     </Link>
     <PostBuildEvent>
       <Command>"$(SolutionDir)$(Configuration)\\make_matlab_header" "$(ProjectDir)ltc_controller_comm.h" "$(ProjectDir)ltc_controller_comm_matlab.h"</Command>
@@ -160,13 +162,14 @@
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
-      <SubSystem>Windows</SubSystem>
+      <SubSystem>NotSet</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalLibraryDirectories>
       </AdditionalLibraryDirectories>
       <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalOptions>/SUBSYSTEM:WINDOWS,"5.02" %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <PostBuildEvent>
       <Command>"$(SolutionDir)$(Configuration)\\make_matlab_header" "$(ProjectDir)ltc_controller_comm.h" "$(ProjectDir)ltc_controller_comm_matlab.h"</Command>
@@ -196,6 +199,8 @@
     <ClInclude Include="i_spi_send_only.hpp" />
     <ClInclude Include="ltc_controller_comm.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="soc_kit.hpp" />
+    <ClInclude Include="tcp_client_socket.hpp" />
     <ClInclude Include="utilities.hpp" />
   </ItemGroup>
   <ItemGroup>
@@ -206,6 +211,8 @@
     <ClCompile Include="ftdi_adc.cpp" />
     <ClCompile Include="high_speed.cpp" />
     <ClCompile Include="ltc_controller_comm.cpp" />
+    <ClCompile Include="soc_kit.cpp" />
+    <ClCompile Include="tcp_client_socket.cpp" />
     <ClCompile Include="utilties.cpp" />
   </ItemGroup>
   <ItemGroup>
