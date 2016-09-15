@@ -32,7 +32,7 @@ To connect do something like this:
     
     # open and use the device
     with lcc.Controller(controller_info) as controller:
-        # user your controller now
+        # use your controller now
 """
 
 import ctypes as ct
@@ -157,7 +157,7 @@ def list_controllers(controller_type):
     controller_info_list = (ControllerInfo * num_controllers)()
     if _dll.LccGetControllerList(ct.c_int(controller_type), controller_info_list,
                                  num_controllers) != 0:
-        raise HardwareError("Could not get device info list, or no device found")
+        raise HardwareError("Could not get controller info list, or no controller found")
     return controller_info_list
 
 
@@ -514,7 +514,7 @@ class Controller(object):
         byte is sent indicating which register address the rest of the data
         pertains to. Often there is a read-write bit in the address, this
         function will not shift or set any bits in the address, it basically
-        just writes two bytes, the address byte and data byte one after the
+        just writes two bytes, (the address byte and data byte) one after the
         other.
         """
         c_address = ct.c_uint32(address)
@@ -561,8 +561,7 @@ class Controller(object):
         byte is sent indicating which register address the rest of the data
         pertains to. Often there is a read-write bit in the address, this
         function will not shift or set any bits in the address, it basically
-        just writes two bytes, the address byte and data byte one after the
-        other.
+        just writes the address byte and then reads one data byte.
         """
         c_address = ct.c_uint32(address)
         c_value = ct.c_ubyte()
@@ -578,7 +577,7 @@ class Controller(object):
         byte is sent indicating which register address the rest of the data
         pertains to. Often there is a read-write bit in the address, this
         function will not shift or set any bits in the address, it basically
-        just writes the address byte and data bytes one after the other. 
+        just writes the address byte and the reads several data bytes. 
         Defaults for start and end and interpretation of negative values are 
         the same as for slices. if values is None a new list is created. A 
         reference to values is returned.
@@ -743,12 +742,12 @@ class Controller(object):
         Not used with high_speed controllers or DC718
         fpga_filename -- The base file name without any folder, extension
             or revision info, for instance 'DLVDS' or 'S2175', case insensitive.
-        returns True if the requested load is loaded, False otherwise.
         """
         self._call('FpgaLoadFile', ct.c_char_p(fpga_filename))
 
     def fpga_load_file_chunked(self, fpga_filename):
         """Load a particular FPGA file a chunk at a time. 
+        Not used with high_speed controllers or DC718
         fpga_filename -- The base file name without any folder, extension
             or revision info, for instance 'DLVDS' or 'S2175', case insensitive.
         The first call returns a number, each subsequent call will return a
@@ -887,6 +886,5 @@ class Controller(object):
         """
         Causes the DC890 to terminate any I2C (or GPIO or SPI) transactions then
         purges the buffers.
-        :return: nothing
         """
         self._call('890Flush')
