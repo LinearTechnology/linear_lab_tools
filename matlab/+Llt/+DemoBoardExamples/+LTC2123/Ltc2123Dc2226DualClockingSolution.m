@@ -50,6 +50,9 @@ function Ltc2123Dc2226DualClockingSolution
     
 import Llt.Utils.BlackmanHarris92
 
+    % Import LTC2000 definitions and support functions
+    lt2k = llt.DemoBoardExamples.LTC2123.Ltc2123Constants(lths);
+
     % Initialize script operation parameters
     bitFileId = 192; % Bitfile ID
     continuous = 0; % Run continuously, or just once
@@ -73,10 +76,9 @@ import Llt.Utils.BlackmanHarris92
     dec = 0; % (if both, hex is first, followed by decimal)
 
     dumpPscopeData = 1; % Writes data to "pscope_data.csv", append to header to open in PScope
-
-    % n = NumSamp64K; % Set number of samples here.
-    memSize = 144;
+    
     buffSize = 64 * 1024;
+    memSize = lt2k.memSizeByte(buffSize);
     
     % Common ADC / JEDEC Core / Clock parameter(s) 
     K = 16; %Frames per multiframe - Note that not all ADC / Clock combinations
@@ -116,9 +118,6 @@ import Llt.Utils.BlackmanHarris92
 
     % Returns the object in the class constructor
     lths = Llt.Common.LtcControllerComm();
-
-    % Import LTC2000 definitions and support functions
-    lt2k = llt.DemoBoardExamples.LTC2123.Ltc2123Constants(lths);
     
     descriptions = ['LTC UFO Board', 'LTC Communication Interface', 'LTC2000 Demoboard', 'LTC2000, DC2085A-A'];
     

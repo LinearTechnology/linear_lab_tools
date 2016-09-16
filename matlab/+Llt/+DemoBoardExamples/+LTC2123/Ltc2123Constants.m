@@ -80,6 +80,21 @@ lt2k.JESD204B_XILINX_LANE_REG_NAMES = {'  ILA config Data 0', '  ILA config Data
                                   '  ILA config Data 4', '  ILA config Data 5', '  ILA config Data 6', '  ILA config Data 7',...
                                   '  Test Mode Err cnt', '       Link Err cnt', '  Test Mode ILA cnt', 'Tst Mde multif. cnt',...
                                   '      Buffer Adjust'};
+                              
+%lookup byte to write based on collect size                              
+lt2k.memSizeByte = containers.Map;
+lt2k.memSizeByte(128) = 0;
+lt2k.memSizeByte(256) = 16;
+lt2k.memSizeByte(512) = 32;
+lt2k.memSizeByte(1024) = 48;
+lt2k.memSizeByte(2*1024) = 64;
+lt2k.memSizeByte(4*1024) = 80;
+lt2k.memSizeByte(8*1024) = 96;
+lt2k.memSizeByte(16*1024) = 112;
+lt2k.memSizeByte(32*1024) = 128;
+lt2k.memSizeByte(64*1024) = 144;
+lt2k.memSizeByte(128*1024) = 160;
+
 
 
 end

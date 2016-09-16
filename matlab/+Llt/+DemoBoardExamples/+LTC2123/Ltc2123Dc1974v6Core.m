@@ -100,24 +100,10 @@ import Llt.Utils.BlackmanHarris92
     lths = llt.Common.LtcControllerComm();
 
     % Import LTC2000 definitions and support functions
-    [lt2k] = llt.DemoBoardExamples.LTC2123.Ltc2123Constants();
-
-    memSize = 144;
-    buffSize = 64 * 1024;
+    lt2k = llt.DemoBoardExamples.LTC2123.Ltc2123Constants();
     
-%     NumSamp128  = NumSamp(0, 128);
-%     NumSamp256  = NumSamp(16, 256);
-%     NumSamp512  = NumSamp(32, 512);
-%     NumSamp1K   = NumSamp(48, 1024);
-%     NumSamp2K   = NumSamp(64, 2 * 1024);
-%     NumSamp4K   = NumSamp(80, 4 * 1024);
-%     NumSamp8K   = NumSamp(96, 8 * 1024);
-%     NumSamp16K  = NumSamp(112, 16 * 1024);
-%     NumSamp32K  = NumSamp(128, 32 * 1024);
-%     NumSamp64K  = NumSamp(144, 64 * 1024);
-%     NumSamp128K = NumSamp(160, 128 * 1024);
-
-    %n = NumSamp64K; % Set number of samples here.
+    buffSize = 64 * 1024;
+    memSize = lt2k.memSizeByte(buffSize);
     
     %Configure other ADC modes here to override ADC data / PRBS selection
     forcePattern = 0;    %Don't override ADC data / PRBS selection
