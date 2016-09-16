@@ -471,6 +471,12 @@
         }
         "Entry"
         {
+        "MsmKey" = "8:_4B9EC5D6C4CB4BFBAF418256FE0ADC4F"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
         "MsmKey" = "8:_4EA3A39E969F4E92B885C82A81965866"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
@@ -1126,12 +1132,6 @@
         "Entry"
         {
         "MsmKey" = "8:_C3E75AA6980C4E5D90FE5F6A9DC4473F"
-        "OwnerKey" = "8:_UNDEFINED"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_C449853FA6B54774B44E86272D0CBA3A"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -3034,6 +3034,26 @@
             "TargetName" = "8:dc890.py"
             "Tag" = "8:"
             "Folder" = "8:_8F80DD82EE4643E1836EFB2B2C09B0FD"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_4B9EC5D6C4CB4BFBAF418256FE0ADC4F"
+            {
+            "SourcePath" = "8:..\\..\\matlab\\+Llt\\+Common\\ltc_controller_comm_matlab.h"
+            "TargetName" = "8:ltc_controller_comm_matlab.h"
+            "Tag" = "8:"
+            "Folder" = "8:_5B78BB6620C04D9C8C58C2BAF393E980"
             "Condition" = "8:"
             "Transitive" = "11:FALSE"
             "Vital" = "11:TRUE"
@@ -5214,26 +5234,6 @@
             "TargetName" = "8:ltm9011_dc1884.py"
             "Tag" = "8:"
             "Folder" = "8:_B172906391DF46859B1D0D9F68DE090D"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:FALSE"
-            "IsDependency" = "11:FALSE"
-            "IsolateTo" = "8:"
-            }
-            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_C449853FA6B54774B44E86272D0CBA3A"
-            {
-            "SourcePath" = "8:..\\..\\matlab\\+Llt\\+Common\\TestLtcControllerComm.m"
-            "TargetName" = "8:TestLtcControllerComm.m"
-            "Tag" = "8:"
-            "Folder" = "8:_5B78BB6620C04D9C8C58C2BAF393E980"
             "Condition" = "8:"
             "Transitive" = "11:FALSE"
             "Vital" = "11:TRUE"
@@ -8029,7 +8029,7 @@
             }
             "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_4FDE7405E9EE4611841941DDC83774AC"
             {
-            "SourcePath" = "8:..\\Release\\ltc_controller_comm64.dll"
+            "SourcePath" = "8:..\\Release\\ltc_controller_comm.dll"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_31347820C9644DB1B9075B6D7E8760B0"

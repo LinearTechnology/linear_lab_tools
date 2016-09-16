@@ -143,7 +143,7 @@
       <LinkTimeCodeGeneration>UseFastLinkTimeCodeGeneration</LinkTimeCodeGeneration>
     </Link>
     <PostBuildEvent>
-      <Command>"$(SolutionDir)$(Configuration)\\make_matlab_header" "$(ProjectDir)ltc_controller_comm.h" "$(ProjectDir)ltc_controller_comm_matlab.h"</Command>
+      <Command>"$(SolutionDir)$(Configuration)\make_matlab_header" "$(ProjectDir)ltc_controller_comm.h" "$(SolutionDir)..\matlab\+Llt\+Common\ltc_controller_comm_matlab.h"</Command>
     </PostBuildEvent>
     <PostBuildEvent>
       <Message>Generating matlab version of header file</Message>
@@ -172,10 +172,12 @@
       <AdditionalOptions>/SUBSYSTEM:WINDOWS,"5.02" %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <PostBuildEvent>
-      <Command>"$(SolutionDir)$(Configuration)\\make_matlab_header" "$(ProjectDir)ltc_controller_comm.h" "$(ProjectDir)ltc_controller_comm_matlab.h"</Command>
+      <Command>
+      </Command>
     </PostBuildEvent>
     <PostBuildEvent>
-      <Message>Generating matlab version of header file</Message>
+      <Message>
+      </Message>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
