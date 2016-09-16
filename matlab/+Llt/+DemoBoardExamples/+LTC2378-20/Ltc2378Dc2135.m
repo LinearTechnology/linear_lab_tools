@@ -71,9 +71,9 @@ function Ltc2378Dc2135(arg1NumSamples, arg2Verbose, doDemo)
     SAMPLE_BYTES = 4; % for 32-bit reads
         
     % Returns the object in the class constructor
-    comm = LtcControllerComm();  
+    comm = Llt.Common.LtcControllerComm();  
      
-    deviceInfoList = comm.ListControllers(comm.TYPE_DC890)
+    deviceInfoList = comm.ListControllers(comm.TYPE_DC890);
     
 	% Open communication to the device
     cId = comm.Init(deviceInfoList);

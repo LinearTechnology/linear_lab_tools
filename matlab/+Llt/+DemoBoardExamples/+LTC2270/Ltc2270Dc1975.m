@@ -81,7 +81,7 @@ function Ltc2270Dc1975(arg1NumSamples, arg2Verbose, doDemo)
     SAMPLE_BYTES = 2;
         
     % Returns the object in the class constructor
-    comm = LtcControllerComm();  
+    comm = Llt.Common.LtcControllerComm();  
      
     deviceInfoList = comm.ListControllers(comm.TYPE_DC890);
     

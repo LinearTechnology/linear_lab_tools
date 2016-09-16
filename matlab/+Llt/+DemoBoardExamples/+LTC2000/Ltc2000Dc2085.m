@@ -71,10 +71,10 @@ function Ltc2000Dc2085(arg1NumSamples, arg2Verbose)
     end
 
     % Import LTC2000 definitions and support functions
-    [lt2k] = Ltc2000Constants();
+    lt2k = Llt.DemoBoardExamples.LTC2000.Ltc2000Constants();
 
     % Returns the object in the class constructor
-    lths = LtcControllerComm();
+    lths = Llt.Common.LtcControllerComm();
 
     deviceInfoList = lths.ListControllers(lths.TYPE_HIGH_SPEED);
     deviceInfo = [];

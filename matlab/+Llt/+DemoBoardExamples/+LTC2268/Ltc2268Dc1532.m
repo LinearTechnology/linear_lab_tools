@@ -84,7 +84,7 @@ function Ltc2268Dc1532(arg1NumSamples, arg2Verbose, doDemo)
     SAMPLE_BYTES = 2;
     
     % Returns the object in the class constructor
-    comm = LtcControllerComm();  
+    comm = Llt.Common.LtcControllerComm();  
     
     % find demo board with correct ID
     EEPROM_ID = '[0074 DEMO 10 DC1532A-A LTC2268-14 D2175]';

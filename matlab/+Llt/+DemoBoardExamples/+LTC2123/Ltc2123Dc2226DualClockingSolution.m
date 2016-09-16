@@ -113,14 +113,14 @@ function Ltc2123Dc2226DualClockingSolution
 
 
     % Returns the object in the class constructor
-    lths = LtcControllerComm();
+    lths = Llt.Common.LtcControllerComm();
 
     % Import LTC2000 definitions and support functions
-    [lt2k] = Ltc2123Constants(lths);
+    lt2k = llt.DemoBoardExamples.LTC2123.Ltc2123Constants(lths);
     
     descriptions = ['LTC UFO Board', 'LTC Communication Interface', 'LTC2000 Demoboard', 'LTC2000, DC2085A-A'];
     
-    deviceInfoList = lths.ListControllers(lths.TYPE_HIGH_SPEED, 1);
+    deviceInfoList = lths.ListControllers(lths.TYPE_HIGH_SPEED);
     deviceInfo = [];
     for info = deviceInfoList
        if (strfind(descriptions, info.description))

@@ -83,7 +83,7 @@ function [ch1Ret, ch2Ret, ch3Ret, ch4Ret, ch5Ret, ch6Ret, ch7Ret, ch8Ret] = ...
     testDataValue = 10922;
     
     % Returns the object in the class constructor
-    comm = LtcControllerComm();  
+    comm = Llt.Common.LtcControllerComm();  
     
     % find demo board with correct ID
 %     EEPROM_ID = '[0071 DEMO 10 DC1884A-F LTM9006 D9011\r\n + \

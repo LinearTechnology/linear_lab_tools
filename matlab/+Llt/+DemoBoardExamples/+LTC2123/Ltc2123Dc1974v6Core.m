@@ -49,10 +49,7 @@
 % 	ADD THE ABSOLUTE PATH TO "linear_lab_tools\matlab" FOLDER BEFORE RUNNING THE SCRIPT.
 %   RUN "mex -setup" TO SET UP COMPILER AND CHOSE THE OPTION "Lcc-win32 C".
 
-function Ltc2123Dc1974v6Core
-
-    clear all;
-   
+function Ltc2123Dc1974v6Core  
     % Initialize script operation parameters
     bitFileId = 190; % Bitfile ID
     continuous = false;            % Run continuously or once
@@ -97,10 +94,10 @@ function Ltc2123Dc1974v6Core
 
 
     % Returns the object in the class constructor
-    lths = LtcControllerComm();
+    lths = llt.Common.LtcControllerComm();
 
     % Import LTC2000 definitions and support functions
-    [lt2k] = Ltc2123Constants(lths);
+    [lt2k] = llt.DemoBoardExamples.LTC2123.Ltc2123Constants();
 
     memSize = 144;
     buffSize = 64 * 1024;
