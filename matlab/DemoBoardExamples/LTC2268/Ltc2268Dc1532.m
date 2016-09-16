@@ -91,7 +91,7 @@ function Ltc2268Dc1532(arg1NumSamples, arg2Verbose, doDemo)
     eepromIdSize = length(EEPROM_ID);
     fprintf('Looking for a DC1371 with a DC1532A-A demoboard\n');
     
-    deviceInfoList = comm.ListControllers(comm.TYPE_DC1371, 1);
+    deviceInfoList = comm.ListControllers(comm.TYPE_DC1371);
 	
 	% Open communication to the device
     cId = comm.Init(deviceInfoList);

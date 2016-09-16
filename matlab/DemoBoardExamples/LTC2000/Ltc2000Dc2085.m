@@ -76,7 +76,7 @@ function Ltc2000Dc2085(arg1NumSamples, arg2Verbose)
     % Returns the object in the class constructor
     lths = LtcControllerComm();
 
-    deviceInfoList = lths.ListControllers(lths.TYPE_HIGH_SPEED, 1);
+    deviceInfoList = lths.ListControllers(lths.TYPE_HIGH_SPEED);
     deviceInfo = [];
     for info = deviceInfoList
        if strcmp(info.description(1:7), 'LTC2000')

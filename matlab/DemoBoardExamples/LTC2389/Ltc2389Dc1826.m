@@ -81,7 +81,7 @@ function Ltc2389Dc1826(arg1NumSamples, arg2Verbose, arg3DoDemo, arg4Trigger, arg
     eepromIdSize = length(EEPROM_ID);
     fprintf('Looking for a DC718 with a DC1826A demoboard\n');
     
-    deviceInfoList = comm.ListControllers(comm.TYPE_DC718, 1);
+    deviceInfoList = comm.ListControllers(comm.TYPE_DC718);
 	
 	% Open communication to the device
     cId = comm.Init(deviceInfoList);

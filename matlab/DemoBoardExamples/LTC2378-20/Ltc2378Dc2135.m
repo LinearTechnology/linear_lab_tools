@@ -73,7 +73,7 @@ function Ltc2378Dc2135(arg1NumSamples, arg2Verbose, doDemo)
     % Returns the object in the class constructor
     comm = LtcControllerComm();  
      
-    deviceInfoList = comm.ListControllers(comm.TYPE_DC890, 1);
+    deviceInfoList = comm.ListControllers(comm.TYPE_DC890)
     
 	% Open communication to the device
     cId = comm.Init(deviceInfoList);

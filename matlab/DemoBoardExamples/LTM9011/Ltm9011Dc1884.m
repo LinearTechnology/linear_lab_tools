@@ -96,7 +96,7 @@ function [ch1Ret, ch2Ret, ch3Ret, ch4Ret, ch5Ret, ch6Ret, ch7Ret, ch8Ret] = ...
     % eepromIdSize = length(EEPROM_ID);
     fprintf('Looking for a DC1371 with a DC1884 demoboard');
  
-    deviceInfoList = comm.ListControllers(comm.TYPE_DC1371, 1);
+    deviceInfoList = comm.ListControllers(comm.TYPE_DC1371);
     
 	% Open communication to the device
     cId = comm.Init(deviceInfoList);

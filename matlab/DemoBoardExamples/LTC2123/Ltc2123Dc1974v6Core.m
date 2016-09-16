@@ -125,7 +125,7 @@ function Ltc2123Dc1974v6Core
     % 0x04 = PRBS, 0x06 Test Samples test pattern, 0x07 = RPAT,
     % 0x02 = K28.7 (minimum frequency), 0x03 = D21.5 (maximum frequency)
 
-    deviceInfoList = lths.ListControllers(lths.TYPE_HIGH_SPEED, 1);
+    deviceInfoList = lths.ListControllers(lths.TYPE_HIGH_SPEED);
     deviceInfo = [];
     for info = deviceInfoList
        if strcmp(info.description, 'LTC Communication Interface')

@@ -85,7 +85,7 @@ function Ltc2261Dc1369(arg1NumSamples, arg2Verbose)
     eepromIdSize = length(EEPROM_ID);
     fprintf('Looking for a DC890 with a DC1369A demoboard\n');
     
-    deviceInfoList = comm.ListControllers(comm.TYPE_DC890, 1);
+    deviceInfoList = comm.ListControllers(comm.TYPE_DC890);
     cId = comm.Init(deviceInfoList);
     
     for info = deviceInfoList
