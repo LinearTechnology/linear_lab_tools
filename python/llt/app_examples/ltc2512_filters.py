@@ -70,25 +70,25 @@ ssinc_flat_32 = np.ndarray(943, dtype=float)
 #ssinc_flat_64 = np.ndarray(1887, dtype=float)
 
 # Read in coefficients from files
-with open('../../common/ltc25xx_filters/ssinc_flat_4.txt', 'r') as infile:
+with open('../../../common/ltc25xx_filters/ssinc_flat_4.txt', 'r') as infile:
     for i in range(0, 117):
         instring = infile.readline()
         ssinc_flat_4[i] = float(instring)
 print('done reading DF 4!')
 
-with open('../../common/ltc25xx_filters/ssinc_flat_8.txt', 'r') as infile:
+with open('../../../common/ltc25xx_filters/ssinc_flat_8.txt', 'r') as infile:
     for i in range(0, 235):
         instring = infile.readline()
         ssinc_flat_8[i] = float(instring)
 print('done reading DF 8!')
 
-with open('../../common/ltc25xx_filters/ssinc_flat_16.txt', 'r') as infile:
+with open('../../../common/ltc25xx_filters/ssinc_flat_16.txt', 'r') as infile:
     for i in range(0, 471):
         instring = infile.readline()
         ssinc_flat_16[i] = float(instring)
 print('done reading DF 16!')
 
-with open('../../common/ltc25xx_filters/ssinc_flat_32.txt', 'r') as infile:
+with open('../../../common/ltc25xx_filters/ssinc_flat_32.txt', 'r') as infile:
     for i in range(0, 943):
         instring = infile.readline()
         ssinc_flat_32[i] = float(instring)

@@ -117,7 +117,7 @@ plt.show()
 
 wide_ltc2057_psd = np.zeros(fftlength*2) # bin zero(DC) already set to zero ;)
 print('reading wide (2MHz) noise PSD data from file')
-infile = open('../../common/ltspice/LTC2057_noisesim_2Meg.txt', 'r')
+infile = open('../../../common/ltspice/LTC2057_noisesim_2Meg.txt', 'r')
 print("First line (header): " + infile.readline())
 for i in range(1, fftlength*2):
     instring = infile.readline()

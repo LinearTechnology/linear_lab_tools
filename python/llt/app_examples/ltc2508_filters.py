@@ -69,25 +69,25 @@ ssinc_4096 = np.ndarray(34815, dtype=float)
 ssinc_16384 = np.ndarray(139263, dtype=float)
 
 # Read in coefficients from files
-with open('../../common/ltc25xx_filters/ssinc_256.txt', 'r') as infile:
+with open('../../../common/ltc25xx_filters/ssinc_256.txt', 'r') as infile:
     for i in range(0, 2175):
         instring = infile.readline()
         ssinc_256[i] = float(instring)
 print('done reading DF 256!')
 
-with open('../../common/ltc25xx_filters/ssinc_1024.txt', 'r') as infile:
+with open('../../../common/ltc25xx_filters/ssinc_1024.txt', 'r') as infile:
     for i in range(0, 8703):
         instring = infile.readline()
         ssinc_1024[i] = float(instring)
 print('done reading DF 1024!')
 
-with open('../../common/ltc25xx_filters/ssinc_4096.txt', 'r') as infile:
+with open('../../../common/ltc25xx_filters/ssinc_4096.txt', 'r') as infile:
     for i in range(0, 34815):
         instring = infile.readline()
         ssinc_4096[i] = float(instring)
 print('done reading DF 4096!')
 
-with open('../../common/ltc25xx_filters/ssinc_16384.txt', 'r') as infile:
+with open('../../../common/ltc25xx_filters/ssinc_16384.txt', 'r') as infile:
     for i in range(0, 139263):
         instring = infile.readline()
         ssinc_16384[i] = float(instring) # Frequency Density
