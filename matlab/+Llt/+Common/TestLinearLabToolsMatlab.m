@@ -32,7 +32,6 @@
 % of the authors and should not be interpreted as representing official policies,
 % either expressed or implied, of Linear Technology Corp.
 
-clear all
 % Choices for LTC parts: 2048 for NON-LTC2440 family, 64 to 32768 for LTC2440
 osr = 1024; 
 sinc1=ones(1, osr/4);
@@ -44,7 +43,8 @@ reverser(osr + 1) = 1;
 sinc4_w_rev = conv(sinc4, reverser);
 sinc4_w_rev = sinc4_w_rev/sum(sinc4_w_rev);
 
-[h, w] = freqz(sinc4_w_rev, 1, 16385);
+h = fft(sinc4_w_rev, 2*16385);
+h = h(1:end/2);
 fresp = 20 * log10(abs(h));
 plot(fresp)
 axis([0 1000 -140 0]);
