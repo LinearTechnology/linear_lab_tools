@@ -110,7 +110,10 @@ classdef LtcControllerComm < handle
                 self.libraryName = 'ltc_controller_comm';
             end
             
-            loadlibrary([location, self.libraryName, '.dll'], 'ltc_controller_comm_matlab.h');
+            thisFolder = fileparts(mfilename('fullpath'));
+            
+            loadlibrary([location, self.libraryName, '.dll'], ...
+                fullfile(thisFolder, 'ltc_controller_comm_matlab.h'));
             self.handles = {};
             self.nextIndex = 1;
         end
