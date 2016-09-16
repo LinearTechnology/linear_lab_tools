@@ -442,7 +442,7 @@ function TestLtcHighSpeedComm
     lths.HsFpgaEepromSetBitBangRegister(did, 0);
     try
         lths.EepromReadString(did, 1);
-    catch %#ok we are just checking that an error gets thrown
+    catch % we are just checking that an error gets thrown
         % errors out because there is no lths to ACK
     end
     if lths.HsFpgaReadDataAtAddress(did, 0) == 0

@@ -48,10 +48,10 @@ h = h(1:end/2);
 fresp = 20 * log10(abs(h));
 plot(fresp)
 axis([0 1000 -140 0]);
-title('Congratulations! MATLAB is installed properly!');
+title('Congratulations! Matlab is installed properly!');
 xlabel('Frequency');
 ylabel('Rejection');
 
-fprintf('\nYou are all set to run some demo board example codes. Please make sure:\n');
-fprintf('1. ADD THE ABSOLUTE PATH TO "linear_lab_tools\\matlab" FOLDER BEFORE RUNNING THE SCRIPT.\n');
-fprintf('2. RUN "mex -setup" TO SET UP COMPILER AND CHOSE THE OPTION "Lcc-win32 C"\n.');
+fprintf('\nYou are all set to run demo board example codes. Please make sure:\n');
+fprintf('1. Add the absolute path to "linear_lab_tools\\matlab".\n');
+fprintf('2. (Only once) run "mex -setup" to set up a C compiler (32-bit Matlab comes with "Lcc-win32 C").\n.');
