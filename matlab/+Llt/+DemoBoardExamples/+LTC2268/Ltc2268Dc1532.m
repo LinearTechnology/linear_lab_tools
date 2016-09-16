@@ -53,6 +53,8 @@
 
 function Ltc2268Dc1532(arg1NumSamples, arg2Verbose, doDemo)
     
+import Llt.Utils.BlackmanHarris92
+
     if(~nargin)
         numAdcSamples = 64 * 1024;
         % Print extra information to console
@@ -229,19 +231,19 @@ function Ltc2268Dc1532(arg1NumSamples, arg2Verbose, doDemo)
 
         adcAmplitude = 16384.0 / 2.0;
 
-        windowScale = (numAdcSamples/2) / sum(blackman(numAdcSamples/2));
+        windowScale = (numAdcSamples/2) / sum(BlackmanHarris92(numAdcSamples/2));
         fprintf('Window scaling factor: %d\n', windowScale);
 
         dataCh1 = dataCh1 - mean(dataCh1);
-        windowedDataCh1 = dataCh1' .* blackman(numAdcSamples);
-        windowedDataCh1 = windowedDataCh1 .* windowScale; 	% Apply Blackman window
+        windowedDataCh1 = dataCh1' .* BlackmanHarris92(numAdcSamples);
+        windowedDataCh1 = windowedDataCh1 .* windowScale; 	% Apply BlackmanHarris92 window
         freqDomainCh1 = fft(windowedDataCh1)/(numAdcSamples); % FFT
         freqDomainMagnitudeCh1 = abs(freqDomainCh1); 		% Extract magnitude
         freqDomainMagnitudeDbCh1 = 20 * log10(freqDomainMagnitudeCh1/adcAmplitude);
         
         dataCh2 = dataCh2 - mean(dataCh2);
-        windowedDataCh2 = dataCh2' .* blackman(numAdcSamples);
-        windowedDataCh2 = windowedDataCh2 .* windowScale; 	% Apply Blackman window
+        windowedDataCh2 = dataCh2' .* BlackmanHarris92(numAdcSamples);
+        windowedDataCh2 = windowedDataCh2 .* windowScale; 	% Apply BlackmanHarris92 window
         freqDomainCh2 = fft(windowedDataCh2)/(numAdcSamples); % FFT
         freqDomainMagnitudeCh2 = abs(freqDomainCh2); 		% Extract magnitude
         freqDomainMagnitudeDbCh2 = 20 * log10(freqDomainMagnitudeCh2/adcAmplitude);

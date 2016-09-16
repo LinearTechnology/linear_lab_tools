@@ -53,6 +53,8 @@
 	
 function Ltc2261Dc1369(arg1NumSamples, arg2Verbose)
     
+import Llt.Utils.BlackmanHarris92
+
     if(~nargin)
         numAdcSamples = 64 * 1024;
         % Print extra information to console
@@ -195,12 +197,12 @@ function Ltc2261Dc1369(arg1NumSamples, arg2Verbose)
 
         adcAmplitude = 16384.0 / 2.0;
 
-        windowScale = (numAdcSamples/2) / sum(blackman(numAdcSamples/2));
+        windowScale = (numAdcSamples/2) / sum(BlackmanHarris92(numAdcSamples/2));
         fprintf('\nWindow scaling factor: %d', windowScale);
 
         dataCh1 = dataCh1 - mean(dataCh1);
-        windowedDataCh1 = dataCh1' .* blackman(numAdcSamples/2);
-        windowedDataCh1 = windowedDataCh1 .* windowScale; % Apply Blackman window
+        windowedDataCh1 = dataCh1' .* BlackmanHarris92(numAdcSamples/2);
+        windowedDataCh1 = windowedDataCh1 .* windowScale; % Apply BlackmanHarris92 window
         freqDomainCh1 = fft(windowedDataCh1)/(NUM_ADC_SAMPLES_PER_CH); % FFT
         freqDomainMagnitudeCh1 = abs(freqDomainCh1); % Extract magnitude
         freqDomainMagnitudeDbCh1 = 20 * log10(freqDomainMagnitudeCh1/adcAmplitude);

@@ -49,7 +49,10 @@
 % 	ADD THE ABSOLUTE PATH TO "linear_lab_tools\matlab" FOLDER BEFORE RUNNING THE SCRIPT.
 %   RUN "mex -setup" TO SET UP COMPILER AND CHOSE THE OPTION "Lcc-win32 C".
 
-function Ltc2123Dc1974v6Core  
+function Ltc2123Dc1974v6Core
+
+import Llt.Utils.BlackmanHarris92
+
     % Initialize script operation parameters
     bitFileId = 190; % Bitfile ID
     continuous = false;            % Run continuously or once
@@ -231,13 +234,13 @@ function Ltc2123Dc1974v6Core
             title('CH1')
 
             dataCh0 = dataCh0 - mean(dataCh0);
-            dataCh0 = dataCh0' .* blackman(buffSize/2); % Apply Blackman window
+            dataCh0 = dataCh0' .* BlackmanHarris92(buffSize/2); % Apply BlackmanHarris92 window
             freqDomainCh0 = fft(dataCh0)/(buffSize/2); % FFT
             freqDomainMagnitudeCh0 = abs(freqDomainCh0); % Extract magnitude
             freqDomainMagnitudeDbCh0 = 20 * log10(freqDomainMagnitudeCh0/8192.0);
 
             dataCh1 = dataCh1 - mean(dataCh1);
-            dataCh1 = dataCh1' .* blackman(buffSize/2); % Apply Blackman window
+            dataCh1 = dataCh1' .* BlackmanHarris92(buffSize/2); % Apply BlackmanHarris92 window
             freqDomainCh1 = fft(dataCh1)/(buffSize/2); % FFT
             freqDomainMagnitudeCh1 = abs(freqDomainCh1); % Extract magnitude
             freqDomainMagnitudeDbCh1 = 20 * log10(freqDomainMagnitudeCh1/8192.0);

@@ -48,6 +48,8 @@
 
 function Ltc2123Dc2226DualClockingSolution
     
+import Llt.Utils.BlackmanHarris92
+
     % Initialize script operation parameters
     bitFileId = 192; % Bitfile ID
     continuous = 0; % Run continuously, or just once
@@ -273,25 +275,25 @@ function Ltc2123Dc2226DualClockingSolution
             title('CH3')
 
             dataCh0 = dataCh0 - mean(dataCh0);
-            dataCh0 = dataCh0' .* blackman(buffSize/2); % Apply Blackman window
+            dataCh0 = dataCh0' .* BlackmanHarris92(buffSize/2); % Apply BlackmanHarris92 window
             freqDomainCh0 = fft(dataCh0)/(buffSize/2); % FFT
             freqDomainMagnitudeCh0 = abs(freqDomainCh0); % Extract magnitude
             freqDomainMagnitudeDbCh0 = 20 * log10(freqDomainMagnitudeCh0/(buffSize/2));
 
             dataCh1 = dataCh1 - mean(dataCh1);
-            dataCh1 = dataCh1' .* blackman(buffSize/2); % Apply Blackman window
+            dataCh1 = dataCh1' .* BlackmanHarris92(buffSize/2); % Apply BlackmanHarris92 window
             freqDomainCh1 = fft(dataCh1)/(buffSize/2); % FFT
             freqDomainMagnitudeCh1 = abs(freqDomainCh1); % Extract magnitude
             freqDomainMagnitudeDbCh1 = 20 * log10(freqDomainMagnitudeCh1/(buffSize/2));
             
             dataCh2 = dataCh2 - mean(dataCh2);
-            dataCh2 = dataCh2' .* blackman(buffSize/2); % Apply Blackman window
+            dataCh2 = dataCh2' .* BlackmanHarris92(buffSize/2); % Apply BlackmanHarris92 window
             freqDomainCh2 = fft(dataCh2)/(buffSize/2); % FFT
             freqDomainMagnitudeCh2 = abs(freqDomainCh2); % Extract magnitude
             freqDomainMagnitudeDbCh2 = 20 * log10(freqDomainMagnitudeCh2/(buffSize/2));
             
             dataCh3 = dataCh3 - mean(dataCh3);
-            dataCh3 = dataCh3' .* blackman(buffSize/2); % Apply Blackman window
+            dataCh3 = dataCh3' .* BlackmanHarris92(buffSize/2); % Apply BlackmanHarris92 window
             freqDomainCh3 = fft(dataCh3)/(buffSize/2); % FFT
             freqDomainMagnitudeCh3 = abs(freqDomainCh3); % Extract magnitude
             freqDomainMagnitudeDbCh3 = 20 * log10(freqDomainMagnitudeCh3/(buffSize/2));

@@ -52,6 +52,9 @@
 %   RUN "mex -setup" TO SET UP COMPILER AND CHOSE THE OPTION "Lcc-win32 C".
 
 function Ltc2389Dc1826(arg1NumSamples, arg2Verbose, arg3DoDemo, arg4Trigger, arg5Timeout)
+
+import Llt.Utils.BlackmanHarris92
+
     if(~nargin)
         numSamples = 32 * 1024;
         % Print extra information to console
@@ -182,12 +185,12 @@ function Ltc2389Dc1826(arg1NumSamples, arg2Verbose, arg3DoDemo, arg4Trigger, arg
 
         adcAmplitude = 262144.0 / 2.0;
 
-        windowScale = (numSamples) / sum(blackman(numSamples));
+        windowScale = (numSamples) / sum(BlackmanHarris92(numSamples));
         fprintf('Window scaling factor: %d\n', windowScale);
         
         data = data - mean(data);
-        windowedData = data' .* blackman(numSamples);
-        windowedData = windowedData .* windowScale; % Apply Blackman window
+        windowedData = data' .* BlackmanHarris92(numSamples);
+        windowedData = windowedData .* windowScale; % Apply BlackmanHarris92 window
         freqDomain = fft(windowedData)/(numSamples); % FFT
         freqDomainMagnitude = abs(freqDomain); % Extract magnitude
         freqDomainMagnitudeDb = 20 * log10(freqDomainMagnitude/adcAmplitude);

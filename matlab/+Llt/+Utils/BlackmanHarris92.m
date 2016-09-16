@@ -1,4 +1,4 @@
-function window = blackman(size)
+function window = BlackmanHarris92(size)
 
 normalization = 1.968888;    
 a0 = 0.35875;
@@ -18,5 +18,4 @@ window = a0 - ...
          a2*cos(2*pi*t2) - ...
          a3*cos(2*pi*t3);
 
-window = window / normalization;
-window = window(:);
+window = window(:) / normalization;
