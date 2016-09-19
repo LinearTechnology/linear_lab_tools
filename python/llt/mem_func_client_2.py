@@ -6,6 +6,7 @@ from subprocess import call
 import socket
 import ctypes
 import struct
+import json
 from time import sleep
 
 basedir = os.path.abspath(os.path.dirname(__file__))
@@ -50,7 +51,7 @@ class MemClient(object):
     MEM_WRITE_FROM_FILE = 10
     REG_WRITE_LUT = 11
     
-    I2C_IENTIFY = 12
+    I2C_IDENTIFY = 12
     I2C_WRITE_BYTE = 17
     I2C_TESTING = 18
     I2C_READ_EEPROM = 19
@@ -296,7 +297,7 @@ class MemClient(object):
      
     def i2c_identify(self, dummy = False):
         length = 12
-        command = MemClient.I2C_IENTIFY | MemClient.COMMAND_SENT
+        command = MemClient.I2C_IDENTIFY | MemClient.COMMAND_SENT
         val = 0xFF
         if (dummy == True):
             command = command | MemClient.DUMMY_FUNC
@@ -369,42 +370,61 @@ class MemClient(object):
         else:
             return False       
         
-    def file_transfer(self, file_to_read, file_write_path, path_size, dummy = False):
-        
-        file_write_path = file_write_path.ljust(path_size)
-        
-        # Read the file to be transferred
-        file_data = ''
-        fp = open(file_to_read, "rb")
-        l = fp.read(1024)
-        while(l):
-            file_data = file_data.join(l)
-            l = fp.read(1024)
-        fp.close()  
-        
+    def file_transfer(self, file_to_read, file_write_path, dummy = False):   
+        print '\nTesting file transfer...'        
+        path_size = len(file_write_path)        
         # Size of the file transferred
-        size = len(file_data)        
+        fp = open(file_to_read, "rb")
+        fp.seek(0, os.SEEK_END)
+        size = fp.tell()
+        fp.close()
+        
+        print 'File size = ',
+        print size,
+        print ' bytes'
         command = MemClient.FILE_TRANSFER | MemClient.COMMAND_SENT
-        length = 8 + len(file_write_path) + size
+        length = 12 + path_size + size
         if (dummy == True):
             command = command | MemClient.DUMMY_FUNC        
 
-        sock_msg = struct.pack('II', command, length)
+        sock_msg = struct.pack('III', command, length, path_size)
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.connect((self.host, self.port))
         s.sendall(sock_msg)
 
         # Transfer file_path and the file
         s.send(file_write_path)
-        s.send(file_data)
+        
+        # Read the file to be transferred
+        fp = open(file_to_read, "rb")
+        packet_size = 1024
+        print("Reading file...")
+ 
+        file_data = fp.read(packet_size)
+        while(file_data):
+            s.send(file_data)
+            file_data = fp.read(packet_size)
 
+        fp.close()  
         response = recvall(s, 12)
         (response_command, response_length, val) = struct.unpack('III', response)
         s.close()
-
+        print 'Files transfer done!'
         return val
         
         
+    def send_json(self, command_line, dummy = False):
+                
+        sock_msg = json.loads('{"command": "60", "command_line": "cd fpga_bitfiles"}')
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.connect((self.host, self.port))
+        s.sendall(sock_msg)
+        
+        response = recvall(s, 12)
+        # third parameter is the register location that was last written into
+        (response_command, response_length, last_location) = struct.unpack('III', response)
+        s.close()
+        return 1
         
     def shutdown(self, dummy = False):
         command = MemClient.SHUTDOWN | MemClient.COMMAND_SENT

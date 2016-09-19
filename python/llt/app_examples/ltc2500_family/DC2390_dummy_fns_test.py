@@ -105,13 +105,13 @@ values = client.mem_read_block(starting_address + 100, number_of_reads, dummy = 
 print values
 
 #testing file transfer
-file_to_read = "hello.txt"
-file_write_path = "/home/sockit/LT_soc_framework/hello2.txt"
+file_to_read = "C:\Users\MSajikumar\Documents\linear_technology\linear_lab_tools_svn\python\DC2390_ABCD_123E.rbf"
+file_write_path = "/home/sockit/fpga_bitfiles/test.rbf"
 path_size = 64
-client.file_transfer(file_to_read, file_write_path, path_size)
+client.file_transfer(file_to_read, file_write_path)
 
 
-
+client.send_json("cd fpga_bitfiles")
 
 #### I2C stuff - to be tested again. #####
 
