@@ -35,6 +35,10 @@ if(verbose == True):
 if(reg_value == reg_value_read):
     print '** Tested Reg read and write. **\n'
     
+reg_value_read = client.reg_read(0x00000140, dummy = False)
+print 'I2c reg: ',
+print reg_value_read
+
 # Testing mem read and mem write
 mem_address = 0x56
 mem_value = 0xB5
@@ -105,11 +109,11 @@ values = client.mem_read_block(starting_address + 100, number_of_reads, dummy = 
 print values
 
 #testing file transfer
-file_to_read = "C:\Users\MSajikumar\Documents\linear_technology\linear_lab_tools_svn\python\DC2390_ABCD_123E.rbf"
+file_to_read = "C:/Users/MSajikumar/Documents/DC2390_ABCD_123F.rbf"
 file_write_path = "/home/sockit/fpga_bitfiles/test.rbf"
 path_size = 64
 client.file_transfer(file_to_read, file_write_path)
-
+print 'File transfer done!'
 
 client.send_json("cd fpga_bitfiles")
 

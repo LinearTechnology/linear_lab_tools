@@ -372,7 +372,8 @@ class MemClient(object):
         
     def file_transfer(self, file_to_read, file_write_path, dummy = False):   
         print '\nTesting file transfer...'        
-        path_size = len(file_write_path)        
+        path_size = len(file_write_path)    
+        print path_size
         # Size of the file transferred
         fp = open(file_to_read, "rb")
         fp.seek(0, os.SEEK_END)
