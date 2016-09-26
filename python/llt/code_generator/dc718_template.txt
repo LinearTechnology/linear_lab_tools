@@ -66,9 +66,8 @@ class ?class_name?(dc718.Demoboard):
                                  verbose               = verbose)
 
 if __name__ == '__main__':
-    NUM_SAMPLES = 64 * 1024
+    NUM_SAMPLES = 32 * 1024
     # to use this function in your own code you would typically do
     # data = ?func_name?(num_samples)
-    # Valid number of samples are 1024 to 65536 (powers of two)
     testdata = ?func_name?(NUM_SAMPLES, verbose=True, do_plot = True, 
                              do_write_to_file = True)
