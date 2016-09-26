@@ -80,7 +80,7 @@ class Demoboard():
         
     def collect(self, num_samples, trigger, timeout = 5, is_randomized = False, 
                 is_alternate_bit = False,):
-        controller_board.controller.dc890_flush()
+        self.controller.dc890_flush()
         funcs.start_collect(self, num_samples, trigger, timeout)
         self.vprint('Data collect done.')
         self.controller.dc890_flush()
@@ -115,3 +115,6 @@ class Demoboard():
             for x in range(0,len(register_values), 2):
                 self.controller.spi_send_byte_at_address(register_values[x], register_values[x+1])
             self.controller.dc890_gpio_set_byte(0xff)
+            
+    def get_num_bits(self):
+        return self.num_bits
