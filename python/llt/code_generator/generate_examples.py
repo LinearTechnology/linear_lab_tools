@@ -39,10 +39,12 @@ import re
 import datetime
 import os
 
-def replace_values(template, value_dict):
+def replace_values(template, value_dict, is_matlab):
     for key, value in value_dict.iteritems():
-        template = template.replace("?"+key+"?", str(value))
-    template = template.replace("?year?", str(datetime.datetime.now().year))
+        str_value = str(value)
+        if is_matlab & isinstance(value, bool):
+            str_value = str_value.lower()
+        template = template.replace("?"+key+"?", str_value)
     return template
         
 def make_id_name(name):
@@ -58,7 +60,49 @@ def make_class_name(name):
     name = re.sub("[- _]+([a-z])", repl, name)
     return re.sub("[^a-zA-Z0-9]", "", name)
 
-def generate(template_file_name, toml_file_name, controller):
+def make_function(string, is_matlab):
+    if is_matlab:
+        func_name = make_class_name(string)
+        out_file_name = func_name + ".m"
+    else:
+        func_name = make_var_name(string)
+        out_file_name = func_name + ".py"
+    return (func_name, out_file_name)
+    
+def make_folder(part_number, is_matlab):
+    if is_matlab:
+        return make_class_name(part_number)
+    else:
+        return part_number.lower()
+
+def split_and_strip(string):
+    return map(str.strip, string.encode('utf-8').split(','))
+        
+def pair_up_items(a_list):
+    return zip(a_list[0::2], a_list[1::2])
+
+def get_space(key, template):
+    m = re.search('( *)\?' + key + '\?', template)
+    return m.group(1)
+
+def format_spi_regs(spi_regs, template, is_matlab):
+    space = get_space('spi_reg', template)
+    if is_matlab:
+        if len(spi_regs) == 0:
+            return "... No SPI regs for this part."
+        result = ''
+        for address, value in pair_up_items(split_and_strip(spi_regs)):
+            address = int(address, 16)
+            value = int(value, 16)
+            result += "{}hex2dec('{:0>2x}'), hex2dec('{:0>2x}'), ...\n".format(space, address, value)
+        return result.strip()
+    else:
+        if len(spi_regs) == 0:
+            return "# No SPI regs for this part."
+        # join the items in each tuple with ', '; join the tuples with '\n'
+        return ('\n' + space).join(map(', '.join, pair_up_items(split_and_strip(spi_regs))))
+
+def generate(template_file_name, toml_file_name, controller, is_matlab=False):
             
     with open(template_file_name) as template_file:
         template = template_file.read()
@@ -66,16 +110,21 @@ def generate(template_file_name, toml_file_name, controller):
     with open(toml_file_name) as toml_file:
         instances = toml.loads(toml_file.read())
         
-    for key, value in instances.iteritems():
+    for key, value in instances.iteritems():        
         if value["controller"] == controller:
-            func_name = make_var_name(key)
-            out_file_name = func_name + ".py"
+            func_name, out_file_name = make_function(key, is_matlab)
             class_name = make_class_name(value["dc_number"])
             value["func_name"] = func_name
             value["class_name"] = class_name
+            value["year"] = str(datetime.datetime.now().year)
+            try:
+                value["spi_reg"] = format_spi_regs(value["spi_reg"], template, is_matlab)
+            except:
+                pass #DC718 doesn't take any spi registers
             
-            instance = replace_values(template, value)
-            folder = value["part_number"].lower()
+            instance = replace_values(template, value, is_matlab)
+            
+            folder = make_folder(value["part_number"], is_matlab)
             try:
                 os.makedirs(folder)
             except:
@@ -84,6 +133,9 @@ def generate(template_file_name, toml_file_name, controller):
                 out_file.write(instance)
 
 if __name__ == "__main__":
-    generate("dc718_template.txt", "demoboards.toml", 'DC718')
+    #generate("dc718_template.txt", "demoboards.toml", 'DC718')
     #generate("dc890_template.txt", "demoboards.toml", 'DC890')
     #generate("dc1371_template.txt", "demoboards.toml", 'DC1371')
+    #generate("dc718_matlab_template.txt", "demoboards.toml", "DC718", is_matlab=True)
+    #generate("dc1371_matlab_template.txt", "demoboards.toml", "DC1371", is_matlab=True)
+    generate("dc890_matlab_template.txt", "demoboards.toml", "DC890", is_matlab=True)
