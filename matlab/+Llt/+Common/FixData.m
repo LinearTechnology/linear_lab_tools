@@ -45,13 +45,17 @@ function data = FixData(data, numBits, alignment, isBipolar, isRandomized, isAlt
     if  alignment > 30
         error('FixData:BadAlignment', 'Does not support alignment greater than 30 bits');
     end
+    
+    internator = @uint32;
+    if isBipolar; internator = @int32; end
+    
     nShift = alignment - numBits;
-    signBit = uint32(bitshift(1, numBits - 1));
+    signBit = internator(bitshift(1, numBits - 1));
     offset = bitshift(1, numBits);
-    mask = uint32(offset) - 1;
+    mask = internator(offset) - 1;
     
     for i = 1:length(data)
-        x = uint32(data(i));
+        x = internator(data(i));
         x = bitshift(x, -nShift);
         if isRandomized && (bitand(x, 1))
             x = xor(x, hex2dec('0x3FFFFFFE'));
