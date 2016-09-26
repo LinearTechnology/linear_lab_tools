@@ -119,10 +119,10 @@ def plot(data, num_bits, channel = 0, verbose = False):
     plt.plot(freq_domain_magnitude_db)
     plt.show()
 
-def plot_channels(*channels, **verbose_kw):
+def plot_channels(num_bits, *channels, **verbose_kw):
     verbose = verbose_kw.get("verbose", False)
     for channel_num, channel in enumerate(channels):
-        plot(channel, channel_num, verbose)
+        plot(channel, num_bits, channel_num, verbose)
     
 def fix_data(data, num_bits, alignment, is_bipolar, is_randomized = False, is_alternate_bit = False):
     if alignment < num_bits:
