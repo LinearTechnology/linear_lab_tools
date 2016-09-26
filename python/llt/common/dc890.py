@@ -64,8 +64,7 @@ class Demoboard():
             dc_number, DC890_EEPROM_SIZE, self.vprint)
         self.controller = comm.Controller(controller_info)
         is_multichannel = num_channels > 1
-        self.init_controller(fpga_load, is_multichannel,
-                             self.bytes_per_sample, is_positive_clock)
+        self.init_controller(fpga_load, is_multichannel, is_positive_clock)
         self.set_spi_registers(spi_reg_values)
 
     # support "with" semantics
@@ -100,14 +99,14 @@ class Demoboard():
                               self.is_bipolar, is_randomized, is_alternate_bit)
         return funcs.scatter_data(data, self.num_channels)
 
-    def init_controller(self, fpga_load, is_multichannel, bytes_per_sample, is_positive_clock):
+    def init_controller(self, fpga_load, is_multichannel, is_positive_clock):
         if not self.controller.fpga_get_is_loaded(fpga_load):
             self.vprint('Loading FPGA')
             self.controller.fpga_load_file(fpga_load)
         else:
             self.vprint('FPGA already loaded')
         self.controller.data_set_high_byte_first()
-        self.controller.data_set_characteristics(is_multichannel, bytes_per_sample, is_positive_clock)
+        self.controller.data_set_characteristics(is_multichannel, self.bytes_per_sample, is_positive_clock)
  
     def set_spi_registers(self, register_values):
         if register_values != []:
