@@ -100,7 +100,7 @@ def format_spi_regs(spi_regs, template, is_matlab):
         if len(spi_regs) == 0:
             return "# No SPI regs for this part."
         # join the items in each tuple with ', '; join the tuples with '\n'
-        return ('\n' + space).join(map(', '.join, pair_up_items(split_and_strip(spi_regs))))
+        return (',\n' + space).join(map(', '.join, pair_up_items(split_and_strip(spi_regs))))
 
 def generate(template_file_name, toml_file_name, controller, is_matlab=False):
             
@@ -134,8 +134,8 @@ def generate(template_file_name, toml_file_name, controller, is_matlab=False):
 
 if __name__ == "__main__":
     #generate("dc718_template.txt", "demoboards.toml", 'DC718')
-    #generate("dc890_template.txt", "demoboards.toml", 'DC890')
+    generate("dc890_template.txt", "demoboards.toml", 'DC890')
     #generate("dc1371_template.txt", "demoboards.toml", 'DC1371')
     #generate("dc718_matlab_template.txt", "demoboards.toml", "DC718", is_matlab=True)
     #generate("dc1371_matlab_template.txt", "demoboards.toml", "DC1371", is_matlab=True)
-    generate("dc890_matlab_template.txt", "demoboards.toml", "DC890", is_matlab=True)
+    #generate("dc890_matlab_template.txt", "demoboards.toml", "DC890", is_matlab=True)
