@@ -66,9 +66,9 @@ class Dc2290a(dc718.Demoboard):
                                  verbose               = verbose)
 
 if __name__ == '__main__':
-    NUM_SAMPLES = 64 * 1024
+    NUM_SAMPLES = 32 * 1024
     # to use this function in your own code you would typically do
     # data = ltc2387_dc2290a_a(num_samples)
-    # Valid number of samples are 1024 to 65536 (powers of two)
+    # Valid number of samples are 1024 to 32768 (powers of two)
     testdata = ltc2387_dc2290a_a(NUM_SAMPLES, verbose=True, do_plot = True, 
                              do_write_to_file = True)
