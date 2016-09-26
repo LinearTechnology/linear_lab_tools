@@ -43,12 +43,15 @@ rev = (rev_id >> 16) & 0x0000FFFF
 print ('FPGA load type ID: %04X' % type_id)
 print ('FPGA load revision: %04X' % rev)
 
-LUT_MASK = 0x20000000 # Let's start with half-depth...
+LUT_DIVIDER = 0x1000 # Let's start with half-depth...
 SYSTEM_CLOCK_DIVIDER = 199
-fb_factor = 0x7000
+fb_gain = 0x7FFF
+echo_gain = 0x7FFF
+
+#fb_factor = 0xC000 #-4000
 
 print("Setting up datapath...\n");
-client.reg_write(SYSTEM_CLOCK_BASE, (LUT_MASK  | SYSTEM_CLOCK_DIVIDER))
+client.reg_write(SYSTEM_CLOCK_BASE, ((LUT_DIVIDER << 16)  | SYSTEM_CLOCK_DIVIDER))
 
 
 
@@ -94,7 +97,7 @@ print ('FPGA load revision: %04X' % rev)
 # light on. reg_write takes the register address as the first argument, and the
 # value to write as the second argument.
 
-client.reg_write(FEEDBACK_FACTOR_BASE, fb_factor) # Tune radio
+client.reg_write(FEEDBACK_FACTOR_BASE, ((echo_gain << 16) | fb_gain)) # Tune radio
 
 
 print ('Okay, now lets blink some lights!!')
