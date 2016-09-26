@@ -809,6 +809,16 @@ class Controller(object):
         self._call('HsFpgaReadDataAtAddress', c_address, ct.byref(c_value))
         return c_value.value
 
+    def hs_mpsse_enable_divide_by_5(self, enable):
+        """Enables or disables the MPSSE master clock divide-by-5 (enabled by default)"""
+        c_enable = ct.c_bool(enable)
+        self._call('HsMpsseEnableDivideBy5', c_enable)
+        
+    def hs_mpsse_set_clk_divider(self, divider):
+        """Sets MPSSE SCK divider (default 0) frequency is F / (2 * (1 + divider)) where F is 60 or 12MHz"""
+        c_divider = ct.c_uint16(divider)
+        self._call('HsMpsseSetClkDivider', c_divider);
+        
     def hs_gpio_write_high_byte(self, value):
         """Set the GPIO high byte to a value."""
         c_value = ct.c_ubyte(value)
