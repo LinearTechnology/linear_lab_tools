@@ -1,41 +1,41 @@
 classdef LtcControllerComm < handle
-% LtcControllerComm Wrapper for LtcControllerComm.dll
-% It provides a class and some constants used to communicate with 
-% the DC1371A, DC718C, DC890B, and high-speed commerical FPGA demo-boards
-% used as controllers for Linear Technology demo-boards. Note that there is
-% no open command, the controller is opened automatically as needed. There 
-% is a close method, but it is not necessary to call it, the destructor will
-%  close the handle. If there is an error or the close method is called, the 
-% device will again be opened automatically as needed.
-% To connect do something like this:
-%
-%     lcc = LtcControllerComm();
-%     
-%     % ListControllers finds all connected controllers of the specified
-%     % type(s)
-%     controllerInfoList = lcc.ListControllers( ...
-%         bitor(lcc.TYPE_DC718, lcc.TYPE_DC890));
-%     controllerInfo = [];
-%     for info = controllerInfoList
-%        % here you could use cid = lcc.Init(controllerInfo); to open each
-%        % device and query it to make sure it is the controller, or you could
-%        % check info.description or info.serialNumber, or even just take
-%        % the first controller, depending on your needs. If you open multiple
-%        % devices you aren't going to use, you should Cleanup them, or 
-%        % they will be unavailable until the Lcc object goes out of scope
-%        if thisIsTheOneWeWant
-%            controllerInfo = info;
-%            break;
-%        end
-%     end
-% 
-%     if isempty(controlerInfo)
-%         error('TestLtcControllerComm:noDevice', ...
-%            'could not find compatible device');
-%     end
-% 
-%     % init a device and get an id
-%     cid = lcc.Init(controllerInfo);
+    % LtcControllerComm Wrapper for LtcControllerComm.dll
+    % It provides a class and some constants used to communicate with 
+    % the DC1371A, DC718C, DC890B, and high-speed commerical FPGA demo-boards
+    % used as controllers for Linear Technology demo-boards. Note that there is
+    % no open command, the controller is opened automatically as needed. There 
+    % is a close method, but it is not necessary to call it, the destructor will
+    %  close the handle. If there is an error or the close method is called, the 
+    % device will again be opened automatically as needed.
+    % To connect do something like this:
+    %
+    %     lcc = LtcControllerComm();
+    %     
+    %     % ListControllers finds all connected controllers of the specified
+    %     % type(s)
+    %     controllerInfoList = lcc.ListControllers( ...
+    %         bitor(lcc.TYPE_DC718, lcc.TYPE_DC890));
+    %     controllerInfo = [];
+    %     for info = controllerInfoList
+    %        % here you could use cid = lcc.Init(controllerInfo); to open each
+    %        % device and query it to make sure it is the controller, or you could
+    %        % check info.description or info.serialNumber, or even just take
+    %        % the first controller, depending on your needs. If you open multiple
+    %        % devices you aren't going to use, you should Cleanup them, or 
+    %        % they will be unavailable until the Lcc object goes out of scope
+    %        if thisIsTheOneWeWant
+    %            controllerInfo = info;
+    %            break;
+    %        end
+    %     end
+    % 
+    %     if isempty(controlerInfo)
+    %         error('TestLtcControllerComm:noDevice', ...
+    %            'could not find compatible device');
+    %     end
+    % 
+    %     % init a device and get an id
+    %     cid = lcc.Init(controllerInfo);
 
     properties (Constant)
         HS_BIT_MODE_MPSSE = 0 % argument to set_mode for non-FIFO mode.
