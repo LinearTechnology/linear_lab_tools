@@ -32,7 +32,7 @@
     policies, either expressed or implied, of Linear Technology Corp.
 
     Description:
-        The purpose of this module is consolidate usfull functions
+        The purpose of this module is consolidate usefull functions
 """
 import llt.common.exceptions as err
 import llt.common.ltc_controller_comm as comm
