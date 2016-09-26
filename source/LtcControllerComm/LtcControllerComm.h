@@ -258,6 +258,10 @@ public:
 
     Byte HsGpioReadLowByte();
 
+    void MpsseEnableDivideBy5(bool enable);
+
+    void MpsseSetClkDivider(uint16_t divider);
+
     void HsFpgaEepromSetBitBangRegister(Byte registerAddress);
 
     void Dc1371SetGenericConfig(UInt32 genericConfig);

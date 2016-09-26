@@ -584,6 +584,20 @@ void Controller::HsFpgaEepromSetBitBangRegister(Byte registerAddress) {
     });
 }
 
+void Controller::MpsseEnableDivideBy5(bool enable) {
+    GET(controller, HighSpeed);
+    TRY({
+        controller->MpsseEnableDivideBy5(enable);
+    });
+}
+
+void Controller::MpsseSetClkDivider(uint16_t divider) {
+    GET(controller, HighSpeed);
+    TRY({
+        controller->MpsseSetClkDivider(divider);
+    });
+}
+
 void Controller::Dc1371SetGenericConfig(UInt32 genericConfig) {
     GET(controller, Dc1371);
     TRY({
