@@ -43,9 +43,9 @@ rev = (rev_id >> 16) & 0x0000FFFF
 print ('FPGA load type ID: %04X' % type_id)
 print ('FPGA load revision: %04X' % rev)
 
-LUT_MASK = 0x80000000 # Let's start with half-depth...
+LUT_MASK = 0x20000000 # Let's start with half-depth...
 SYSTEM_CLOCK_DIVIDER = 199
-fb_factor = 0xFFF0
+fb_factor = 0x7000
 
 print("Setting up datapath...\n");
 client.reg_write(SYSTEM_CLOCK_BASE, (LUT_MASK  | SYSTEM_CLOCK_DIVIDER))
@@ -68,7 +68,7 @@ VOLUME_BASE = 0x60
 DATAPATH_CONTROL_BASE = 0xD0
 FEEDBACK_FACTOR_BASE = 0xF0
 
-datapath_word_lut_continuous = 0x00000011 #counter as LUT address, run once
+datapath_word_lut_continuous = 0x00000000 #counter as LUT address, run once
 
 
 # Here, we use the reg_read() function to read the register that contains
