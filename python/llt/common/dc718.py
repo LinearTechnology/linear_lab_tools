@@ -108,3 +108,6 @@ class Demoboard():
             d |= raw_data[3*i+2]
             data.append(d)
         return data
+        
+    def get_num_bits(self):
+        return self.num_bits
