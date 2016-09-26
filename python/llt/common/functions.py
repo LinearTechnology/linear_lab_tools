@@ -73,12 +73,16 @@ def plot(data, num_bits, channel = 0, verbose = False):
     from matplotlib import pyplot as plt
     import numpy as np
     
+    vprint("Plotting channel " + str(channel) + " time domain.") 
+    
     num_samples = len(data)
     
     plt.figure(2*channel)
     plt.plot(data)
     plt.title('Ch' + str(channel) + ': Time Domain Samples')
     plt.show()
+    
+    vprint("FFT'ing channel " + str(channel) + " data.") 
 
     adc_amplitude = 2.0**(num_bits-1)
     
@@ -114,6 +118,9 @@ def plot(data, num_bits, channel = 0, verbose = False):
     freq_domain_magnitude = np.abs(freq_domain) # Extract magnitude
     freq_domain_magnitude[1:num_samples/2] *= 2 
     freq_domain_magnitude_db = 20 * np.log10(freq_domain_magnitude/adc_amplitude)
+    
+    vprint("Plotting channel " + str(channel) + " frequency domain.")     
+    
     plt.figure(2*channel+1)
     plt.title('Ch' + str(channel) + ': FFT')
     plt.plot(freq_domain_magnitude_db)
