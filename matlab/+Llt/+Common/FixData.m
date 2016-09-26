@@ -52,7 +52,7 @@ function data = FixData(data, numBits, alignment, isBipolar, isRandomized, isAlt
     
     for i = 1:length(data)
         x = uint32(data(i));
-        x = bitshift(x, nShift);
+        x = bitshift(x, -nShift);
         if isRandomized && (bitand(x, 1))
             x = xor(x, hex2dec('0x3FFFFFFE'));
         end
