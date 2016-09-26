@@ -100,7 +100,7 @@ classdef Dc890
             
             data = Llt.Common.FixData(rawData, self.nBits, self.alignment, ...
                 self.isBipolar, isRandomized, isAlternateBit);
-            [varargout{1:nargout}] = Llt.Common.Scatter(data);
+            [varargout{1:nargout}] = Llt.Common.Scatter(data, self.nChannels);
         end
                
         function SetSpiRegisters(self, registerValues)
