@@ -476,6 +476,16 @@ LTC_CONTROLLER_COMM_API int LccHsFpgaReadDataAtAddress(LccHandle handle, uint8_t
     CALL_VAL(controller, error_string, value, FpgaReadDataAtAddress, address);
 }
 
+LTC_CONTROLLER_COMM_API int LccHsMpsseEnableDivideBy5(LccHandle handle, bool enable) {
+    GET(handle, controller, HighSpeed, error_string);
+    CALL(controller, error_string, MpsseEnableDivideBy5, enable);
+}
+
+LTC_CONTROLLER_COMM_API int LccHsMpsseSetClkDivider(LccHandle handle, uint16_t divider) {
+    GET(handle, controller, HighSpeed, error_string);
+    CALL(controller, error_string, MpsseSetClkDivider, divider);
+}
+
 LTC_CONTROLLER_COMM_API int LccHsGpioWriteHighByte(LccHandle handle, uint8_t value) {
     GET(handle, controller, HighSpeed, error_string);
     CALL(controller, error_string, GpioWriteHighByte, value);

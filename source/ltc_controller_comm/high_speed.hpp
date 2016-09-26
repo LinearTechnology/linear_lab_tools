@@ -45,6 +45,12 @@ public:
     void Close() override;
     void Open();
 
+    // Enables or disables the master clock divide-by-5 (enabled by default)
+    void MpsseEnableDivideBy5(bool enable);
+
+    // Sets MPSSE SCK divider (default 0) frequency is F / (2 * (1 + divider)) where F is 60 or 12MHz
+    void MpsseSetClkDivider(uint16_t divider);
+
     // Data functions
     void DataSetHighByteFirst() override { swap_bytes = true; }
     void DataSetLowByteFirst() override { swap_bytes = false; }

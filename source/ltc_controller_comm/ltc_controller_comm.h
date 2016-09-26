@@ -365,6 +365,12 @@ LTC_CONTROLLER_COMM_API int LccHsFpgaWriteDataAtAddress(LccHandle handle, uint8_
 LTC_CONTROLLER_COMM_API int LccHsFpgaReadDataAtAddress(LccHandle handle, uint8_t address,
                                                        uint8_t* value);
 
+// Enables or disables the MPSSE master clock divide-by-5 (enabled by default)
+LTC_CONTROLLER_COMM_API int LccHsMpsseEnableDivideBy5(LccHandle handle, bool enable);
+
+// Sets MPSSE SCK divider (default 0) frequency is F / (2 * (1 + divider)) where F is 60 or 12MHz
+LTC_CONTROLLER_COMM_API int LccHsMpsseSetClkDivider(LccHandle handle, uint16_t divider);
+
 // GPIO functions
 // These function are generally not used because the GPIO lines are used for SPI and FPGA
 // communication.

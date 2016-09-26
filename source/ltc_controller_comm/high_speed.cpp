@@ -71,6 +71,10 @@ static const uint8_t SPI_RECEIVE_MODE_2_OP_CODE = 0x24;
 static const uint8_t SPI_TRANSCEIVE_MODE_0_OP_CODE = 0x31;
 static const uint8_t SPI_TRANSCEIVE_MODE_2_OP_CODE = 0x34;
 
+static const uint8_t MPSSE_ENABLE_DIVIDE_BY_5_OPCODE = 0x8B;
+static const uint8_t MPSSE_DISABLE_DIVIDE_BY_5_OPCODE = 0x8A;
+static const uint8_t MPSSE_CLK_DIVIDE_OPCODE = 0x86;
+
 #define MUST_NOT_HAVE_HIGH_BIT(arg) if ((arg) & 0x80) { throw invalid_argument(CAT(QUOTE(arg), " must not have high bit set.")); }
 
 // General functions
@@ -241,6 +245,20 @@ void HighSpeed::Close() {
         channel_b = nullptr;
     }
     is_repeated_start = false;
+}
+
+void HighSpeed::MpsseEnableDivideBy5(bool enable) {
+    OpenIfNeeded();
+    uint8_t command = enable ? MPSSE_ENABLE_DIVIDE_BY_5_OPCODE : MPSSE_DISABLE_DIVIDE_BY_5_OPCODE;
+    Write(channel_b, &command, 1);
+}
+
+void HighSpeed::MpsseSetClkDivider(uint16_t divider) {
+    OpenIfNeeded();
+    command_buffer[0] = MPSSE_CLK_DIVIDE_OPCODE;
+    command_buffer[1] = Narrow<uint8_t>(divider & 0xFF);
+    command_buffer[2] = Narrow<uint8_t>(divider >> 8);
+    Write(channel_b, command_buffer, COMMAND_PREFIX_3_BYTES);
 }
 
 // Fast Fifo functions

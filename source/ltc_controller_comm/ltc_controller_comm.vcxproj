@@ -201,6 +201,7 @@
     <ClInclude Include="i_spi_send_only.hpp" />
     <ClInclude Include="ltc_controller_comm.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="resource1.h" />
     <ClInclude Include="soc_kit.hpp" />
     <ClInclude Include="tcp_client_socket.hpp" />
     <ClInclude Include="utilities.hpp" />
