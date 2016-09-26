@@ -59,6 +59,9 @@ classdef LtcControllerComm < handle
         DC1371_CHIP_SELECT_ONE = 1
         DC1371_CHIP_SELECT_TWO = 2
         
+        DC718_EEPROM_SIZE = 50
+        DC890_EEPROM_SIZE = 50
+        DC1371_EEPROM_SIZE = 400
     end
     
     properties (Access = private)
@@ -114,6 +117,7 @@ classdef LtcControllerComm < handle
             
             loadlibrary([location, self.libraryName, '.dll'], ...
                 fullfile(thisFolder, 'ltc_controller_comm_matlab.h'));
+
             self.handles = {};
             self.nextIndex = 1;
         end
@@ -460,13 +464,13 @@ classdef LtcControllerComm < handle
                 values, nValues);
         end
         
-        function is_loaded = FpgaGetIsLoaded(self, cid, fpgaFilename)
+        function isLoaded = FpgaGetIsLoaded(self, cid, fpgaFilename)
             % Check if a particular FPGA load is loaded.
             % Not used with high_speed controllers or DC718
             % fpgaFilename -- The base file name without any folder, extension
             % or revision info, for instance 'DLVDS' or 'S2175', case insensitive.
             refIsLoaded = false;
-            is_loaded = self.Call(cid, 'LccFpgaGetIsLoaded', fpgaFilename, refIsLoaded);
+            [~, isLoaded] = self.Call(cid, 'LccFpgaGetIsLoaded', fpgaFilename, refIsLoaded);
         end
         
         function FpgaLoadFile(self, cid, fpga_filename)
@@ -553,6 +557,16 @@ classdef LtcControllerComm < handle
                 data);
         end
         
+        function HsMpsseEnableDivideBy5(self, cid, enable)
+            % Enables or disables the MPSSE master clock divide-by-5 (enabled by default)
+            self.Call(cid, 'LccHsMpsseEnableDivideBy5', enable);
+        end
+
+        function HsMpsseSetClkDivider(self, cid, divider)
+            % Sets MPSSE SCK divider (default 0) frequency is F / (2 * (1 + divider)) where F is 60 or 12MHz
+            self.Call(cid, 'LccHsMpsseSetClkDivider', divider);
+        end
+        
         function HsGpioWriteHighByte(self, cid, value)
             % Set the GPIO high byte to a value.
             self.Call(cid, 'LccHsGpioWriteHighByte', value);
@@ -583,22 +597,22 @@ classdef LtcControllerComm < handle
              
         % The following functions apply ONLY to DC1371 controllers
              
-        function DC1371SetGenericConfig(self, cid, genericConfig)
+        function Dc1371SetGenericConfig(self, cid, genericConfig)
             % genericConfig is always 0, so you never have to call this function
             genericConfig = hex2dec(genericConfig);
             self.Call(cid, 'Lcc1371SetGenericConfig', genericConfig);
         end
         
-        function DC1371SetDemoConfig(self, cid, demoConfig)
+        function Dc1371SetDemoConfig(self, cid, demoConfig)
             % Set the value corresponding to the four pairs of hex digits at the end
             % of line three of the EEPROM string for a DC1371A demo-board.
             % demoConfig -- If an ID string were to have 01 02 03 04,
-            %     demoConfig would be '01020304' (a string)
-            demoConfig = hex2dec(demoConfig);
+            %     demoConfig would be '01020304' (a string) or '0x01020304'
+            demoConfig = sscanf(demoConfig, '%x');
             self.Call(cid, 'Lcc1371SetDemoConfig', demoConfig);
         end
         
-        function DC1371SpiChooseChipSelect(self, cid, newChipSelect)
+        function Dc1371SpiChooseChipSelect(self, cid, newChipSelect)
             % Set the chip select to use in future spi commands, 1 (default) is
             % correct for most situations, rarely 2 is needed.
             % newChipSelect -- 1 (usually) or 2
@@ -607,14 +621,14 @@ classdef LtcControllerComm < handle
         
         % The following functions apply ONLY to DC890 controllers
         
-        function DC890GpioSetByte(self, cid, byte)
+        function Dc890GpioSetByte(self, cid, byte)
             % Set the IO expander GPIO lines to byte, all spi transaction use this as
             % a base value, or can be used to bit bang lines
             % byte -- The bits of byte correspond to the output lines of the IO expander.
             self.Call(cid, 'Lcc890GpioSetByte', byte);
         end
         
-        function DC890GpioSpiSetBits(self, cid, csBit, sckBit, sdiBit)
+        function Dc890GpioSpiSetBits(self, cid, csBit, sckBit, sdiBit)
             % Set the bits used for SPI transactions, which are performed by
             % bit-banging the IO expander on demo-boards that have one. This function
             % must be called before doing any spi transactions with the DC890
@@ -625,7 +639,7 @@ classdef LtcControllerComm < handle
             self.Call(cid, 'Lcc890GpioSpiSetBits', csBit, sckBit, sdiBit);
         end
         
-        function DC890Flush(self, cid)
+        function Dc890Flush(self, cid)
             % Causes the DC890 to terminate any I2C (or GPIO or SPI) transactions then
             % purges the buffers.
             self.Call(cid, 'Lcc890Flush');

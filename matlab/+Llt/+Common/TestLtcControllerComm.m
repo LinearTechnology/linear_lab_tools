@@ -1,4 +1,4 @@
-function TestLtcHighSpeedComm
+function TestLtcControllerComm
 
     NUM_DAC_SAMPLES = 64 * 1024;
     NUM_CYCLES_1 = 489;
