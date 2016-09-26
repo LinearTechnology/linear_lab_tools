@@ -46,7 +46,7 @@ def ?func_name?(num_samples, spi_registers, verbose = False, do_plot = False,
         ?channels? = controller.collect(num_samples, consts.TRIGGER_NONE)
         ?data_correction_code?
         if do_plot:
-            funcs.plot_channels(?channels?, ?num_bits?)
+            funcs.plot_channels(?num_bits?, ?channels?)
         if do_write_to_file:
             funcs.write_channels_to_file_32_bit("data.txt", ?channels?)
         return ?channels?
