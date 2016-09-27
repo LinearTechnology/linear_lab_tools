@@ -107,7 +107,8 @@ class Demoboard():
         else:
             self.vprint('FPGA already loaded')
 
-
+    def get_num_bits(self):
+        return self.num_bits
  
 
                 
