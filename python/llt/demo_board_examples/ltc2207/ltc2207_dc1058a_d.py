@@ -47,9 +47,9 @@ def ltc2207_dc1058a_d(num_samples, verbose = False, do_plot = False,
         data = controller.collect(num_samples, consts.TRIGGER_NONE)
         
         if do_plot:
-            funcs.plot(data, 16)
+            funcs.plot(data, controller.get_num_bits(), verbose=verbose)
         if do_write_to_file:
-            funcs.write_to_file_32_bit("data.txt", data)
+            funcs.write_to_file_32_bit("data.txt", data, verbose=verbose)
         return data
 
 class Dc1058aD(dc718.Demoboard):
@@ -66,9 +66,8 @@ class Dc1058aD(dc718.Demoboard):
                                  verbose               = verbose)
 
 if __name__ == '__main__':
-    NUM_SAMPLES = 64 * 1024
+    NUM_SAMPLES = 32 * 1024
     # to use this function in your own code you would typically do
     # data = ltc2207_dc1058a_d(num_samples)
-    # Valid number of samples are 1024 to 65536 (powers of two)
     testdata = ltc2207_dc1058a_d(NUM_SAMPLES, verbose=True, do_plot = True, 
                              do_write_to_file = True)

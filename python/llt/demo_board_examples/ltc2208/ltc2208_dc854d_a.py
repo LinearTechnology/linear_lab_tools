@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-    Created by: Noe Quintero
-    E-mail: nquintero@linear.com
+    E-mail: quikeval@linear.com
 
     Copyright (c) 2016, Linear Technology Corp.(LTC)
     All rights reserved.
@@ -40,26 +39,26 @@ import llt.common.dc718 as dc718
 import llt.common.functions as funcs
 import llt.common.constants as consts
 
-def ltc2208_DC854(num_samples, verbose = False, do_plot = False, 
+def ltc2208_dc854d_a(num_samples, verbose = False, do_plot = False, 
                       do_write_to_file = False):
-    # connect to the DC854 and do a collection
-    with Dc854(verbose) as controller:
+    # connect to the DC854D-A and do a collection
+    with Dc854dA(verbose) as controller:
         # You can call this multiple times with the same controller if you need to
         data = controller.collect(num_samples, consts.TRIGGER_NONE)
         
         if do_plot:
-            funcs.plot(data)
+            funcs.plot(data, controller.get_num_bits(), verbose=verbose)
         if do_write_to_file:
-            funcs.write_to_file_32_bit(data, "data.txt")
+            funcs.write_to_file_32_bit("data.txt", data, verbose=verbose)
         return data
 
-class Dc854(dc718.Demoboard):
+class Dc854dA(dc718.Demoboard):
     """
-        A DC718 demo board with settings for the DC854
+        A DC718 demo board with settings for the DC854D-A
     """
     def __init__(self, verbose = False):
         dc718.Demoboard.__init__(self, 
-                                 dc_number             = 'DC854', 
+                                 dc_number             = 'DC854D-A', 
                                  is_positive_clock     = True, 
                                  num_bits              = 16, 
                                  alignment             = 16,
@@ -67,9 +66,8 @@ class Dc854(dc718.Demoboard):
                                  verbose               = verbose)
 
 if __name__ == '__main__':
-    NUM_SAMPLES = 64 * 1024
+    NUM_SAMPLES = 32 * 1024
     # to use this function in your own code you would typically do
-    # data = ltc2208_DC854(num_samples)
-    # Valid number of samples are 1024 to 65536 (powers of two)
-    testdata = ltc2208_DC854(NUM_SAMPLES, verbose=True, do_plot = True, 
+    # data = ltc2208_dc854d_a(num_samples)
+    testdata = ltc2208_dc854d_a(NUM_SAMPLES, verbose=True, do_plot = True, 
                              do_write_to_file = True)
