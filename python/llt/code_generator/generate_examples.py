@@ -53,16 +53,19 @@ def make_id_name(name):
 def make_var_name(name):
     return make_id_name(name.lower())
     
-def make_class_name(name):
+def make_class_name(name, keep_dash = False):
     name = name[0].upper() + name[1:].lower()
     print "name is '" + name + "'"
     repl = lambda m: m.group(1).upper()
     name = re.sub("[- _]+([a-z])", repl, name)
+    if keep_dash:
+        name = name.replace("-", "_")
+        return re.sub("[^_a-zA-Z0-9]", "", name)
     return re.sub("[^a-zA-Z0-9]", "", name)
 
 def make_function(string, is_matlab):
     if is_matlab:
-        func_name = make_class_name(string)
+        func_name = make_class_name(string, True)
         out_file_name = func_name + ".m"
     else:
         func_name = make_var_name(string)
@@ -70,10 +73,14 @@ def make_function(string, is_matlab):
     return (func_name, out_file_name)
     
 def make_folder(part_number, is_matlab):
+    name = part_number
+    last_dash = name.rfind('-')
+    if last_dash > 0:
+        name = name[0:last_dash]
     if is_matlab:
-        return make_class_name(part_number)
+        return "+" + make_class_name(name).upper()
     else:
-        return part_number.lower()
+        return name.lower()
 
 def split_and_strip(string):
     return map(str.strip, string.encode('utf-8').split(','))
