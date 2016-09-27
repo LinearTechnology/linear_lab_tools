@@ -38,7 +38,7 @@
 function varargout = ?func_name?(nSamples, spiRegisters, isVerbose, doPlot, doWriteToFile)   
     if ~exist('nSamples', 'var'); nSamples = 32 * 1024; end
     if ~exist('spiRegisters', 'var')
-        spiRegisters = [ ... address          value
+        spiRegisters = [ ... address        value
                              ?spi_reg?
                        ];
     end
