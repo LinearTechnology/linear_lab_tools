@@ -14,16 +14,15 @@ num_bits              = 16
 alignment             = 16
 is_bipolar            = true
 
-# Suspect!!!
-["LTC2208 DC14D-B"]
-part_number           = "LTC2208-14"
-controller            = "DC718"
-dc_number             = "DC854" 
-num_channels          = 1
-is_positive_clock     = true 
-num_bits              = 14
-alignment             = 16
-is_bipolar            = true
+# ["LTC2208 DC14D-B"]
+# part_number           = "LTC2208-14"
+# controller            = "DC718"
+# dc_number             = "DC854" 
+# num_channels          = 1
+# is_positive_clock     = true 
+# num_bits              = 14
+# alignment             = 16
+# is_bipolar            = true
 
 ["LTC2208 DC14D-C"]
 part_number           = "LTC2208-14"
@@ -134,41 +133,41 @@ num_bits = 16
 alignment = 16
 is_bipolar = false
 
-["LTC2393 DC1500A-D"]
-part_number = "LTC2393"
-dc_number = "DC1500A-D"
-controller = "DC718"
-is_positive_clock = false
-num_bits = 18
-alignment = 18
-is_bipolar = false
+# ["LTC2393 DC1500A-D"]
+# part_number = "LTC2393"
+# dc_number = "DC1500A-D"
+# controller = "DC718"
+# is_positive_clock = false
+# num_bits = 18
+# alignment = 18
+# is_bipolar = false
 
-["LTC2392 DC1500A-E"]
-part_number = "LTC2392"
-dc_number = "DC1500A-E"
-controller = "DC718"
-is_positive_clock = false
-num_bits = 18
-alignment = 18
-is_bipolar = false
+# ["LTC2392 DC1500A-E"]
+# part_number = "LTC2392"
+# dc_number = "DC1500A-E"
+# controller = "DC718"
+# is_positive_clock = false
+# num_bits = 18
+# alignment = 18
+# is_bipolar = false
 
-["LTC2391 DC1500A-F"]
-part_number = "LTC2391"
-dc_number = "DC1500A-F"
-controller = "DC718"
-is_positive_clock = false
-num_bits = 18
-alignment = 18
-is_bipolar = false
+# ["LTC2391 DC1500A-F"]
+# part_number = "LTC2391"
+# dc_number = "DC1500A-F"
+# controller = "DC718"
+# is_positive_clock = false
+# num_bits = 18
+# alignment = 18
+# is_bipolar = false
 
-["LTC2393 DC1501A-A"]
-part_number = "LTC2393"
-dc_number = "DC1501A-A"
-controller = "DC718"
-is_positive_clock = false
-num_bits = 16
-alignment = 16
-is_bipolar = false
+# ["LTC2393 DC1501A-A"]
+# part_number = "LTC2393"
+# dc_number = "DC1501A-A"
+# controller = "DC718"
+# is_positive_clock = false
+# num_bits = 16
+# alignment = 16
+# is_bipolar = false
 
 ["LTC2392 DC1501A-B"]
 part_number = "LTC2392"
@@ -188,32 +187,32 @@ num_bits = 16
 alignment = 16
 is_bipolar = false
 
-["LTC2393 DC1501A-D"]
-part_number = "LTC2393"
-dc_number = "DC1501A-D"
-controller = "DC718"
-is_positive_clock = false
-num_bits = 18
-alignment = 18
-is_bipolar = false
+# ["LTC2393 DC1501A-D"]
+# part_number = "LTC2393"
+# dc_number = "DC1501A-D"
+# controller = "DC718"
+# is_positive_clock = false
+# num_bits = 18
+# alignment = 18
+# is_bipolar = false
 
-["LTC2392 DC1501A-E"]
-part_number = "LTC2392"
-dc_number = "DC1501A-E"
-controller = "DC718"
-is_positive_clock = false
-num_bits = 18
-alignment = 18
-is_bipolar = false
+# ["LTC2392 DC1501A-E"]
+# part_number = "LTC2392"
+# dc_number = "DC1501A-E"
+# controller = "DC718"
+# is_positive_clock = false
+# num_bits = 18
+# alignment = 18
+# is_bipolar = false
 
-["LTC2391 DC1501A-F"]
-part_number = "LTC2391"
-dc_number = "DC1501A-F"
-controller = "DC718"
-is_positive_clock = false
-num_bits = 18
-alignment = 18
-is_bipolar = false
+# ["LTC2391 DC1501A-F"]
+# part_number = "LTC2391"
+# dc_number = "DC1501A-F"
+# controller = "DC718"
+# is_positive_clock = false
+# num_bits = 18
+# alignment = 18
+# is_bipolar = false
 
 ["LTC2315 DC1563A-A"]
 part_number = "LTC2315"
@@ -242,23 +241,23 @@ num_bits = 12
 alignment = 12
 is_bipolar = false
 
-["LTC2311-12 DC1563A-D"]
-part_number = "LTC2311-12"
-dc_number = "DC1563A-D"
-controller = "DC718"
-is_positive_clock = true
-num_bits = 12
-alignment = 12
-is_bipolar = false
+# ["LTC2311-12 DC1563A-D"]
+# part_number = "LTC2311-12"
+# dc_number = "DC1563A-D"
+# controller = "DC718"
+# is_positive_clock = true
+# num_bits = 12
+# alignment = 12
+# is_bipolar = false
 
-["LTC2310-12 DC1563A-E"]
-part_number = "LTC2310-12"
-dc_number = "DC1563A-E"
-controller = "DC718"
-is_positive_clock = true
-num_bits = 12
-alignment = 12
-is_bipolar = false
+# ["LTC2310-12 DC1563A-E"]
+# part_number = "LTC2310-12"
+# dc_number = "DC1563A-E"
+# controller = "DC718"
+# is_positive_clock = true
+# num_bits = 12
+# alignment = 12
+# is_bipolar = false
 
 ["LTC2314 DC1563A-F"]
 part_number = "LTC2314"
@@ -287,23 +286,23 @@ num_bits = 14
 alignment = 14
 is_bipolar = false
 
-["LTC2311-14 DC1563A-I"]
-part_number = "LTC2311-14"
-dc_number = "DC1563A-I"
-controller = "DC718"
-is_positive_clock = true
-num_bits = 14
-alignment = 14
-is_bipolar = false
+# ["LTC2311-14 DC1563A-I"]
+# part_number = "LTC2311-14"
+# dc_number = "DC1563A-I"
+# controller = "DC718"
+# is_positive_clock = true
+# num_bits = 14
+# alignment = 14
+# is_bipolar = false
 
-["LTC2310-14 DC1563A-J"]
-part_number = "LTC2310-14"
-dc_number = "DC1563A-J"
-controller = "DC718"
-is_positive_clock = true
-num_bits = 14
-alignment = 14
-is_bipolar = false
+# ["LTC2310-14 DC1563A-J"]
+# part_number = "LTC2310-14"
+# dc_number = "DC1563A-J"
+# controller = "DC718"
+# is_positive_clock = true
+# num_bits = 14
+# alignment = 14
+# is_bipolar = false
 
 ["LTC2383 DC1571A-A"]
 part_number = "LTC2383"
@@ -629,32 +628,32 @@ num_bits = 18
 alignment = 18
 is_bipolar = true
 
-["LTC2388 DC1826A-B"]
-part_number = "LTC2388"
-dc_number = "DC1826A-B"
-controller = "DC718"
-is_positive_clock = false
-num_bits = 18
-alignment = 18
-is_bipolar = true
+# ["LTC2388 DC1826A-B"]
+# part_number = "LTC2388"
+# dc_number = "DC1826A-B"
+# controller = "DC718"
+# is_positive_clock = false
+# num_bits = 18
+# alignment = 18
+# is_bipolar = true
 
-["LTC2387 DC1826A-C"]
-part_number = "LTC2387"
-dc_number = "DC1826A-C"
-controller = "DC718"
-is_positive_clock = false
-num_bits = 18
-alignment = 18
-is_bipolar = true
+# ["LTC2387 DC1826A-C"]
+# part_number = "LTC2387"
+# dc_number = "DC1826A-C"
+# controller = "DC718"
+# is_positive_clock = false
+# num_bits = 18
+# alignment = 18
+# is_bipolar = true
 
-["LTC2386 DC1826A-D"]
-part_number = "LTC2386"
-dc_number = "DC1826A-D"
-controller = "DC718"
-is_positive_clock = false
-num_bits = 18
-alignment = 18
-is_bipolar = true
+# ["LTC2386 DC1826A-D"]
+# part_number = "LTC2386"
+# dc_number = "DC1826A-D"
+# controller = "DC718"
+# is_positive_clock = false
+# num_bits = 18
+# alignment = 18
+# is_bipolar = true
 
 ["LTC2389 DC1826A-E"]
 part_number = "LTC2389"
@@ -665,32 +664,32 @@ num_bits = 16
 alignment = 16
 is_bipolar = true
 
-["LTC2388 DC1826A-F"]
-part_number = "LTC2388"
-dc_number = "DC1826A-F"
-controller = "DC718"
-is_positive_clock = false
-num_bits = 16
-alignment = 16
-is_bipolar = true
+# ["LTC2388 DC1826A-F"]
+# part_number = "LTC2388"
+# dc_number = "DC1826A-F"
+# controller = "DC718"
+# is_positive_clock = false
+# num_bits = 16
+# alignment = 16
+# is_bipolar = true
 
-["LTC2387 DC1826A-G"]
-part_number = "LTC2387"
-dc_number = "DC1826A-G"
-controller = "DC718"
-is_positive_clock = false
-num_bits = 16
-alignment = 16
-is_bipolar = true
+# ["LTC2387 DC1826A-G"]
+# part_number = "LTC2387"
+# dc_number = "DC1826A-G"
+# controller = "DC718"
+# is_positive_clock = false
+# num_bits = 16
+# alignment = 16
+# is_bipolar = true
 
-["LTC2386 DC1826A-H"]
-part_number = "LTC2386"
-dc_number = "DC1826A-H"
-controller = "DC718"
-is_positive_clock = false
-num_bits = 16
-alignment = 16
-is_bipolar = true
+# ["LTC2386 DC1826A-H"]
+# part_number = "LTC2386"
+# dc_number = "DC1826A-H"
+# controller = "DC718"
+# is_positive_clock = false
+# num_bits = 16
+# alignment = 16
+# is_bipolar = true
 
 ["LTC2338 DC1908A-A"]
 part_number = "LTC2338"
@@ -791,14 +790,14 @@ num_bits = 16
 alignment = 16
 is_bipolar = true
 
-["LTC2328-18 DC2405A-A"]
-part_number = "LTC2328-18"
-dc_number = "DC2405A-A"
-controller = "DC718"
-is_positive_clock = false
-num_bits = 18
-alignment = 18
-is_bipolar = true
+# ["LTC2328-18 DC2405A-A"]
+# part_number = "LTC2328-18"
+# dc_number = "DC2405A-A"
+# controller = "DC718"
+# is_positive_clock = false
+# num_bits = 18
+# alignment = 18
+# is_bipolar = true
 
 ["LTC2217 DC854D-E"]
 part_number = "LTC2217"
@@ -1052,14 +1051,6 @@ num_bits = 10
 alignment = 14
 is_bipolar = true
 
-
-
-
-
-
-
-
-
 #############
 ### DC890 ###
 #############
@@ -1078,8 +1069,6 @@ data_correction_code = """data = data[0] # Keep only one channel
 """
 fpga_load = 'DLVDS'
 spi_reg = "0x00, 0x80, 0x01, 0x00, 0x02, 0x00,0x03, 0x71, 0x04, 0x00"
-
-
 
 ["LTC2351 DC1278A"]
 part_number = "LTC2351"
