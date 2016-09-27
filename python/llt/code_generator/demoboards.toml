@@ -7,27 +7,27 @@
 ["LTC2208 DC854D-A"]
 part_number           = "LTC2208"
 controller            = "DC718"
-dc_number             = "DC854" 
+dc_number             = "DC854D-A" 
 num_channels          = 1
 is_positive_clock     = true 
 num_bits              = 16 
 alignment             = 16
 is_bipolar            = true
 
-# ["LTC2208 DC14D-B"]
-# part_number           = "LTC2208-14"
-# controller            = "DC718"
-# dc_number             = "DC854" 
-# num_channels          = 1
-# is_positive_clock     = true 
-# num_bits              = 14
-# alignment             = 16
-# is_bipolar            = true
+["LTC2208 DC854D-B"]
+part_number           = "LTC2208"
+controller            = "DC718"
+dc_number             = "DC854D-B" 
+num_channels          = 1
+is_positive_clock     = true 
+num_bits              = 16
+alignment             = 16
+is_bipolar            = true
 
-["LTC2208 DC14D-C"]
+["LTC2208-14 DC854D-C"]
 part_number           = "LTC2208-14"
 controller            = "DC718"
-dc_number             = "DC854" 
+dc_number             = "DC854D-C" 
 num_channels          = 1
 is_positive_clock     = true 
 num_bits              = 14
