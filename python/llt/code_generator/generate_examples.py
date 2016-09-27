@@ -133,9 +133,9 @@ def generate(template_file_name, toml_file_name, controller, is_matlab=False):
                 out_file.write(instance)
 
 if __name__ == "__main__":
-    #generate("dc718_template.txt", "demoboards.toml", 'DC718')
+    generate("dc718_template.txt", "demoboards.toml", 'DC718')
     generate("dc890_template.txt", "demoboards.toml", 'DC890')
-    #generate("dc1371_template.txt", "demoboards.toml", 'DC1371')
-    #generate("dc718_matlab_template.txt", "demoboards.toml", "DC718", is_matlab=True)
-    #generate("dc1371_matlab_template.txt", "demoboards.toml", "DC1371", is_matlab=True)
-    #generate("dc890_matlab_template.txt", "demoboards.toml", "DC890", is_matlab=True)
+    generate("dc1371_template.txt", "demoboards.toml", 'DC1371')
+    generate("dc718_matlab_template.txt", "demoboards.toml", "DC718", is_matlab=True)
+    generate("dc1371_matlab_template.txt", "demoboards.toml", "DC1371", is_matlab=True)
+    generate("dc890_matlab_template.txt", "demoboards.toml", "DC890", is_matlab=True)
