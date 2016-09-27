@@ -39,3 +39,8 @@ Pulse characterization
 
 Added Avalon_bus_example.py in app example and supporting files in utils
 
+September, 2016
+Migrated a lot of the Python and Matlab code into packages.
+Put LTC16XX, LTC22XX, and LTC23XX  parts into folders to make things more navigable.
+Fixes to the underlying DLL.
+
