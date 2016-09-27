@@ -47,9 +47,9 @@ def ltc2387_dc2290a_a(num_samples, verbose = False, do_plot = False,
         data = controller.collect(num_samples, consts.TRIGGER_NONE)
         
         if do_plot:
-            funcs.plot(data, 18)
+            funcs.plot(data, controller.get_num_bits(), verbose=verbose)
         if do_write_to_file:
-            funcs.write_to_file_32_bit("data.txt", data)
+            funcs.write_to_file_32_bit("data.txt", data, verbose=verbose)
         return data
 
 class Dc2290a(dc718.Demoboard):
@@ -69,6 +69,5 @@ if __name__ == '__main__':
     NUM_SAMPLES = 32 * 1024
     # to use this function in your own code you would typically do
     # data = ltc2387_dc2290a_a(num_samples)
-    # Valid number of samples are 1024 to 32768 (powers of two)
     testdata = ltc2387_dc2290a_a(NUM_SAMPLES, verbose=True, do_plot = True, 
                              do_write_to_file = True)
