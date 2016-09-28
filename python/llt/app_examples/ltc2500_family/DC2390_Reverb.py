@@ -43,10 +43,10 @@ rev = (rev_id >> 16) & 0x0000FFFF
 print ('FPGA load type ID: %04X' % type_id)
 print ('FPGA load revision: %04X' % rev)
 
-LUT_DIVIDER = 0x1000 # Let's start with half-depth...
-SYSTEM_CLOCK_DIVIDER = 199
-fb_gain = 0x7FFF
-echo_gain = 0x7FFF
+LUT_DIVIDER = 0xe000 # Let's start with half-depth...
+SYSTEM_CLOCK_DIVIDER = 1250
+fb_gain = 0xff00
+echo_gain = 0x8000
 
 #fb_factor = 0xC000 #-4000
 
