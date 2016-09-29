@@ -49,19 +49,20 @@ function data = FixData(data, numBits, alignment, isBipolar, isRandomized, isAlt
     internator = @uint32;
     if isBipolar; internator = @int32; end
     
-    nShift = alignment - numBits;
+    data = internator(data);
+    nShift = internator(alignment - numBits);
     signBit = internator(bitshift(1, numBits - 1));
-    offset = bitshift(1, numBits);
-    mask = internator(offset) - 1;
+    offset = internator(bitshift(1, numBits));
+    mask = internator(offset - 1); 
     
     for i = 1:length(data)
-        x = internator(data(i));
+        x = data(i);
         x = bitshift(x, -nShift);
         if isRandomized && (bitand(x, 1))
-            x = xor(x, hex2dec('0x3FFFFFFE'));
+            x = bitxor(x, hex2dec('3FFFFFFE'));
         end
         if isAlternateBit
-            x = xor(x, hex2dec('0x2AAAAAAA'));
+            x = bitxor(x, hex2dec('2AAAAAAA'));
         end
         x = bitand(x, mask);
         if isBipolar && bitand(x, signBit)
