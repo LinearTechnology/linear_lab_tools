@@ -3,7 +3,7 @@
 #include <string>
 #include <cstdint>
 #include <memory>
-#define WINDOWS_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 #include "i_collect.hpp"
 #include "i_reset.hpp"

@@ -21,7 +21,7 @@ using std::chrono::seconds;
 using std::ofstream;
 #endif
 
-#define WINDOWS_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 #include "ftd2xx.h"
 #include "ltc_controller_comm.h"
