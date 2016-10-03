@@ -2,7 +2,7 @@
 #include <thread>
 #include <exception>
 #include <fstream>
-#define WINDOWS_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 #include "dc1371.hpp"
 #include "utilities.hpp"
