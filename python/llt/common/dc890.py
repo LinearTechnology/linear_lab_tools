@@ -81,6 +81,7 @@ class Demoboard():
     def collect(self, num_samples, trigger, timeout = 5, is_randomized = False, 
                 is_alternate_bit = False,):
         self.controller.dc890_flush()
+        num_samples *= self.num_channels
         funcs.start_collect(self, num_samples, trigger, timeout)
         self.vprint('Data collect done.')
         self.controller.dc890_flush()

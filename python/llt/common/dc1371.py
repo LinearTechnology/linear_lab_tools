@@ -76,7 +76,7 @@ class Demoboard():
         
     def collect(self, num_samples, trigger, timeout = 5, is_randomized = False, 
                 is_alternate_bit = False,):
-        funcs.start_collect(self, num_samples, trigger, timeout)
+        funcs.start_collect(self, num_samples * self.num_channels, trigger, timeout)
         self.vprint('Data collect done.')
         self.vprint('Reading data')
         
