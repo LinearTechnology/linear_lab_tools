@@ -281,9 +281,8 @@ class sin_params():
     #####################################################################################
     
     # Maps the the index according to the nyquist 
-    def _map_index(self, index, num_samples):
-        length = num_samples/2 -1
-        nyquist_bin = length/2
+    def _map_index(self, index, nyquist_bin):
+        length = (nyquist_bin - 1) * 2
         index = (index + length) % length
         if index <= nyquist_bin:
             return index
@@ -418,7 +417,7 @@ import time
 #from llt.demo_board_examples.ltc23xx.ltc2387.ltc2387_dc2290a_a import ltc2387_dc2290a_a
 #from llt.demo_board_examples.ltc23xx.ltc2315.ltc2315_dc1563a_a import ltc2315_dc1563a_a
 from llt.demo_board_examples.ltc22xx.ltc2261.ltc2261_dc1369a_a import ltc2261_dc1369a_a
-from llt.demo_board_examples.ltc23xx.ltc2378.ltc2378_20_dc1925a_a import ltc2378_20_dc1925a_a
+#from llt.demo_board_examples.ltc23xx.ltc2378.ltc2378_20_dc1925a_a import ltc2378_20_dc1925a_a
 #from llt.demo_board_examples.ltc22xx.ltc2268.ltc2268_dc1532a   import ltc2268_dc1532a
 #from llt.demo_board_examples.ltc2000.ltc2000_dc2085a_a import ltc2000_dc2085a_a
 
@@ -504,78 +503,78 @@ def test_dc1369a_a():
                   0x03, 0x71,
                   0x04, 0x00 # offset binary
               ]
-    ltc2261_dc1369a_a(NUM_SAMPLES,spi_reg,False,True,True)
+    #ltc2261_dc1369a_a(NUM_SAMPLES,spi_reg,False,True,True)
     new_filename = "test_dc1563a_a_data.txt"
-    os.rename("data.txt", new_filename)
+   # os.rename("data.txt", new_filename)
     data = read_file(new_filename)
-    os.remove(new_filename)
+    #os.remove(new_filename)
     test_sin(data, 2412, -1, 71, -86, 1400, 15000)    
     
-    # bipolar
-    NUM_SAMPLES = 32 * 1024
-    spi_reg = [ # addr, value
-                  0x00, 0x80,
-                  0x01, 0x00,
-                  0x02, 0x00,
-                  0x03, 0x71,
-                  0x04, 0x01 # 2's complement
-              ]
-    with dc890.Demoboard(dc_number         = 'DC1369A-A', 
-                         fpga_load         = 'DLVDS',
-                         num_channels      = 2,
-                         is_positive_clock = True, 
-                         num_bits          = 14,
-                         alignment         = 14,
-                         is_bipolar        = True,
-                         spi_reg_values    = spi_reg,
-                         verbose           = False) as controller:
-        data = controller.collect(NUM_SAMPLES, consts.TRIGGER_NONE)
-        data = data[0] # Keep only one channel
-        test_sin(data, 100, -5, 80, -80, 100, 10000) 
-        
-    # random
-    NUM_SAMPLES = 32 * 1024
-    spi_reg = [ # addr, value
-                  0x00, 0x80,
-                  0x01, 0x00,
-                  0x02, 0x00,
-                  0x03, 0x71,
-                  0x04, 0x02 # randomizer
-              ]
-    with dc890.Demoboard(dc_number         = 'DC1369A-A', 
-                         fpga_load         = 'DLVDS',
-                         num_channels      = 2,
-                         is_positive_clock = True, 
-                         num_bits          = 14,
-                         alignment         = 14,
-                         is_bipolar        = False,
-                         spi_reg_values    = spi_reg,
-                         verbose           = False) as controller:
-        data = controller.collect(NUM_SAMPLES, consts.TRIGGER_NONE, 5, True)
-        data = data[0] # Keep only one channel
-        test_sin(data, 100, -5, 80, -80, 100, 10000)
-        
-    # alt bit
-    NUM_SAMPLES = 32 * 1024
-    spi_reg = [ # addr, value
-                  0x00, 0x80,
-                  0x01, 0x00,
-                  0x02, 0x00,
-                  0x03, 0x71,
-                  0x04, 0x04 # alt bit
-              ]
-    with dc890.Demoboard(dc_number = 'DC1369A-A', 
-                         fpga_load             = 'DLVDS',
-                         num_channels          = 2,
-                         is_positive_clock     = True, 
-                         num_bits              = 14,
-                         alignment             = 14,
-                         is_bipolar            = True,
-                         spi_reg_values        = spi_reg,
-                         verbose               = False) as controller:
-        data = controller.collect(NUM_SAMPLES, consts.TRIGGER_NONE, 5, False, True)
-        data = data[0] # Keep only one channel
-        test_sin(data, 100, -5, 80, 80, 100, 10000) 
+#    # bipolar
+#    NUM_SAMPLES = 32 * 1024
+#    spi_reg = [ # addr, value
+#                  0x00, 0x80,
+#                  0x01, 0x00,
+#                  0x02, 0x00,
+#                  0x03, 0x71,
+#                  0x04, 0x01 # 2's complement
+#              ]
+#    with dc890.Demoboard(dc_number         = 'DC1369A-A', 
+#                         fpga_load         = 'DLVDS',
+#                         num_channels      = 2,
+#                         is_positive_clock = True, 
+#                         num_bits          = 14,
+#                         alignment         = 14,
+#                         is_bipolar        = True,
+#                         spi_reg_values    = spi_reg,
+#                         verbose           = False) as controller:
+#        data = controller.collect(NUM_SAMPLES, consts.TRIGGER_NONE)
+#        data = data[0] # Keep only one channel
+#        test_sin(data, 100, -5, 80, -80, 100, 10000) 
+#        
+#    # random
+#    NUM_SAMPLES = 32 * 1024
+#    spi_reg = [ # addr, value
+#                  0x00, 0x80,
+#                  0x01, 0x00,
+#                  0x02, 0x00,
+#                  0x03, 0x71,
+#                  0x04, 0x02 # randomizer
+#              ]
+#    with dc890.Demoboard(dc_number         = 'DC1369A-A', 
+#                         fpga_load         = 'DLVDS',
+#                         num_channels      = 2,
+#                         is_positive_clock = True, 
+#                         num_bits          = 14,
+#                         alignment         = 14,
+#                         is_bipolar        = False,
+#                         spi_reg_values    = spi_reg,
+#                         verbose           = False) as controller:
+#        data = controller.collect(NUM_SAMPLES, consts.TRIGGER_NONE, 5, True)
+#        data = data[0] # Keep only one channel
+#        test_sin(data, 100, -5, 80, -80, 100, 10000)
+#        
+#    # alt bit
+#    NUM_SAMPLES = 32 * 1024
+#    spi_reg = [ # addr, value
+#                  0x00, 0x80,
+#                  0x01, 0x00,
+#                  0x02, 0x00,
+#                  0x03, 0x71,
+#                  0x04, 0x04 # alt bit
+#              ]
+#    with dc890.Demoboard(dc_number = 'DC1369A-A', 
+#                         fpga_load             = 'DLVDS',
+#                         num_channels          = 2,
+#                         is_positive_clock     = True, 
+#                         num_bits              = 14,
+#                         alignment             = 14,
+#                         is_bipolar            = True,
+#                         spi_reg_values        = spi_reg,
+#                         verbose               = False) as controller:
+#        data = controller.collect(NUM_SAMPLES, consts.TRIGGER_NONE, 5, False, True)
+#        data = data[0] # Keep only one channel
+#        test_sin(data, 100, -5, 80, 80, 100, 10000) 
     
 def test_dc1925a_a():
     """Tests write_to_file_32_bit, fix_data bipolar, DC890 > 16 bits"""
