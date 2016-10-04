@@ -1084,6 +1084,20 @@ data_correction_code = ""
 fpga_load = 'S1408'
 spi_reg = ""
 
+["LTC2378-20 DC1925A-A"]
+part_number = "LTC2378-20"
+dc_number = "DC1925A"
+controller = "DC890"
+num_channels = 1
+channels = "ch0"
+is_positive_clock = true
+num_bits = 20
+alignment = 20
+is_bipolar = true
+data_correction_code = ""
+fpga_load = 'CMOS'
+spi_reg = ""
+
 ##############
 ### DC1370 ###
 ##############
