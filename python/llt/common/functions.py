@@ -53,7 +53,7 @@ def write_to_file_32_bit(filename, data, verbose = False, append = False):
     vprint('Writing data to file')
     with open(filename, 'a' if append else 'w') as f:
         for i in range(len(data)):
-            f.write(str(data[i] & 0xFFFFFFFF) + '\n')
+            f.write(str(data[i]) + '\n')
     vprint('File write done.')
 
 def write_channels_to_file_32_bit(filename, *channels, **verbose_kw):
