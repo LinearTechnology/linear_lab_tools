@@ -1,9 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-    Created by: Noe Quintero
-    E-mail: nquintero@linear.com
-
-    Copyright (c) 2015, Linear Technology Corp.(LTC)
+    Copyright (c) 2016, Linear Technology Corp.(LTC)
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -40,39 +37,44 @@ import llt.common.dc890 as dc890
 import llt.common.functions as funcs
 import llt.common.constants as consts
 
-def ltc2378_20_DC1925(num_samples, verbose = False, do_plot = False, 
+def ltc2378_20_dc1925a_a(num_samples, spi_registers, verbose = False, do_plot = False, 
                       do_write_to_file = False):
-    # connect to the DC2125 and do a collection
-    with DC1925(verbose) as controller:
+    with Dc1925a(spi_registers, verbose) as controller:
         # You can call this multiple times with the same controller if you need to
-        data = controller.collect(num_samples, consts.TRIGGER_NONE)
+        ch0 = controller.collect(num_samples, consts.TRIGGER_NONE)
         
         if do_plot:
-            funcs.plot(data)
+            funcs.plot_channels(controller.get_num_bits(),
+                                ch0, 
+                                verbose=verbose)
         if do_write_to_file:
-            funcs.write_to_file_32_bit(data, "data.txt")
-        return data
+            funcs.write_channels_to_file_32_bit("data.txt",
+                                                ch0,
+                                                verbose=verbose)
+        return ch0
 
-class DC1925(dc890.Demoboard):
+class Dc1925a(dc890.Demoboard):
     """
-        A DC890 demo board with settings for the DC1925
+        A DC890 demo board with settings for the DC1925A
     """
-    def __init__(self, verbose = False):
+    def __init__(self, spi_registers, verbose = False):
         dc890.Demoboard.__init__(self, 
-                                      dc_number             = 'DC1925', 
-                                      fpga_load             = 'CMOS',
-                                      is_multichannel       = True,
-                                      is_positive_clock     = True, 
-                                      is_high_byte_first    = True,
-                                      num_bits              = 20, 
-                                      alignment             = 20,
-                                      is_bipolar            = True,                                      
-                                      verbose               = verbose)
+                                 dc_number             = 'DC1925A', 
+                                 fpga_load             = 'CMOS',
+                                 num_channels          = 1,
+                                 is_positive_clock     = True, 
+                                 num_bits              = 20,
+                                 alignment             = 20,
+                                 is_bipolar            = True,
+                                 spi_reg_values        = spi_registers,
+                                 verbose               = verbose)
 
 if __name__ == '__main__':
-    NUM_SAMPLES = 64 * 1024
+    NUM_SAMPLES = 32 * 1024
+    spi_reg = [ # addr, value
+                  # No SPI regs for this part.
+              ]
     # to use this function in your own code you would typically do
-    # data = ltc2378_20_DC1925(num_samples)
-    # Valid number of samples are 1024 to 65536 (powers of two)
-    testdata = ltc2378_20_DC1925(NUM_SAMPLES, verbose=True, do_plot = True, 
-                                 do_write_to_file = True)
+    # data = ltc2378_20_dc1925a_a(num_samples, spi_reg)
+    ltc2378_20_dc1925a_a(NUM_SAMPLES, spi_reg, verbose=True, do_plot=True, do_write_to_file=True)
+
