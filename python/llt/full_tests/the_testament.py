@@ -409,16 +409,16 @@ class sin_params():
 ###### END HAO'S STUFF ###### END HAO'S STUFF ###### END HAO'S STUFF #########
 ##############################################################################
 
-#import os
-#import serial
-#import llt.common.dc890 as dc890
-#import llt.common.constants as consts
+import os
+import serial
+import llt.common.dc890 as dc890
+import llt.common.constants as consts
 import time
 
 #from llt.demo_board_examples.ltc23xx.ltc2387.ltc2387_dc2290a_a import ltc2387_dc2290a_a
 #from llt.demo_board_examples.ltc23xx.ltc2315.ltc2315_dc1563a_a import ltc2315_dc1563a_a
-#from llt.demo_board_examples.ltc22xx.ltc2261.ltc2261_dc1369a_a import ltc2261_dc1369a_a
-#from llt.demo_board_examples.ltc23xx.ltc2378.ltc2378_20_dc1925a_a import ltc2378_20_dc1925a_a
+from llt.demo_board_examples.ltc22xx.ltc2261.ltc2261_dc1369a_a import ltc2261_dc1369a_a
+from llt.demo_board_examples.ltc23xx.ltc2378.ltc2378_20_dc1925a_a import ltc2378_20_dc1925a_a
 #from llt.demo_board_examples.ltc22xx.ltc2268.ltc2268_dc1532a   import ltc2268_dc1532a
 #from llt.demo_board_examples.ltc2000.ltc2000_dc2085a_a import ltc2000_dc2085a_a
 
@@ -495,12 +495,21 @@ def test_dc1369a_a():
     """Tests DC890 <= 16 bits, write_to_file32_bits, fix_data bipolar, 
     fix_data unipolar(offset binary), fix_data random, and fix_data alt bit"""
     
-    # basic, write_data    
-    ltc2261_dc1369a_a()
+    # basic, write_data
+    NUM_SAMPLES = 8 * 1024
+    spi_reg = [ # addr, value
+                  0x00, 0x80,
+                  0x01, 0x00,
+                  0x02, 0x00,
+                  0x03, 0x71,
+                  0x04, 0x00 # offset binary
+              ]
+    ltc2261_dc1369a_a(NUM_SAMPLES,spi_reg,False,True,True)
     new_filename = "test_dc1563a_a_data.txt"
     os.rename("data.txt", new_filename)
     data = read_file(new_filename)
-    test_sin(data, 100, -5, 80, -80, 100, 1000)    
+    os.remove(new_filename)
+    test_sin(data, 2412, -1, 71, -86, 1400, 15000)    
     
     # bipolar
     NUM_SAMPLES = 32 * 1024
@@ -570,12 +579,12 @@ def test_dc1369a_a():
     
 def test_dc1925a_a():
     """Tests write_to_file_32_bit, fix_data bipolar, DC890 > 16 bits"""
-    #ltc2378_20_dc1925a_a(8*1024,[],False,True,True)
+    ltc2378_20_dc1925a_a(8*1024,[],False,True,True)
     new_filename = "test_dc1925a_a_data.txt"
-    #os.rename("data.txt", new_filename)
+    os.rename("data.txt", new_filename)
     data = read_file(new_filename)
-    #os.remove(new_filename)
-    test_sin(data, 207, -9, 90, -87, -182400, 182400)
+    os.remove(new_filename)
+    test_sin(data, 52, -9, 91, -87, -182400, 182400)
     
 def test_dc1532a_a():
     """Tests write_to_file_32_bit, write_channels_to_file_32_bit, DC1371"""
@@ -595,9 +604,10 @@ def test_dc2085a_a():
     test_sin(data, 100, -5, 80, -80, 100, 10000)
     
 if __name__ == '__main__':
-    #print "set Clocks"
-    #set_clocks()
+    print "set Clocks"
+    set_clocks()
 
     
-    test_dc1925a_a()
+#    test_dc1925a_a()
+    test_dc1369a_a()
     print "done"
