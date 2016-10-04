@@ -192,8 +192,9 @@ class sin_params():
             bins = self._make_unique(bins)
 
             bins = self._set_diff(bins,prev_harmonic_bins)
-                
-            raw_power = self._sum_of_squares(self._index_subset(self.fft_data, bins))
+            
+            bin_power = self._index_subset(self.fft_data, bins)
+            raw_power = self._sum_of_squares(bin_power)
             harmonic_noise = avg_noise * len(bins)
             if raw_power > harmonic_noise:
                 harmonics[i+1] = raw_power - harmonic_noise
@@ -408,16 +409,16 @@ class sin_params():
 ###### END HAO'S STUFF ###### END HAO'S STUFF ###### END HAO'S STUFF #########
 ##############################################################################
 
-import os
-import serial
-import llt.common.dc890 as dc890
-import llt.common.constants as consts
+#import os
+#import serial
+#import llt.common.dc890 as dc890
+#import llt.common.constants as consts
 import time
 
 #from llt.demo_board_examples.ltc23xx.ltc2387.ltc2387_dc2290a_a import ltc2387_dc2290a_a
 #from llt.demo_board_examples.ltc23xx.ltc2315.ltc2315_dc1563a_a import ltc2315_dc1563a_a
 #from llt.demo_board_examples.ltc22xx.ltc2261.ltc2261_dc1369a_a import ltc2261_dc1369a_a
-from llt.demo_board_examples.ltc23xx.ltc2378.ltc2378_20_dc1925a_a import ltc2378_20_dc1925a_a
+#from llt.demo_board_examples.ltc23xx.ltc2378.ltc2378_20_dc1925a_a import ltc2378_20_dc1925a_a
 #from llt.demo_board_examples.ltc22xx.ltc2268.ltc2268_dc1532a   import ltc2268_dc1532a
 #from llt.demo_board_examples.ltc2000.ltc2000_dc2085a_a import ltc2000_dc2085a_a
 
@@ -456,6 +457,7 @@ def test_sin(data, fundamental_bin, fundamental_db, snr_db, thd_db, big_min, sma
     
     sp = sin_params(data, 18, [], window_string="BLKHARRIS_92", num_harmonics=8, thd_harmonics=5)
     mask = sp.get_auto_mask(8)
+    mask = np.ones(len(mask)) - mask;
     sp = sin_params(data, 18, mask, window_string="BLKHARRIS_92", num_harmonics=8, thd_harmonics=5)
     
     print "fundimental bin" , sp.get_harmonic_bins()[0]
@@ -471,7 +473,7 @@ def test_sin(data, fundamental_bin, fundamental_db, snr_db, thd_db, big_min, sma
 
     test_thd_db = sp.get_thd_db()
     print "THD " , test_thd_db
-    assert test_thd_db > thd_db - 1 and test_thd_db < thd_db + 5, "bad thd db"
+    assert test_thd_db < thd_db + 1 and test_thd_db > thd_db - 5, "bad thd db"
     
 def test_dc2290a_a():
     """Tests DC718 > 16bits and write_to_file32_bits"""
@@ -479,7 +481,7 @@ def test_dc2290a_a():
     new_filename = "test_dc2290a_a_data.txt"
     os.rename("data.txt", new_filename)
     data = read_file(new_filename)
-    test_sin(data, 100, -5, 80, 80, 100, 10000)
+    test_sin(data, 100, -5, 80, -80, 100, 10000)
     
 def test_dc1563a_a():
     """Tests DC718 <= 16 bits and write_to_file32_bits"""
@@ -487,7 +489,7 @@ def test_dc1563a_a():
     new_filename = "test_dc1563a_a_data.txt"
     os.rename("data.txt", new_filename)
     data = read_file(new_filename)
-    test_sin(data, 100, -5, 80, 80, 100, 10000)
+    test_sin(data, 100, -5, 80, -80, 100, 10000)
     
 def test_dc1369a_a():
     """Tests DC890 <= 16 bits, write_to_file32_bits, fix_data bipolar, 
@@ -498,7 +500,7 @@ def test_dc1369a_a():
     new_filename = "test_dc1563a_a_data.txt"
     os.rename("data.txt", new_filename)
     data = read_file(new_filename)
-    test_sin(data, 100, -5, 80, 80, 100, 1000)    
+    test_sin(data, 100, -5, 80, -80, 100, 1000)    
     
     # bipolar
     NUM_SAMPLES = 32 * 1024
@@ -520,7 +522,7 @@ def test_dc1369a_a():
                          verbose           = False) as controller:
         data = controller.collect(NUM_SAMPLES, consts.TRIGGER_NONE)
         data = data[0] # Keep only one channel
-        test_sin(data, 100, -5, 80, 80, 100, 10000) 
+        test_sin(data, 100, -5, 80, -80, 100, 10000) 
         
     # random
     NUM_SAMPLES = 32 * 1024
@@ -542,7 +544,7 @@ def test_dc1369a_a():
                          verbose           = False) as controller:
         data = controller.collect(NUM_SAMPLES, consts.TRIGGER_NONE, 5, True)
         data = data[0] # Keep only one channel
-        test_sin(data, 100, -5, 80, 80, 100, 10000)
+        test_sin(data, 100, -5, 80, -80, 100, 10000)
         
     # alt bit
     NUM_SAMPLES = 32 * 1024
@@ -568,12 +570,12 @@ def test_dc1369a_a():
     
 def test_dc1925a_a():
     """Tests write_to_file_32_bit, fix_data bipolar, DC890 > 16 bits"""
-    ltc2378_20_dc1925a_a(8*1024,[],False,True,True)
+    #ltc2378_20_dc1925a_a(8*1024,[],False,True,True)
     new_filename = "test_dc1925a_a_data.txt"
-    os.rename("data.txt", new_filename)
+    #os.rename("data.txt", new_filename)
     data = read_file(new_filename)
-    os.remove(new_filename)
-    test_sin(data, 207, -9, 90, 87, -182400, 182400)
+    #os.remove(new_filename)
+    test_sin(data, 207, -9, 90, -87, -182400, 182400)
     
 def test_dc1532a_a():
     """Tests write_to_file_32_bit, write_channels_to_file_32_bit, DC1371"""
@@ -582,7 +584,7 @@ def test_dc1532a_a():
     os.rename("data.txt", new_filename)
     data = read_file(new_filename)
     os.remove(new_filename)
-    test_sin(data, 100, -5, 80, 80, 100, 10000)
+    test_sin(data, 100, -5, 80, -80, 100, 10000)
     
 def test_dc2085a_a():
     """Tests write_to_file, UFO"""
@@ -590,11 +592,11 @@ def test_dc2085a_a():
     new_filename = "test_dc2085a_a_data.txt"
     os.rename("data.txt", new_filename)
     data = read_file(new_filename)
-    test_sin(data, 100, -5, 80, 80, 100, 10000)
+    test_sin(data, 100, -5, 80, -80, 100, 10000)
     
 if __name__ == '__main__':
-    print "set Clocks"
-    set_clocks()
+    #print "set Clocks"
+    #set_clocks()
 
     
     test_dc1925a_a()
