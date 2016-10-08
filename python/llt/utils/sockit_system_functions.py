@@ -80,6 +80,9 @@ SPI_SS = 0x14
 CW_EN_TRIG = 0x00000002
 CW_START = 0x00000001
 
+#Additional register definitions for CMOS_32_BIT_CAPTURE load
+CIC_RATE_BASE = 0x60
+
 
 def sockit_capture(client, recordlength, trigger = 0, timeout = 0.0):
 #    print("Starting Capture system...\n");

@@ -32,12 +32,11 @@ NUM_SAMPLES = 2**16#65536 #131072 #8192
 
 DEADBEEF = -559038737 # For now, need to re-justify.
 
+# MUX selection
 ADC_DATA       = 0x00000000
+FILTERED_ADC_DATA = 0x00000001
 RAMP_DATA  = 0x00000004
 
-CONTROL_LOOP = 0x02
-ADC_B_CAPTURE = 0x00
-CHANNEL = ADC_B_CAPTURE
 
 
 print('Starting client')
@@ -49,21 +48,14 @@ rev = (rev_id >> 16) & 0x0000FFFF
 print ('FPGA load type ID: %04X' % type_id)
 print ('FPGA load revision: %04X' % rev)
 
-
 #datapath fields: lut_addr_select, dac_a_select, dac_b_select[1:0], fifo_data_select
 #lut addresses: 0=lut_addr_counter, 1=dac_a_data_signed, 2=0x4000, 3=0xC000
 
 # FIFO Data:
-# 0 = ADC A
-# 1 = ADC B
+# 0 = ADC data
+# 1 = Filtered ADC data 
 # 2 = Counters
 # 3 = DEADBEEF
-
-datapath_word_sines = 0x00000000
-datapath_word_pid = 0x00000100
-datapath_word_lut_run_once = 0x00008011
-datapath_word_lut_continuous = 0x00000011 #counter as LUT address, run once
-datapath_word_dist_correction = 0x00001011
 
 pltnum = 1
 # Bit fields for control register
@@ -86,6 +78,7 @@ data = sockit_uns32_to_signed32(sockit_capture(client, NUM_SAMPLES, trigger = 0,
 data_ch0 = np.ndarray(NUM_SAMPLES, dtype=float)
 
 numbits = 18
+bit_counter = True
 if(numbits == 18):
     for i in range(0, NUM_SAMPLES):
         data_ch0[i] = (data[i] & 0x0003FFFF)
@@ -97,6 +90,23 @@ if(numbits == 16):
         data_ch0[i] = (data[i] & 0x0000FFFF)
         if(data_ch0[i] > 2**15):
             data_ch0[i] -= 2**16
+
+if(numbits == 12):
+    for i in range(0, NUM_SAMPLES):
+        data_ch0[i] = (data[i] & 0x00000FFF)
+        if(data_ch0[i] > 2**11):
+            data_ch0[i] -= 2**12
+
+if(bit_counter == True): # Simple test to make sure no bits are stuck at zero or one...
+    bitmask = 1
+    for bit in range (0, numbits):
+        bitcount = 0
+        for point in range(0, NUM_SAMPLES):
+            if((data[point] & bitmask) == bitmask):
+                bitcount += 1
+        print("Number of 1s in bit " + str(bit) + ": " + str(bitcount))
+        bitmask *= 2 # Test next bit...
+
 
 data_nodc0 = data_ch0 #- np.average(data)
 
@@ -111,6 +121,16 @@ data_for_pscopeA = data_nodc0 / 256.0
 #(out_path, num_bits, is_bipolar, num_samples, dc_num, ltc_num, *data):
 save_for_pscope("pscope_DC2390.adc",24 ,True, NUM_SAMPLES, "2390", "2500",
                 data_for_pscopeA)
+                
+grab_filtered_data = False
+if(grab_filtered_data == True):
+    client.reg_write(DATAPATH_CONTROL_BASE, FILTERED_ADC_DATA) # set MUX to filtered data
+    client.reg_write(CIC_RATE_BASE, 64) # Set rate change factor (decimation factor)
+    data = sockit_uns32_to_signed32(sockit_capture(client, NUM_SAMPLES, trigger = 0, timeout = 2.0))
+    plt.figure(pltnum)
+    plt.title("Filtered Data")
+    pltnum +=1
+    plt.plot(data)
 
 if(mem_bw_test == True):
     client.reg_write(DATAPATH_CONTROL_BASE, RAMP_DATA) # Capture a test pattern
