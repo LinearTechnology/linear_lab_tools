@@ -58,9 +58,9 @@ from math import sin, pi
 
 # Import communication library
 import sys
-sys.path.append("../../")
 print sys.path
-import ltc_controller_comm as comm
+import llt.common.ltc_controller_comm as comm
+import llt.common.constants as consts
 
 # Import LTC2000 definitions and support functions
 import ltc2000_functions as lt2k
@@ -75,7 +75,7 @@ if verbose:
 # Open communication to the demo board
 descriptions = ['LTC UFO Board', 'LTC Communication Interface', 'LTC2000 Demoboard', 'LTC2000, DC2085A-A']
 device_info = None    
-for info in comm.list_controllers(comm.TYPE_HIGH_SPEED):
+for info in comm.list_controllers(consts.TYPE_HIGH_SPEED):
     if info.get_description() in descriptions:
         device_info = info
         break
@@ -83,7 +83,7 @@ if device_info is None:
     raise(comm.HardwareError('Could not find a compatible device'))
 
 with comm.Controller(device_info) as device:
-    device.hs_set_bit_mode(comm.HS_BIT_MODE_MPSSE)
+    device.hs_set_bit_mode(consts.HS_BIT_MODE_MPSSE)
     if do_reset:
         device.hs_fpga_toggle_reset()
 
@@ -150,15 +150,15 @@ with comm.Controller(device_info) as device:
 # Demonstrate how to read data in from a file
 # (Note that the same data[] variable is used)
     print('reading data from file')
-#    infile = open('dacdata.csv', 'r')  # UNcomment this line for sine wave (generated above)
+    infile = open('dacdata.csv', 'r')  # UNcomment this line for sine wave (generated above)
     # Run "generate_sinc_data.py" file before uncommenting the line below.
-    infile = open('dacdata_sinc.csv', 'r')  # UNcomment this line for funky SINC waveform
+    # infile = open('dacdata_sinc.csv', 'r')  # UNcomment this line for funky SINC waveform
     for i in range(0, total_samples):
         data[i] = int(infile.readline())
     infile.close()
     print('done reading!')
 
-    device.hs_set_bit_mode(comm.HS_BIT_MODE_FIFO)
+    device.hs_set_bit_mode(consts.HS_BIT_MODE_FIFO)
     num_bytes_sent = device.data_send_uint16_values(data) #DAC should start running here!
     print 'num_bytes_sent (should be 131072) = ' + str(num_bytes_sent)
     print 'You should see a waveform at the output of the LTC2000 now!'

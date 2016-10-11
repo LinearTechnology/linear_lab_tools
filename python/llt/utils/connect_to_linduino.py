@@ -71,6 +71,12 @@ class Linduino:
         
     def __del__(self):
         self.close()
+        
+    def __enter__(self):
+        return self
+        
+    def __exit__(self, a, b, c):
+        self.close()
 
     def open(self):
         print "\nLooking for COM ports ..."
@@ -110,11 +116,14 @@ class Linduino:
         except Exception:
             return 0
             
-    def transfer_packets(self, packets, return_size):
+    def transfer_packets(self, send_packet, return_size = 0):
         try:
-            self.port.write(packets)                       # Send packet
-            packet = self.port.read((return_size*2 + 4)*2) # Receive packet
-            return packet
+            if len(send_packet) > 0:
+                self.port.write(send_packet)                       # Send packet
+            if return_size > 0:            
+                return self.port.read((return_size*2 + 4)*2) # Receive packet
+            else:
+                return None # return_size of 0 implies send only
         except:
             return 0
 

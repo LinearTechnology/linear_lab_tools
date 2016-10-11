@@ -409,44 +409,22 @@ class sin_params():
 ##############################################################################
 
 import os
-import serial
 import llt.common.dc890 as dc890
 import llt.common.constants as consts
 import time
+import llt.common.functions as funcs
+import llt.utils.connect_to_linduino as duino
 
-#from llt.demo_board_examples.ltc23xx.ltc2387.ltc2387_dc2290a_a import ltc2387_dc2290a_a
-#from llt.demo_board_examples.ltc23xx.ltc2315.ltc2315_dc1563a_a import ltc2315_dc1563a_a
+from llt.demo_board_examples.ltc23xx.ltc2387.ltc2387_dc2290a_a import ltc2387_dc2290a_a
+from llt.demo_board_examples.ltc23xx.ltc2315.ltc2315_dc1563a_a import ltc2315_dc1563a_a
 from llt.demo_board_examples.ltc22xx.ltc2261.ltc2261_dc1369a_a import ltc2261_dc1369a_a
-#from llt.demo_board_examples.ltc23xx.ltc2378.ltc2378_20_dc1925a_a import ltc2378_20_dc1925a_a
-#from llt.demo_board_examples.ltc22xx.ltc2268.ltc2268_dc1532a   import ltc2268_dc1532a
-#from llt.demo_board_examples.ltc2000.ltc2000_dc2085a_a import ltc2000_dc2085a_a
+from llt.demo_board_examples.ltc23xx.ltc2378.ltc2378_20_dc1925a_a import ltc2378_20_dc1925a_a
+from llt.demo_board_examples.ltc22xx.ltc2268.ltc2268_dc1532a import ltc2268_dc1532a
 
 def read_file(filename):
     with open(filename) as f:
         return [float(line) for line in f]
-        
-def set_clocks():
-    DC590_ID_STRING = "USBSPI,PIC,02,01,DC,DC590,----------------------\n\x00"
-    DC1954_ID_STRING = "LTC6954-4,Cls,D6954,01,01,DC,DC1954A-D,---------\n\x00"
-    for i in range(1,256):
-        port = 'COM{}'.format(i)
-        try:
-            with serial.Serial(port, baudrate=115200, timeout=1) as ser:
-                time.sleep(2)
-                ser.readline() # hello
-                ser.write("i\n")
-                id_string = ser.read(50)
-                if id_string == DC590_ID_STRING:
-                    ser.write("I\n")
-                    id_string = ser.read(50)
-                    if id_string[:49] == DC1954_ID_STRING[:49]:
-                        print "found linduino"
-                        ser.write("MSGxS04S07S08S02S10S01XgS04S07S08S01S10S01G");
-                    return True
-        except:
-            pass # move on to an open serial port
-    return False
-        
+       
 def test_sin(data, fundamental_bin, fundamental_db, snr_db, thd_db, big_min, small_max):
     
     print "min " , min(data)
@@ -468,33 +446,40 @@ def test_sin(data, fundamental_bin, fundamental_db, snr_db, thd_db, big_min, sma
 
     test_snr_db = sp.get_snr_db()
     print "SNR " , test_snr_db
-#    assert test_snr_db > snr_db - 1 and test_snr_db < snr_db + 5, "bad snr db"
+    assert test_snr_db > snr_db - 1 and test_snr_db < snr_db + 5, "bad snr db"
 
     test_thd_db = sp.get_thd_db()
     print "THD " , test_thd_db
-    assert test_thd_db < thd_db + 1 and test_thd_db > thd_db - 5, "bad thd db"
+    assert test_thd_db < thd_db + 20 and test_thd_db > thd_db - 10, "bad thd db"
     
-def test_dc2290a_a():
+def test_dc2290a_a(linduino):
     """Tests DC718 > 16bits and write_to_file32_bits"""
-    ltc2387_dc2290a_a()
+    linduino.transfer_packets("K01K02K10\n")
+    time.sleep(5)
+    ltc2387_dc2290a_a(64*1024, False, True, True)
     new_filename = "test_dc2290a_a_data.txt"
     os.rename("data.txt", new_filename)
     data = read_file(new_filename)
-    test_sin(data, 100, -5, 80, -80, 100, 10000)
+    os.remove(new_filename)
+    test_sin(data, 18, -7, 66, -70, -55500, 55500)
     
-def test_dc1563a_a():
+def test_dc1563a_a(linduino):
     """Tests DC718 <= 16 bits and write_to_file32_bits"""
-    ltc2315_dc1563a_a()
+    linduino.transfer_packets("K00K02K11\n")
+    time.sleep(5)
+    ltc2315_dc1563a_a(32*1024, False, True, True)
     new_filename = "test_dc1563a_a_data.txt"
     os.rename("data.txt", new_filename)
     data = read_file(new_filename)
-    test_sin(data, 100, -5, 80, -80, 100, 10000)
+    os.remove(new_filename)
+    test_sin(data, 23, -1, 64, -63, 300, 3500)
     
 def test_dc1369a_a():
     """Tests DC890 <= 16 bits, write_to_file32_bits, fix_data bipolar, 
     fix_data unipolar(offset binary), fix_data random, and fix_data alt bit"""
     
     # basic, write_data
+    print "\nNormal:\n-------"
     NUM_SAMPLES = 8 * 1024
     spi_reg = [ # addr, value
                   0x00, 0x80,
@@ -503,110 +488,159 @@ def test_dc1369a_a():
                   0x03, 0x71,
                   0x04, 0x00 # offset binary
               ]
-    #ltc2261_dc1369a_a(NUM_SAMPLES,spi_reg,False,True,True)
+    ltc2261_dc1369a_a(NUM_SAMPLES,spi_reg,False,True,True)
     new_filename = "test_dc1563a_a_data.txt"
-   # os.rename("data.txt", new_filename)
+    os.rename("data.txt", new_filename)
     data = read_file(new_filename)
-    #os.remove(new_filename)
-    test_sin(data, 2412, -1, 71, -86, 1400, 15000)    
+    os.remove(new_filename)
+    test_sin(data, 2412, -1, 71, -84, 1400, 15000)    
     
-#    # bipolar
-#    NUM_SAMPLES = 32 * 1024
-#    spi_reg = [ # addr, value
-#                  0x00, 0x80,
-#                  0x01, 0x00,
-#                  0x02, 0x00,
-#                  0x03, 0x71,
-#                  0x04, 0x01 # 2's complement
-#              ]
-#    with dc890.Demoboard(dc_number         = 'DC1369A-A', 
-#                         fpga_load         = 'DLVDS',
-#                         num_channels      = 2,
-#                         is_positive_clock = True, 
-#                         num_bits          = 14,
-#                         alignment         = 14,
-#                         is_bipolar        = True,
-#                         spi_reg_values    = spi_reg,
-#                         verbose           = False) as controller:
-#        data = controller.collect(NUM_SAMPLES, consts.TRIGGER_NONE)
-#        data = data[0] # Keep only one channel
-#        test_sin(data, 100, -5, 80, -80, 100, 10000) 
-#        
-#    # random
-#    NUM_SAMPLES = 32 * 1024
-#    spi_reg = [ # addr, value
-#                  0x00, 0x80,
-#                  0x01, 0x00,
-#                  0x02, 0x00,
-#                  0x03, 0x71,
-#                  0x04, 0x02 # randomizer
-#              ]
-#    with dc890.Demoboard(dc_number         = 'DC1369A-A', 
-#                         fpga_load         = 'DLVDS',
-#                         num_channels      = 2,
-#                         is_positive_clock = True, 
-#                         num_bits          = 14,
-#                         alignment         = 14,
-#                         is_bipolar        = False,
-#                         spi_reg_values    = spi_reg,
-#                         verbose           = False) as controller:
-#        data = controller.collect(NUM_SAMPLES, consts.TRIGGER_NONE, 5, True)
-#        data = data[0] # Keep only one channel
-#        test_sin(data, 100, -5, 80, -80, 100, 10000)
-#        
-#    # alt bit
-#    NUM_SAMPLES = 32 * 1024
-#    spi_reg = [ # addr, value
-#                  0x00, 0x80,
-#                  0x01, 0x00,
-#                  0x02, 0x00,
-#                  0x03, 0x71,
-#                  0x04, 0x04 # alt bit
-#              ]
-#    with dc890.Demoboard(dc_number = 'DC1369A-A', 
-#                         fpga_load             = 'DLVDS',
-#                         num_channels          = 2,
-#                         is_positive_clock     = True, 
-#                         num_bits              = 14,
-#                         alignment             = 14,
-#                         is_bipolar            = True,
-#                         spi_reg_values        = spi_reg,
-#                         verbose               = False) as controller:
-#        data = controller.collect(NUM_SAMPLES, consts.TRIGGER_NONE, 5, False, True)
-#        data = data[0] # Keep only one channel
-#        test_sin(data, 100, -5, 80, 80, 100, 10000) 
+    # bipolar
+    print "\nBipolar:\n--------"
+    spi_reg = [ # addr, value
+                  0x00, 0x80,
+                  0x01, 0x00,
+                  0x02, 0x00,
+                  0x03, 0x71,
+                  0x04, 0x01 # 2's complement
+              ]
+    with dc890.Demoboard(dc_number         = 'DC1369A-A', 
+                         fpga_load         = 'DLVDS',
+                         num_channels      = 2,
+                         is_positive_clock = True, 
+                         num_bits          = 14,
+                         alignment         = 14,
+                         is_bipolar        = True,
+                         spi_reg_values    = spi_reg,
+                         verbose           = False) as controller:
+        data = controller.collect(NUM_SAMPLES, consts.TRIGGER_NONE)
+        data = data[0] # Keep only one channel
+    test_sin(data, 2412, -1, 71, -84, -6500, 6500) 
+        
+    # random
+    print "\nRandomizer:\n-----------"
+    spi_reg = [ # addr, value
+                  0x00, 0x80,
+                  0x01, 0x00,
+                  0x02, 0x00,
+                  0x03, 0x71,
+                  0x04, 0x02 # randomizer
+              ]
+    with dc890.Demoboard(dc_number         = 'DC1369A-A', 
+                         fpga_load         = 'DLVDS',
+                         num_channels      = 2,
+                         is_positive_clock = True, 
+                         num_bits          = 14,
+                         alignment         = 14,
+                         is_bipolar        = False,
+                         spi_reg_values    = spi_reg,
+                         verbose           = False) as controller:
+        data = controller.collect(NUM_SAMPLES, consts.TRIGGER_NONE, 5, True)
+        data = data[0] # Keep only one channel
+    test_sin(data, 2412, -1, 71, -84, 1400, 15000)
+        
+    # alt bit
+    print "\nAlternate Bit:\n--------------"
+    spi_reg = [ # addr, value
+                  0x00, 0x80,
+                  0x01, 0x00,
+                  0x02, 0x00,
+                  0x03, 0x71,
+                  0x04, 0x04 # alt bit
+              ]
+    with dc890.Demoboard(dc_number = 'DC1369A-A', 
+                         fpga_load             = 'DLVDS',
+                         num_channels          = 2,
+                         is_positive_clock     = True, 
+                         num_bits              = 14,
+                         alignment             = 14,
+                         is_bipolar            = False,
+                         spi_reg_values        = spi_reg,
+                         verbose               = False) as controller:
+        data = controller.collect(NUM_SAMPLES, consts.TRIGGER_NONE, 5, False, True)
+        data = data[0] # Keep only one channel
+    funcs.plot_channels(controller.get_num_bits(), data)    
+    test_sin(data, 2412, -1, 71, -84, 1400, 15000)
     
-def test_dc1925a_a():
+def test_dc1925a_a(linduino):
     """Tests write_to_file_32_bit, fix_data bipolar, DC890 > 16 bits"""
+    linduino.transfer_packets("K00K01K12\n")
+    time.sleep(5)
     ltc2378_20_dc1925a_a(8*1024,[],False,True,True)
     new_filename = "test_dc1925a_a_data.txt"
     os.rename("data.txt", new_filename)
     data = read_file(new_filename)
     os.remove(new_filename)
-    test_sin(data, 52, -9, 91, -87, -182400, 182400)
+    test_sin(data, 52, -9, 80, -75, -120000, 120000)
     
 def test_dc1532a_a():
     """Tests write_to_file_32_bit, write_channels_to_file_32_bit, DC1371"""
-    ltc2268_dc1532a()
+    spi_reg = [ # addr, value
+                  0x00, 0x80,
+                  0x01, 0x00,
+                  0x02, 0x00,
+                  0x03, 0x00,
+                  0x04, 0x00
+              ]
+    ltc2268_dc1532a(8*1024, spi_reg, False, True, True)
     new_filename = "test_dc1532a_a_data.txt"
     os.rename("data.txt", new_filename)
     data = read_file(new_filename)
+    data = data[:8*1024]
     os.remove(new_filename)
-    test_sin(data, 100, -5, 80, -80, 100, 10000)
+    test_sin(data, 2412, -16, 57, -78, 7000, 9200)
     
 def test_dc2085a_a():
     """Tests write_to_file, UFO"""
-    ltc2000_dc2085a_a()
-    new_filename = "test_dc2085a_a_data.txt"
-    os.rename("data.txt", new_filename)
-    data = read_file(new_filename)
-    test_sin(data, 100, -5, 80, -80, 100, 10000)
+    # funky way to run the script
+    import llt.demo_board_examples.ltc2000.ltc2000_dc2085
+    spi_reg = [ # addr, value
+                  0x00, 0x80,
+                  0x01, 0x00,
+                  0x02, 0x00,
+                  0x03, 0x00,
+                  0x04, 0x00
+              ]
+    ch0, data = ltc2268_dc1532a(8*1024, spi_reg, False, True, True)
+    test_sin(data, 2500, -14, 57, -75, 6800, 9400)
     
 if __name__ == '__main__':
-    print "set Clocks"
-    set_clocks()
 
-    
-#    test_dc1925a_a()
-    test_dc1369a_a()
+    with duino.Linduino() as linduino: # Look for the DC2026
+        print "set Clocks"
+        linduino.transfer_packets("MSGxS04S07S08S02S0CS01XgS04S0ES08S01S0CS01G");
+        linduino.transfer_packets("K00K01K02")
+
+        print "########################"
+        print "#### TEST DC2290A-A ####"
+        print "########################"
+        test_dc2290a_a(linduino)
+        
+        print "########################"
+        print "#### TEST DC1925A-A ####"
+        print "########################"
+        test_dc1925a_a(linduino)
+        
+#        print "########################"
+#        print "#### TEST D1369A-A ####"
+#        print "########################"
+#        test_dc1369a_a()
+        
+        print "########################"
+        print "#### TEST DC1563A-A ####"
+        print "########################"
+        test_dc1563a_a(linduino)
+        
+        print "########################"
+        print "#### TEST DC1532A-A ####"
+        print "########################"
+        test_dc1532a_a()
+        
+        print "########################"
+        print "#### TEST DC2085A-A ####"
+        print "########################"
+        test_dc2085a_a()
+        
+        linduino.transfer_packets("K00K01K02\n")
+
     print "done"
