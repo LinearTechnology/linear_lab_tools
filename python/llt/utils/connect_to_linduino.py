@@ -121,7 +121,7 @@ class Linduino:
             if len(send_packet) > 0:
                 self.port.write(send_packet)                       # Send packet
             if return_size > 0:            
-                return self.port.read((return_size*2 + 4)*2) # Receive packet
+                return self.port.read(return_size) # Receive packet
             else:
                 return None # return_size of 0 implies send only
         except:
