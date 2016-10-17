@@ -425,17 +425,17 @@ def read_file(filename):
     with open(filename) as f:
         return [float(line) for line in f]
        
-def test_sin(data, fundamental_bin, fundamental_db, snr_db, thd_db, big_min, small_max):
+def test_sin(data, num_bits, fundamental_bin, fundamental_db, snr_db, thd_db, big_min, small_max):
     
     print "min " , min(data)
     print "max " + str(max(data))    
     assert max(data) >= small_max, "max value too small"
     assert min(data) <= big_min, "min value too big"
     
-    sp = sin_params(data, 18, [], window_string="BLKHARRIS_92", num_harmonics=8, thd_harmonics=5)
+    sp = sin_params(data, num_bits, [], window_string="BLKHARRIS_92", num_harmonics=8, thd_harmonics=5)
     mask = sp.get_auto_mask(8)
     mask = np.ones(len(mask)) - mask;
-    sp = sin_params(data, 18, mask, window_string="BLKHARRIS_92", num_harmonics=8, thd_harmonics=5)
+    sp = sin_params(data, num_bits, mask, window_string="BLKHARRIS_92", num_harmonics=8, thd_harmonics=5)
     
     print "fundimental bin" , sp.get_harmonic_bins()[0]
     assert sp.get_harmonic_bins()[0] == fundamental_bin, "bad fundamental bin"
@@ -454,6 +454,9 @@ def test_sin(data, fundamental_bin, fundamental_db, snr_db, thd_db, big_min, sma
     
 def test_dc2290a_a(linduino):
     """Tests DC718 > 16bits and write_to_file32_bits"""
+    print "########################"
+    print "#### TEST DC2290A-A ####"
+    print "########################"
     linduino.transfer_packets("K01K02K10\n")
     time.sleep(5)
     ltc2387_dc2290a_a(64*1024, False, True, True)
@@ -461,10 +464,14 @@ def test_dc2290a_a(linduino):
     os.rename("data.txt", new_filename)
     data = read_file(new_filename)
     os.remove(new_filename)
-    test_sin(data, 18, -7, 66, -70, -55500, 55500)
+    test_sin(data, 18, 18, -7, 66, -70, -55500, 55500)
+    print
     
 def test_dc1563a_a(linduino):
     """Tests DC718 <= 16 bits and write_to_file32_bits"""
+    print "########################"
+    print "#### TEST DC1563A-A ####"
+    print "########################"
     linduino.transfer_packets("K00K02K11\n")
     time.sleep(5)
     ltc2315_dc1563a_a(32*1024, False, True, True)
@@ -472,11 +479,15 @@ def test_dc1563a_a(linduino):
     os.rename("data.txt", new_filename)
     data = read_file(new_filename)
     os.remove(new_filename)
-    test_sin(data, 23, -1, 64, -63, 300, 3500)
+    test_sin(data, 12, 23, -1, 64, -63, 300, 3500)
+    print
     
 def test_dc1369a_a():
     """Tests DC890 <= 16 bits, write_to_file32_bits, fix_data bipolar, 
     fix_data unipolar(offset binary), fix_data random, and fix_data alt bit"""
+    print "########################"
+    print "#### TEST D1369A-A ####"
+    print "########################"
     
     # basic, write_data
     print "\nNormal:\n-------"
@@ -493,7 +504,7 @@ def test_dc1369a_a():
     os.rename("data.txt", new_filename)
     data = read_file(new_filename)
     os.remove(new_filename)
-    test_sin(data, 2412, -1, 71, -84, 1400, 15000)    
+    test_sin(data, 14, 2412, -1, 71, -84, 1400, 15000)    
     
     # bipolar
     print "\nBipolar:\n--------"
@@ -515,7 +526,7 @@ def test_dc1369a_a():
                          verbose           = False) as controller:
         data = controller.collect(NUM_SAMPLES, consts.TRIGGER_NONE)
         data = data[0] # Keep only one channel
-    test_sin(data, 2412, -1, 71, -84, -6500, 6500) 
+    test_sin(data, 14, 2412, -1, 71, -84, -6500, 6500) 
         
     # random
     print "\nRandomizer:\n-----------"
@@ -537,7 +548,7 @@ def test_dc1369a_a():
                          verbose           = False) as controller:
         data = controller.collect(NUM_SAMPLES, consts.TRIGGER_NONE, 5, True)
         data = data[0] # Keep only one channel
-    test_sin(data, 2412, -1, 71, -84, 1400, 15000)
+    test_sin(data, 14, 2412, -1, 71, -84, 1400, 15000)
         
     # alt bit
     print "\nAlternate Bit:\n--------------"
@@ -560,10 +571,14 @@ def test_dc1369a_a():
         data = controller.collect(NUM_SAMPLES, consts.TRIGGER_NONE, 5, False, True)
         data = data[0] # Keep only one channel
     funcs.plot_channels(controller.get_num_bits(), data)    
-    test_sin(data, 2412, -1, 71, -84, 1400, 15000)
+    test_sin(data, 14, 2412, -1, 71, -84, 1400, 15000)
+    print
     
 def test_dc1925a_a(linduino):
     """Tests write_to_file_32_bit, fix_data bipolar, DC890 > 16 bits"""
+    print "########################"
+    print "#### TEST DC1925A-A ####"
+    print "########################"
     linduino.transfer_packets("K00K01K12\n")
     time.sleep(5)
     ltc2378_20_dc1925a_a(8*1024,[],False,True,True)
@@ -571,10 +586,14 @@ def test_dc1925a_a(linduino):
     os.rename("data.txt", new_filename)
     data = read_file(new_filename)
     os.remove(new_filename)
-    test_sin(data, 52, -9, 80, -75, -120000, 120000)
+    test_sin(data, 20, 52, -9, 80, -75, -120000, 120000)
+    print
     
 def test_dc1532a_a():
     """Tests write_to_file_32_bit, write_channels_to_file_32_bit, DC1371"""
+    print "########################"
+    print "#### TEST DC1532A-A ####"
+    print "########################"
     spi_reg = [ # addr, value
                   0x00, 0x80,
                   0x01, 0x00,
@@ -588,10 +607,14 @@ def test_dc1532a_a():
     data = read_file(new_filename)
     data = data[:8*1024]
     os.remove(new_filename)
-    test_sin(data, 2412, -16, 57, -78, 7000, 9200)
+    test_sin(data, 14, 2412, -16, 57, -78, 7000, 9200)
+    print
     
 def test_dc2085a_a():
     """Tests write_to_file, UFO"""
+    print "########################"
+    print "#### TEST DC2085A-A ####"
+    print "########################"
     # funky way to run the script
     import llt.demo_board_examples.ltc2000.ltc2000_dc2085
     spi_reg = [ # addr, value
@@ -602,43 +625,20 @@ def test_dc2085a_a():
                   0x04, 0x00
               ]
     ch0, data = ltc2268_dc1532a(8*1024, spi_reg, False, True, True)
-    test_sin(data, 2500, -14, 57, -75, 6800, 9400)
+    test_sin(data, 14, 2500, -14, 57, -75, 6800, 9400)
     
 if __name__ == '__main__':
 
     with duino.Linduino() as linduino: # Look for the DC2026
         print "set Clocks"
         linduino.transfer_packets("MSGxS04S07S08S02S0CS01XgS04S0ES08S01S0CS01G");
-        linduino.transfer_packets("K00K01K02")
+        linduino.transfer_packets("K00K01K02\n")
 
-        print "########################"
-        print "#### TEST DC2290A-A ####"
-        print "########################"
         test_dc2290a_a(linduino)
-        
-        print "########################"
-        print "#### TEST DC1925A-A ####"
-        print "########################"
         test_dc1925a_a(linduino)
-        
-#        print "########################"
-#        print "#### TEST D1369A-A ####"
-#        print "########################"
-#        test_dc1369a_a()
-        
-        print "########################"
-        print "#### TEST DC1563A-A ####"
-        print "########################"
+        test_dc1369a_a()
         test_dc1563a_a(linduino)
-        
-        print "########################"
-        print "#### TEST DC1532A-A ####"
-        print "########################"
         test_dc1532a_a()
-        
-        print "########################"
-        print "#### TEST DC2085A-A ####"
-        print "########################"
         test_dc2085a_a()
         
         linduino.transfer_packets("K00K01K02\n")
