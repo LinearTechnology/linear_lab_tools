@@ -1,4 +1,4 @@
-function win = Window(n, windowType)
+function win = FftWindow(n, windowType)
 % Generates a window for reducing sidelobes due to FFT of incoherently sampled data.
 % 
 % Window type is a case INsensitive string and can be one of:
