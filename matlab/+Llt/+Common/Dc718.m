@@ -78,7 +78,7 @@ classdef Dc718
             self.VPrint('Done.\nReading data...');
             
             if self.bytesPerSample == 2
-                [nBytes, rawData] = self.lcc.DataReceiveUint16Values(self.cid, nSamples);
+                [rawData, nBytes] = self.lcc.DataReceiveUint16Values(self.cid, nSamples);
                 if nBytes ~= nSamples * 2
                     error('LtcControllerComm:HardwareError', 'Didn''t get all bytes.');
                 end
