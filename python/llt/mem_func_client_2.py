@@ -51,6 +51,7 @@ class MemClient(object):
     MEM_WRITE_FROM_FILE = 10
     REG_WRITE_LUT = 11
     
+    I2C_DC590 = 90
     I2C_IDENTIFY = 12
     I2C_WRITE_BYTE = 17
     I2C_TESTING = 18
@@ -411,6 +412,25 @@ class MemClient(object):
         (response_command, response_length, val) = struct.unpack('III', response)
         s.close()
         print 'Files transfer done!'
+        return val
+        
+    def send_dc590(self, DC590_command, dummy = False):
+        size = len(DC590_command)
+        command = MemClient.FILE_TRANSFER | MemClient.I2C_DC590
+        length = 8 + size
+        if (dummy == True):
+            command = command | MemClient.DUMMY_FUNC   
+        sock_msg = struct.pack('II', command, length)
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.connect((self.host, self.port))
+        s.sendall(sock_msg)
+
+        # Transfer file_path and the file
+        s.send(str(DC590_command))
+        response = recvall(s, 12)
+        (response_command, response_length, val) = struct.unpack('III', response)
+        s.close()
+        print 'DC590 command executed!'
         return val
         
         
