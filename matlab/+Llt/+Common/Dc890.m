@@ -78,6 +78,8 @@ classdef Dc890
             if ~exist('isRandomized', 'var'); isRandomized = false; end
             if ~exist('isAlternateBit', 'var'); isAlternateBit = false; end
             
+            nSamples = nSamples * self.nChannels;
+            
             self.lcc.Dc890Flush(self.cid);
             self.VPrint('Starting collect...');
             Llt.Common.StartCollect(self.lcc, self.cid, nSamples, trigger, timeout);

@@ -71,6 +71,8 @@ classdef Dc1371
             if ~exist('isRandomized', 'var'); isRandomized = false; end
             if ~exist('isAlternateBit', 'var'); isAlternateBit = false; end
             
+            nSamples = nSamples * self.nChannels;
+            
             self.VPrint('Starting collect...');
             Llt.Common.StartCollect(self.lcc, self.cid, nSamples, trigger, timeout);
             self.VPrint('done.\nReading data...');
