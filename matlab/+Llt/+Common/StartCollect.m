@@ -42,7 +42,7 @@ for i = 1:nLoop
     if lcc.DataIsCollectDone(cid)
         return;
     end
-    sleep(SLEEP_TIME);
+    pause(SLEEP_TIME);
 end
 error('LtcControllerComm:HardwareError', ...
     'Data collect timed out (missing clock?)');
