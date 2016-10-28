@@ -159,6 +159,12 @@
         }
         "Entry"
         {
+        "MsmKey" = "8:_10B04C28C5704F43AAB6F4F3BA2F2051"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
         "MsmKey" = "8:_10C089FC2D7C43A2AFE6C7775F2E0AE8"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
@@ -436,6 +442,12 @@
         "Entry"
         {
         "MsmKey" = "8:_30B539DBDE96437AA7DA6AA3BD3F5B5F"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_313703E2EA3449A1B0090EF2096AC8D5"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -3346,6 +3358,26 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_10B04C28C5704F43AAB6F4F3BA2F2051"
+            {
+            "SourcePath" = "8:..\\..\\common\\LTSpice\\LTC2057_differential_noisesim.asc"
+            "TargetName" = "8:LTC2057_differential_noisesim.asc"
+            "Tag" = "8:"
+            "Folder" = "8:_1BFCC09293D64D9E973324B83F2209FF"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
             "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_10C089FC2D7C43A2AFE6C7775F2E0AE8"
             {
             "SourcePath" = "8:..\\..\\python\\llt\\demo_board_examples\\ltc22xx\\ltc2207\\ltc2207_dc1058a_d.py"
@@ -4272,6 +4304,26 @@
             "TargetName" = "8:__init__.py"
             "Tag" = "8:"
             "Folder" = "8:_BB436B904F35499BAD205800A3449657"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_313703E2EA3449A1B0090EF2096AC8D5"
+            {
+            "SourcePath" = "8:..\\..\\common\\LTSpice\\LTC2057_noisesim_2Meg.asc"
+            "TargetName" = "8:LTC2057_noisesim_2Meg.asc"
+            "Tag" = "8:"
+            "Folder" = "8:_1BFCC09293D64D9E973324B83F2209FF"
             "Condition" = "8:"
             "Transitive" = "11:FALSE"
             "Vital" = "11:TRUE"
