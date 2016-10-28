@@ -46,10 +46,24 @@ function data = FixData(data, numBits, alignment, isBipolar, isRandomized, isAlt
         error('FixData:BadAlignment', 'Does not support alignment greater than 30 bits');
     end
     
-    internator = @uint32;
-    if isBipolar; internator = @int32; end
-    
-    data = internator(data);
+    switch class(data(1))
+        case { 'int16', 'uint16' }
+            if isBipolar
+                data = int32(data);
+                internator = @int32;
+            else
+                data = uint32(data);
+                internator = @uint32;
+            end
+        case { 'int32', 'uint32' }
+            if isBipolar
+                data = typecast(data, 'int32');
+                internator = @int32;
+            else
+                data = typecast(data, 'uint32');
+                internator = @uint32;
+            end
+    end  
     nShift = internator(alignment - numBits);
     signBit = internator(bitshift(1, numBits - 1));
     offset = internator(bitshift(1, numBits));
@@ -70,3 +84,4 @@ function data = FixData(data, numBits, alignment, isBipolar, isRandomized, isAlt
         end
         data(i) = x;
     end
+    data = double(data);
