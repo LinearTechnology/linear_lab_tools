@@ -4,6 +4,16 @@
 ### DC718 ###
 #############
 
+["LTC2204 DC919A-D"]
+part_number           = "LTC2204"
+controller            = "DC718"
+dc_number             = "DC919A-D" 
+num_channels          = 1
+is_positive_clock     = true
+num_bits              = 16 
+alignment             = 16
+is_bipolar            = true
+
 ["LTC2208 DC854D-A"]
 part_number           = "LTC2208"
 controller            = "DC718"
