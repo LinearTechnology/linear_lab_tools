@@ -53,7 +53,7 @@
 
 function Ltc2000Dc2085(arg1NumSamples, arg2Verbose)
 
-    AMPLITUDE = 16000;
+    AMPLITUDE = 32000;
     NUM_CYCLES = 800;   % Number of sinewave cycles over the entire data record
     SLEEP_TIME = 0.1;
 
@@ -174,7 +174,7 @@ function Ltc2000Dc2085(arg1NumSamples, arg2Verbose)
 
     lths.HsSetBitMode(did, lths.HS_BIT_MODE_FIFO);
     % DAC should start running here!
-    numBytesSent = lths.DataSendUint16Values(did, inData);
+    numBytesSent = lths.DataSendUint16Values(did, data);
     fprintf('\nnumBytesSent (should be %d) = %d\n', numSamples * 2, ...
         numBytesSent);
     fprintf('You should see a waveform at the output of the LTC2000 now!\n');
