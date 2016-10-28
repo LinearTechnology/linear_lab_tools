@@ -1,37 +1,47 @@
-October, 2015:
+######################
+### October, 2015: ###
+######################
 Initial Release
 
-April, 2016:
+
+####################
+### April, 2016: ###
+####################
 
 \Common\LTspice:
+----------------
 Notes and corrections to existing simulations
 Added noise generator simulation
 Added \Common\ltc25xx_filters
 Filter coefficients for oversampling SAR ADCs
 
 Demo boards supported, both Matlab and Python:
-LTC2000 (DC2085)
-LTC2123 (DC1974 and DC2226 with onboard clocking)
-LTC2261 (DC1369)
-LTC2268 (DC1532)
-LTC2270 (DC1975)
-LTC2328 (DC1908)
-LTC2338 (DC1908)
+----------------------------------------------
+LTC2000    (DC2085)
+LTC2123    (DC1974 and DC2226 with onboard clocking)
+LTC2261    (DC1369)
+LTC2268    (DC1532)
+LTC2270    (DC1975)
+LTC2328    (DC1908)
+LTC2338    (DC1908)
 LTC2378-20 (DC2135)
-LTC2387 (DC2290)
-LTC2389 (DC1826)
-LTM9011 (DC1884)
+LTC2387    (DC2290)
+LTC2389    (DC1826)
+LTM9011    (DC1884)
 
 Demo boards supported, Python only:
+-----------------------------------
 LTC1668 (DC2459)
 LTC2000 (DC2303)
 LTC2185 (DC1620)
 LTC2323 (DC1996)
 
 Educational programs, both Matlab and Python:
+---------------------------------------------
 Illustrated FFT
 
 Educational programs, Python only:
+----------------------------------
 ADC SNR simulation
 DAC concepts
 Distortion extraction
@@ -39,8 +49,117 @@ Pulse characterization
 
 Added Avalon_bus_example.py in app example and supporting files in utils
 
-September, 2016
+
+######################
+### October, 2016: ###
+######################
+
+Organizational Changes
+----------------------
 Migrated a lot of the Python and Matlab code into packages.
 Put LTC16XX, LTC22XX, and LTC23XX  parts into folders to make things more navigable.
-Fixes to the underlying DLL.
 
+DLL
+---
+Fixes to the underlying DLL.
+Fixes to Matlab wrapper around DLL.
+
+Additional Demo boards supported, both Matlab and Python:
+---------------------------------------------------------
+LTC1605    (DC1255A-A)
+LTC1606    (DC1255A-B)
+LTC2203    (DC1058A-A)
+LTC2203    (DC1058A-F)
+LTC2204    (DC919A-D)
+LTC2207    (DC1058A-B)
+LTC2207    (DC1058A-C)
+LTC2207    (DC1058A-D)
+LTC2207    (DC1058A-E)
+LTC2208-14 (DC854D-C)
+LTC2208    (DC854D-A)
+LTC2208    (DC854D-B)
+LTC2215    (DC854D-I)
+LTC2215    (DC854D-J)
+LTC2216    (DC854D-G)
+LTC2216    (DC854D-H)
+LTC2217    (DC854D-E)
+LTC2217    (DC854D-F)
+LTC2225    (DC782A-K)
+LTC2226    (DC782A-J)
+LTC2227    (DC782A-H)
+LTC2228    (DC782A-G)
+LTC2229    (DC782A-F)
+LTC2236    (DC782A-P)
+LTC2237    (DC782A-N)
+LTC2238    (DC782A-M)
+LTC2239    (DC782A-L)
+LTC2245    (DC782A-E)
+LTC2246    (DC782A-D)
+LTC2247    (DC782A-C)
+LTC2248    (DC782A-B)
+LTC2248    (DC782A-R)
+LTC2249    (DC782A-A)
+LTC2249    (DC782A-Q)
+LTC2250    (DC782A-X)
+LTC2251    (DC782A-W)
+LTC2252    (DC782A-V)
+LTC2253    (DC782A-U)
+LTC2254    (DC782A-T)
+LTC2255    (DC782A-S)
+LTC2312-12 (DC1563A-C)
+LTC2312-14 (DC1563A-H)
+LTC2313-12 (DC1563A-B)
+LTC2313-14 (DC1563A-G)
+LTC2314    (DC1563A-F)
+LTC2315    (DC1563A-A)
+LTC2326-16 (DC1908A-I)
+LTC2326-18 (DC1908A-F)
+LTC2327-16 (DC1908A-H)
+LTC2327-18 (DC1908A-E)
+LTC2336    (DC1908A-C)
+LTC2337    (DC1908A-B)
+LTC2351    (DC1278A)
+LTC2364-16 (DC1796A-D)
+LTC2364-16 (DC1813A-D)
+LTC2364-18 (DC1796A-H)
+LTC2364-18 (DC1813A-H)
+LTC2367-16 (DC1796A-C)
+LTC2367-16 (DC1813A-C)
+LTC2367-18 (DC1796A-G)
+LTC2367-18 (DC1813A-G)
+LTC2368-16 (DC1796A-B)
+LTC2368-16 (DC1813A-B)
+LTC2368-18 (DC1796A-F)
+LTC2368-18 (DC1813A-F)
+LTC2369    (DC1796A-E)
+LTC2369    (DC1813A-E)
+LTC2370    (DC1796A-A)
+LTC2370    (DC1813A-A)
+LTC2376-16 (DC1783A-D)
+LTC2376-16 (DC1805A-D)
+LTC2376-18 (DC1783A-H)
+LTC2376-18 (DC1805A-H)
+LTC2377-16 (DC1783A-C)
+LTC2377-16 (DC1805A-C)
+LTC2377-18 (DC1783A-G)
+LTC2377-18 (DC1805A-G)
+LTC2378-16 (DC1783A-B)
+LTC2378-16 (DC1805A-B)
+LTC2378-18 (DC1783A-F)
+LTC2378-18 (DC1805A-F)
+LTC2378    (DC2135)
+LTC2379    (DC1783A-E)
+LTC2379    (DC1805A-E)
+LTC2380    (DC1783A-A)
+LTC2380    (DC1805A-A)
+LTC2381    (DC1571A-C)
+LTC2382    (DC1571A-B)
+LTC2383    (DC1571A-A)
+LTC2391    (DC1500A-C)
+LTC2391    (DC1501A-C)
+LTC2392    (DC1500A-B)
+LTC2392    (DC1501A-B)
+LTC2393    (DC1500A-A)
+
+Additional Demo boards supported, Python only:
+DC2512
