@@ -48,7 +48,7 @@ if verbose; fprintf('FFT''ing channel %d data.\n', channel); end
 adcAmplitude = 2.0^(nBits-1);
 dataNoDc = double(data);
 dataNoDc = dataNoDc - mean(dataNoDc); % Remove DC to avoid leakage when windowing
-window = Llt.Common.Window(nSamples);
+window = Llt.Common.FftWindow(nSamples);
 windowedData = double(dataNoDc(:)) .* window;
 freqDomain = fft(windowedData);
 freqDomain = freqDomain(1:(nSamples/2+1));
