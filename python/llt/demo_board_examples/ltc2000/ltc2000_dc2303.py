@@ -57,10 +57,7 @@ from time import sleep
 from math import sin, cos, pi
 
 # Import communication library
-import sys
-sys.path.append("../../")
-print sys.path
-import ltc_controller_comm as comm
+import llt.common.ltc_controller_comm as comm
 
 # Import LTC2000 definitions and support functions
 import ltc2000_functions as lt2k
