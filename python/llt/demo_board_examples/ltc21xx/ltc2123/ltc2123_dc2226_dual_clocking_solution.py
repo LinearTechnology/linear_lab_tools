@@ -46,9 +46,7 @@ of the authors and should not be interpreted as representing official policies,
 either expressed or implied, of Linear Technology Corp.
 '''
 
-import sys
-sys.path.append("../../")
-import ltc_controller_comm as comm
+import llt.common.ltc_controller_comm as comm
 from ltc2123_functions import * # Import support functions
 from dc2226_clock_configuration import * # Import clock configuration functions
 import numpy as np # Import NumPy for analysis

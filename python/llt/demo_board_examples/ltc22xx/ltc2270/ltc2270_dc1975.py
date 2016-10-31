@@ -55,14 +55,11 @@ either expressed or implied, of Linear Technology Corp.
 
 from time import sleep
 # Import communication library
-import sys
-sys.path.append("../../")
-#print sys.path
 from matplotlib import pyplot as plt
 import numpy as np
 
 
-import ltc_controller_comm as comm
+import llt.common.ltc_controller_comm as comm
 
 # Print extra information to console
 verbose = True

@@ -29,7 +29,7 @@ The views and conclusions contained in the software and documentation are those
 of the authors and should not be interpreted as representing official policies,
 either expressed or implied, of Linear Technology Corp.
 '''
-import ltc_controller_comm as comm
+import llt.common.ltc_controller_comm as comm
 
 from time import sleep
 sleep_time = 0.1
