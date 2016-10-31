@@ -44,15 +44,13 @@
 ###############################################################################
 # Libraries
 ###############################################################################
-
+import sys
 import time
-import sys # os, socket, ctypes, struct
 import numpy as np
 from time import sleep
 from matplotlib import pyplot as plt
 import DC2390_functions as DC2390
-sys.path.append('../../') 
-from mem_func_client import MemClient
+from llt.utils.mem_func_client import MemClient
 
 
 ###############################################################################

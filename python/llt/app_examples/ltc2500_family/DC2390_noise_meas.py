@@ -47,15 +47,11 @@
 ###############################################################################
 
 import sys #, os, socket, ctypes, struct
-sys.path.append("../../")
-sys.path.append("../../utils/")
-import numpy as np
 #from subprocess import call
 from time import sleep
 import time
-from matplotlib import pyplot as plt
 # Okay, now the big one... this is the module that communicates with the SoCkit
-from mem_func_client import MemClient
+from llt.utils.mem_func_client import MemClient
 from DC2390_functions import *
 from LTC2758 import *
 

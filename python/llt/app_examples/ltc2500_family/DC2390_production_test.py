@@ -10,17 +10,15 @@ DACs as signal source (to verify DAC performance.)
 
 
 import sys #, os, socket, ctypes, struct
-sys.path.append("../../")
-sys.path.append("../../utils/")
-from save_for_pscope import save_for_pscope
+from llt.utils.save_for_pscope import save_for_pscope
 import numpy as np
 #from subprocess import call
 from time import sleep
 from matplotlib import pyplot as plt
 # Okay, now the big one... this is the module that communicates with the SoCkit
-from mem_func_client_2 import MemClient
+from llt.utils.mem_func_client_2 import MemClient
 from DC2390_functions import *
-from sockit_system_functions import *
+from llt.utils.sockit_system_functions import *
 
 HOST = sys.argv[1] if len(sys.argv) == 2 else '127.0.0.1'
 

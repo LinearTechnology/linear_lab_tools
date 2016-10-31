@@ -51,8 +51,7 @@ import time
 
 # Import Linear Lab Tools utility funcitons
 import sys
-sys.path.append("../utils")
-import linear_lab_tools_functions as lltf
+import llt.utils.linear_lab_tools_functions as lltf
 
 start_time = time.time();
 

@@ -10,18 +10,17 @@
 
 
 import sys #, os, socket, ctypes, struct
-sys.path.append("../../")
-sys.path.append("../../utils/")
-from save_for_pscope import save_for_pscope
+
+from llt.utils.save_for_pscope import save_for_pscope
 import numpy as np
 #from subprocess import call
 from time import sleep
 from matplotlib import pyplot as plt
 # Okay, now the big one... this is the module that communicates with the SoCkit
 # sys.path.append('C:\Users\MSajikumar\Documents\LT_soc_framework')
-from mem_func_client_2 import MemClient
+from llt.utils.mem_func_client_2 import MemClient
 from DC2390_functions import *
-from sockit_system_functions import *
+from llt.utils.sockit_system_functions import *
 
 # Get the host from the command line argument. Can be numeric or hostname.
 #HOST = sys.argv.pop() if len(sys.argv) == 2 else '127.0.0.1'

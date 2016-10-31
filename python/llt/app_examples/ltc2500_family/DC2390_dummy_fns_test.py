@@ -5,9 +5,8 @@
 # This script tests all the dummy functions
 
 import sys
-sys.path.append("../../")
-sys.path.append("../../utils/")
-from mem_func_client_2 import MemClient
+
+from llt.utils.mem_func_client_2 import MemClient
 
 # Get the host from the command line argument. Can be numeric or hostname.
 #HOST = sys.argv.pop() if len(sys.argv) == 2 else '127.0.0.1'

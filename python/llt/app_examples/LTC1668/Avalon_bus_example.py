@@ -40,8 +40,6 @@
 # Libraries
 ###############################################################################
 
-import sys
-sys.path.append('../../utils') 
 import connect_to_linduino as duino
 import ltc_spi_avalon as avalon
 

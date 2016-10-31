@@ -10,13 +10,12 @@ def Hz_2_tuning_word(master_clk, tunnig_width, desired_freq):
     return int((float(desired_freq)/master_clk * (2**tunnig_width)))
 import time
 import sys
-sys.path.append("../../")
 import numpy as np
 #from subprocess import call
 from time import sleep
 from matplotlib import pyplot as plt
 # Okay, now the big one... this is the module that communicates with the SoCkit
-from mem_func_client import MemClient
+from llt.utils.mem_func_client import MemClient
 from DC2390_functions import *
 # Get the host from the command line argument. Can be numeric or hostname.
 #HOST = sys.argv.pop() if len(sys.argv) == 2 else '127.0.0.1'

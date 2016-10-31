@@ -1,18 +1,12 @@
 #!/usr/bin/python
 # Example application for running tests on the Arrow SoCkit board
 # using the LT_soc_framework
-
-
-
-import sys # Needed so we can append paths
-sys.path.append("../../")
-sys.path.append("../../utils/")
-
+import sys
 from time import sleep # So we can make delays that humans can detect
 # Okay, now the big one... this is the module that communicates with the SoCkit
-from mem_func_client_2 import MemClient
+from llt.common.mem_func_client_2 import MemClient
 #from DC2390_functions import * # Register definitions live in this file
-from sockit_system_functions import * # More functions for talking to the SoCkit
+from llt.utils.sockit_system_functions import sockit_uns32_to_signed32, sockit_capture  # More functions for talking to the SoCkit
 import numpy as np
 from matplotlib import pyplot as plt
 

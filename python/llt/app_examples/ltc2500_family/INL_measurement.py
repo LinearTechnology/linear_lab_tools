@@ -60,11 +60,9 @@ from matplotlib import pyplot as plt
 import DC2390_functions as DC2390
 
 from LTC2758 import *
-sys.path.append('../../')
-sys.path.append('../../utils') 
-from mem_func_client_2 import MemClient
+from llt.utils.mem_func_client_2 import MemClient
 
-from endpoint_inl import *
+from llt.utils.endpoint_inl import *
 
 ###############################################################################
 # Global Constants

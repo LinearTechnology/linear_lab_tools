@@ -57,8 +57,7 @@ from scipy import signal
 from matplotlib import pyplot as plt
 # Import Linear Tech functions
 # import LTPyLab_functions as lltf
-sys.path.append('../utils/') 
-import linear_lab_tools_functions as lltf
+import llt.utils.linear_lab_tools_functions as lltf
 
 # Set up parameters
 samplerate = 1024000 # Samples per second

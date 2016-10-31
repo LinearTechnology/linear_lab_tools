@@ -48,10 +48,8 @@ import numpy as np
 from time import sleep
 from matplotlib import pyplot as plt
 import DC2390_functions as DC2390
-sys.path.append('../../../python')
-sys.path.append("../../utils/")
-from mem_func_client_2 import MemClient
-from sockit_system_functions import *
+from llt.utils.mem_func_client_2 import MemClient
+from llt.utils.sockit_system_functions import *
 
 
 ###############################################################################
@@ -79,21 +77,21 @@ def capture_seismic_data(client, filter_type):
     # Construct or extract filter coefficients
     if filter_type == 1:
         length = 256
-        with open('../../../common/ltc25xx_filters/ssinc_256.txt') as filter_coeff_file:
+        with open('../../../../common/ltc25xx_filters/ssinc_256.txt') as filter_coeff_file:
             ltc25xx_filter = [float(line) for line in filter_coeff_file]
         # Normalize to unity gain
         sum_ltc25xx_filter = sum(ltc25xx_filter)
         ltc25xx_filter[:] = [x / sum_ltc25xx_filter for x in ltc25xx_filter] 
     elif filter_type == 2:    
         length = 1024
-        with open('../../../common/ltc25xx_filters/ssinc_1024.txt') as filter_coeff_file:
+        with open('../../../../common/ltc25xx_filters/ssinc_1024.txt') as filter_coeff_file:
             ltc25xx_filter = [float(line) for line in filter_coeff_file]
         # Normalize to unity gain
         sum_ltc25xx_filter = sum(ltc25xx_filter)
         ltc25xx_filter[:] = [x / sum_ltc25xx_filter for x in ltc25xx_filter]
     elif filter_type == 3:  
         length = 4096
-        with open('../../../common/ltc25xx_filters/ssinc_4096.txt') as filter_coeff_file:
+        with open('../../../../common/ltc25xx_filters/ssinc_4096.txt') as filter_coeff_file:
             ltc25xx_filter = [float(line) for line in filter_coeff_file]
         # Normalize to unity gain
         sum_ltc25xx_filter = sum(ltc25xx_filter)
@@ -162,21 +160,21 @@ def capture_plot(client, plot, gain, filter_type):
     # Construct or extract filter coefficients
     if filter_type == 1:
         length = 256
-        with open('../../../common/ltc25xx_filters/ssinc_256.txt') as filter_coeff_file:
+        with open('../../../../common/ltc25xx_filters/ssinc_256.txt') as filter_coeff_file:
             ltc25xx_filter = [float(line) for line in filter_coeff_file]
         # Normalize to unity gain
         sum_ltc25xx_filter = sum(ltc25xx_filter)
         ltc25xx_filter[:] = [x / sum_ltc25xx_filter for x in ltc25xx_filter] 
     elif filter_type == 2:    
         length = 1024
-        with open('../../../common/ltc25xx_filters/ssinc_1024.txt') as filter_coeff_file:
+        with open('../../../../common/ltc25xx_filters/ssinc_1024.txt') as filter_coeff_file:
             ltc25xx_filter = [float(line) for line in filter_coeff_file]
         # Normalize to unity gain
         sum_ltc25xx_filter = sum(ltc25xx_filter)
         ltc25xx_filter[:] = [x / sum_ltc25xx_filter for x in ltc25xx_filter]
     elif filter_type == 3:  
         length = 4096
-        with open('../../../common/ltc25xx_filters/ssinc_4096.txt') as filter_coeff_file:
+        with open('../../../../common/ltc25xx_filters/ssinc_4096.txt') as filter_coeff_file:
             ltc25xx_filter = [float(line) for line in filter_coeff_file]
         # Normalize to unity gain
         sum_ltc25xx_filter = sum(ltc25xx_filter)
