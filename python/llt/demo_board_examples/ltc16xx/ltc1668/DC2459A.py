@@ -39,9 +39,8 @@
 # Libraries
 ###############################################################################
 
-import sys
-sys.path.append('../../utils') 
-import connect_to_linduino as duino
+ 
+import llt.app_examples.LTC1668.connect_to_linduino as duino
 
 ###############################################################################
 # Functions
