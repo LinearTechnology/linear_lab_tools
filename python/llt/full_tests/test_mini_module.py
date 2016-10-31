@@ -1,6 +1,5 @@
 import sys
-sys.path.append('..')
-import ltc_controller_comm as lcc
+import llt.common.ltc_controller_comm as lcc
 
 def test():
 

@@ -1,7 +1,6 @@
 import sys
-sys.path.append('..')
 import time
-import ltc_controller_comm as lcc
+import llt.common.ltc_controller_comm as lcc
 
 def collect_and_check(controller):
     controller.data_start_collect(NUM_ADC_SAMPLES, lcc.TRIGGER_NONE)

@@ -1,7 +1,7 @@
 import math
 import time
 import struct
-import ltc_controller_comm as lcc
+import llt.common.ltc_controller_comm as lcc
 
 SPI_READ_BIT = 0x80
 SPI_WRITE_BIT = 0x00

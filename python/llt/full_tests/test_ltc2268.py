@@ -1,7 +1,6 @@
 import sys
-sys.path.append('..')
 import time
-import ltc_controller_comm as lcc
+import llt.common.ltc_controller_comm as lcc
 
 EEPROM_ID_SIZE = 200
 NUM_ADC_SAMPLES = 64 * 1024

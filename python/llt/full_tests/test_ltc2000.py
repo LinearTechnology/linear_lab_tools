@@ -6,11 +6,10 @@ Created on Wed June 26 8:46:58 2015
 """
 
 import sys
-sys.path.append('..')
 import math
 import time
 import struct
-import ltc_controller_comm as lcc
+import llt.common.ltc_controller_comm as lcc
 
 NUM_DAC_SAMPLES = 64 * 1024
 NUM_CYCLES_1 = 489
