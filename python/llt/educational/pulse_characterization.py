@@ -43,9 +43,6 @@ of the authors and should not be interpreted as representing official policies,
 either expressed or implied, of Linear Technology Corp.
 '''
 
-import sys
-sys.path.append("../utils")
-import linear_lab_tools_functions as lltf
 import numpy as np
 from matplotlib import pyplot as plt
 
