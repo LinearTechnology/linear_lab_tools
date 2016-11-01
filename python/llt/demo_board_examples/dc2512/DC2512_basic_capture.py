@@ -8,20 +8,16 @@
 # 7/23/2015 - All data paths in FPGA design are in place!!
 # Splitting out a bunch of stuff into DC2390_functions.py module
 
-
 import sys #, os, socket, ctypes, struct
-sys.path.append("../../")
-sys.path.append("../../../python/utils/")
-sys.path.append("../../../python/app_examples/ltc2500_family/")
-from save_for_pscope import save_for_pscope
+from llt.utils.save_for_pscope import save_for_pscope
 import numpy as np
 #from subprocess import call
 from time import sleep
 from matplotlib import pyplot as plt
 # Okay, now the big one... this is the module that communicates with the SoCkit
-from mem_func_client_2 import MemClient
+from llt.common.mem_func_client_2 import MemClient
 #from DC2390_functions import *
-from sockit_system_functions import *
+from llt.utils.sockit_system_functions import *
 # Get the host from the command line argument. Can be numeric or hostname.
 #HOST = sys.argv.pop() if len(sys.argv) == 2 else '127.0.0.1'
 HOST = sys.argv[1] if len(sys.argv) == 2 else '127.0.0.1'
