@@ -8,7 +8,7 @@ import sys # Needed so we can append paths
 
 from time import sleep # So we can make delays that humans can detect
 # Okay, now the big one... this is the module that communicates with the SoCkit
-from llt.utils.mem_func_client_2 import MemClient
+from llt.common.mem_func_client_2 import MemClient
 from DC2390_functions import * # Register definitions live in this file
 from llt.utils.sockit_system_functions import * # More functions for talking to the SoCkit
 

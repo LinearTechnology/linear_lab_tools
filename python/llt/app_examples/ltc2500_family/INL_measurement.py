@@ -60,7 +60,7 @@ from matplotlib import pyplot as plt
 import DC2390_functions as DC2390
 
 from LTC2758 import *
-from llt.utils.mem_func_client_2 import MemClient
+from llt.common.mem_func_client_2 import MemClient
 
 from llt.utils.endpoint_inl import *
 

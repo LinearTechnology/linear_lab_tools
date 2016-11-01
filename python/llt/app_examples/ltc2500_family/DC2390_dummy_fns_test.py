@@ -6,7 +6,7 @@
 
 import sys
 
-from llt.utils.mem_func_client_2 import MemClient
+from llt.common.mem_func_client2 import MemClient
 
 # Get the host from the command line argument. Can be numeric or hostname.
 #HOST = sys.argv.pop() if len(sys.argv) == 2 else '127.0.0.1'

@@ -16,7 +16,7 @@ import numpy as np
 from time import sleep
 from matplotlib import pyplot as plt
 # Okay, now the big one... this is the module that communicates with the SoCkit
-from llt.utils.mem_func_client_2 import MemClient
+from llt.common.mem_func_client_2 import MemClient
 from DC2390_functions import *
 from llt.utils.sockit_system_functions import *
 
