@@ -41,7 +41,7 @@
 ###############################################################################
 
 import connect_to_linduino as duino
-import ltc_spi_avalon as avalon
+import llt.utils.ltc_spi_avalon as avalon
 
     
 if __name__ == "__main__":
