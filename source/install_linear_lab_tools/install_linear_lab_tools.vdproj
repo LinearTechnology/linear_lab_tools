@@ -12694,7 +12694,7 @@
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:linear_lab_tools"
         "ProductCode" = "8:{A608AE8A-D98A-4C7A-8AD3-96EEA5541CF1}"
-        "PackageCode" = "8:{10E2ACB4-C916-4B43-BB1E-FF10838B4EE2}"
+        "PackageCode" = "8:{D0DAD752-5AD3-4795-8052-1718C0A041EB}"
         "UpgradeCode" = "8:{E149E7BD-322C-441A-9954-732185D6F984}"
         "AspNetVersion" = "8:4.0.30319.0"
         "RestartWWWService" = "11:FALSE"
@@ -12735,6 +12735,84 @@
                     "Transitive" = "11:FALSE"
                         "Keys"
                         {
+                            "{60EA8692-D2D5-43EB-80DC-7906BF13D6EF}:_2B5FB2386CDE447F94EC39325D29CA8B"
+                            {
+                            "Name" = "8:Python"
+                            "Condition" = "8:"
+                            "AlwaysCreate" = "11:FALSE"
+                            "DeleteAtUninstall" = "11:FALSE"
+                            "Transitive" = "11:FALSE"
+                                "Keys"
+                                {
+                                    "{60EA8692-D2D5-43EB-80DC-7906BF13D6EF}:_16EBF41FE7424EFEBF6B503425D08BE3"
+                                    {
+                                    "Name" = "8:PythonCore"
+                                    "Condition" = "8:"
+                                    "AlwaysCreate" = "11:FALSE"
+                                    "DeleteAtUninstall" = "11:FALSE"
+                                    "Transitive" = "11:FALSE"
+                                        "Keys"
+                                        {
+                                            "{60EA8692-D2D5-43EB-80DC-7906BF13D6EF}:_0F37747F0137498EAEDD80372A91491D"
+                                            {
+                                            "Name" = "8:2.7"
+                                            "Condition" = "8:"
+                                            "AlwaysCreate" = "11:FALSE"
+                                            "DeleteAtUninstall" = "11:FALSE"
+                                            "Transitive" = "11:FALSE"
+                                                "Keys"
+                                                {
+                                                    "{60EA8692-D2D5-43EB-80DC-7906BF13D6EF}:_CED332DC2BE74E7B90FBEB5051AAC556"
+                                                    {
+                                                    "Name" = "8:PythonPath"
+                                                    "Condition" = "8:"
+                                                    "AlwaysCreate" = "11:FALSE"
+                                                    "DeleteAtUninstall" = "11:FALSE"
+                                                    "Transitive" = "11:FALSE"
+                                                        "Keys"
+                                                        {
+                                                            "{60EA8692-D2D5-43EB-80DC-7906BF13D6EF}:_39ADCEFD1A4F4880910C2B91AF629F63"
+                                                            {
+                                                            "Name" = "8:LinearLabTools"
+                                                            "Condition" = "8:"
+                                                            "AlwaysCreate" = "11:FALSE"
+                                                            "DeleteAtUninstall" = "11:FALSE"
+                                                            "Transitive" = "11:FALSE"
+                                                                "Keys"
+                                                                {
+                                                                }
+                                                                "Values"
+                                                                {
+                                                                    "{ADCFDA98-8FDD-45E4-90BC-E3D20B029870}:_EC7A5DF2FE404097B472448CA37BE2C4"
+                                                                    {
+                                                                    "Name" = "8:"
+                                                                    "Condition" = "8:"
+                                                                    "Transitive" = "11:FALSE"
+                                                                    "ValueTypes" = "3:1"
+                                                                    "Value" = "8:[TARGETDIR]python"
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                        "Values"
+                                                        {
+                                                        }
+                                                    }
+                                                }
+                                                "Values"
+                                                {
+                                                }
+                                            }
+                                        }
+                                        "Values"
+                                        {
+                                        }
+                                    }
+                                }
+                                "Values"
+                                {
+                                }
+                            }
                             "{60EA8692-D2D5-43EB-80DC-7906BF13D6EF}:_BADC3178F685485C99E9F4918014322D"
                             {
                             "Name" = "8:[Manufacturer]"
