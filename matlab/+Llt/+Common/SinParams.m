@@ -3,21 +3,25 @@ function [harmonics, snr, thd, sinad, enob, sfdr] = SinParams(data, ...
     %SinParams Returns basic parameters that describe a sine wave
 
     if ~exist('windowType', 'var'); windowType = 'BlackmanHarris92'; end
-    if ~exist('nHarms', 'var'); nHarms = 8; end
+    if ~exist('nHarms', 'var'); nHarms = 9; end
     if ~exist('spurInHarms', 'var'); spurInHarms = true; end
 
     fftData = WindowedFftMag(data);
     [harmBins, harms, harmBws] = FindHarmonics(fftData, nHarms);
     
     if ~exist('mask', 'var') || isempty(mask)
-        mask = CalculateAutoMask(data, harmBins, windowType);
+        mask = CalculateAutoMask(fftData, harmBins, windowType);
     end
     
-    [spur, spurBw] = FindSpur(spurInHarms, harmBins, harms, fftData, windowType);
-    [noise, noiseBins] = MaskedSumOfSq(fftData, mask);
+    [noise, noiseBins] = MaskedSumOfSq(fftData(1:end-1), mask(1:end-1));
     averageNoise = noise / max(1, noiseBins);
-    noise = averageNoise * length(fftData);
+    noise = averageNoise * (length(fftData) - 1);
 
+    [spur, spurBw] = FindSpur(spurInHarms, harms, harmBws, ...
+        fftData, windowType);
+    
+    spur = spur - spurBw * averageNoise;
+    
     harmonics = cell(nHarms, 1);
     for i = 1:nHarms
         h = harms(i) - averageNoise * harmBws(i);
@@ -25,8 +29,6 @@ function [harmonics, snr, thd, sinad, enob, sfdr] = SinParams(data, ...
             harmonics{i} = [h, harmBins(i)];
         end
     end
-
-    spur = spur - spurBw * averageNoise;
 
     signal = harmonics{1}(1);
     snr = 10*log10(signal / noise);
@@ -72,26 +74,21 @@ function [harmBins, harms, harmBws] = FindHarmonics(fftData, maxHarms)
         % first find the location by searching for the max 
         % inside an area of uncertainty
         mask = InitMask(length(fftData), false);
-        nominalBin = h * fundBin;
+        nominalBin = h * (fundBin - 1) + 1;
         hOver2 = floor(h/2);
         if h > 1 
             mask = SetMask(mask, nominalBin-hOver2, nominalBin+hOver2);
             for i = 1:(h-1)
                mask = ClearMask(mask, harmBins(i), harmBins(i));
             end
-            [~, harmBins(h)] = MaskedMax(fftData, mask);
+            % don't include nyquist for PScope compatibility
+            [~, harmBins(h)] = MaskedMax(fftData(1:end-1), mask(1:end-1));
         end
         % now find the power in the harmonic
-        start = max(1, nominalBin-hOver2);
-        finish = min(length(fftData), nominalBin+hOver2);
-        mask = ClearMask(mask, start, finish);
-        start = max(1, nominalBin-BW);
-        finish = min(length(fftData), nominalBin+BW);
-        mask = SetMask(mask, start, finish);
+        mask = ClearMask(mask, nominalBin-hOver2, nominalBin+hOver2);
+        mask = SetMask(mask, harmBins(h)-BW, harmBins(h)+BW);
         for i = 1:(h-1)
-            start = max(1, harmBins(i)-BW);
-            finish = min(length(fftData), harmBins(i)+BW);
-            mask = ClearMask(mask, start, finish+BW);
+            mask = ClearMask(mask, harmBins(i)-BW, harmBins(i)+BW);
         end
         [harms(h), harmBws(h)] = MaskedSumOfSq(fftData, mask);
     end
@@ -105,9 +102,7 @@ function mask = CalculateAutoMask(fftData, harmBins, windowType)
 
     mask = InitMask(n);
     for i = 1:NUM_INITAL_NOISE_HARMS
-        start = max(1, harmBins(i) - bw);
-        finish = min(n, harmBins(i) + bw);
-        mask = ClearMask(mask, start, finish);
+        mask = ClearMask(mask, harmBins(i) - bw, harmBins(i) + bw);
     end
     mask(1) = false;
 
@@ -124,63 +119,50 @@ function mask = CalculateAutoMask(fftData, harmBins, windowType)
 
         j = 1;
         while (h-j > 0) && mask(h-j) && ...
-                (sum(fftData((h-j):(h-j+3))) / 3 > noiseEst)
+                (sum(fftData((h-j+1):(h-j+3))) / 3 > noiseEst)
             j = j + 1;
         end
-        low = h - j + 1;
+        low = h - j + 2;
 
         j = 1;
         while h+j < n && mask(h+j) == 1 && ... 
-                sum(fftData((h+j-2):(h+j+1))) / 3 > noiseEst
+                sum(fftData((h+j-1):(h+j+1))) / 3 > noiseEst
             j = j + 1;
         end
-        high = h + j - 1;
+        high = h + j;
 
         mask = ClearMask(mask, low, high);
     end
 end
 
-function [spur, spurBw] = FindSpur(findInHarms, harmBins, harms, fftData, windowType)
+function [spur, spurBw] = FindSpur(findInHarms, harms, harmBws, ...
+        fftData, windowType)   
+    if findInHarms
+        harms = harms(2:end);
+        harmBws = harmBws(2:end);
+        [spur, index] = max(harms);
+        spurBw = harmBws(index);
+    else
+        [spur, spurBw] = FindSpurBin(fftData, windowType);
+    end
+end
+
+function [spur, spurBw] = FindSpurBin(fftData, windowType)
     BW = 3;
     n = length(fftData);
     fundBin = harmBins(1);
     mask = InitMask(n);
     mask = ClearMaskAtDc(mask, windowType);
-    start = max(1, fundBin - BW);
-    finish = min(n, fundBin + BW);
-    mask = ClearMask(mask, start, finish);
+    mask = ClearMask(mask, fundBin - BW, fundBin + BW);
     
-    if findInHarms
-        spurBin = FindSpurBin(fftData, mask);
-    else
-        spurBin = FindSpurInHarmonics(harmBins, harms);
-    end
-    
-    start = max(1, spurBin - BW);
-    finish = min(n, spurBin + BW);
-    [spur, spurBw] = MaskedSumOfSq(fftData, mask, start, finish);
-end
-
-function spurBin = FindSpurInHarmonics(harmBins, harms)
-    [~, index] = max(harms(2:ends));
-    spurBin = harmBins(index);
-end
-
-function spurBin = FindSpurBin(fftData, mask)
-    BW = 3;
-    n = length(fftData);
     index = find(mask, 1);
     if isempty(index); index = 1; end
-    start = max(0, index - BW);
-    finish = min(n, index + BW);
-    maxValue = MaskedSumOfSq(fftData, mask, start, finish);
+    maxValue = MaskedSumOfSq(fftData, mask, index - BW, index + BW);
     maxIndex = index;
 
     while index < length(fftData)
         if mask(index)
-            start = max(1, index - BW);
-            finish = min(n, index + BW);
-            value = MaskedSumOfSq(fftData, mask, start, finish);
+            value = MaskedSumOfSq(fftData, mask, index - BW, index + BW);
             if value > maxValue
                 maxValue = value;
                 maxIndex = index;
@@ -188,9 +170,8 @@ function spurBin = FindSpurBin(fftData, mask)
         end
         index = index + 1;
     end
-    start = max(1, maxIndex - BW);
-    finish = min(n, maxIndex + BW);
-    [~, spurBin] = MaskedMax(fftData, mask, start, finish);
+    [~, spurBin] = MaskedMax(fftData, mask, maxIndex - BW, maxIndex + BW);
+    [spur, spurBw] = MaskedSumOfSq(fftData, mask, spurBin - BW, spurBin + BW);
 end
         
 function mask = ClearMaskAtDc(mask, windowType)
@@ -219,7 +200,7 @@ function mask = InitMask(n, initValue)
 end
 
 function mask = SetMask(mask, start, finish, setValue)
-    if ~exist('setValue', 'var'); setValue = true; end;
+if ~exist('setValue', 'var'); setValue = true; end;
     nyq = length(mask);
     mask(MapNyquist(start:finish, nyq)) = setValue;
 end
@@ -228,10 +209,12 @@ function mask = ClearMask(mask, start, finish)
     mask = SetMask(mask, start, finish, false);
 end
 
-function value = MapNyquist(value, nyq)
+function indices = MapNyquist(indices, nyq)
+    indices = indices - 1;
     n = 2 * (nyq - 1);
-    value = mod(value + n, n);
-    value(value > nyq) = n - value(value > nyq);
+    indices = mod(indices + n, n);
+    indices(indices >= nyq) = n - indices(indices >= nyq);
+    indices = indices + 1;
 end
 
 function [value, i] = MaskedMax(data, mask, start, finish)
