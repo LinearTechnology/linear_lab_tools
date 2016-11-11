@@ -17,7 +17,7 @@ function [harmonics, snr, thd, sinad, enob, sfdr] = SinParams(data, ...
     averageNoise = noise / max(1, noiseBins);
     noise = averageNoise * (length(fftData) - 1);
 
-    [spur, spurBw] = FindSpur(spurInHarms, harms, harmBws, ...
+    [spur, spurBw] = FindSpur(spurInHarms, harmBins(1), harms, harmBws, ...
         fftData, windowType);
     
     spur = spur - spurBw * averageNoise;
@@ -135,22 +135,19 @@ function mask = CalculateAutoMask(fftData, harmBins, windowType)
     end
 end
 
-function [spur, spurBw] = FindSpur(findInHarms, harms, harmBws, ...
+function [spur, spurBw] = FindSpur(findInHarms, fundBin, harms, harmBws, ...
         fftData, windowType)   
     if findInHarms
-        harms = harms(2:end);
-        harmBws = harmBws(2:end);
-        [spur, index] = max(harms);
-        spurBw = harmBws(index);
+        [spur, index] = max(harms(2:end));
+        spurBw = harmBws(index + 1);
     else
-        [spur, spurBw] = FindSpurBin(fftData, windowType);
+        [spur, spurBw] = FindSpurInData(fftData, windowType, fundBin);
     end
 end
 
-function [spur, spurBw] = FindSpurBin(fftData, windowType)
+function [spur, spurBw] = FindSpurInData(fftData, windowType, fundBin)
     BW = 3;
     n = length(fftData);
-    fundBin = harmBins(1);
     mask = InitMask(n);
     mask = ClearMaskAtDc(mask, windowType);
     mask = ClearMask(mask, fundBin - BW, fundBin + BW);
