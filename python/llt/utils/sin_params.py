@@ -1,33 +1,29 @@
 import math as m
 import numpy as np
 
-from matplotlib import pyplot as plt
-
-NONE               = 0x10
-HAMMING            = 0x20
-HANN               = 0x21
-BLACKMAN           = 0x30
-BLACKMAN_EXACT     = 0x31
-BLACKMAN_HARRIS_70 = 0x32
-FLAT_TOP           = 0x33
-BLACKMAN_HARRIS_92 = 0x40
+NONE               = 0x00
+HAMMING            = 0x10
+HANN               = 0x11
+BLACKMAN           = 0x20
+BLACKMAN_EXACT     = 0x21
+BLACKMAN_HARRIS_70 = 0x22
+FLAT_TOP           = 0x23
+BLACKMAN_HARRIS_92 = 0x30
 
 DEF_WINDOW_TYPE = BLACKMAN_HARRIS_92
 
 BW = 3
 
-def sin_params(data, window_type=DEF_WINDOW_TYPE, mask=None, num_harms=8, spur_in_harms = True):
+def sin_params(data, window_type=DEF_WINDOW_TYPE, mask=None, num_harms=9, spur_in_harms = True):
     fft_data = windowed_fft_mag(data)
     harm_bins, harms, harm_bws = find_harmonics(fft_data, num_harms)
-    spur, spur_bw = find_spur(spur_in_harms, harm_bins, harms, fft_data, window_type)
+    spur, spur_bw = find_spur(spur_in_harms, harm_bins[0], harms, harm_bws, fft_data, window_type)
 
     if mask is None:
         mask = calculate_auto_mask(fft_data, harm_bins, window_type)
-    plt.plot([10*m.log10(f) for f in fft_data])
-    plt.plot(mask*10*m.log10(max(fft_data)))
     noise, noise_bins = masked_sum_of_sq(fft_data, mask)
     average_noise = noise / max(1, noise_bins)
-    noise = average_noise * len(fft_data)
+    noise = average_noise * (len(fft_data) - 1)
 
     # create a dictionary where key is harmonic number and value is tuple of harm and bin
     harmonics = {}
@@ -54,72 +50,76 @@ def sin_params(data, window_type=DEF_WINDOW_TYPE, mask=None, num_harms=8, spur_i
 def window(size, window_type=DEF_WINDOW_TYPE):
     if window_type == NONE:
         return None
-
-    window_coeffs_dict = {
-        HAMMING:            (1.586303, 0.54,       0.46),
-        HANN:               (1.632993, 0.50,       0.50),
-        BLACKMAN:           (1.811903, 0.42,       0.50,       0.08),
-        BLACKMAN_EXACT:     (1.801235, 0.42659071, 0.42659071, 0.07684867),
-        BLACKMAN_HARRIS_70: (1.807637, 0.42323,    0.49755,    0.07922),
-        FLAT_TOP:           (2.066037, 0.2810639,  0.5208972,  0.1980399),
-        BLACKMAN_HARRIS_92: (1.968888, 0.35875,    0.48829,    0.14128,     0.01168)
-    }
-
-    window_coeffs = window_coeffs_dict[window_type]
-    num_coeffs = len(window_coeffs)
-
-    normalization = window_coeffs[0]      
-    a0 = window_coeffs[1]
-    a1 = window_coeffs[2]
-
-    tau = 2*m.pi
-    t = np.linspace(0, 1, size, False)
-    if num_coeffs == 3:
-        wind = a0 - a1*np.cos(tau*t)
-    elif num_coeffs == 4:
-        a2 = window_coeffs[3]
-        wind = a0 - a1*np.cos(tau*t) + a2*np.cos(2*tau*t)
+    if window_type == HAMMING:
+        return _one_cos(size, 0.54, 0.46, 1.586303)
+    elif window_type == HANN:
+        return _one_cos(size, 0.50, 0.50, 1.632993)
+    elif window_type == BLACKMAN:
+        return _two_cos(size, 0.42, 0.50, 0.08, 1.811903)
+    elif window_type == BLACKMAN_EXACT:
+        return _two_cos(size, 42659071, 0.49656062, 0.07684867, 1.801235)
+    elif window_type == BLACKMAN_HARRIS_70:
+        return _two_cos(size, 0.42323, 0.49755, 0.07922, 1.807637)
+    elif window_type == FLAT_TOP:
+        return _two_cos(size, 0.2810639, 0.5208972, 0.1980399, 2.066037)
+    elif window_type == BLACKMAN_HARRIS_92:
+        return _three_cos(size, 0.35875, 0.48829, 0.14128, 0.01168, 1.968888)
     else:
-        a2 = window_coeffs[3]
-        a3 = window_coeffs[4]
-        wind = a0 - a1*np.cos(tau*t) + a2*np.cos(2*tau*t) - a3*np.cos(3*tau*t)
-     
-    return wind * normalization       
+         raise ValueError("Unknown window type")   
+    
+def _one_cos(n, a0, a1, norm):
+    t = np.linspace(0, 1, n, True)
+    win = a0 - a1*np.cos(2*np.pi * t)
+    return win * norm
+    
+def _two_cos(n, a0, a1, a2, norm):
+    t = np.linspace(0, 1, n, True)
+    win = a0 - a1*np.cos(2*np.pi * t) + a2*np.cos(4*np.pi * t)
+    return win * norm
+    
+def _three_cos(n, a0, a1, a2, a3, norm):
+    t = np.linspace(0, 1, n, True)
+    win = a0 - a1*np.cos(2*np.pi * t) + a2*np.cos(4*np.pi * t) - a3*np.cos(6*np.pi * t)
+    return win * norm
 
 def windowed_fft_mag(data, window_type=BLACKMAN_HARRIS_92):
     n = len(data)      
     data = np.array(data, dtype=np.float64)
     data -= np.mean(data)
-    data = data * window(n, window_type)
+    w = window(n, window_type)
+    data = data * w
     fft_data = np.fft.fft(data)[0:n/2+1]
     fft_data = abs(fft_data) / n
     fft_data[1:n/2] *= 2     
     return fft_data
 
 def find_harmonics(fft_data, max_harms):
-    harmonic_bins = [0 for i in range(max_harms)]
-    fundamental_bin = np.argmax(fft_data)
-    harmonic_bins[0] = fundamental_bin
-    harmonics = [0 for i in range(max_harms)]
-    harmonic_bandwidths = [0 for i in range(max_harms)]
-
+    BW = 3
+    harm_bins = np.zeros(max_harms, dtype=int)
+    harms = np.zeros(max_harms)
+    harm_bws = np.zeros(max_harms, dtype=int)
+    
+    _, fund_bin = get_max(fft_data)
+    harm_bins[0] = fund_bin
+    
     for h in range(1, max_harms+1):
-        # first find the location by searching for the max inside an area of uncertainty
-        mask = init_mask(len(fft_data), 0)
-        nominal_bin = h * fundamental_bin
-        if h > 1:    
-            set_mask(mask, nominal_bin-h/2,nominal_bin+h/2)
+        # first find the location by taking max in area of uncertainty
+        mask = init_mask(len(fft_data), False)
+        nominal_bin = h * fund_bin
+        h_2 = h / 2
+        if h > 1:
+            mask = set_mask(mask, nominal_bin - h_2, nominal_bin + h_2)
             for i in range(h-1):
-                clear_mask(mask, h, h)
-            _, harmonic_bins[h-1] = masked_max(fft_data, mask)
-
-        # now find the power in the harmonic
-        clear_mask(mask, nominal_bin-h/2,nominal_bin+h/2)
-        set_mask(mask, nominal_bin - BW, nominal_bin + BW)
+                mask = clear_mask(mask, harm_bins[i], harm_bins[i])
+            _, harm_bins[h-1] = masked_max(fft_data, mask)
+    
+        mask = clear_mask(mask, nominal_bin-h_2, nominal_bin+h_2)
+        mask = set_mask(mask, harm_bins[h-1]-BW, harm_bins[h-1]+BW)
         for i in range(h-1):
-            clear_mask(mask, harmonic_bins[i]-BW, harmonic_bins[i]+BW)
-        harmonics[h-1], harmonic_bandwidths[h-1] = masked_sum_of_sq(fft_data, mask)
-    return (harmonic_bins, harmonics, harmonic_bandwidths)
+            mask = clear_mask(mask, harm_bins[i]-BW, harm_bins[i]+BW)
+        harms[h-1], harm_bws[h-1] = masked_sum_of_sq(fft_data, mask)
+    return (harm_bins, harms, harm_bws)    
+        
         
 def calculate_auto_mask(fft_data, harm_bins, window_type):
     BANDWIDTH_DIVIDER = 80
@@ -132,15 +132,12 @@ def calculate_auto_mask(fft_data, harm_bins, window_type):
         clear_mask(mask, harm_bins[i] - bw, harm_bins[i] + bw)
     mask[0] = False
 
-    (noise_est, noise_bins) = masked_sum(fft_data, mask)
+    noise_est, noise_bins = masked_sum(fft_data, mask)
     noise_est /= noise_bins
 
     mask = init_mask(n)
     clear_mask_at_dc(mask, window_type)
     for h in harm_bins:
-        low = h
-        high = h
-
         if mask[h] == 0:
             continue
 
@@ -160,100 +157,99 @@ def calculate_auto_mask(fft_data, harm_bins, window_type):
     
     return mask
 
-def find_spur_in_harmonics(harm_bins, harms):
-    index = np.argmax(harms[1:])
-    return harm_bins[index]
+def find_spur(find_in_harms, fund_bin, harms, harm_bws, fft_data, window_type):
+    if find_in_harms:
+        spur, index = get_max(harms[1:])
+        return (spur, harm_bws[index + 1])
+    else:
+        return find_spur_in_data(fft_data, window_type, fund_bin)
 
-def find_spur_bin(fft_data, mask, fund_bin, window_type):
-    index = 0
-    for i, ms in enumerate(mask):
-        if ms == 1:
+
+def find_spur_in_data(fft_data, window_type, fund_bin):
+    BW = 3
+    n = len(fft_data)
+    mask = init_mask(n)
+    mask = clear_mask_at_dc(mask, window_type)
+    mask = clear_mask(mask, fund_bin - BW, fund_bin + BW)
+    
+    index = 0    
+    for i, v in enumerate(mask):
+        if v:
             index = i
             break
-
-    begin = max(0, index - BW)
-    end = min(len(fft_data), index + BW)
-    max_value, _ = masked_sum_of_sq(fft_data, mask, begin, end)
-    max_index = index
-
+            
+    max_value = masked_sum_of_sq(fft_data, mask, index - BW, index + BW);
+    max_index = index;
+    
     while index < len(fft_data):
-        if mask[index] == 1:
-            begin = max(0, index - BW)
-            end = min(len(fft_data), index + BW)
-            value, _ = masked_sum_of_sq(fft_data, mask, begin, end)
+        if mask[index]:
+            value = masked_sum_of_sq(fft_data, mask, index - BW, index + BW)
             if value > max_value:
                 max_value = value
                 max_index = index
         index += 1
-    
-    begin = max(0, max_index - BW)
-    end = min(len(fft_data), max_index + BW)
-    spur, spur_bin = masked_max(fft_data, mask, begin, end)
-    return spur_bin
+    _, spur_bin = masked_max(fft_data, mask, max_index - BW, max_index + BW)
+    spur, spur_bw = masked_sum_of_sq(fft_data, mask, spur_bin - BW, spur_bin + BW)
+    return (spur, spur_bw)
 
-def find_spur(find_in_harms, harm_bins, harms, fft_data, window_type):
-    fund_bin = harm_bins[0]
-    mask = init_mask(len(fft_data))
-    clear_mask_at_dc(mask, window_type)
-    begin = max(0, fund_bin - BW)
-    end = min(len(fft_data), fund_bin + BW)
-    clear_mask(mask, begin, end)
-    
-    if find_in_harms:
-        spur_bin = find_spur_bin(fft_data, mask, fund_bin, window_type)
-    else:
-        spur_bin = find_spur_in_harmonics(harm_bins, harms)
-
-    begin = max(0, spur_bin - BW)
-    end = min(len(fft_data), spur_bin + BW)
-    return masked_sum_of_sq(fft_data, mask, begin, end)
-        
 def clear_mask_at_dc(mask, window_type):
-    clear_mask(mask, 0, window_type >> 4)
+    return clear_mask(mask, 0, window_type >> 4)
 
-def init_mask(n, initial_value=1):
-    if initial_value == 1:
-        return np.ones(n)
+def init_mask(n, initial_value=True):
+    if initial_value:
+        return np.ones(n, dtype = bool)
     else:
-        return np.zeros(n)
+        return np.zeros(n, dtype = bool)
 
-def set_mask(mask, start, end, set_value=1):
+def set_mask(mask, start, end, set_value=True):
     nyq = len(mask)
-    for i in range(start, end+1):
-        mask[map_nyquist(i, nyq)] = set_value
+    mask[map_nyquist(np.array(range(start, end+1)), nyq)] = set_value
+    return mask
 
 def clear_mask(mask, start, end):
-    set_mask(mask, start, end, 0)
+    return set_mask(mask, start, end, False)
 
-def map_nyquist(value, nyq):
+def map_nyquist(indices, nyq):
     n = 2 * (nyq - 1)
-    value = (value + n) % n
-    if value <= nyq:
-        return value
+    indices = np.mod(indices + n, n)
+    if isinstance(indices, np.ndarray):
+        indices[indices > nyq] = n - indices[indices > nyq]
     else:
-        return n - value
+        indices = n - indices if indices > nyq else indices
+    return indices
 
-def masked_reduce(fn, data, mask, begin=0, end=None, initial_value = 0):
-    if end is None:
-        end = len(data) - 1
+def masked_max(data, mask, start=0, finish=None):
+    if finish is None:
+        finish = len(data) - 1
+    _, indices = masked_subset(mask, start, finish)
+    [value, i] = get_max(data[indices])
+    return (value, indices[i])
+    
+def masked_sum(data, mask, start=0, finish=None):
+    if finish is None:
+        finish = len(data) - 1
+    mask, indices = masked_subset(mask, start, finish)
+    value = sum(data[indices])
+    return value, len(indices);
+    
+def masked_sum_of_sq(data, mask, start=0, finish=None):
+    if finish is None:
+        finish = len(data) - 1
+    mask, indices = masked_subset(mask, start, finish)
+    value = sum(data[indices] * data[indices])
+    return value,len(indices);
 
-    value = initial_value
-    num_bins = 0
-    end += 1 # we want inclusive
-    for pair in zip(data[begin:end], mask[begin:end]):
-        if pair[1] == 1:
-             value = fn(value, pair[0])
-             num_bins += 1
-    return (value, num_bins)
-
-def masked_max(data, mask, begin=0, end=None):
-    (result, _) = masked_reduce(lambda a, b: b if b[1] > a[1] else a, 
-        [d for d in enumerate(data)], mask, begin, end, (0, data[0]))
-    return result[1], result[0]
-
-def masked_sum(data, mask, begin=0, end=None):
-    return masked_reduce(lambda a, b: a + b, data, mask, begin, end)
-
-def masked_sum_of_sq(data, mask, begin=0, end=None):
-    return masked_reduce(lambda a, b: a + b*b, data, mask, begin, end)
+  
+def masked_subset(mask, start, finish):
+    nyq = len(mask) - 1
+    mapped_subset = map_nyquist(np.array(range(start, finish)), nyq)
+    indices = np.array(range(0, finish))
+    indices = indices[mapped_subset]
+    mask = mask[mapped_subset]
+    indices = indices[mask]
+    return (mask, indices)
+    
+def get_max(data):
+    index = np.argmax(data)
+    return (data[index], index)
 
