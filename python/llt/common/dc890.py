@@ -77,9 +77,13 @@ class Demoboard():
         del value
         del traceback
         self.controller.cleanup()
-        
+
+    def fix_data(self, raw_data, is_randomized, is_alternate_bit):
+        return funcs.fix_data(raw_data, self.num_bits, self.alignment, 
+                              self.is_bipolar, is_randomized, is_alternate_bit)
+    
     def collect(self, num_samples, trigger, timeout = 5, is_randomized = False, 
-                is_alternate_bit = False,):
+                is_alternate_bit = False):
         self.controller.dc890_flush()
         num_samples *= self.num_channels
         funcs.start_collect(self, num_samples, trigger, timeout)
