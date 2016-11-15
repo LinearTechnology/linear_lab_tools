@@ -163,3 +163,16 @@ LTC2393    (DC1500A-A)
 
 Additional Demo boards supported, Python only:
 DC2512
+
+#######################
+### December, 2016: ###
+#######################
+
+Additional Demo boards supported, both Matlab and Python:
+---------------------------------------------------------
+LTC2321-12 (DC1996A-F)
+LTC2321-14 (DC1996A-D)
+LTC2321-16 (DC1996A-B)
+LTC2323-12 (DC1996A-E)
+LTC2323-14 (DC1996A-C)
+LTC2323-16 (DC1996A-A)
