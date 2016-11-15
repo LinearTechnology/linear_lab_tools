@@ -1108,6 +1108,90 @@ data_correction_code = ""
 fpga_load = 'CMOS'
 spi_reg = ""
 
+["LTC2323-16 DC1996A-A"]
+part_number = "LTC2323-16"
+dc_number = "DC1996A-A"
+controller = "DC890"
+num_channels = 2
+channels = "ch0, ch1"
+is_positive_clock = true
+num_bits = 16
+alignment = 16
+is_bipolar = true
+data_correction_code = ""
+fpga_load = 'CMOS'
+spi_reg = ""
+
+["LTC2321-16 DC1996A-B"]
+part_number = "LTC2321-16"
+dc_number = "DC1996A-B"
+controller = "DC890"
+num_channels = 2
+channels = "ch0, ch1"
+is_positive_clock = true
+num_bits = 16
+alignment = 16
+is_bipolar = true
+data_correction_code = ""
+fpga_load = 'CMOS'
+spi_reg = ""
+
+["LTC2323-14 DC1996A-C"]
+part_number = "LTC2323-14"
+dc_number = "DC1996A-C"
+controller = "DC890"
+num_channels = 2
+channels = "ch0, ch1"
+is_positive_clock = true
+num_bits = 14
+alignment = 16
+is_bipolar = true
+data_correction_code = ""
+fpga_load = 'CMOS'
+spi_reg = ""
+
+["LTC2321-14 DC1996A-D"]
+part_number = "LTC2321-14"
+dc_number = "DC1996A-D"
+controller = "DC890"
+num_channels = 2
+channels = "ch0, ch1"
+is_positive_clock = true
+num_bits = 14
+alignment = 16
+is_bipolar = true
+data_correction_code = ""
+fpga_load = 'CMOS'
+spi_reg = ""
+
+["LTC2323-12 DC1996A-E"]
+part_number = "LTC2323-12"
+dc_number = "DC1996A-E"
+controller = "DC890"
+num_channels = 2
+channels = "ch0, ch1"
+is_positive_clock = true
+num_bits = 12
+alignment = 16
+is_bipolar = true
+data_correction_code = ""
+fpga_load = 'CMOS'
+spi_reg = ""
+
+["LTC2321-12 DC1996A-F"]
+part_number = "LTC2321-12"
+dc_number = "DC1996A-F"
+controller = "DC890"
+num_channels = 2
+channels = "ch0, ch1"
+is_positive_clock = true
+num_bits = 12
+alignment = 16
+is_bipolar = true
+data_correction_code = ""
+fpga_load = 'CMOS'
+spi_reg = ""
+
 ##############
 ### DC1370 ###
 ##############
