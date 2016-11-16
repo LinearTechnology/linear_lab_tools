@@ -164,7 +164,7 @@ class Dc2289aA(dc890.Demoboard):
         data = funcs.fix_data(raw_data,self.num_bits, self.alignment,
                               self.is_bipolar, is_randomized, is_alternate_bit)
         # check if OSR is a power of 2        
-        if self.osr & (self.osr - 1) != 0:
+        if self.osr & (self.osr - 1) == 0:
             # find the smallest power of 2 larger than OSR because the
             # output of the adc is divided by that, we undo it and divide by
             # the plain OSR to give a proper average
