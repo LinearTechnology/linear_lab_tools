@@ -37,7 +37,6 @@ import llt.common.dc890 as dc890
 import llt.common.functions as funcs
 import llt.common.constants as consts
 import llt.common.exceptions as errs
-import math
 
 def ltc2380_24_dc2289a_a(num_samples, osr, verify, is_disributed_rd, 
                          verbose = False, do_plot = False, 
@@ -51,11 +50,11 @@ def ltc2380_24_dc2289a_a(num_samples, osr, verify, is_disributed_rd,
         # config_cpld(osr, verify, is_disributed_rd)
 
         if do_plot:
-            funcs.plot_channels(controller.get_num_bits(),
-                                data, 
-                                verbose=verbose)
+            funcs.plot(data,
+                       controller.get_num_bits(), 
+                       verbose=verbose)
         if do_write_to_file:
-            funcs.write_channels_to_file_32_bit("data.txt",
+            funcs.write_to_file_32_bit("data.txt",
                                                 data,
                                                 verbose=verbose)
         return data
@@ -89,6 +88,8 @@ class Dc2289aA(dc890.Demoboard):
         return data
 
     def config_cpld(self, osr, verify, is_disributed_rd):
+        if is_disributed_rd and osr < 25:
+            raise errs.NotSupportedError("OSR Must be >=25 for distributed read")
         self.verify = verify
         self.osr = osr
         # Bit Map
@@ -118,7 +119,7 @@ class Dc2289aA(dc890.Demoboard):
         self.controller.dc890_gpio_set_byte(0x00)
 
         self.controller.dc890_gpio_set_byte(base)
-        self.controller.spi_send_no_chip_select([osr])
+        self.controller.spi_send_no_chip_select([(osr>>8) & 0xFF, osr & 0xFF])
         
         # Now pull WRIN high
         self.controller.dc890_gpio_set_byte(base | WRITE_IN)
@@ -137,11 +138,11 @@ class Dc2289aA(dc890.Demoboard):
 
     def _get_data(self, data):
         osr_1 = self.osr - 1        
-        data_0 = data[0:2:]
-        data_1 = data[1:2:]
+        data_0 = data[0::2]
+        data_1 = data[1::2]
         
         if osr_1 & 0xFF !=  (osr_1 >> 8) & 0xFF: 
-            if (data_0>>24) & 0xFF == osr_1 & 0xFF:
+            if (data_0[0]>>24) & 0xFF == osr_1 & 0xFF:
                 # data_0 is the data
                 return self._format_data(data_0, data_1)
             else:
@@ -161,20 +162,12 @@ class Dc2289aA(dc890.Demoboard):
     def fix_data(self, raw_data, is_randomized, is_alternate_bit):
         if self.verify:
             raw_data = self._get_data(raw_data)
-        data = funcs.fix_data(raw_data,self.num_bits, self.alignment,
+        return funcs.fix_data(raw_data,self.num_bits, self.alignment,
                               self.is_bipolar, is_randomized, is_alternate_bit)
-        # check if OSR is a power of 2        
-        if self.osr & (self.osr - 1) == 0:
-            # find the smallest power of 2 larger than OSR because the
-            # output of the adc is divided by that, we undo it and divide by
-            # the plain OSR to give a proper average
-            rescale = 2**(math.ceil(math.log(self.osr, 2))) / self.osr      
-            data = [d * rescale for d in data]
-        return data
     
 if __name__ == '__main__':
     NUM_SAMPLES = 32 * 1024
-    OSR = 16
+    OSR = 4
     # to use this function in your own code you would typically do
     # data = ltc2380_24_dc2289a_a(num_samples, osr, verify, is_disributed_rd)
     ltc2380_24_dc2289a_a(NUM_SAMPLES, OSR, verify=False, is_disributed_rd=False, 
