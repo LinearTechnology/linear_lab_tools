@@ -33,7 +33,7 @@ classdef Dc890
     % those of the authors and should not be interpreted as representing official
     % policies, either expressed or implied, of Linear Technology Corp.
     
-    properties (Access = private)
+    properties (Access = protected)
         lcc;
         nBits;
         alignment;
@@ -100,8 +100,7 @@ classdef Dc890
             
             self.VPrint('Done.');
             
-            data = Llt.Common.FixData(rawData, self.nBits, self.alignment, ...
-                self.isBipolar, isRandomized, isAlternateBit);
+            data = self.FixData(rawData, isRandomized, isAlternateBit);
             [varargout{1:nargout}] = Llt.Common.Scatter(data, self.nChannels);
         end
                
@@ -114,6 +113,11 @@ classdef Dc890
                 end
                 self.lcc.Dc890GpioSetByte(self.cid, hex2dec('ff'));
             end
+        end
+        
+        function data = FixData(self, rawData, isRandomized, isAlternateBit)
+            data = Llt.Common.FixData(rawData, self.nBits, self.alignment, ...
+                self.isBipolar, isRandomized, isAlternateBit);
         end
         
         function nBits = GetNBits(self)
