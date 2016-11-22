@@ -134,6 +134,8 @@ def generate(template_file_name, toml_file_name, controller, is_matlab=False):
             folder = make_folder(value["part_number"], is_matlab)
             try:
                 os.makedirs(folder)
+                if not is_matlab:
+                    open(folder + "/__init__.py", 'a').close()
             except:
                 pass
             with open( folder + "/" + out_file_name, "wt") as out_file:
