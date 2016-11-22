@@ -100,8 +100,7 @@ class Demoboard():
                 raise errs.HardwareError("Didn't get all bytes")
         self.vprint('Data read done')
 
-        data = funcs.fix_data(raw_data,self.num_bits, self.alignment, 
-                              self.is_bipolar, is_randomized, is_alternate_bit)
+        data = self.fix_data(raw_data, is_randomized, is_alternate_bit)
         return funcs.scatter_data(data, self.num_channels)
 
     def init_controller(self, fpga_load, is_multichannel, is_positive_clock):
