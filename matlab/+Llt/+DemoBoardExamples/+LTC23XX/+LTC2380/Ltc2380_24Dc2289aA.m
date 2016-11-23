@@ -37,6 +37,10 @@
 
 function varargout = Ltc2380_24Dc2289aA(nSamples, osr, verify, isDistributedRead, ...
                                         isVerbose, doPlot, doWriteToFile)
+    if ~exist('nSamples', 'var'); nSamples = 32 * 1024; end
+    if ~exist('osr', 'var'); osr = 4; end
+    if ~exist('verify', 'var'); verify = false; end
+    if ~exist('isDistributedRead', 'var'); isDistributedRead = false; end
     doDemo = false;
     if nargout == 0
         doDemo = true;
@@ -46,7 +50,7 @@ function varargout = Ltc2380_24Dc2289aA(nSamples, osr, verify, isDistributedRead
     if ~exist('doWriteToFile', 'var'); doWriteToFile = doDemo; end
     
     lcc = Llt.Common.LtcControllerComm();
-    controller = Llt.DemoboardExamples.LTC23XX.LTC2380.Dc2289aA(...
+    controller = Llt.DemoBoardExamples.LTC23XX.LTC2380.Dc2289aA(...
         lcc, osr, verify, isDistributedRead, isVerbose);
     
     data = controller.Collect(nSamples, Llt.Common.LtcControllerComm.TRIGGER_NONE);

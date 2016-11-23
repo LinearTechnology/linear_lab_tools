@@ -1,4 +1,4 @@
-classdef Dc2289aA < Ltc.Common.Dc890
+classdef Dc2289aA < Llt.Common.Dc890
     % Class to connect to the DC890 controller and use the DC2289A-A
     %
     % REVISION HISTORY
@@ -43,7 +43,7 @@ classdef Dc2289aA < Ltc.Common.Dc890
         function self = Dc2289aA(lcc, osr, verify, isDistributedRead, isVerbose)
             if ~exist('isVerbose', 'var'); isVerbose = false; end
 
-            self@Ltc.Common.Dc890(lcc, dcNumber, 'CMOS', 1, false, ...
+            self = self@Llt.Common.Dc890(lcc, 'DC2289A-A', 'CMOS', 1, false, ...
                 24, 24, true, [], isVerbose);
             self.osr = osr;
             self.verify = verify;
@@ -56,11 +56,19 @@ classdef Dc2289aA < Ltc.Common.Dc890
             if ~exist('isRandomized', 'var'); isRandomized = false; end
             if ~exist('isAlternateBit', 'var'); isAlternateBit = false; end
             
-            [varargout{1:nargout}] = Collect@Dc890(self, nSamples * 2, trigger, timeout, ...
+            [varargout{1:nargout}] = Collect@Llt.Common.Dc890(self, nSamples * 2, trigger, timeout, ...
                 isRandomized, isAlternateBit);
         end
                
         function ConfigCpld(self, osr, verify, isDistributedRead)
+            if verify && isDistributedRead
+                error('Dc2289aA:ConfigCpld:NotSupported', ...
+                    'Cannot use verify and distributed read');
+            end
+            if isDistributedRead && osr < 25
+                error('Dc2289aA:ConfigCpld:NotSupported', ...
+                    'OSR Must be >=25 for distributed read');
+            end
             self.verify = verify;
             self.osr = osr;
             % Bit Map
@@ -86,26 +94,26 @@ classdef Dc2289aA < Ltc.Common.Dc890
             end
 
             % Configure CPLD port
-            self.lcc.Dc890GpioSpiSetBits(0, 5, 6);
+            self.lcc.Dc890GpioSpiSetBits(self.cid, 0, 5, 6);
 
             % Bring everything down to make sure the CPLD is not listening
-            self.lcc.Dc890GpioSetByte(0); % 0x00
+            self.lcc.Dc890GpioSetByte(self.cid, 0); % 0x00
 
-            self.lcc.Dc890GpioSetByte(base);
-            self.lcc.SpiSendNoChipSelect([bitand(bitshift(osr, -8), 255), bitand(osr, 255)]);
+            self.lcc.Dc890GpioSetByte(self.cid, base);
+            self.lcc.SpiSendNoChipSelect(self.cid, [bitand(bitshift(osr, -8), 255), bitand(osr, 255)]);
 
             % Now pull WRIN high
-            self.lcc.Dc890GpioSetByte(bitor(base, WRITE_IN));
+            self.lcc.Dc890GpioSetByte(self.cid, bitor(base, WRITE_IN));
 
             % Now pull AUX0 high
-            self.lcc.Dc890GpioSetByte(bitor(base, bitor(WRITE_IN, AUX_0)));
+            self.lcc.Dc890GpioSetByte(self.cid, bitor(base, bitor(WRITE_IN, AUX_0)));
         end
     
         function data = FixData(self, rawData, isRandomized, isAlternateBit)
             if self.verify
                 rawData = self.GetData(rawData);
             end
-            data = Llt.Common.FixData(rawData, self.numBits, self.alignment, ...
+            data = Llt.Common.FixData(rawData, self.nBits, self.alignment, ...
                                   self.isBipolar, isRandomized, isAlternateBit);
         end
     end
@@ -126,7 +134,7 @@ classdef Dc2289aA < Ltc.Common.Dc890
             data1 = data(2:2:end);
 
             if bitand(osrMinus1, 255) ~=  bitand(bitshift(osrMinus1, -8), 255) 
-                if bitand(bitshift(data0(1), -24), 255) == bitand(osr1, 255)
+                if bitand(bitshift(data0(1), -24), 255) == bitand(osrMinus1, 255)
                     % data0 is the data
                     rawData = self.FormatData(data0, data1);
                 else
