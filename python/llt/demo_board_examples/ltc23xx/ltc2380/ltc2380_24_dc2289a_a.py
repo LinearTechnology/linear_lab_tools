@@ -88,6 +88,8 @@ class Dc2289aA(dc890.Demoboard):
         return data
 
     def config_cpld(self, osr, verify, is_disributed_rd):
+        if verify and is_disributed_rd:
+            raise errs.NotSupportedError("Cannot use verify and distributed read")
         if is_disributed_rd and osr < 25:
             raise errs.NotSupportedError("OSR Must be >=25 for distributed read")
         self.verify = verify

@@ -158,6 +158,7 @@ class Controller(object):
 
     def cleanup(self):
         """Clean up (close and delete) all resources."""
+        self.close()
         if self._handle is not None:
             self._dll.LccCleanup(ct.byref(self._handle))
             self._handle = None
