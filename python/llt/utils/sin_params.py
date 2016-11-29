@@ -68,17 +68,17 @@ def window(size, window_type=DEF_WINDOW_TYPE):
          raise ValueError("Unknown window type")   
     
 def _one_cos(n, a0, a1, norm):
-    t = np.linspace(0, 1, n, True)
+    t = np.linspace(0, 1, n, False)
     win = a0 - a1*np.cos(2*np.pi * t)
     return win * norm
     
 def _two_cos(n, a0, a1, a2, norm):
-    t = np.linspace(0, 1, n, True)
+    t = np.linspace(0, 1, n, False)
     win = a0 - a1*np.cos(2*np.pi * t) + a2*np.cos(4*np.pi * t)
     return win * norm
     
 def _three_cos(n, a0, a1, a2, a3, norm):
-    t = np.linspace(0, 1, n, True)
+    t = np.linspace(0, 1, n, False)
     win = a0 - a1*np.cos(2*np.pi * t) + a2*np.cos(4*np.pi * t) - a3*np.cos(6*np.pi * t)
     return win * norm
 
