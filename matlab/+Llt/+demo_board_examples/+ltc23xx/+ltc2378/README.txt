@@ -1,1 +1,0 @@
-Ltc2378Dc2135 works with both DC1925 and DC2135
