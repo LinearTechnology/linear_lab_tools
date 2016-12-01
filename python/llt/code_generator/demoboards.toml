@@ -1192,6 +1192,52 @@ data_correction_code = ""
 fpga_load = 'CMOS'
 spi_reg = ""
 
+
+["LTC2261-14 DC1370A-A"]
+part_number = "LTC2261-14"
+dc_number = "DC1370A-A"
+controller = "DC890"
+num_channels = 2
+channels = "ch0, ch1"
+is_positive_clock = true
+num_bits = 14
+alignment = 14
+is_bipolar = false
+data_correction_code = """data = data[0] # Keep only one channel
+"""
+fpga_load = 'CMOS'
+spi_reg = ""
+
+["LTC2260-14 DC1370A-B"]
+part_number = "LTC2260-14"
+dc_number = "DC1370A-B"
+controller = "DC890"
+num_channels = 2
+channels = "ch0"
+is_positive_clock = true
+num_bits = 14
+alignment = 14
+is_bipolar = false
+data_correction_code = """data = data[0] # Keep only one channel
+"""
+fpga_load = 'CMOS'
+spi_reg = ""
+
+["LTC2270 DC1975A-A"]
+part_number = "LTC2270"
+dc_number = "DC1975A-A"
+controller = "DC890"
+num_channels = 2
+channels = "ch0, ch1"
+is_positive_clock = false
+num_bits = 16
+alignment = 16
+is_bipolar = false
+data_correction_code = ""
+fpga_load = 'CMOS'
+spi_reg = "0x00, 0x80, 0x01, 0x00, 0x02, 0x00,0x03, 0x70, 0x04, 0x00"
+
+
 ##############
 ### DC1370 ###
 ##############
@@ -1521,3 +1567,4 @@ is_bipolar = true
 fpga_load = "S2195"
 demo_config = "0x28000000"
 spi_reg = "0x00, 0x80, 0x01, 0x00, 0x02, 0x00, 0x03, 0x00, 0x04, 0x00"
+
