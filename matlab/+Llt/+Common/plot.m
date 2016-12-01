@@ -1,4 +1,4 @@
-function Plot(data, nBits, channel, verbose)
+function plot(data, num_bits, channel, verbose)
 % Plots time-domain and frequency-domain of a single channel
 % 
 % nBits is required to correctly scale FFT, channel is just the channel
@@ -37,7 +37,7 @@ if ~exist('verbose', 'var'); verbose = false; end
 
 if verbose; fprintf('Plotting channel %d time domain.\n', channel); end
 
-nSamples = length(data);
+num_samples = length(data);
     
 figure(2*channel+1)
 plot(data)
@@ -45,20 +45,20 @@ title(sprintf('Ch %d : Time Domain Samples', channel))
 
 if verbose; fprintf('FFT''ing channel %d data.\n', channel); end
 
-adcAmplitude = 2.0^(nBits-1);
-dataNoDc = double(data);
-dataNoDc = dataNoDc - mean(dataNoDc); % Remove DC to avoid leakage when windowing
-window = Llt.Common.FftWindow(nSamples);
-windowedData = double(dataNoDc(:)) .* window;
-freqDomain = fft(windowedData);
-freqDomain = freqDomain(1:(nSamples/2+1));
-freqDomainMagnitude = abs(freqDomain);
-freqDomainMagnitude = freqDomainMagnitude / nSamples;
-freqDomainMagnitude(2:nSamples/2) = freqDomainMagnitude(2:nSamples/2) * 2;
-freqDomainMagnitudeDb = 20*log10(freqDomainMagnitude/adcAmplitude);
+adc_amplitude = 2.0^(num_bits-1);
+data_no_dc = double(data);
+data_no_dc = data_no_dc - mean(data_no_dc); % Remove DC to avoid leakage when windowing
+window = llt.common.fft_window(num_samples);
+windowed_data = double(data_no_dc(:)) .* window;
+freq_domain = fft(windowed_data);
+freq_domain = freq_domain(1:(num_samples/2+1));
+freq_domain_magnitude = abs(freq_domain);
+freq_domain_magnitude = freq_domain_magnitude / num_samples;
+freq_domain_magnitude(2:num_samples/2) = freq_domain_magnitude(2:num_samples/2) * 2;
+freq_domain_magnitude_db = 20*log10(freq_domain_magnitude/adc_amplitude);
 
 if verbose; fprintf('Plotting channel %d frequency domain.\n', channel); end
 
 figure(2*channel+2);
 title(sprintf('Ch %d: FFT', channel))
-plot(freqDomainMagnitudeDb);
+plot(freq_domain_magnitude_db);

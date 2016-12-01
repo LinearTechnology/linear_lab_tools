@@ -35,98 +35,97 @@ classdef Dc1371
     
     properties (Access = private)
         lcc;
-        nBits;
+        num_bits;
         alignment;
-        isBipolar;
-        bytesPerSample;
-        nChannels;
-        fpgaLoad;
-        isVerbose;
+        is_bipolar;
+        bytes_per_sample;
+        num_channels;
+        fpga_load;
+        is_verbose;
         cid;
     end
     
     methods 
-        function self = Dc1371(lcc, dcNumber, fpgaLoad, nChannels, ...
-                nBits, alignment, isBipolar, demoConfig, spiRegValues, isVerbose)
-            if ~exist('spiRegValues', 'var'); spiRegValues = []; end;
-            if ~exist('isVerbose', 'var'); isVerbose = false; end
+        function self = Dc1371(lcc, dc_number, fpga_load, num_channels, ...
+                num_bits, alignment, is_bipolar, demo_config, spi_reg_values, is_verbose)
+            if ~exist('spi_reg_values', 'var'); spi_reg_values = []; end;
+            if ~exist('is_verbose', 'var'); is_verbose = false; end
             
             self.lcc = lcc;
-            self.nBits = nBits;
+            self.num_bits = num_bits;
             self.alignment = alignment;
-            self.isBipolar = isBipolar;
-            self.nChannels = nChannels;
-            self.fpgaLoad = fpgaLoad;
-            self.isVerbose = isVerbose;
+            self.is_bipolar = is_bipolar;
+            self.num_channels = num_channels;
+            self.fpga_load = fpga_load;
+            self.is_verbose = is_verbose;
             
-            controllerInfo = Llt.Common.GetControllerInfoByEeeprom(lcc, ...
-                lcc.TYPE_DC1371, dcNumber, lcc.DC1371_EEPROM_SIZE, isVerbose);
-            self.cid = lcc.Init(controllerInfo);
+            controller_info = llt.common.get_controller_info_by_eeprom(lcc, ...
+                lcc.TYPE_DC1371, dc_number, lcc.DC1371_EEPROM_SIZE, is_verbose);
+            self.cid = lcc.init(controller_info);
             
-            self.InitController(demoConfig, spiRegValues);
+            self.init_controller(demo_config, spi_reg_values);
         end
         
-        function varargout = Collect(self, nSamples, trigger, timeout, isRandomized, isAlternateBit)
+        function varargout = collect(self, num_samples, trigger, timeout, is_randomized, ...
+                is_alternate_bit)
             if ~exist('timeout', 'var'); timeout = 5; end
-            if ~exist('isRandomized', 'var'); isRandomized = false; end
-            if ~exist('isAlternateBit', 'var'); isAlternateBit = false; end
+            if ~exist('is_randomized', 'var'); is_randomized = false; end
+            if ~exist('is_alternate_bit', 'var'); is_alternate_bit = false; end
             
-            nSamples = nSamples * self.nChannels;
+            num_samples = num_samples * self.num_channels;
             
-            self.VPrint('Starting collect...');
-            Llt.Common.StartCollect(self.lcc, self.cid, nSamples, trigger, timeout);
-            self.VPrint('done.\nReading data...');
+            self.vprint('Starting collect...');
+            llt.common.start_collect(self.lcc, self.cid, num_samples, trigger, timeout);
+            self.vprint('done.\nReading data...');
             
-            [rawData, nBytes] = self.lcc.DataReceiveUint16Values(self.cid, nSamples);
-            if nBytes ~= nSamples * 2
+            [raw_data, num_bytes] = self.lcc.data_receive_uint16_values(self.cid, num_samples);
+            if num_bytes ~= num_samples * 2
                 error('LtcControllerComm:HardwareError', 'Didn''t get all bytes.');
             end           
-            self.VPrint('done.\n');
+            self.vprint('done.\n');
             
-            data = Llt.Common.FixData(rawData, self.nBits, self.alignment, ...
-                self.isBipolar, isRandomized, isAlternateBit);
-            [varargout{1:nargout}] = Llt.Common.Scatter(data, self.nChannels);
+            data = llt.common.fix_data(raw_data, self.num_bits, self.alignment, ...
+                self.is_bipolar, is_randomized, is_alternate_bit);
+            [varargout{1:nargout}] = llt.common.scatter(data, self.num_channels);
         end
                
-        function SetSpiRegisters(self, registerValues)
-            if ~isempty(registerValues)
-                self.VPrint('Updating SPI registers...');
-                for i = 1:2:length(registerValues)
-                    self.lcc.SpiSendByteAtAddress(self.cid, registerValues(i), registerValues(i+1));
+        function set_spi_registers(self, register_values)
+            if ~isempty(register_values)
+                self.vprint('Updating SPI registers...');
+                for i = 1:2:length(register_values)
+                    self.lcc.spi_send_byte_at_address(self.cid, register_values(i), register_values(i+1));
                 end
-                self.VPrint('done.\n');
+                self.vprint('done.\n');
             end
             % The DC1371 needs to check for FPGA load after a change in the SPI registers
-            if ~self.lcc.FpgaGetIsLoaded(self.cid, self.fpgaLoad)
-                self.VPrint('Loading FPGA...');
-                self.lcc.FpgaLoadFile(self.cid, self.fpgaLoad);
-                self.VPrint('done.\n');
+            if ~self.lcc.fpga_get_is_loaded(self.cid, self.fpga_load)
+                self.vprint('Loading FPGA...');
+                self.lcc.fpga_load_file(self.cid, self.fpga_load);
+                self.vprint('done.\n');
             else
-                self.VPrint('FPGA already loaded\n');
+                self.vprint('FPGA already loaded\n');
             end
         end
         
-        function nBits = GetNBits(self)
-            nBits = self.nBits;
+        function num_bits = get_num_bits(self)
+            num_bits = self.num_bits;
         end
         
     end
     
     methods (Access = private)
         
-       function InitController(self, demoConfig, spiRegisterValues)
-            self.lcc.DataSetHighByteFirst(self.cid);
-            self.SetSpiRegisters(spiRegisterValues);
+       function init_controller(self, demo_config, spi_register_values)
+            self.lcc.data_set_high_byte_first(self.cid);
+            self.set_spi_registers(spi_register_values);
             % demo-board specific information needed by the DC1371
-            self.lcc.Dc1371SetDemoConfig(self.cid, demoConfig);
+            self.lcc.dc1371_set_demo_config(self.cid, demo_config);
         end
         
-        function VPrint(self, message)
-            if self.isVerbose
+        function vprint(self, message)
+            if self.is_verbose
                 fprintf(message);
             end
         end
     end
-    
 end
-

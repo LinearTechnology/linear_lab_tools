@@ -35,115 +35,115 @@ classdef Dc890
     
     properties (Access = protected)
         lcc;
-        nBits;
+        num_bits;
         alignment;
-        isBipolar;
-        bytesPerSample;
-        nChannels;
-        isVerbose;
+        is_bipolar;
+        bytes_per_sample;
+        num_channels;
+        is_verbose;
         cid;
     end
     
     methods 
-        function self = Dc890(lcc, dcNumber, fpgaLoad, nChannels, isPositiveClock, ...
-                nBits, alignment, isBipolar, spiRegValues, isVerbose)
-            if ~exist('spiRegValues', 'var'); spiRegValues = []; end;
-            if ~exist('isVerbose', 'var'); isVerbose = false; end
+        function self = Dc890(lcc, dc_number, fpga_load, num_channels, is_positive_clock, ...
+                num_bits, alignment, is_bipolar, spi_reg_values, is_verbose)
+            if ~exist('spi_reg_values', 'var'); spi_reg_values = []; end;
+            if ~exist('is_verbose', 'var'); is_verbose = false; end
             
             self.lcc = lcc;
-            self.nBits = nBits;
+            self.num_bits = num_bits;
             self.alignment = alignment;
-            self.isBipolar = isBipolar;
-            self.nChannels = nChannels;
-            self.isVerbose = self.isVerbose;
+            self.is_bipolar = is_bipolar;
+            self.num_channels = num_channels;
+            self.is_verbose = is_verbose;
             
             if alignment > 16
-                self.bytesPerSample = 4;
+                self.bytes_per_sample = 4;
             else
-                self.bytesPerSample = 2;
+                self.bytes_per_sample = 2;
             end
 
-            controllerInfo = Llt.Common.GetControllerInfoByEeeprom(lcc, ...
-                lcc.TYPE_DC890, dcNumber, lcc.DC890_EEPROM_SIZE, isVerbose);
-            self.cid = lcc.Init(controllerInfo);
+            controller_info = llt.common.get_controller_info_by_eeprom(lcc, ...
+                lcc.TYPE_DC890, dc_number, lcc.DC890_EEPROM_SIZE, is_verbose);
+            self.cid = lcc.init(controller_info);
             
-            isMultichannel = nChannels > 1;
-            self.InitController(fpgaLoad, isMultichannel, isPositiveClock);
+            is_multichannel = num_channels > 1;
+            self.init_controller(fpga_load, is_multichannel, is_positive_clock);
             
-            self.SetSpiRegisters(spiRegValues);
+            self.set_spi_registers(spi_reg_values);
         end
         
-        function varargout = Collect(self, nSamples, trigger, timeout, isRandomized, isAlternateBit)
+        function varargout = collect(self, num_samples, trigger, timeout, is_randomized, ...
+                is_alternate_bit)
             if ~exist('timeout', 'var'); timeout = 5; end
-            if ~exist('isRandomized', 'var'); isRandomized = false; end
-            if ~exist('isAlternateBit', 'var'); isAlternateBit = false; end
+            if ~exist('is_randomized', 'var'); is_randomized = false; end
+            if ~exist('is_alternate_bit', 'var'); is_alternate_bit = false; end
             
-            nSamples = nSamples * self.nChannels;
+            num_samples = num_samples * self.num_channels;
             
-            self.lcc.Dc890Flush(self.cid);
-            self.VPrint('Starting collect...');
-            Llt.Common.StartCollect(self.lcc, self.cid, nSamples, trigger, timeout);
-            self.VPrint('Done.\nReading data...');
-            self.lcc.Dc890Flush(self.cid);
+            self.lcc.dc890_flush(self.cid);
+            self.vprint('Starting collect...');
+            llt.common.start_collect(self.lcc, self.cid, num_samples, trigger, timeout);
+            self.vprint('Done.\nReading data...');
+            self.lcc.dc890_flush(self.cid);
             
-            if self.bytesPerSample == 2
-                [rawData, nBytes] = self.lcc.DataReceiveUint16Values(self.cid, nSamples);
-                if nBytes ~= nSamples * 2
+            if self.bytes_per_sample == 2
+                [raw_data, num_bytes] = self.lcc.data_receive_uint16_values(self.cid, num_samples);
+                if num_bytes ~= num_samples * 2
                     error('LtcControllerComm:HardwareError', 'Didn''t get all bytes.');
                 end
             else
-                [rawData, nBytes] = self.lcc.DataReceiveUint32Values(self.cid, nSamples);
-                if nBytes ~= nSamples * 4
+                [raw_data, num_bytes] = self.lcc.data_receive_uint32_values(self.cid, num_samples);
+                if num_bytes ~= num_samples * 4
                     error('LtcControllerComm:HardwareError', 'Didn''t get all bytes.');
                 end
             end
             
-            self.VPrint('Done.');
+            self.vprint('Done.');
             
-            data = self.FixData(rawData, isRandomized, isAlternateBit);
-            [varargout{1:nargout}] = Llt.Common.Scatter(data, self.nChannels);
+            data = self.fix_data(raw_data, is_randomized, is_alternate_bit);
+            [varargout{1:nargout}] = llt.common.scatter(data, self.num_channels);
         end
                
-        function SetSpiRegisters(self, registerValues)
-            if ~isempty(registerValues)
-                self.lcc.Dc890GpioSetByte(self.cid, hex2dec('f0'));
-                self.lcc.Dc890GpioSpiSetBits(self.cid, 3, 0, 1);
-                for i = 1:2:length(registerValues)
-                    self.lcc.SpiSendByteAtAddress(self.cid, registerValues(i), registerValues(i+1));
+        function set_spi_registers(self, register_values)
+            if ~isempty(register_values)
+                self.lcc.dc890_gpio_set_byte(self.cid, 240); % 0xF0
+                self.lcc.dc890_gpio_spi_set_bits(self.cid, 3, 0, 1);
+                for i = 1:2:length(register_values)
+                    self.lcc.spi_send_byte_at_address(self.cid, register_values(i), ...
+                        register_values(i+1));
                 end
-                self.lcc.Dc890GpioSetByte(self.cid, hex2dec('ff'));
+                self.lcc.dc890_gpio_set_byte(self.cid, 255); % 0xFF
             end
         end
         
-        function data = FixData(self, rawData, isRandomized, isAlternateBit)
-            data = Llt.Common.FixData(rawData, self.nBits, self.alignment, ...
-                self.isBipolar, isRandomized, isAlternateBit);
+        function data = fix_data(self, raw_data, is_randomized, is_alternate_bit)
+            data = llt.common.fix_data(raw_data, self.num_bits, self.alignment, ...
+                self.is_bipolar, is_randomized, is_alternate_bit);
         end
         
-        function nBits = GetNBits(self)
-            nBits = self.nBits;
+        function num_bits = get_num_bits(self)
+            num_bits = self.num_bits;
         end
     end
     
     methods (Access = private)
-        function InitController(self, fpgaLoad, isMultichannel, isPositiveClock)
-            if ~self.lcc.FpgaGetIsLoaded(self.cid, fpgaLoad)
-                self.VPrint('Loading FPGA...');
-                self.lcc.FpgaLoadFile(self.cid, fpgaLoad);
-                self.VPrint('done.\n');
+        function init_controller(self, fpga_load, is_multichannel, is_positive_clock)
+            if ~self.lcc.fpga_get_is_loaded(self.cid, fpga_load)
+                self.vprint('Loading FPGA...');
+                self.lcc.fpga_load_file(self.cid, fpga_load);
+                self.vprint('done.\n');
             else
-                self.VPrint('FPGA already loaded\n');
+                self.vprint('FPGA already loaded\n');
             end
-            self.lcc.DataSetHighByteFirst(self.cid);
-            self.lcc.DataSetCharacteristics(self.cid, isMultichannel, self.bytesPerSample, isPositiveClock);
+            self.lcc.data_set_high_byte_first(self.cid);
+            self.lcc.data_set_characteristics(self.cid, is_multichannel, self.bytes_per_sample, is_positive_clock);
         end
         
-        function VPrint(self, message)
-            if self.isVerbose
+        function vprint(self, message)
+            if self.is_verbose
                 fprintf(message);
             end
         end
     end
-    
 end
-

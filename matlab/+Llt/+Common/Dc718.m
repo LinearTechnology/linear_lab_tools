@@ -35,84 +35,85 @@ classdef Dc718
 
     properties (Access = private)
         lcc;
-        nBits;
+        num_bits;
         alignment;
-        isBipolar;
-        bytesPerSample;
-        isVerbose;
+        is_bipolar;
+        bytes_per_sample;
+        is_verbose;
         cid;
     end
     
     methods 
-        function self = Dc718(lcc, dcNumber, isPositiveClock, ...
-                nBits, alignment, isBipolar, isVerbose)
-            if ~exist('isVerbose', 'var'); isVerbose = false; end
+        function self = Dc718(lcc, dc_number, is_positive_clock, ...
+                num_bits, alignment, is_bipolar, is_verbose)
+            if ~exist('is_verbose', 'var'); is_verbose = false; end
             
             self.lcc = lcc;
-            self.nBits = nBits;
+            self.num_bits = num_bits;
             self.alignment = alignment;
-            self.isBipolar = isBipolar;
-            self.isVerbose = self.isVerbose;
+            self.is_bipolar = is_bipolar;
+            self.is_verbose = is_verbose;
             
             if alignment > 16
-                self.bytesPerSample = 3;
+                self.bytes_per_sample = 3;
             else
-                self.bytesPerSample = 2;
+                self.bytes_per_sample = 2;
             end
 
-            controllerInfo = Llt.Common.GetControllerInfoByEeeprom(lcc, ...
-                lcc.TYPE_DC718, dcNumber, lcc.DC718_EEPROM_SIZE, isVerbose);
-            self.cid = lcc.Init(controllerInfo);
+            controller_info = llt.common.get_controller_info_by_eeprom(lcc, ...
+                lcc.TYPE_DC718, dc_number, lcc.DC718_EEPROM_SIZE, is_verbose);
+            self.cid = lcc.init(controller_info);
             
-            lcc.DataSetHighByteFirst(self.cid);
-            lcc.DataSetCharacteristics(self.cid, false, self.bytesPerSample, isPositiveClock);
+            lcc.data_set_high_byte_first(self.cid);
+            lcc.data_set_characteristics(self.cid, false, self.bytes_per_sample, ...
+                is_positive_clock);
         end
         
-        function data = Collect(self, nSamples, trigger, timeout, isRandomized, isAlternateBit)
+        function data = collect(self, num_samples, trigger, timeout, is_randomized, ...
+                is_alternate_bit)
             if ~exist('timeout', 'var'); timeout = 5; end
-            if ~exist('isRandomized', 'var'); isRandomized = false; end
-            if ~exist('isAlternateBit', 'var'); isAlternateBit = false; end
+            if ~exist('is_randomized', 'var'); is_randomized = false; end
+            if ~exist('is_alternateBit', 'var'); is_alternate_bit = false; end
             
-            self.VPrint('Starting collect...');
-            Llt.Common.StartCollect(self.lcc, self.cid, nSamples, trigger, timeout);
-            self.VPrint('Done.\nReading data...');
+            self.vprint('Starting collect...');
+            llt.common.start_collect(self.lcc, self.cid, num_samples, trigger, timeout);
+            self.vprint('Done.\nReading data...');
             
-            if self.bytesPerSample == 2
-                [rawData, nBytes] = self.lcc.DataReceiveUint16Values(self.cid, nSamples);
-                if nBytes ~= nSamples * 2
+            if self.bytes_per_sample == 2
+                [raw_data, num_bytes] = self.lcc.data_receive_uint16_values(self.cid, num_samples);
+                if num_bytes ~= num_samples * 2
                     error('LtcControllerComm:HardwareError', 'Didn''t get all bytes.');
                 end
             else
-                rawData = self.Read3ByteValues(nSamples);
+                raw_data = self.read_3_byte_values(num_samples);
             end
             
-            self.VPrint('Done.');
+            self.vprint('Done.');
             
-            data = Llt.Common.FixData(rawData, self.nBits, self.alignment, ...
-                self.isBipolar, isRandomized, isAlternateBit);
+            data = llt.common.fix_data(raw_data, self.num_bits, self.alignment, ...
+                self.is_bipolar, is_randomized, is_alternate_bit);
         end
         
-        function nBits = GetNBits(self)
-            nBits = self.nBits;
+        function num_bits = get_num_bits(self)
+            num_bits = self.num_bits;
         end
     end
     methods (Access = private)
-        function data = Read3ByteValues(self, nSamples)
-            rawData = self.lcc.DataReceiveBytes(self.cid, nSamples * 3);
-            if length(rawData) ~= nSamples*3
+        function data = read_3_byte_values(self, num_samples)
+            raw_data = self.lcc.data_receive_bytes(self.cid, num_samples * 3);
+            if length(raw_data) ~= num_samples*3
                 error('LtcControllerComm:HardwareError', 'Didn''t get all bytes.');
             end
-            rawData = int32(reshape(rawData, 3, nSamples));
-            data = bitor(bitshift(rawData(1,:), 16), ...
-                bitor(bitshift(rawData(2,:), 8), rawData(3,:)));
+            raw_data = int32(reshape(raw_data, 3, num_samples));
+            data = bitor(bitshift(raw_data(1,:), 16), ...
+                bitor(bitshift(raw_data(2,:), 8), raw_data(3,:)));
         end
         
-        function VPrint(self, message)
-            if self.isVerbose
+        function vprint(self, message)
+            if self.is_verbose
                 fprintf(message);
             end
         end
     end
-    
 end
 
