@@ -1,4 +1,4 @@
-function varargout = Scatter(data, nChannels)
+function varargout = scatter(data, num_channels)
 % Distributes samples according to channel.
 %
 % Copyright (c) 2015, Linear Technology Corp.(LTC)
@@ -29,12 +29,12 @@ function varargout = Scatter(data, nChannels)
 % those of the authors and should not be interpreted as representing official
 % policies, either expressed or implied, of Linear Technology Corp.
 
-if mod(length(data), nChannels) ~= 0
+if mod(length(data), num_channels) ~= 0
     error('Scatter:BadNChannels', 'nChannels doesn''t divide data length');
 end
 
-channels = cell(1, nChannels);
-for i = 1:nChannels
-    channels{i} = data(i:nChannels:end);
+channels = cell(1, num_channels);
+for i = 1:num_channels
+    channels{i} = data(i:num_channels:end);
 end
 varargout(1:nargout) = channels(1:nargout);
