@@ -40,6 +40,7 @@ import llt.common.constants as consts
 import llt.common.functions as funcs
 import llt.common.exceptions as errs
 import math
+import time
 
 def ltc2000_dc2085(data, spi_reg, verbose=False):
     with Dc2085(spi_reg, verbose) as controller:
@@ -54,6 +55,7 @@ class Dc2085():
     _FPGA_ID_REG = 0x00
     _FPGA_CONTROL_REG = 0x01
     _FPGA_STATUS_REG = 0x02
+    _FPGA_DAC_PD = 0x03
     
     def __init__(self, spi_reg_values, verbose = False):
         self.vprint = funcs.make_vprint(verbose)
@@ -69,6 +71,7 @@ class Dc2085():
         del vtype
         del value
         del traceback
+        self.controller.close()
         self.controller.cleanup()
 
     def _connect(self):
@@ -96,8 +99,9 @@ class Dc2085():
         self.vprint("FPGA Load ID: 0x{:04X}".format(id))
         if self.is_xilinx_board and id != 0x20:
             raise(errs.HardwareError('Wrong FPGA Load'))
-        elif id != 0x1A:
+        elif not self.is_xilinx_board and id != 0x1A:
             raise(errs.HardwareError('Wrong FPGA Load'))
+        self.controller.hs_fpga_write_data_at_address(Dc2085._FPGA_DAC_PD, 0x01)
         self.set_spi_registers(spi_reg_values)
 
     def set_spi_registers(self, register_values):
@@ -125,6 +129,7 @@ class Dc2085():
         if (self.is_xilinx_board and pll_status != 0x06) or ((not self.is_xilinx_board) and pll_status != 0x47):
             raise(errs.HardwareError('FPGA PLL status was bad'))
         self.vprint("PLL status is okay")
+        time.sleep(0.1)
         self.controller.hs_fpga_write_data_at_address(Dc2085._FPGA_CONTROL_REG, num_samples_reg_value)
         if self.is_xilinx_board:
             self.controller.data_set_low_byte_first()
@@ -132,7 +137,7 @@ class Dc2085():
             self.controller.data_set_high_byte_first()
         
         self.controller.hs_set_bit_mode(consts.HS_BIT_MODE_FIFO)
-        self.vprint("Sendind data")
+        self.vprint("Sending data")
         num_bytes_sent = self.controller.data_send_uint16_values(data)
         self.controller.hs_set_bit_mode(consts.HS_BIT_MODE_MPSSE)
         if num_bytes_sent != num_samples * 2:
@@ -141,11 +146,11 @@ class Dc2085():
 
 if __name__ == '__main__':
     num_cycles = 800  # Number of sine wave cycles over the entire data record
-    total_samples = 65536*4 
+    total_samples = 65536 
     data = total_samples * [0] 
 
     for i in range(0, total_samples):
-        data[i] = int(32000 * math.sin(num_cycles*2*math.pi*i/total_samples))
+        data[i] = int(32000 * math.sin((num_cycles*2*math.pi*i)/total_samples))
 
     spi_reg = [0x01, 0x00, 0x02, 0x02, 0x03, 0x07, 0x04, 0x0B, 0x05, 0x00, 0x07, 0x00, 
                0x08, 0x08, 0x09, 0x20, 0x18, 0x00, 0x19, 0x00, 0x1E, 0x00]
