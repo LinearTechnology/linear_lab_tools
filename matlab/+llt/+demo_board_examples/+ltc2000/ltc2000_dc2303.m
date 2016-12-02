@@ -1,4 +1,4 @@
-% DC2085 / LTC2000 Interface Example
+% DC2303 / LTC2000 Interface Example
 % LTC2000: 16-/14-/11- Bit 2.5 Gsps DAcs
 %
 % This program demonstrates how to communicate with the LTC2000 demo board 
@@ -17,8 +17,8 @@
 % http://www.linear.com/product/LTC2000
 %  
 % REVISION HISTORY
-% $Revision$
-% $Date$
+% $Revision: 6110 $
+% $Date: 2016-11-30 13:34:08 -0800 (Wed, 30 Nov 2016) $
 %
 % Copyright (c) 2015, Linear Technology Corp.(LTC)
 % All rights reserved.
@@ -51,7 +51,7 @@
 % 	ADD THE ABSOLUTE PATH TO "linear_lab_tools\matlab" FOLDER BEFORE RUNNING THE SCRIPT.
 %   RUN "mex -setup" TO SET UP COMPILER AND CHOSE THE OPTION "Lcc-win32 C".
 
-function ltc2000_dc2085(data, spi_regs, is_verbose)
+function ltc2000_dc2303(data, spi_regs, is_verbose)
     if nargin == 0
         data = make_sample_data();
         spi_regs = [];
@@ -62,7 +62,7 @@ function ltc2000_dc2085(data, spi_regs, is_verbose)
     end
     
     lcc = llt.common.LtcControllerComm();
-    ltc2000 = llt.demo_board_examples.ltc2000.Ltc2000(lcc, false, spi_regs, is_verbose);
+    ltc2000 = llt.demo_board_examples.ltc2000.Ltc2000(lcc, true, spi_regs, is_verbose);
     ltc2000.send_data(data);    
 end
 
