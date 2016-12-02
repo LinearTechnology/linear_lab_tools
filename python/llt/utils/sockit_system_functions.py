@@ -85,6 +85,7 @@ CIC_RATE_BASE = 0x60
 
 
 def sockit_capture(client, recordlength, trigger = 0, timeout = 0.0):
+    dmy = False #Consider adding this as an argument.
 #    print("Starting Capture system...\n");
     client.reg_write(NUM_SAMPLES_BASE, recordlength)
     client.reg_write(CONTROL_BASE, CW_START)
@@ -130,7 +131,7 @@ def sockit_capture(client, recordlength, trigger = 0, timeout = 0.0):
         print("Reading " + str(numblocks) + " 1M blocks")
         for blocknum in range (0, numblocks): # Read out remaining blocks
             print("Reading out block " + str(blocknum))
-            block[(blocknum * blocklength):((blocknum + 1) * blocklength)] = client.mem_read_block(read_start_address, blocklength)
+            block[(blocknum * blocklength):((blocknum + 1) * blocklength)] = client.mem_read_block(read_start_address, blocklength, dummy = dmy)
             read_start_address += (4 * blocklength)
 
     else: # Length less than 1M
@@ -152,8 +153,13 @@ def sockit_ramp_test(client, recordlength, trigger = 0, timeout = 0.0):
 # First, capture pattern data
     cap_start_time = time.time();
     ready = client.reg_read(DATA_READY_BASE) # Check data ready signal
+    
     while((ready & 0x01) == 1):
-        ready = client.reg_read(DATA_READY_BASE) # Check data ready signal
+        time.sleep(0.5) ########## VERY IMPORTANT - It's NOT a good idea to keep hammering on a
+        ########################## port in a tight busy loop - it (may) leave the port in a
+        ########################## "half-open" state too many times...
+        ready = client.reg_read(DATA_READY_BASE) # Check data ready signal    
+
     cap_time = time.time() - cap_start_time
     print('ready signal is %d' % ready)
     print("After " + str(cap_time) + " Seconds...")
@@ -203,6 +209,13 @@ def sockit_ramp_test(client, recordlength, trigger = 0, timeout = 0.0):
 # 32-bit values
 def sockit_uns32_to_signed32(data):
     for i in range(0, len(data)):    
+        if(data[i] > 0x7FFFFFFF):
+            data[i] -= 0xFFFFFFFF
+    return data
+    
+def sockit_ltc2500_to_signed32(data):
+    for i in range(0, len(data)):
+        data[i] = (data[i] & 0x7FFFFFFF) << 1
         if(data[i] > 0x7FFFFFFF):
             data[i] -= 0xFFFFFFFF
     return data
