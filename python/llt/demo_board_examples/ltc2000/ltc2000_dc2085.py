@@ -42,11 +42,11 @@ import llt.common.exceptions as errs
 import math
 import time
 
-def ltc2000_dc2085(data, spi_reg, verbose=False):
-    with Dc2085(spi_reg, verbose) as controller:
+def ltc2000_dc2085(data, spi_regs, verbose=False):
+    with Ltc2000(is_xilinx=False, spi_regs, verbose) as controller:
         controller.send_data(data)
 
-class Dc2085():
+class Ltc2000():
     _SIZE_DICTIONARY = {16*1024: 0x00, 32*1024: 0x10, 64*1024: 0x20, 128*1024: 0x30,
                         256*1024: 0x40, 512*1024: 0x50, 1024*1024: 0x60, 2*1024*1024: 0x70,
                         4*1024*1024: 0x80, 8*1024*1024: 0x90, 16*1024*1024: 0xA0,
@@ -57,7 +57,17 @@ class Dc2085():
     _FPGA_STATUS_REG = 0x02
     _FPGA_DAC_PD = 0x03
     
-    def __init__(self, spi_reg_values, verbose = False):
+    def __init__(self, is_xilinx, spi_reg_values, verbose = False):
+        if is_xilinx:
+            self.expected_description = "LTC Communication Interface"
+            self.expected_id = 0x20
+            self.expected_max_val = 2 * 1024 * 1024
+            self.range_string = "16K to 2M"
+        else:
+            self.expected_description = "LTC2000"
+            self.expected_id = 0x1A
+            self.expected_max_val = 512 * 1024 * 1024
+            self.range_string = "16K to 512M"
         self.vprint = funcs.make_vprint(verbose)
         self._connect()
         self._init_controller(spi_reg_values)
@@ -79,29 +89,19 @@ class Dc2085():
         self.vprint("Looking for Controller")
         for info in comm.list_controllers(consts.TYPE_HIGH_SPEED):
             description = info.get_description()
-            if description ==  'LTC Communication Interface':
-                self.is_xilinx_board = True
-                self.controller = comm.Controller(info)
-                self.vprint("Found Xilinx Setup")
-                return
-            elif 'LTC2000' in description: 
-                self.is_xilinx_board = False
-                self.controller = comm.Controller(info)
-                self.vprint("Found Altera Setup")
-                return
+            if self.expected_description in description:
+                self.vprint("Found a possible setup")
         raise(errs.HardwareError('Could not find a compatible device'))
     
     def _init_controller(self, spi_reg_values):
         self.controller.hs_set_bit_mode(consts.HS_BIT_MODE_MPSSE)
         self.controller.hs_fpga_toggle_reset()
         # Read FPGA ID register
-        id = self.controller.hs_fpga_read_data_at_address(Dc2085._FPGA_ID_REG)
+        id = self.controller.hs_fpga_read_data_at_address(Ltc2000._FPGA_ID_REG)
         self.vprint("FPGA Load ID: 0x{:04X}".format(id))
-        if self.is_xilinx_board and id != 0x20:
+        if self.expected_id != id:
             raise(errs.HardwareError('Wrong FPGA Load'))
-        elif not self.is_xilinx_board and id != 0x1A:
-            raise(errs.HardwareError('Wrong FPGA Load'))
-        self.controller.hs_fpga_write_data_at_address(Dc2085._FPGA_DAC_PD, 0x01)
+        self.controller.hs_fpga_write_data_at_address(Ltc2000._FPGA_DAC_PD, 0x01)
         self.set_spi_registers(spi_reg_values)
 
     def set_spi_registers(self, register_values):
@@ -111,26 +111,19 @@ class Dc2085():
                 self.controller.spi_send_byte_at_address(register_values[x], register_values[x+1])
 
     def send_data(self, data):
-        num_samples = len(data)
-        if self.is_xilinx_board:
-            max_val = 2 * 1024 * 1024
-            range_string = "16K to 2M"
-        else:
-            max_val = 512 * 1024 * 1024
-            range_string = "16K to 512M"
-            
-        num_samples_reg_value = Dc2085._SIZE_DICTIONARY.get(num_samples)
-        
-        if num_samples > max_val or num_samples_reg_value is None:
-            raise(errs.NotSupportedError("Data Length Not Supported (Must be a power of 2 between " + range_string))
+        num_samples = len(data)                  
+        num_samples_reg_value = Ltc2000._SIZE_DICTIONARY.get(num_samples)
+        if num_samples > self.expected_max_val or num_samples_reg_value is None:
+            raise(errs.NotSupportedError(
+                "Data Length Not Supported (Must be a power of 2 between " + self.range_string))
         
         self.vprint("Reading PLL status")
-        pll_status = self.controller.hs_fpga_read_data_at_address(Dc2085._FPGA_STATUS_REG)        
+        pll_status = self.controller.hs_fpga_read_data_at_address(Ltc2000._FPGA_STATUS_REG)        
         if (self.is_xilinx_board and pll_status != 0x06) or ((not self.is_xilinx_board) and pll_status != 0x47):
             raise(errs.HardwareError('FPGA PLL status was bad'))
         self.vprint("PLL status is okay")
         time.sleep(0.1)
-        self.controller.hs_fpga_write_data_at_address(Dc2085._FPGA_CONTROL_REG, num_samples_reg_value)
+        self.controller.hs_fpga_write_data_at_address(Ltc2000._FPGA_CONTROL_REG, num_samples_reg_value)
         if self.is_xilinx_board:
             self.controller.data_set_low_byte_first()
         else:
@@ -152,8 +145,8 @@ if __name__ == '__main__':
     for i in range(0, total_samples):
         data[i] = int(32000 * math.sin((num_cycles*2*math.pi*i)/total_samples))
 
-    spi_reg = [0x01, 0x00, 0x02, 0x02, 0x03, 0x07, 0x04, 0x0B, 0x05, 0x00, 0x07, 0x00, 
+    spi_regs = [0x01, 0x00, 0x02, 0x02, 0x03, 0x07, 0x04, 0x0B, 0x05, 0x00, 0x07, 0x00, 
                0x08, 0x08, 0x09, 0x20, 0x18, 0x00, 0x19, 0x00, 0x1E, 0x00]
     # to use this function in your own code you would typically do
     # ltc2000_dc2085(data, spi_reg)
-    ltc2000_dc2085(data, spi_reg, verbose=True)
+    ltc2000_dc2085(data, spi_regs, verbose=True)
