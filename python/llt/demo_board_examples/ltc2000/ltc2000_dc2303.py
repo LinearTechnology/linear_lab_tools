@@ -58,19 +58,30 @@ import math
 from llt.demo_board_examples.ltc2000.ltc2000_dc2085 import Ltc2000
 
 def ltc2000_dc2303(data, spi_regs, verbose=False):
-    with Ltc2000(is_xilinx=True, spi_regs, verbose) as controller:
+    with Ltc2000(True, spi_regs, verbose) as controller:
         controller.send_data(data)
         
 if __name__ == '__main__':
     num_cycles = 800  # Number of sine wave cycles over the entire data record
-    total_samples = 65536 
+    total_samples = 64 * 1024 
     data = total_samples * [0] 
 
     for i in range(0, total_samples):
         data[i] = int(32000 * math.sin((num_cycles*2*math.pi*i)/total_samples))
 
-    spi_regs = [0x01, 0x00, 0x02, 0x02, 0x03, 0x07, 0x04, 0x0B, 0x05, 0x00, 0x07, 0x00,
-               0x08, 0x08, 0x09, 0x20, 0x18, 0x00, 0x19, 0x00, 0x1E, 0x00]
+    spi_regs = [ # addr, value
+                   0x01, 0x00, 
+                   0x02, 0x02, 
+                   0x03, 0x07, 
+                   0x04, 0x0B, 
+                   0x05, 0x00, 
+                   0x07, 0x00,
+                   0x08, 0x08, 
+                   0x09, 0x20, 
+                   0x18, 0x00, 
+                   0x19, 0x00,
+                   0x1E, 0x00
+               ]
     # to use this function in your own code you would typically do
     # ltc2000_dc303(data, spi_reg)
     ltc2000_dc2303(data, spi_regs, verbose=True)

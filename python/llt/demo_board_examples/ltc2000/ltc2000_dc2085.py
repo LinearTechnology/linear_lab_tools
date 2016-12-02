@@ -43,7 +43,7 @@ import math
 import time
 
 def ltc2000_dc2085(data, spi_regs, verbose=False):
-    with Ltc2000(is_xilinx=False, spi_regs, verbose) as controller:
+    with Ltc2000(False, spi_regs, verbose) as controller:
         controller.send_data(data)
 
 class Ltc2000():
@@ -61,13 +61,17 @@ class Ltc2000():
         if is_xilinx:
             self.expected_description = "LTC Communication Interface"
             self.expected_id = 0x20
+            self.expected_pll_status = 0x06
             self.expected_max_val = 2 * 1024 * 1024
             self.range_string = "16K to 2M"
+            self.is_little_endian = True;
         else:
             self.expected_description = "LTC2000"
             self.expected_id = 0x1A
+            self.expected_pll_status = 0x47
             self.expected_max_val = 512 * 1024 * 1024
             self.range_string = "16K to 512M"
+            self.is_little_endian = False;
         self.vprint = funcs.make_vprint(verbose)
         self._connect()
         self._init_controller(spi_reg_values)
@@ -91,6 +95,8 @@ class Ltc2000():
             description = info.get_description()
             if self.expected_description in description:
                 self.vprint("Found a possible setup")
+                self.controller = comm.Controller(info)
+                return
         raise(errs.HardwareError('Could not find a compatible device'))
     
     def _init_controller(self, spi_reg_values):
@@ -119,12 +125,12 @@ class Ltc2000():
         
         self.vprint("Reading PLL status")
         pll_status = self.controller.hs_fpga_read_data_at_address(Ltc2000._FPGA_STATUS_REG)        
-        if (self.is_xilinx_board and pll_status != 0x06) or ((not self.is_xilinx_board) and pll_status != 0x47):
+        if self.expected_pll_status != pll_status:
             raise(errs.HardwareError('FPGA PLL status was bad'))
         self.vprint("PLL status is okay")
         time.sleep(0.1)
         self.controller.hs_fpga_write_data_at_address(Ltc2000._FPGA_CONTROL_REG, num_samples_reg_value)
-        if self.is_xilinx_board:
+        if self.is_little_endian:
             self.controller.data_set_low_byte_first()
         else:
             self.controller.data_set_high_byte_first()
@@ -139,14 +145,25 @@ class Ltc2000():
 
 if __name__ == '__main__':
     num_cycles = 800  # Number of sine wave cycles over the entire data record
-    total_samples = 65536 
+    total_samples = 64 * 1024 
     data = total_samples * [0] 
 
     for i in range(0, total_samples):
         data[i] = int(32000 * math.sin((num_cycles*2*math.pi*i)/total_samples))
 
-    spi_regs = [0x01, 0x00, 0x02, 0x02, 0x03, 0x07, 0x04, 0x0B, 0x05, 0x00, 0x07, 0x00, 
-               0x08, 0x08, 0x09, 0x20, 0x18, 0x00, 0x19, 0x00, 0x1E, 0x00]
+    spi_regs = [ # addr, value
+                   0x01, 0x00, 
+                   0x02, 0x02, 
+                   0x03, 0x07, 
+                   0x04, 0x0B, 
+                   0x05, 0x00, 
+                   0x07, 0x00,
+                   0x08, 0x08, 
+                   0x09, 0x20, 
+                   0x18, 0x00, 
+                   0x19, 0x00,
+                   0x1E, 0x00
+               ]
     # to use this function in your own code you would typically do
     # ltc2000_dc2085(data, spi_reg)
     ltc2000_dc2085(data, spi_regs, verbose=True)
