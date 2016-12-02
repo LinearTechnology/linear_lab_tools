@@ -111,7 +111,7 @@ class Ltc2000():
         self.set_spi_registers(spi_reg_values)
 
     def set_spi_registers(self, register_values):
-        self.vprint("Configuring ADC over SPI")
+        self.vprint("Configuring DAC over SPI")
         if register_values != []:
             for x in range(0,len(register_values), 2):
                 self.controller.spi_send_byte_at_address(register_values[x], register_values[x+1])
