@@ -414,24 +414,26 @@ class MemClient(object):
         print 'Files transfer done!'
         return val
         
-    def send_dc590(self, DC590_command, dummy = False):
+    def send_dc590(self, i2c_output_base_reg, i2c_input_base_reg, DC590_command, dummy = False):
         size = len(DC590_command)
         command = MemClient.FILE_TRANSFER | MemClient.I2C_DC590
-        length = 8 + size
+        length = 16 + size
         if (dummy == True):
             command = command | MemClient.DUMMY_FUNC   
-        sock_msg = struct.pack('II', command, length)
+        sock_msg = struct.pack('IIII', command, length, i2c_output_base_reg, i2c_input_base_reg)
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.connect((self.host, self.port))
         s.sendall(sock_msg)
-
-        # Transfer file_path and the file
         s.send(str(DC590_command))
-        response = recvall(s, 12)
-        (response_command, response_length, val) = struct.unpack('III', response)
+        
+        response = recvall(s, 8)
+        (response_command, response_length) = struct.unpack('II', response)
+        ret = s.recv(100)
         s.close()
-        print 'DC590 command executed!'
-        return val
+        print 'DC590 command executed!',
+        print ret
+        return ret
+
         
         
     def send_json(self, command_line, dummy = False):

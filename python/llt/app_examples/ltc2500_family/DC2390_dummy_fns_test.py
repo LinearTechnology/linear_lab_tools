@@ -6,7 +6,7 @@
 
 import sys
 
-from llt.common.mem_func_client2 import MemClient
+from llt.common.mem_func_client_2 import MemClient
 
 # Get the host from the command line argument. Can be numeric or hostname.
 #HOST = sys.argv.pop() if len(sys.argv) == 2 else '127.0.0.1'
@@ -111,7 +111,7 @@ command = ""
 while(command != "0"):
     command = raw_input("Enter a string: ")   
     if(command != "0"):
-        client.send_dc590(command)
+        client.send_dc590(0x120, 0x140, command)
 
 #testing file transfer
 file_to_read = "C:/Users/MSajikumar/Documents/DC2390_ABCD_123F.rbf"
