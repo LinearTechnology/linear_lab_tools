@@ -58,6 +58,7 @@ import numpy as np
 from time import sleep
 from matplotlib import pyplot as plt
 import DC2390_functions as DC2390
+from llt.utils.sockit_system_functions import *
 
 from LTC2758 import *
 from llt.common.mem_func_client_2 import MemClient
@@ -181,7 +182,7 @@ def inl_test(client, meter_inst, num_pts, daca_start, daca_end, dacb_start,
         time.sleep(0.01)
         
         # Capture the data
-        data = DC2390.uns32_to_signed32(DC2390.capture(client, NUM_SAMPLES, trigger = 0, timeout = maxtime))
+        data = sockit_ltc2500_to_signed32(DC2390.capture(client, NUM_SAMPLES, trigger = 0, timeout = maxtime))
         
         hp_data.append(v_hp)
         adc_data.append(np.average(data))
@@ -294,7 +295,7 @@ def sampling_rate_sweep(client, meter_inst, dac_vref ,v_min, v_max, file_name):
         time.sleep(0.1)
         capture_time = 1.0 + (float(NUM_SAMPLES) / float(sweep_rate[i]))
         # Capture the data
-        data = DC2390.uns32_to_signed32(DC2390.capture(client, NUM_SAMPLES, trigger = 0, timeout = capture_time))
+        data = sockit_ltc2500_to_signed32(DC2390.capture(client, NUM_SAMPLES, trigger = 0, timeout = capture_time))
         
         hp_data1.append(v_hp)
         data1.append(np.average(data))
@@ -323,7 +324,7 @@ def sampling_rate_sweep(client, meter_inst, dac_vref ,v_min, v_max, file_name):
         time.sleep(0.1)
         
         # Capture the data
-        data = DC2390.uns32_to_signed32(DC2390.capture(client, NUM_SAMPLES, trigger = 0, timeout = capture_time))
+        data = sockit_ltc2500_to_signed32(DC2390.capture(client, NUM_SAMPLES, trigger = 0, timeout = capture_time))
         
         hp_data2.append(v_hp)
         data2.append(np.average(data))

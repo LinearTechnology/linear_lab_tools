@@ -44,7 +44,8 @@ import sys # os, socket, ctypes, struct
 import DC2390_functions as DC2390
 import math
 
-from llt.utils.mem_func_client import MemClient
+
+from llt.common.mem_func_client_2 import MemClient
 
 ###############################################################################
 # Constants

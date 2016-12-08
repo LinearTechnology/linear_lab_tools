@@ -43,7 +43,7 @@ FOS_GAIN = 0x0002
 FOS_CLOCK = 4
 
 SYSTEM_CLOCK_DIVIDER = 199
-LUT_NCO_DIVIDER = 0xFFFF # 0xFFFF for divide by 1
+LUT_NCO_DIVIDER = 0xFFFD # 0xFFFF for divide by 1
 NUM_SAMPLES = 8192 #131072 #8192
 
 DEADBEEF = -559038737 # For now, need to re-justify.
@@ -133,8 +133,8 @@ NUM_SAMPLES_SAV = NUM_SAMPLES
 NUM_SAMPLES = NUM_SAMPLES#2**21
 # Capture a sine wave
 client.reg_write(DATAPATH_CONTROL_BASE, datapath_word_sines) # Sweep NCO!!!
-data = sockit_uns32_to_signed32(sockit_capture(client, NUM_SAMPLES, trigger = 0, timeout = 0.0))
-#data = sockit_uns32_to_signed32(sockit_capture(client, 2**21, trigger = 0, timeout = 0.0))
+data = sockit_ltc2500_to_signed32(sockit_capture(client, NUM_SAMPLES, trigger = 0, timeout = 0.0))
+#data = sockit_ltc2500_to_signed32(sockit_capture(client, 2**21, trigger = 0, timeout = 0.0))
 rms = np.std(data)
 print("Standard Deviation: " + str(rms))
 data_nodc = data - np.average(data)
@@ -164,7 +164,7 @@ save_for_pscope("pscope_DC2390.adc",24 ,True, NUM_SAMPLES, "2390", "2500", data_
 
 # Run through lookup table continuously
 client.reg_write(DATAPATH_CONTROL_BASE, datapath_word_lut_continuous)
-data = sockit_uns32_to_signed32(sockit_capture(client, NUM_SAMPLES, trigger = 0, timeout = 0.0))
+data = sockit_ltc2500_to_signed32(sockit_capture(client, NUM_SAMPLES, trigger = 0, timeout = 0.0))
 fftdata = np.abs(np.fft.fft(data)) / len(data)
 fftdb = 20*np.log10(fftdata / 2.0**31)
 plt.figure(pltnum)
@@ -177,7 +177,7 @@ plt.plot(fftdb)
 
 # Run through lookup table once (pulse test)
 client.reg_write(DATAPATH_CONTROL_BASE, datapath_word_lut_run_once)
-data = sockit_uns32_to_signed32(sockit_capture(client, NUM_SAMPLES, trigger = 0, timeout = 0.0))
+data = sockit_ltc2500_to_signed32(sockit_capture(client, NUM_SAMPLES, trigger = 0, timeout = 0.0))
 fftdata = np.abs(np.fft.fft(data)) / len(data)
 fftdb = 20*np.log10(fftdata / 2.0**31)
 plt.figure(pltnum)
@@ -190,7 +190,7 @@ plt.plot(fftdb)
 
 # Use DAC A data as lookup table address (Distortion correction mode)
 client.reg_write(DATAPATH_CONTROL_BASE, datapath_word_dist_correction)
-data = sockit_uns32_to_signed32(sockit_capture(client, NUM_SAMPLES, trigger = 0, timeout = 0.0))
+data = sockit_ltc2500_to_signed32(sockit_capture(client, NUM_SAMPLES, trigger = 0, timeout = 0.0))
 plt.figure(pltnum)
 pltnum +=1
 plt.title("NCO as address to LUT")
@@ -198,7 +198,7 @@ plt.plot(data)
 
 #PID controller
 client.reg_write(DATAPATH_CONTROL_BASE, datapath_word_pid)
-data = sockit_uns32_to_signed32(sockit_capture(client, NUM_SAMPLES, trigger = 0, timeout = 0.0))
+data = sockit_ltc2500_to_signed32(sockit_capture(client, NUM_SAMPLES, trigger = 0, timeout = 0.0))
 plt.figure(pltnum)
 plt.title("PID controller")
 plt.plot(data)
@@ -211,7 +211,7 @@ client.reg_write(PID_KI_BASE, PID_KI)
 client.reg_write(PID_KD_BASE, PID_KD)
 
 client.reg_write(DATAPATH_CONTROL_BASE, datapath_word_pid)
-data = sockit_uns32_to_signed32(sockit_capture(client, NUM_SAMPLES, trigger = 0, timeout = 0.0))
+data = sockit_ltc2500_to_signed32(sockit_capture(client, NUM_SAMPLES, trigger = 0, timeout = 0.0))
 plt.figure(pltnum)
 pltnum +=1
 plt.plot(data)
@@ -249,7 +249,7 @@ for i in range(0, 22):
 cDataType = ctypes.c_uint * 65536
 cData     = cDataType()
 
-test_LUT_write = False
+test_LUT_write = True
 
 if(test_LUT_write == True):
     print("Writing downward ramp to LUT!")

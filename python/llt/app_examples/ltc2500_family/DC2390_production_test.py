@@ -123,7 +123,7 @@ sleep(0.1)
 client.reg_write(TUNING_WORD_BASE, tuning_word) # Sweep NCO!!!
 # Capture a sine wave
 client.reg_write(DATAPATH_CONTROL_BASE, DC2390_FIFO_ADCA_NYQ) # First capture ADC A
-data = sockit_uns32_to_signed32(sockit_capture(client, NUM_SAMPLES, trigger = 0, timeout = 0.0))
+data = sockit_ltc2500_to_signed32(sockit_capture(client, NUM_SAMPLES, trigger = 0, timeout = 0.0))
 data_nodc = data - np.average(data)
 #data_nodc *= np.blackman(NUM_SAMPLES)
 fftdata = np.abs(np.fft.fft(data_nodc)) / NUM_SAMPLES
@@ -138,7 +138,7 @@ plt.plot(fftdb)
 data_for_pscopeA = data_nodc / 256.0
 
 client.reg_write(DATAPATH_CONTROL_BASE, DC2390_FIFO_ADCB_NYQ) # First capture ADC B
-data = sockit_uns32_to_signed32(sockit_capture(client, NUM_SAMPLES, trigger = 0, timeout = 0.0))
+data = sockit_ltc2500_to_signed32(sockit_capture(client, NUM_SAMPLES, trigger = 0, timeout = 0.0))
 data_nodc = data - np.average(data)
 #data_nodc *= np.blackman(NUM_SAMPLES)
 fftdata = np.abs(np.fft.fft(data_nodc)) / NUM_SAMPLES
