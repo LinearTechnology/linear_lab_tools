@@ -27,6 +27,7 @@ classdef Ltc2000
                 self.expected_pll_status = 6; % 0x06
                 self.expected_max_val = 2 * 1024 * 1024;
                 self.range_string = '16K to 2M';
+                self.is_little_endian = true;
                 sizes = 2.^(0:7) * 16*1024;
                 reg_values = uint8(bitshift(0:7, 4));
             else
@@ -35,6 +36,7 @@ classdef Ltc2000
                 self.expected_pll_status = 71; % 0x47
                 self.expected_max_val = 512 * 1024 * 1024;
                 self.range_string = '16K to 512M';
+                self.is_little_endian = false;
                 sizes = 2.^(0:15) * 16*1024;
                 reg_values = uint8(bitshift(0:15, 4));
             end
