@@ -430,8 +430,10 @@ class MemClient(object):
         (response_command, response_length) = struct.unpack('II', response)
         ret = s.recv(100)
         s.close()
-        print 'DC590 command executed!',
+        print 'DC590 command executed!'
+        print 'String returned: ',
         print ret
+        print '\n'
         return ret
 
         
