@@ -109,7 +109,7 @@ print values
 print 'Testing DC590 commands'
 command = ""
 while(command != "0"):
-    command = raw_input("Enter a string: ")   
+    command = raw_input("\nEnter a string: ")   
     if(command != "0"):
         client.send_dc590(0x120, 0x140, command)
 

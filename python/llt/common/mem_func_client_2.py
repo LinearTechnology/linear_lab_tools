@@ -433,7 +433,6 @@ class MemClient(object):
         print 'DC590 command executed!'
         print 'String returned: ',
         print ret
-        print '\n'
         return ret
 
         
