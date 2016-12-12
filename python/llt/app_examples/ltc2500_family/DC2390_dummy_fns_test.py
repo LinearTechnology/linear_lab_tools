@@ -111,7 +111,8 @@ command = ""
 while(command != "0"):
     command = raw_input("\nEnter a string: ")   
     if(command != "0"):
-        client.send_dc590(0x120, 0x140, command)
+        rawstring = client.send_dc590(0x120, 0x140, command)
+        print("Raw data, no interpretation: " + str(rawstring))
 
 #testing file transfer
 file_to_read = "C:/Users/MSajikumar/Documents/DC2390_ABCD_123F.rbf"
