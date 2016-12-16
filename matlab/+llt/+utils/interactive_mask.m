@@ -1,183 +1,183 @@
-function [maskA, maskB] = InteractiveMask(titleStr, data, nMasks, defaultMaskA, defaultMaskB)
-   if ~exist('nMasks', 'var') || isempty(nMasks); nMasks = 1; end
-   if ~exist('defaultMaskA', 'var') || isempty(defaultMaskA) 
-       defaultMaskA = zeros(size(data));
+function [mask_a, mask_b] = interactive_mask(title_str, data, num_masks, default_mask_a, default_mask_b)
+   if ~exist('num_masks', 'var') || isempty(num_masks); num_masks = 1; end
+   if ~exist('default_mask_a', 'var') || isempty(default_mask_a) 
+       default_mask_a = zeros(size(data));
    end
-   if ~exist('defaultMaskB', 'var') || isempty(defaultMaskA) 
-       defaultMaskB = [];
+   if ~exist('default_mask_b', 'var') || isempty(default_mask_b) 
+       default_mask_b = [];
    end
-   handles = InitMask(titleStr, data, nMasks, defaultMaskA, defaultMaskB);
+   handles = init_mask(title_str, data, num_masks, default_mask_a, default_mask_b);
    uiwait(handles.figure);
    if ishandle(handles.figure)
-       userData = get(handles.figure, 'UserData');
+       user_data = get(handles.figure, 'UserData');
        close(handles.figure);
-       maskA = userData.maskA;
-       maskB = userData.maskB;
+       mask_a = user_data.mask_a;
+       mask_b = user_data.mask_b;
    else
-       maskA = defaultMaskA;
-       maskB = defaultMaskB;
+       mask_a = default_mask_a;
+       mask_b = default_mask_b;
    end
 end
 
-function handles = InitMask(titleStr, data, nMasks, defaultMaskA, defaultMaskB)
-    if nMasks == 1 && ~isempty(defaultMaskB)
-        autoMask = defaultMaskB;
-        defaultMaskB = [];
+function handles = init_mask(title_str, data, num_masks, default_mask_a, default_mask_b)
+    if num_masks == 1 && ~isempty(default_mask_b)
+        auto_mask = default_mask_b;
+        default_mask_b = [];
     else
-        autoMask = [];
+        auto_mask = [];
     end
-    if nMasks == 2 && isempty(defaultMaskB)
-        defaultMaskB = zeros(size(data));
+    if num_masks == 2 && isempty(default_mask_b)
+        default_mask_b = zeros(size(data));
     end
     handles.figure = figure;
     handles.axis = axes('Units', 'pixels');
     set(handles.figure, 'Units', 'pixels');
-    handles.modeGroup = uibuttongroup(handles.figure, 'Units', 'pixels');
-    handles.setRadio = uicontrol(handles.modeGroup, 'Style', 'radioButton', 'String', 'Set', ...
+    handles.mode_group = uibuttongroup(handles.figure, 'Units', 'pixels');
+    handles.set_radio = uicontrol(handles.mode_group, 'Style', 'radioButton', 'String', 'Set', ...
         'Units', 'pixels');
-    handles.clearRadio = uicontrol(handles.modeGroup, 'Style', 'radioButton', 'String', 'Clear', ...
+    handles.clear_radio = uicontrol(handles.mode_group, 'Style', 'radioButton', 'String', 'Clear', ...
         'Units', 'pixels');
-    handles.resetButton = uicontrol(handles.figure, 'Style', 'pushButton', 'String', 'Reset', ...
+    handles.reset_button = uicontrol(handles.figure, 'Style', 'pushButton', 'String', 'Reset', ...
         'Units', 'pixels');
-    handles.doneButton = uicontrol(handles.figure, 'Style', 'pushButton', 'String', 'Done', ...
+    handles.done_button = uicontrol(handles.figure, 'Style', 'pushButton', 'String', 'Done', ...
         'Units', 'pixels');
-    if isempty(autoMask)
-        handles.autoButton = -1;
+    if isempty(auto_mask)
+        handles.auto_button = -1;
     else
-        handles.autoButton = uicontrol(handles.figure, 'Style', 'pushButton', 'String', 'Auto', ...
+        handles.auto_button = uicontrol(handles.figure, 'Style', 'pushButton', 'String', 'Auto', ...
             'Units', 'pixels');
     end
-    if nMasks == 2
-        handles.maskGroup = uibuttongroup('Units', 'Pixels');
-        handles.maskARadio = uicontrol(handles.maskGroup, 'Style', 'radioButton', 'String', 'Mask A', ...
+    if num_masks == 2
+        handles.mask_group = uibuttongroup('Units', 'Pixels');
+        handles.mask_a_radio = uicontrol(handles.mask_group, 'Style', 'radioButton', 'String', 'Mask A', ...
             'Units', 'pixels');
-        handles.maskBRadio = uicontrol(handles.maskGroup, 'Style', 'radioButton', 'String', 'Mask B', ...
+        handles.mask_b_radio = uicontrol(handles.mask_group, 'Style', 'radioButton', 'String', 'Mask B', ...
             'Units', 'pixels');
-        if isempty(defaultMaskB)
-            defaultMaskB = false(size(defaultMaskA));
+        if isempty(default_mask_b)
+            default_mask_b = false(size(default_mask_a));
         end
     else
-        handles.maskGroup = -1;
-        handles.maskARadio = -1;
-        handles.maskBRadio = -1;
+        handles.mask_group = -1;
+        handles.mask_a_radio = -1;
+        handles.mask_b_radio = -1;
     end
-    InitialSize(handles);
-    PlotWithMasks(titleStr, data, defaultMaskA, defaultMaskB);
+    initial_size(handles);
+    plot_with_masks(title_str, data, default_mask_a, default_mask_b);
     
-    userData.title = titleStr;
-    userData.data = data;
-    userData.defaultMaskA = defaultMaskA;
-    userData.defaultMaskB = defaultMaskB;
-    userData.autoMask = autoMask;
-    userData.maskA = defaultMaskA;
-    userData.maskB = defaultMaskB;
-    userData.currentMask = 1;
-    userData.xPos = [];
-    userData.isClear = false;
-    userData.patch = patch([0, 0, 0, 0], [0, 0, 0, 0], 'c', 'FaceAlpha', .3, 'EdgeAlpha', 0);
-    set(handles.figure, 'UserData', userData);
-        set(handles.figure, 'ResizeFcn', @(o,e) Resize(handles));
-    set(handles.figure, 'WindowButtonDownFcn', @(o,e) OnButtonDown(handles));
-    set(handles.figure, 'WindowButtonMotionFcn', @(o,e) OnMouseMove(handles));
-    set(handles.figure, 'WindowButtonUpFcn', @(o,e) OnButtonUp(handles));
-    set(handles.doneButton, 'Callback', @(o, e) uiresume(handles.figure));
-    set(handles.resetButton, 'Callback', @(o, e) OnReset(handles));
-    if ~isempty(autoMask)
-        set(handles.autoButton, 'Callback', @(o, e) OnAutoMask(handles));
+    user_data.title = title_str;
+    user_data.data = data;
+    user_data.default_mask_a = default_mask_a;
+    user_data.default_mask_b = default_mask_b;
+    user_data.auto_mask = auto_mask;
+    user_data.mask_a = default_mask_a;
+    user_data.mask_b = default_mask_b;
+    user_data.current_mask = 1;
+    user_data.x_pos = [];
+    user_data.is_clear = false;
+    user_data.patch = patch([0, 0, 0, 0], [0, 0, 0, 0], 'c', 'FaceAlpha', .3, 'EdgeAlpha', 0);
+    set(handles.figure, 'UserData', user_data);
+        set(handles.figure, 'ResizeFcn', @(o,e) resize(handles));
+    set(handles.figure, 'WindowButtonDownFcn', @(o,e) on_button_down(handles));
+    set(handles.figure, 'WindowButtonMotionFcn', @(o,e) on_mouth_move(handles));
+    set(handles.figure, 'WindowButtonUpFcn', @(o,e) on_button_up(handles));
+    set(handles.done_button, 'Callback', @(o, e) uiresume(handles.figure));
+    set(handles.reset_button, 'Callback', @(o, e) on_reset(handles));
+    if ~isempty(auto_mask)
+        set(handles.auto_button, 'Callback', @(o, e) on_auto_mask(handles));
     end
-    radioCallback = 'SelectionChangedFcn';
+    radio_callback = 'SelectionChangedFcn';
     if verLessThan('matlab', '8.4')
-        radioCallback = 'SelectionChangeFcn';
+        radio_callback = 'SelectionChangeFcn';
     end
-    set(handles.modeGroup, radioCallback, @(o, e) OnModeChange(handles, e));
-    if nMasks == 2
-        set(handles.maskGroup, radioCallback, @(o, e) OnMaskChange(handles, e));
+    set(handles.mode_group, radio_callback, @(o, e) on_mode_change(handles, e));
+    if num_masks == 2
+        set(handles.mask_group, radio_callback, @(o, e) on_mask_change(handles, e));
     end
 end
 
-function InitialSize(handles)
-    modeRadioPos = get(handles.clearRadio, 'Position');
-    buttonPos = get(handles.resetButton, 'Position');
-    set(handles.resetButton, 'Position', [10, 10, buttonPos(3), buttonPos(4)]);
-    set(handles.setRadio, 'Position', [5, 10 + modeRadioPos(4), modeRadioPos(3), modeRadioPos(4)]);
-    set(handles.clearRadio, 'Position', [5, 5, modeRadioPos(3), modeRadioPos(4)]);
-    set(handles.modeGroup, 'Position', [10, 15 + buttonPos(4), 10 + modeRadioPos(3), 15 + 2 * modeRadioPos(4)]);
-    if handles.autoButton ~= -1
-        autoPos = get(handles.autoButton, 'Position');
-        set(handles.autoButton, 'Position', [35 + modeRadioPos(3), 10, autoPos(3), autoPos(4)]);
+function initial_size(handles)
+    mode_radio_pos = get(handles.clear_radio, 'Position');
+    button_pos = get(handles.reset_button, 'Position');
+    set(handles.reset_button, 'Position', [10, 10, button_pos(3), button_pos(4)]);
+    set(handles.set_radio, 'Position', [5, 10 + mode_radio_pos(4), mode_radio_pos(3), mode_radio_pos(4)]);
+    set(handles.clear_radio, 'Position', [5, 5, mode_radio_pos(3), mode_radio_pos(4)]);
+    set(handles.mode_group, 'Position', [10, 15 + button_pos(4), 10 + mode_radio_pos(3), 15 + 2 * mode_radio_pos(4)]);
+    if handles.auto_button ~= -1
+        auto_pos = get(handles.auto_button, 'Position');
+        set(handles.auto_button, 'Position', [35 + mode_radio_pos(3), 10, auto_pos(3), auto_pos(4)]);
     end
-    if handles.maskGroup ~= -1
-        maskRadioPos = get(handles.maskARadio, 'Position');
-        set(handles.maskARadio, 'Position', [5, 10 + maskRadioPos(4), maskRadioPos(3), maskRadioPos(4)]);
-        set(handles.maskBRadio, 'Position', [5, 5, maskRadioPos(3), maskRadioPos(4)]);
-        set(handles.maskGroup, 'Position', [35 + modeRadioPos(3), 15 + buttonPos(4), ...
-            10 + maskRadioPos(3), 15 + 2 * maskRadioPos(4)]);
+    if handles.mask_group ~= -1
+        mask_radio_pos = get(handles.mask_a_radio, 'Position');
+        set(handles.mask_a_radio, 'Position', [5, 10 + mask_radio_pos(4), mask_radio_pos(3), mask_radio_pos(4)]);
+        set(handles.mask_b_radio, 'Position', [5, 5, mask_radio_pos(3), mask_radio_pos(4)]);
+        set(handles.mask_group, 'Position', [35 + mode_radio_pos(3), 15 + button_pos(4), ...
+            10 + mask_radio_pos(3), 15 + 2 * mask_radio_pos(4)]);
     end
-    Resize(handles)
+    resize(handles)
 end
     
-function Resize(handles)
-    figurePos = get(handles.figure, 'Position');
-    buttonPos = get(handles.resetButton, 'Position');
-    modeRadioPos = get(handles.clearRadio, 'Position');
-    y = 60 + buttonPos(4) + 2 * modeRadioPos(4);
-    set(handles.axis, 'Position', [30, y, figurePos(3) - 50, figurePos(4) - y - 30]);
-    set(handles.doneButton, 'Position', [figurePos(3) - buttonPos(3) - 10, 10, ...
-    buttonPos(3), buttonPos(4)]);
+function resize(handles)
+    figure_pos = get(handles.figure, 'Position');
+    button_pos = get(handles.reset_button, 'Position');
+    mode_radio_pos = get(handles.clear_radio, 'Position');
+    y = 60 + button_pos(4) + 2 * mode_radio_pos(4);
+    set(handles.axis, 'Position', [30, y, figure_pos(3) - 50, figure_pos(4) - y - 30]);
+    set(handles.done_button, 'Position', [figure_pos(3) - button_pos(3) - 10, 10, ...
+    button_pos(3), button_pos(4)]);
 end
 
-function [dataCells, starts] = SplitData(data, mask)
+function [data_cells, starts] = split_data(data, mask)
     indices = find(mask);
     if isempty(indices)
-        dataCells = [];
+        data_cells = [];
         starts = [];
         return;
     end
     starts = indices(2:end);
     starts = [indices(1), starts(indices(2:end) - indices(1:(end-1)) > 1)];
-    nStarts = length(starts);
-    dataCells = cell(1, nStarts);
-    for i = 1:(nStarts - 1)
+    num_starts = length(starts);
+    data_cells = cell(1, num_starts);
+    for i = 1:(num_starts - 1)
         indices = starts(i) + find(mask(starts(i):(starts(i+1)-1))) - 1;
         if indices(end) ~= length(data)
             indices = [indices, indices(end) + 1]; %#ok only sometime grows and we don't know the size
         end
-        dataCells{i} = data(indices);
+        data_cells{i} = data(indices);
     end
     indices = starts(end) + find(mask(starts(end):end)) - 1;
     if indices(end) ~= length(data)
         indices = [indices, indices(end) + 1];
     end
-    dataCells{nStarts} = data(indices);
+    data_cells{num_starts} = data(indices);
 end
 
-function PlotWithMasks(titleStr, data, maskA, maskB)   
+function plot_with_masks(titleStr, data, mask_a, mask_b)   
     % A mask
-    [aData, aStarts] = SplitData(data, maskA);
+    [a_data, a_starts] = split_data(data, mask_a);
     
-    if ~isempty(maskB)
+    if ~isempty(mask_b)
         % B mask not counting any A mask
-        [bData, bStarts] = SplitData(data, maskB & (~maskA));
+        [b_data, b_starts] = split_data(data, mask_b & (~mask_a));
         % no mask
-        [uData, uStarts] = SplitData(data, ~(maskA | maskB));
+        [u_data, u_starts] = split_data(data, ~(mask_a | mask_b));
     else
         % empty B mask
-        bData = [];
-        bStarts = [];
+        b_data = [];
+        b_starts = [];
         % no mask
-        [uData, uStarts] = SplitData(data, ~maskA);
+        [u_data, u_starts] = split_data(data, ~mask_a);
     end
     
-    starts = [uStarts, aStarts, bStarts];
-    fusedData = [uData, aData, bData];
-    colors = [repmat('k', 1, length(uStarts)), repmat('c', 1, length(aStarts)), ...
-        repmat('m', 1, length(bStarts))];
+    starts = [u_starts, a_starts, b_starts];
+    fused_data = [u_data, a_data, b_data];
+    colors = [repmat('k', 1, length(u_starts)), repmat('c', 1, length(a_starts)), ...
+        repmat('m', 1, length(b_starts))];
     [starts, idx] = sort(starts);
-    fusedData = fusedData(idx);
+    fused_data = fused_data(idx);
     colors = colors(idx);
     for i = 1:length(starts)
-        n = length(fusedData{i});
-        plot(starts(i) - 1 + (1:n), fusedData{i}, colors(i));
+        n = length(fused_data{i});
+        plot(starts(i) - 1 + (1:n), fused_data{i}, colors(i));
         hold on
     end
     hold off
@@ -189,101 +189,101 @@ function PlotWithMasks(titleStr, data, maskA, maskB)
     title(titleStr);
 end
 
-function OnButtonDown(handles)
-userData = get(handles.figure, 'UserData');
-point = get(handles.axis,'CurrentPoint');
-userData.xPos = point(1);
-userData.mouseDown = true;
-set(handles.figure, 'UserData', userData);
+function on_button_down(handles)
+    user_data = get(handles.figure, 'UserData');
+    point = get(handles.axis,'CurrentPoint');
+    user_data.x_pos = point(1);
+    user_data.mouseDown = true;
+    set(handles.figure, 'UserData', user_data);
 end
 
-function OnMouseMove(handles)
-    userData = get(handles.figure, 'UserData');
-    if ~isempty(userData.xPos)
-        xLim = get(handles.axis, 'XLim');
-        yLim = get(handles.axis, 'YLim');
+function on_mouth_move(handles)
+    user_data = get(handles.figure, 'UserData');
+    if ~isempty(user_data.x_pos)
+        x_lim = get(handles.axis, 'XLim');
+        y_lim = get(handles.axis, 'YLim');
         point = get(handles.axis, 'CurrentPoint');
-        newPos = max(xLim(1), min(xLim(2), point(1)));
-        if userData.isClear
-            if userData.currentMask == 1
+        new_pos = max(x_lim(1), min(x_lim(2), point(1)));
+        if user_data.is_clear
+            if user_data.current_mask == 1
                 color = 'b';
             else
                 color = 'r';
             end
         else
-            if userData.currentMask == 1
+            if user_data.current_mask == 1
                 color = 'c';
             else
                 color = 'm';
             end
         end
-        set(userData.patch, 'XData', [userData.xPos, userData.xPos, newPos, newPos], ...
-            'YData', [yLim(1), yLim(2), yLim(2), yLim(1)], 'FaceColor', color);
+        set(user_data.patch, 'XData', [user_data.x_pos, user_data.x_pos, new_pos, new_pos], ...
+            'YData', [y_lim(1), y_lim(2), y_lim(2), y_lim(1)], 'FaceColor', color);
     end
 end
 
-function OnButtonUp(handles)
-    userData = get(handles.figure, 'UserData');
-    if ~isempty(userData.xPos)
+function on_button_up(handles)
+    user_data = get(handles.figure, 'UserData');
+    if ~isempty(user_data.x_pos)
         point = get(handles.axis, 'CurrentPoint');
-        xLim = get(handles.axis, 'XLim');
-        newPos = max(xLim(1), min(xLim(2), point(1)));
-        n = length(userData.defaultMaskA);
-        newMask = false(1, n);
+        x_lim = get(handles.axis, 'XLim');
+        new_pos = max(x_lim(1), min(x_lim(2), point(1)));
+        n = length(user_data.default_mask_a);
+        new_mask = false(1, n);
         indices = 1:n;
-        newMask(indices >= userData.xPos & indices <= newPos) = true;
-        if userData.isClear
-            if userData.currentMask == 1
-                userData.maskA = userData.maskA & (~newMask);
+        new_mask(indices >= user_data.x_pos & indices <= new_pos) = true;
+        if user_data.is_clear
+            if user_data.current_mask == 1
+                user_data.mask_a = user_data.mask_a & (~new_mask);
             else
-                userData.maskB = userData.maskB & (~newMask);
+                user_data.mask_b = user_data.mask_b & (~new_mask);
             end
         else
-            if userData.currentMask == 1
-                userData.maskA = userData.maskA | newMask;
+            if user_data.current_mask == 1
+                user_data.mask_a = user_data.mask_a | new_mask;
             else
-                userData.maskB = userData.maskB | newMask;
+                user_data.mask_b = user_data.mask_b | new_mask;
             end
         end
         
-        PlotWithMasks(userData.title, userData.data, userData.maskA, userData.maskB);
+        plot_with_masks(user_data.title, user_data.data, user_data.mask_a, user_data.mask_b);
         
-        userData.xPos = [];
+        user_data.x_pos = [];
     end
-    userData.patch = patch([0, 0, 0, 0], [0, 0, 0, 0], 'c', 'FaceAlpha', .3, 'EdgeAlpha', 0);
-    set(handles.figure, 'UserData', userData);
+    user_data.patch = patch([0, 0, 0, 0], [0, 0, 0, 0], 'c', 'FaceAlpha', .3, 'EdgeAlpha', 0);
+    set(handles.figure, 'UserData', user_data);
 end
 
-function OnModeChange(handles, e)
-    userData = get(handles.figure, 'UserData');
-    userData.isClear = strcmp(get(e.NewValue, 'String'), 'Clear');
-    set(handles.figure, 'UserData', userData);
+function on_mode_change(handles, e)
+    user_data = get(handles.figure, 'UserData');
+    user_data.is_clear = strcmp(get(e.NewValue, 'String'), 'Clear');
+    set(handles.figure, 'UserData', user_data);
 end
 
-function OnMaskChange(handles, e)
-    userData = get(handles.figure, 'UserData');
+function on_mask_change(handles, e)
+    user_data = get(handles.figure, 'UserData');
     if strcmp(get(e.NewValue, 'String'), 'Mask A')
-        userData.currentMask = 1;
+        user_data.current_mask = 1;
     else
-        userData.currentMask = 2;
+        user_data.current_mask = 2;
     end
-    set(handles.figure, 'UserData', userData);
+    set(handles.figure, 'UserData', user_data);
 end
 
-function OnReset(handles)
-    userData = get(handles.figure, 'UserData');
-    userData.maskA = userData.defaultMaskA;
-    userData.maskB = userData.defaultMaskB;
-    PlotWithMasks(userData.title, userData.data, userData.maskA, userData.maskB);
-    userData.patch = patch([0, 0, 0, 0], [0, 0, 0, 0], 'c', 'FaceAlpha', .3, 'EdgeAlpha', 0);
-    set(handles.figure, 'UserData', userData);
+function on_reset(handles)
+    user_data = get(handles.figure, 'UserData');
+    user_data.mask_a = user_data.default_mask_a;
+    user_data.mask_b = user_data.default_mask_b;
+    plot_with_masks(user_data.title, user_data.data, user_data.mask_a, user_data.mask_b);
+    user_data.patch = patch([0, 0, 0, 0], [0, 0, 0, 0], 'c', 'FaceAlpha', .3, 'EdgeAlpha', 0);
+    set(handles.figure, 'UserData', user_data);
 end
 
-function OnAutoMask(handles)
-    userData = get(handles.figure, 'UserData');
-    userData.maskA = userData.autoMask;
-    PlotWithMasks(userData.title, userData.data, userData.maskA, userData.maskB);
-    userData.patch = patch([0, 0, 0, 0], [0, 0, 0, 0], 'c', 'FaceAlpha', .3, 'EdgeAlpha', 0);
-    set(handles.figure, 'UserData', userData);
+function on_auto_mask(handles)
+    user_data = get(handles.figure, 'UserData');
+    user_data.mask_a = user_data.auto_mask;
+    plot_with_masks(user_data.title, user_data.data, user_data.mask_a, user_data.mask_b);
+    user_data.patch = patch([0, 0, 0, 0], [0, 0, 0, 0], 'c', 'FaceAlpha', .3, 'EdgeAlpha', 0);
+    set(handles.figure, 'UserData', user_data);
 end
         
