@@ -48,7 +48,10 @@ of the authors and should not be interpreted as representing official policies,
 either expressed or implied, of Linear Technology Corp.
 '''
 import llt.common.ltc_controller_comm as comm
-from ltc2123_functions import *
+import llt.common.constants as consts
+import llt.common.exceptions as errs
+import ltc2123_functions as funcs
+import time
 import numpy as np
 
 
@@ -87,7 +90,7 @@ dumpdata = 32 # Set to 1 and select an option below to dump to STDOUT:
 
 dump_pscope_data = 1 # Writes data to "pscope_data.csv", append to header to open in PScope
 
-n = NumSamp64K # Set number of samples here.
+n = funcs.NumSamp32K # Set number of samples here.
 
 #Configure other ADC modes here to override ADC data / PRBS selection
 forcepattern = 0    #Don't override ADC data / PRBS selection
@@ -106,12 +109,12 @@ if verbose:
 # Open communication to the demo board
 descriptions = ['LTC UFO Board', 'LTC Communication Interface', 'LTC2000 Demoboard', 'LTC2000, DC2085A-A']
 device_info = None
-for info in comm.list_controllers(comm.TYPE_HIGH_SPEED):
+for info in comm.list_controllers(consts.TYPE_HIGH_SPEED):
     if info.get_description() in descriptions:
         device_info = info
         break
 if device_info is None:
-    raise(comm.HardwareError('Could not find a compatible device'))
+    raise(errs.HardwareError('Could not find a compatible device'))
 
 while((runs < 1 or continuous == True) and runs_with_errors < 100000):
     runs += 1
@@ -128,7 +131,7 @@ while((runs < 1 or continuous == True) and runs_with_errors < 100000):
     ################################################
     
     with comm.Controller(device_info) as device:
-        device.hs_set_bit_mode(comm.HS_BIT_MODE_MPSSE)
+        device.hs_set_bit_mode(consts.HS_BIT_MODE_MPSSE)
         if do_reset:
             device.hs_fpga_toggle_reset()
         ################################################
@@ -136,17 +139,17 @@ while((runs < 1 or continuous == True) and runs_with_errors < 100000):
         # Check ID and Clock Status register
         ################################################
 
-        id = device.hs_fpga_read_data_at_address(ID_REG) # Read FPGA ID register
+        id = device.hs_fpga_read_data_at_address(funcs.ID_REG) # Read FPGA ID register
         if(verbose != 0):
-            bitfile_id_warning(bitfile_id, id)            
+            funcs.bitfile_id_warning(bitfile_id, id)            
             
             
             print "Dumping readable FPGA registers"
-            data = device.hs_fpga_read_data_at_address(CAPTURE_STATUS_REG)
+            data = device.hs_fpga_read_data_at_address(funcs.CAPTURE_STATUS_REG)
             print "Register 4 (capture status): 0x{:04X}".format(data)
-            data = device.hs_fpga_read_data_at_address(CLOCK_STATUS_REG)
+            data = device.hs_fpga_read_data_at_address(funcs.CLOCK_STATUS_REG)
             print "Register 6   (Clock status): 0x{:04X}".format(data)
-            sleep(sleeptime)
+            time.sleep(sleeptime)
 
         ################################################
         # Configuration Flow Step 9, 10: Configure ADC
@@ -155,9 +158,9 @@ while((runs < 1 or continuous == True) and runs_with_errors < 100000):
             if(verbose != 0):
                 print "Configuring ADC over SPI:"
             if(patterncheck != 0):
-                load_ltc212x(device, 0, verbose, did, bid, LIU, K, modes, 0, 0x04)
+                funcs.load_ltc212x(device, 0, verbose, did, bid, LIU, K, modes, 0, 0x04)
             else:
-                load_ltc212x(device, 0, verbose, did, bid, LIU, K, modes, 0, forcepattern)
+                funcs.load_ltc212x(device, 0, verbose, did, bid, LIU, K, modes, 0, forcepattern)
                 
 
         ################################################
@@ -166,30 +169,30 @@ while((runs < 1 or continuous == True) and runs_with_errors < 100000):
         if(initialize_core == 1):
             if(verbose != 0):
                 print "Configuring JESD204B core!!"
-            write_jesd204b_reg(device, 0x08, 0x00, 0x00, 0x00, 0x01)  #Enable ILA
-            write_jesd204b_reg(device, 0x0C, 0x00, 0x00, 0x00, 0x00)  #Scrambling - 0 to disable, 1 to enable
-            write_jesd204b_reg(device, 0x10, 0x00, 0x00, 0x00, 0x01)  # Only respond to first SYSREF (Subclass 1 only)
-            write_jesd204b_reg(device, 0x18, 0x00, 0x00, 0x00, 0x00)  # Normal operation (no test modes enabled)
-            write_jesd204b_reg(device, 0x20, 0x00, 0x00, 0x00, 0x01)  # 2 octets per frame
-            write_jesd204b_reg(device, 0x24, 0x00, 0x00, 0x00, K-1)   # Frames per multiframe, 1 to 32 for V6 core
-            write_jesd204b_reg(device, 0x28, 0x00, 0x00, 0x00, LIU-1) # Lanes in use - program with N-1
-            write_jesd204b_reg(device, 0x2C, 0x00, 0x00, 0x00, 0x00)  # Subclass 0
-            write_jesd204b_reg(device, 0x30, 0x00, 0x00, 0x00, 0x00)  # RX buffer delay = 0
-            write_jesd204b_reg(device, 0x34, 0x00, 0x00, 0x00, 0x00)  # Disable error counters, error reporting by SYNC~
-            write_jesd204b_reg(device, 0x04, 0x00, 0x00, 0x00, 0x01)  # Reset core
+            funcs.write_jesd204b_reg(device, 0x08, 0x00, 0x00, 0x00, 0x01)  #Enable ILA
+            funcs.write_jesd204b_reg(device, 0x0C, 0x00, 0x00, 0x00, 0x00)  #Scrambling - 0 to disable, 1 to enable
+            funcs.write_jesd204b_reg(device, 0x10, 0x00, 0x00, 0x00, 0x01)  # Only respond to first SYSREF (Subclass 1 only)
+            funcs.write_jesd204b_reg(device, 0x18, 0x00, 0x00, 0x00, 0x00)  # Normal operation (no test modes enabled)
+            funcs.write_jesd204b_reg(device, 0x20, 0x00, 0x00, 0x00, 0x01)  # 2 octets per frame
+            funcs.write_jesd204b_reg(device, 0x24, 0x00, 0x00, 0x00, K-1)   # Frames per multiframe, 1 to 32 for V6 core
+            funcs.write_jesd204b_reg(device, 0x28, 0x00, 0x00, 0x00, LIU-1) # Lanes in use - program with N-1
+            funcs.write_jesd204b_reg(device, 0x30, 0x00, 0x00, 0x00, 0x00)  # RX buffer delay = 0
+            funcs.write_jesd204b_reg(device, 0x34, 0x00, 0x00, 0x00, 0x00)  # Disable error counters, error reporting by SYNC~
+            funcs.write_jesd204b_reg(device, 0x2C, 0x00, 0x00, 0x00, 0x00)  # Subclass 0
+            funcs.write_jesd204b_reg(device, 0x04, 0x00, 0x00, 0x00, 0x01)  # Reset core
 
-        data = device.hs_fpga_read_data_at_address(CLOCK_STATUS_REG)
+        data = device.hs_fpga_read_data_at_address(funcs.CLOCK_STATUS_REG)
         print "Double-checking clock status after JESD204B configuration:"
         print "Register 6   (Clock status): 0x{:04X}".format(data)
 
         if(verbose != 0):
             print "Capturing data and resetting..."
 
-        data, data_ch0, data_ch1, nSamps_per_channel, syncErr = capture2(device, n, dumpdata, dump_pscope_data, verbose)
+        data, data_ch0, data_ch1, nSamps_per_channel, syncErr = funcs.capture2(device, n, dumpdata, dump_pscope_data, verbose)
 
         if(patterncheck !=0):
-            errorcount = pattern_checker(data_ch0, nSamps_per_channel, dumppattern)
-            errorcount += pattern_checker(data_ch1, nSamps_per_channel, dumppattern)
+            errorcount = funcs.pattern_checker(data_ch0, nSamps_per_channel, dumppattern)
+            errorcount += funcs.pattern_checker(data_ch1, nSamps_per_channel, dumppattern)
 
         if(errorcount != 0):
             outfile = open("LTC2123_python_error_log.txt", "a")
@@ -212,9 +215,9 @@ while((runs < 1 or continuous == True) and runs_with_errors < 100000):
 
 # Read back 
         if(verbose != 0):
-            read_xilinx_core_config(device, verbose = True)
-            read_xilinx_core_ilas(device, verbose = True, lane=0)
-            read_xilinx_core_ilas(device, verbose = True, lane=1)
+            funcs.read_xilinx_core_config(device, verbose = True)
+            funcs.read_xilinx_core_ilas(device, verbose = True, lane=0)
+            funcs.read_xilinx_core_ilas(device, verbose = True, lane=1)
 
 
 

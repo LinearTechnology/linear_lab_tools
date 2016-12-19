@@ -43,10 +43,8 @@ of the authors and should not be interpreted as representing official policies,
 either expressed or implied, of Linear Technology Corp.
 '''
 
-import llt.common.ltc_controller_comm as comm
-
+import llt.common.constants as consts
 import time
-
 from time import sleep
 
 sleeptime = 0.1
@@ -112,7 +110,7 @@ NumSamp128K = NumSamp(0xA0, 128 * 1024)
 
 
 def reset_fpga(device):
-    device.hs_set_bit_mode(comm.HS_BIT_MODE_MPSSE)
+    device.hs_set_bit_mode(consts.HS_BIT_MODE_MPSSE)
     device.hs_fpga_toggle_reset()
     time.sleep(.01)
 
@@ -170,7 +168,7 @@ def next_pbrs(data):
     return next_pbrs
 
 def dump_ADC_registers(device):
-    device.hs_set_bit_mode(comm.HS_BIT_MODE_MPSSE)
+    device.hs_set_bit_mode(consts.HS_BIT_MODE_MPSSE)
     print "LTC2124 Register Dump: " 
     print "Register 1: 0x{:02X}".format(device.spi_receive_byte_at_address(0x81))
     print "Register 2: 0x{:02X}".format(device.spi_receive_byte_at_address(0x82))
@@ -186,7 +184,7 @@ def dump_ADC_registers(device):
 def load_ltc212x(device, cs_control=0, verbose=0, did=0xEF, bid=0x00, lanes=2, K=10, modes=0x00, subclass=1, pattern=0x00):
     if(verbose != 0):
         print "Configuring ADCs over SPI:"
-    device.hs_set_bit_mode(comm.HS_BIT_MODE_MPSSE)
+    device.hs_set_bit_mode(consts.HS_BIT_MODE_MPSSE)
 #ADC config, points CS line at appropriate device
     device.hs_fpga_write_data_at_address(SPI_CONFIG_REG, cs_control)
 #    device.spi_send_byte_at_address(0x00, 0x01) # reset dut
@@ -205,10 +203,10 @@ def load_ltc212x(device, cs_control=0, verbose=0, did=0xEF, bid=0x00, lanes=2, K
         dump_ADC_registers(device)
 
 def capture2(device, n, dumpdata, dump_pscope_data, verbose):
-    device.hs_set_bit_mode(comm.HS_BIT_MODE_MPSSE)
+    device.hs_set_bit_mode(consts.HS_BIT_MODE_MPSSE)
     dec = 0
 
-    device.hs_fpga_write_data_at_address(CAPTURE_CONFIG_REG, n.MemSize | 0x08) # Both Channels active
+    device.hs_fpga_write_data_at_address(CAPTURE_CONFIG_REG, ((n.MemSize | 0x08) & 0xFF)) # Both Channels active
 
     device.hs_fpga_write_data_at_address(CAPTURE_RESET_REG, 0x01)  #Reset
     device.hs_fpga_write_data_at_address(CAPTURE_CONTROL_REG, 0x01)  #Start!!
@@ -222,10 +220,10 @@ def capture2(device, n, dumpdata, dump_pscope_data, verbose):
 
     #sleep(sleeptime)
     device.data_set_low_byte_first() #Set endian-ness
-    device.hs_set_bit_mode(comm.HS_BIT_MODE_FIFO)
+    device.hs_set_bit_mode(consts.HS_BIT_MODE_FIFO)
     sleep(0.1)
     nSampsRead, data = device.data_receive_uint16_values(end = (n.BuffSize + 100))
-    device.hs_set_bit_mode(comm.HS_BIT_MODE_MPSSE)
+    device.hs_set_bit_mode(consts.HS_BIT_MODE_MPSSE)
 
     sleep(sleeptime)
 
@@ -300,7 +298,7 @@ def capture4(device, n, dumpdata, dump_pscope_data, verbose):
     #device.data_set_high_byte_first()
 
 # Step 29
-    device.hs_set_bit_mode(comm.HS_BIT_MODE_FIFO)
+    device.hs_set_bit_mode(consts.HS_BIT_MODE_FIFO)
     sleep(0.1)
 # Step 30
     throwaway = 3
@@ -309,13 +307,13 @@ def capture4(device, n, dumpdata, dump_pscope_data, verbose):
     if(throwaway != 0):
         device.data_receive_bytes(end = throwaway)
 # Step 31 
-    device.hs_set_bit_mode(comm.HS_BIT_MODE_MPSSE)
+    device.hs_set_bit_mode(consts.HS_BIT_MODE_MPSSE)
     if(verbose != 0):
         print "Read out " + str(nSampsRead) + " samples for CH0, 1"
 
 # Okay, now get CH2, CH3 data...
 
-    device.hs_set_bit_mode(comm.HS_BIT_MODE_MPSSE)
+    device.hs_set_bit_mode(consts.HS_BIT_MODE_MPSSE)
     sleep(0.1)
 # Step 32
     device.hs_fpga_write_data_at_address(CAPTURE_RESET_REG, 0x01)   #Reset
@@ -332,14 +330,14 @@ def capture4(device, n, dumpdata, dump_pscope_data, verbose):
         print "Reading capture status, should be 0xF1 (CH0, CH1, CH2, CH3 valid, Capture  IS done, data not fetched)"
         print "And it is... 0x{:04X}".format(capturestat)
 # Step 36
-    device.hs_set_bit_mode(comm.HS_BIT_MODE_FIFO)
+    device.hs_set_bit_mode(consts.HS_BIT_MODE_FIFO)
     sleep(0.1)
 # Step 37
     #nSampsRead, data23 = device.data_receive_bytes(end = (n.BuffSize*2 + 100))
     nSampsRead, data23 = device.data_receive_uint16_values(end = (n.BuffSize))
     if(throwaway != 0):
         device.data_receive_bytes(end = throwaway)
-    device.hs_set_bit_mode(comm.HS_BIT_MODE_MPSSE)
+    device.hs_set_bit_mode(consts.HS_BIT_MODE_MPSSE)
     sleep(0.1)
     if(verbose != 0):
         print "Read out " + str(nSampsRead) + " samples for CH2, 3"
@@ -406,7 +404,7 @@ def pattern_checker(data, nSamps_per_channel, dumppattern):
 # Capture a single channel on a single lane
 # NEED TO TEST!!
 def capture1(device, n, channels, lanes, dumpdata, dump_pscope_data, verbose):
-    device.hs_set_bit_mode(comm.HS_BIT_MODE_MPSSE)
+    device.hs_set_bit_mode(consts.HS_BIT_MODE_MPSSE)
     dec = 0
 
     if(channels == 1):
@@ -426,10 +424,10 @@ def capture1(device, n, channels, lanes, dumpdata, dump_pscope_data, verbose):
 
     #sleep(sleeptime)
     device.data_set_low_byte_first() #Set endian-ness
-    device.hs_set_bit_mode(comm.HS_BIT_MODE_FIFO)
+    device.hs_set_bit_mode(consts.HS_BIT_MODE_FIFO)
     sleep(0.1)
     nSampsRead, data = device.data_receive_uint16_values(end = (n.BuffSize + 100))
-    device.hs_set_bit_mode(comm.HS_BIT_MODE_MPSSE)
+    device.hs_set_bit_mode(consts.HS_BIT_MODE_MPSSE)
 
     sleep(sleeptime)
 
