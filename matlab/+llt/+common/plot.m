@@ -1,4 +1,4 @@
-function plot(data, num_bits, channel, verbose)
+function plot(num_bits, data, channel, verbose)
 % Plots time-domain and frequency-domain of a single channel
 % 
 % nBits is required to correctly scale FFT, channel is just the channel

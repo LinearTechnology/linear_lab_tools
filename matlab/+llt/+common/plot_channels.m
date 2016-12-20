@@ -34,6 +34,6 @@ function plot_channels(num_bits, varargin)
 [verbose, channels] = llt.common.get_channels_and_verbose(varargin);
 i = 0;
 for data = channels
-    llt.common.plot(data{1}, num_bits, i, verbose);
+    llt.common.plot(num_bits, data{1}, i, verbose);
     i = i + 1;
 end
