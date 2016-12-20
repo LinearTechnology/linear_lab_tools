@@ -35,50 +35,50 @@
 % of the authors and should not be interpreted as representing official policies,
 % either expressed or implied, of Linear Technology Corp.
 
-function varargout = ?func_name?(nSamples, spiRegisters, isVerbose, doPlot, doWriteToFile)   
-    if ~exist('nSamples', 'var'); nSamples = 32 * 1024; end
-    if ~exist('spiRegisters', 'var')
-        spiRegisters = [ ... address        value
-                             ?spi_reg?
-                       ];
+function varargout = ?func_name?(num_samples, spi_registers, is_verbose, do_plot, do_write_to_file)
+    if ~exist('num_samples', 'var'); num_samples = 32 * 1024; end
+    if ~exist('spi_registers', 'var')
+        spi_registers = [ ... address        value
+                              ?spi_reg?
+                        ];
     end
 
-    doDemo = false;
+    do_demo = false;
     if nargout == 0
-        doDemo = true;
+        do_demo = true;
     end
-    if ~exist('isVerbose', 'var'); isVerbose = doDemo; end
-    if ~exist('doPlot', 'var'); doPlot = doDemo; end
-    if ~exist('doWriteToFile', 'var'); doWriteToFile = doDemo; end
+    if ~exist('is_verbose', 'var'); is_verbose = do_demo; end
+    if ~exist('do_plot', 'var'); do_plot = do_demo; end
+    if ~exist('do_write_to_file', 'var'); do_write_to_file = do_demo; end
    
-    controller = InitController(spiRegisters, isVerbose);
+    controller = init_controller(spi_registers, is_verbose);
     [?channels?] = ...
-        controller.Collect(nSamples, Llt.Common.LtcControllerComm.TRIGGER_NONE);
+        controller.collect(num_samples, llt.common.LtcControllerComm.TRIGGER_NONE);
     
-    if doPlot
-        Llt.Common.PlotChannels(controller.GetNBits(), ...
+    if do_plot
+        llt.common.plot_channels(controller.get_num_bits(), ...
             ?channels?, ...
-            isVerbose);
+            is_verbose);
     end
     
-    if doWriteToFile
-        Llt.Common.WriteChannelsToFile32Bit('data.txt', ...
+    if do_write_to_file
+        llt.common.write_channels_to_file_32_bit('data.txt', ...
             ?channels?, ...
-            isVerbose);
+            is_verbose);
     end
     
     channels = { ?channels? };
     varargout(1:nargout) = channels(1:nargout);
 end
 
-function controller = InitController(spiRegisters, isVerbose)
-    lcc = Llt.Common.LtcControllerComm();
-    controller = Llt.Common.Dc1371(lcc, '?dc_number?', ... dcNumber
-                                        '?fpga_load?', ... fpgaLoad
-                                        ?num_channels?, ... nChannels
-                                        ?num_bits?, ... nBits
+function controller = init_controller(spi_registers, is_verbose)
+    lcc = llt.common.LtcControllerComm();
+    controller = llt.common.Dc1371(lcc, '?dc_number?', ... dc_number
+                                        '?fpga_load?', ... fpga_load
+                                        ?num_channels?, ... num_channels
+                                        ?num_bits?, ... num_bits
                                         ?alignment?, ... alignmnent
-                                        ?is_bipolar?, ... isBipolar
-                                        '?demo_config?', ... demoConfig
-                                        spiRegisters, isVerbose);
+                                        ?is_bipolar?, ... is_bipolar
+                                        '?demo_config?', ... demo_config
+                                        spi_registers, is_verbose);
 end
