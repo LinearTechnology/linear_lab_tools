@@ -64,23 +64,18 @@ def make_class_name(name, keep_dash = False):
     return re.sub("[^a-zA-Z0-9]", "", name)
 
 def make_function(string, is_matlab):
-    if is_matlab:
-        func_name = make_class_name(string, True)
-        out_file_name = func_name + ".m"
-    else:
-        func_name = make_var_name(string)
-        out_file_name = func_name + ".py"
-    return (func_name, out_file_name)
+    func_name = make_var_name(string)
+    ext = '.m' if is_matlab else '.py'
+    return (func_name, func_name + ext)
     
 def make_folder(part_number, is_matlab):
-    name = part_number
+    name = part_number.lower()
     last_dash = name.rfind('-')
     if last_dash > 0:
         name = name[0:last_dash]
     if is_matlab:
-        return "+" + make_class_name(name).upper()
-    else:
-        return name.lower()
+        name = "+" + name
+    return name
 
 def split_and_strip(string):
     return map(str.strip, string.encode('utf-8').split(','))

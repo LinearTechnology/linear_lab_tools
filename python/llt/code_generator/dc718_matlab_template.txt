@@ -35,26 +35,26 @@
 % of the authors and should not be interpreted as representing official policies,
 % either expressed or implied, of Linear Technology Corp.
 
-function varargout = ?func_name?(nSamples, isVerbose, doPlot, doWriteToFile)
-    if ~exist('nSamples', 'var'); nSamples = 32 * 1024; end
+function varargout = ?func_name?(num_samples, is_verbose, do_plot, do_write_to_file)
+    if ~exist('num_samples', 'var'); num_samples = 32 * 1024; end
     
-    doDemo = false;
+    do_demo = false;
     if nargout == 0
-        doDemo = true;
+        do_demo = true;
     end
-    if ~exist('isVerbose', 'var'); isVerbose = doDemo; end
-    if ~exist('doPlot', 'var'); doPlot = doDemo; end
-    if ~exist('doWriteToFile', 'var'); doWriteToFile = doDemo; end
+    if ~exist('is_verbose', 'var'); is_verbose = do_demo; end
+    if ~exist('do_plot', 'var'); do_plot = do_demo; end
+    if ~exist('do_write_to_file', 'var'); do_write_to_file = do_demo; end
     
-    controller = InitController(isVerbose);
+    controller = init_controller(is_verbose);
     
-    data = controller.Collect(nSamples, Llt.Common.LtcControllerComm.TRIGGER_NONE);
+    data = controller.collect(num_samples, llt.common.LtcControllerComm.TRIGGER_NONE);
     
-    if doPlot
-        Llt.Common.Plot(data, controller.GetNBits(), 0, isVerbose);
+    if do_plot
+        llt.common.plot(controller.get_num_bits(), data, 0, is_verbose);
     end
-    if doWriteToFile
-        Llt.Common.WriteToFile32Bit('data.txt', data, false, isVerbose);
+    if do_write_to_file
+        llt.common.write_to_file_32_bit('data.txt', data, false, is_verbose);
     end
     
     if nargout > 0
@@ -62,13 +62,13 @@ function varargout = ?func_name?(nSamples, isVerbose, doPlot, doWriteToFile)
     end
 end
 
-function controller = InitController(isVerbose)
+function controller = init_controller(is_verbose)
     % Returns the object in the class constructor
-    lcc = Llt.Common.LtcControllerComm();  
-    controller = Llt.Common.Dc718(lcc, '?dc_number?', ... dcNumber
-                                       ?is_positive_clock?, ... isPositiveClock
-                                       ?num_bits?, ... nBits
+    lcc = llt.common.LtcControllerComm();  
+    controller = llt.common.Dc718(lcc, '?dc_number?', ... dc_number
+                                       ?is_positive_clock?, ... is_positive_clock
+                                       ?num_bits?, ... num_bits
                                        ?alignment?, ... alignment
-                                       ?is_bipolar?, ... isBipolar
-                                       isVerbose);
+                                       ?is_bipolar?, ... is_bipolar
+                                       is_verbose);
 end
