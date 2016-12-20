@@ -50,8 +50,8 @@ def ltc2380_24_dc2289a_a(num_samples, osr, verify, is_disributed_rd,
         # config_cpld(osr, verify, is_disributed_rd)
 
         if do_plot:
-            funcs.plot(data,
-                       controller.get_num_bits(), 
+            funcs.plot(controller.get_num_bits(), 
+                       data,
                        verbose=verbose)
         if do_write_to_file:
             funcs.write_to_file_32_bit("data.txt",
