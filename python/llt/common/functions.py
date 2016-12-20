@@ -67,7 +67,7 @@ def write_channels_to_file_32_bit(filename, *channels, **verbose_kw):
         write_to_file_32_bit(filename, channel, append=True)
     vprint('File write done.')
 
-def plot(data, num_bits, channel = 0, verbose = False):
+def plot(num_bits, data, channel = 0, verbose = False):
     vprint = make_vprint(verbose)
             
     from matplotlib import pyplot as plt
@@ -129,7 +129,7 @@ def plot(data, num_bits, channel = 0, verbose = False):
 def plot_channels(num_bits, *channels, **verbose_kw):
     verbose = verbose_kw.get("verbose", False)
     for channel_num, channel_data in enumerate(channels):
-        plot(channel_data, num_bits, channel_num, verbose)
+        plot(num_bits, channel_data, channel_num, verbose)
     
 def fix_data(data, num_bits, alignment, is_bipolar, is_randomized = False, is_alternate_bit = False):
     if alignment < num_bits:
