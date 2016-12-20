@@ -112,7 +112,7 @@ def capture_seismic_data(client, filter_type):
                                                   DC2390.DC2390_LUT_RUN_ONCE)
     sleep(2.5) # Allow LUT to run through until end...
     # Capture the data
-    nyq_data_c = sockit_uns32_to_signed32(sockit_capture(client, NUM_SAMPLES, trigger = 0, timeout = 1.0))
+    nyq_data_c = sockit_ltc2500_to_signed32(sockit_capture(client, NUM_SAMPLES, trigger = 0, timeout = 1.0))
     nyq_data = np.zeros(len(nyq_data_c))
     nyq_data += nyq_data_c
     nyq_data *= (5.0 / 2147483648.0)
@@ -195,7 +195,7 @@ def capture_plot(client, plot, gain, filter_type):
                                                   DC2390.DC2390_LUT_RUN_ONCE)
     
     # Capture the data
-    data = sockit_uns32_to_signed32(sockit_capture(client, NUM_SAMPLES, trigger = 0, timeout = 1.0))
+    data = sockit_ltc2500_to_signed32(sockit_capture(client, NUM_SAMPLES, trigger = 0, timeout = 1.0))
     avg = np.average(data[len(data)-1002:len(data)-2])
     data -= avg
     data *= gain
