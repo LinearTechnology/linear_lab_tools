@@ -51,7 +51,7 @@ function varargout = ltc2328_16_dc1908a_g(num_samples, is_verbose, do_plot, do_w
     data = controller.collect(num_samples, llt.common.LtcControllerComm.TRIGGER_NONE);
     
     if do_plot
-        llt.common.plot(data, controller.get_num_bits(), 0, is_verbose);
+        llt.common.plot(controller.get_num_bits(), data, 0, is_verbose);
     end
     if do_write_to_file
         llt.common.write_to_file_32_bit('data.txt', data, false, is_verbose);
