@@ -222,7 +222,7 @@ def capture2(device, n, dumpdata, dump_pscope_data, verbose):
     device.data_set_low_byte_first() #Set endian-ness
     device.hs_set_bit_mode(consts.HS_BIT_MODE_FIFO)
     sleep(0.1)
-    nSampsRead, data = device.data_receive_uint16_values(end = (n.BuffSize + 100))
+    nSampsRead, data = device.data_receive_uint16_values(end = (n.BuffSize ))
     device.hs_set_bit_mode(consts.HS_BIT_MODE_MPSSE)
 
     sleep(sleeptime)
