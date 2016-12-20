@@ -47,7 +47,7 @@ def ltc2217_dc854d_e(num_samples, verbose = False, do_plot = False,
         data = controller.collect(num_samples, consts.TRIGGER_NONE)
         
         if do_plot:
-            funcs.plot(data, controller.get_num_bits(), verbose=verbose)
+            funcs.plot(controller.get_num_bits(), data, verbose=verbose)
         if do_write_to_file:
             funcs.write_to_file_32_bit("data.txt", data, verbose=verbose)
         return data
