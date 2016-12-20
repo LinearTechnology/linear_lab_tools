@@ -18,7 +18,7 @@
 % $Revision$
 % $Date$
 %
-% Copyright (c) 2015, Linear Technology Corp.(LTC)
+% Copyright (c) 2016, Linear Technology Corp.(LTC)
 % All rights reserved.
 % 
 % Redistribution and use in source and binary forms, with or without
@@ -95,12 +95,12 @@ function ltc2123_dc1974_v6_core
 
 
     % Returns the object in the class constructor
-    lths = llt.Common.LtcControllerComm();
+    lths = llt.common.LtcControllerComm();
 
     % Import LTC2000 definitions and support functions
-    ltc2123 = llt.demo_board_examples.ltc23xx.ltc2123.ltc2123_constants();
+    ltc2123 = llt.demo_board_examples.ltc21xx.ltc2123.ltc2123_constants();
     
-    buff_size = 64 * 1024;
+    buff_size = 16 * 1024;
     mem_size = ltc2123.mem_size_byte(buff_size);
     
     %Configure other ADC modes here to override ADC data / PRBS selection
@@ -176,7 +176,7 @@ function ltc2123_dc1974_v6_core
             write_jesd204b_reg(lths, 4, 0, 0, 0, 1);  %  Reset core
         end
 
-        clockStatus = lths.HsFpgaReadDataAtAddress(cid, ltc2123.CLOCK_STATUS_REG);
+        clockStatus = lths.hs_fpga_read_data_at_address(cid, ltc2123.CLOCK_STATUS_REG);
         fprintf('Double-checking clock status after JESD204B configuration:');
         fprintf('\nRegister 6   (Clock status): 0x%s', dec2hex(clockStatus, 4));
 
@@ -344,7 +344,7 @@ function ltc2123_dc1974_v6_core
             (bitand(address, 4032) / 6)); % Upper 6 bits of AXI reg address
         device.hs_fpga_write_data_at_address(cid, ltc2123.JESD204B_CONFIG_REG, ...
             (bitor((bitand(address, 63) * 4), 2)));
-        x = device.hs_fpga_write_data_at_address(cid, ltc2123.JESD204B_CONFIG_REG);
+        x = device.hs_fpga_read_data_at_address(cid, ltc2123.JESD204B_CONFIG_REG);
         if (bitand(x, 1) == 0)
             error('Got bad FPGA status in write_jedec_reg');
         end
@@ -378,7 +378,7 @@ function ltc2123_dc1974_v6_core
         device.hs_set_bit_mode(cid, device.HS_BIT_MODE_FIFO);
         
         pause(0.1);
-        [data, num_samps_read] = device.data_receive_uint16_values(cid, buff_size + 100);
+        [data, num_bytes_read] = device.data_receive_uint16_values(cid, buff_size);
 
     %    extrabytecount, extrabytes = device.fifo_receive_bytes(end = 100)
         device.hs_set_bit_mode(cid, device.HS_BIT_MODE_MPSSE);
@@ -386,7 +386,7 @@ function ltc2123_dc1974_v6_core
         %sleep(sleeptime)
 
         if(verbose ~= 0)
-            fprintf('\nRead out %d samples', num_samps_read);
+            fprintf('\nRead out %d bytes', num_bytes_read);
         end
 
         % Initialize data arrays

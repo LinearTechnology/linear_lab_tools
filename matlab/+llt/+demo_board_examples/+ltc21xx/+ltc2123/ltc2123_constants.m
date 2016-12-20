@@ -82,7 +82,7 @@ ltc2123.JESD204B_XILINX_LANE_REG_NAMES = {'  ILA config Data 0', '  ILA config D
                                   '      Buffer Adjust'};
                               
 %lookup byte to write based on collect size                              
-ltc2123.mem_size_byte = containers.Map;
+ltc2123.mem_size_byte = containers.Map('KeyType','double','ValueType', 'uint8');
 ltc2123.mem_size_byte(128) = 0;
 ltc2123.mem_size_byte(256) = 16;
 ltc2123.mem_size_byte(512) = 32;
