@@ -229,14 +229,13 @@ if __name__ == '__main__':
         print "set Clocks"
         linduino.transfer_packets("MSGxS04S07S08S02S0CS01XgS04S0ES08S01S0CS01G");
         linduino.transfer_packets("K00K01K02\n")
-        #linduino = None # DELETE THIS
         test_dc2290a_a(linduino)
         test_dc1925a_a(linduino)
         test_dc1369a_a()
         test_dc1563a_a(linduino)
         test_dc1532a_a()
         test_dc2085a_a()
-        
+
         linduino.transfer_packets("K00K01K02\n")
 
     print "done"
