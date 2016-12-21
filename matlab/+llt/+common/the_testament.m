@@ -1,7 +1,7 @@
 function the_testament
 % Tests LLT using the 6 board setup.
 
-fprintf('Set Clocks');
+fprintf('Set Clocks\n');
 linduino = llt.utils.linduino();
 fprintf(linduino, 'MSGxS04S07S08S02S0CS01XgS04S0ES08S01S0CS01G');
 fprintf(linduino, 'K00K01K02\n');
@@ -45,7 +45,7 @@ new_file_name = 'test_dc1925a_a_data.txt';
 movefile('data.txt', new_file_name);
 data = read_file(new_file_name);
 delete(new_file_name);
-result = test_sin(data, 20, 52, -9, 80, -75, -120000, 120000);
+result = test_sin(data, 20, 52, -9, 80, -80, -120000, 120000);
 fprintf('\n');
 
 function result = test_dc1369a_a()
@@ -171,7 +171,7 @@ llt.demo_board_examples.ltc2000.ltc2000_dc2085();
 [~, data] = llt.demo_board_examples.ltc22xx.ltc2268.ltc2268_dc1532a(8*1024);
 figure(5)
 llt.common.plot(data, 14);
-result = test_sin(data, 14, 2500, -14, 57, -75, 6800, 9400);
+result = test_sin(data, 14, 2500, -14, 57, -78, 6800, 9400);
 
 fprintf('\n');
 
@@ -208,5 +208,5 @@ if ~soft_assert(max_val >= ex_max, 'max value too small'); return; end
 if ~soft_assert(f1_bin == ex_f1_bin+1, 'bad fundamental bin'); return; end
 if ~soft_assert(f1_db >= ex_f1_db - 1 && f1_db < ex_f1_db + 5, 'bad fundamental dB'); return; end
 if ~soft_assert(snr > ex_snr -1 && snr < ex_snr + 5, 'bad snr db'); return; end
-if ~soft_assert(thd < ex_thd + 20 && thd > ex_thd - 10, 'bad thd db'); return; end
+if ~soft_assert(thd < ex_thd + 10 && thd > ex_thd - 10, 'bad thd db'); return; end
 result = true;
