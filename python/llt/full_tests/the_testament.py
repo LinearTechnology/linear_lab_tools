@@ -20,6 +20,7 @@ from llt.demo_board_examples.ltc23xx.ltc2315.ltc2315_dc1563a_a import ltc2315_dc
 from llt.demo_board_examples.ltc22xx.ltc2261.ltc2261_dc1369a_a import ltc2261_dc1369a_a
 from llt.demo_board_examples.ltc23xx.ltc2378.ltc2378_20_dc1925a_a import ltc2378_20_dc1925a_a
 from llt.demo_board_examples.ltc22xx.ltc2268.ltc2268_dc1532a import ltc2268_dc1532a
+from llt.demo_board_examples.ltc2000.ltc2000_dc2085 import ltc2000_dc2085
 
 def read_file(filename):
     with open(filename) as f:
@@ -209,10 +210,29 @@ def test_dc2085a_a():
     print "########################"
     print "#### TEST DC2085A-A ####"
     print "########################"
-    # funky way to run the script
-    import llt.demo_board_examples.ltc2000.ltc2000_dc2085
-    # get rid of unused import warning
-    assert llt.demo_board_examples.ltc2000.ltc2000_dc2085
+    
+    num_cycles = 800  # Number of sine wave cycles over the entire data record
+    total_samples = 64 * 1024 
+    data = total_samples * [0] 
+
+    for i in range(0, total_samples):
+        data[i] = int(32000 * m.sin((num_cycles*2*m.pi*i)/total_samples))
+
+    spi_regs = [ # addr, value
+                   0x01, 0x00, 
+                   0x02, 0x02, 
+                   0x03, 0x07, 
+                   0x04, 0x0B, 
+                   0x05, 0x00, 
+                   0x07, 0x00,
+                   0x08, 0x08, 
+                   0x09, 0x20, 
+                   0x18, 0x00, 
+                   0x19, 0x00,
+                   0x1E, 0x00
+               ]
+    ltc2000_dc2085(data, spi_regs, verbose=True)
+    
     spi_reg = [ # addr, value
                   0x00, 0x80,
                   0x01, 0x00,
