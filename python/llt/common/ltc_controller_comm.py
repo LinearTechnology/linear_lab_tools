@@ -161,7 +161,7 @@ class Controller(object):
         try:
             self.close()
         except:
-            pass # we close on error anyway so nothing we can do
+            pass # nothing we can do, probably a DC1371 (no close()) anyway
         if self._handle is not None:
             self._dll.LccCleanup(ct.byref(self._handle))
             self._handle = None
