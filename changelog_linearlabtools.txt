@@ -165,9 +165,30 @@ Additional Demo boards supported, Python only:
 DC2512
 
 #######################
-### December, 2016: ###
+### January, 2017: ###
 #######################
 
+Matlab breaking change
+----------------------
+When we chose a code style for Matlab we found a guide that recomended using camelCase
+for varible names and functions. However after writing our code that way we found that
+code in the wild seemed to use snake_case for variables and functions. We decided that
+it was worth it to switch for 3 reasons:
+1. It makes the Matlab code and Python code more consistent (which is very helpful for us)
+2. Using camelCase case for names based on part numbers and demo board numbers makes for
+   hard to read, ugly identifyiers (e.g. ltc1234_16Dc9876aA versus ltc1234_16_dc9876a_a)
+3. While it is a breaking change now, it will only be worse later so we thought it was better
+   to just get it right while the userbase is still not too large.
+
+Matlab and Python breaking change
+---------------------------------
+What was llt.common.plot(data, num_bits, ...) is now llt.common.plot(num_bits, data, ...)
+this makes it consistent with llt.common.plot_channels
+
+Matlab and Python fixes
+-----------------------
+A few boards were not properly updated when we organized into packages, they are fixed now.
+   
 Additional Demo boards supported, both Matlab and Python:
 ---------------------------------------------------------
 LTC2321-12 (DC1996A-F)
