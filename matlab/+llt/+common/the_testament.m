@@ -170,7 +170,7 @@ fprintf(['########################\n', ...
 llt.demo_board_examples.ltc2000.ltc2000_dc2085();
 [~, data] = llt.demo_board_examples.ltc22xx.ltc2268.ltc2268_dc1532a(8*1024);
 figure(5)
-llt.common.plot(data, 14);
+llt.common.plot(14, data);
 result = test_sin(data, 14, 2500, -14, 57, -78, 6800, 9400);
 
 fprintf('\n');
