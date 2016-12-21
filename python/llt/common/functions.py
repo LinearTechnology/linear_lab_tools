@@ -164,7 +164,6 @@ def scatter_data(data, num_channels):
 
 def get_controller_info_by_eeprom(controller_type, dc_number, eeprom_id_size, vprint):
     # find demo board with correct ID
-    controller_info = None
     vprint('Looking for a controller board')
     info_list = comm.list_controllers(controller_type)
     if info_list is None:
@@ -174,11 +173,8 @@ def get_controller_info_by_eeprom(controller_type, dc_number, eeprom_id_size, vp
             eeprom_id = controller.eeprom_read_string(eeprom_id_size)
             if dc_number in eeprom_id:
                 vprint('Found the ' + dc_number + ' demoboard')
-                controller_info = info
-                break
-    if controller_info is None:
-        raise(err.HardwareError('Could not find a compatible device'))
-    return controller_info
+                return info
+    raise(err.HardwareError('Could not find a compatible device'))
 
 def start_collect(controller_board, num_samples, trigger, timeout = 5):
         controller_board.controller.data_start_collect(num_samples, trigger)
