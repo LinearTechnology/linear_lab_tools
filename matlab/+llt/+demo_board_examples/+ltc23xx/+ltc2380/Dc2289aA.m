@@ -45,8 +45,6 @@ classdef Dc2289aA < llt.common.Dc890
 
             self = self@llt.common.Dc890(lcc, 'DC2289A-A', 'CMOS', 1, false, ...
                 24, 24, true, [], is_verbose);
-            self.osr = osr;
-            self.verify = verify;
             self.config_cpld(osr, verify, is_distributed_read);
         end
         
@@ -55,8 +53,10 @@ classdef Dc2289aA < llt.common.Dc890
             if ~exist('timeout', 'var'); timeout = 5; end
             if ~exist('is_randomized', 'var'); is_randomized = false; end
             if ~exist('is_alternate_bit', 'var'); is_alternate_bit = false; end
-            
-            [varargout{1:nargout}] = collect@llt.common.Dc890(self, num_samples * 2, trigger, timeout, ...
+            if self.verify
+                num_samples = num_samples * 2;
+            end
+            [varargout{1:nargout}] = collect@llt.common.Dc890(self, num_samples, trigger, timeout, ...
                 is_randomized, is_alternate_bit);
         end
                

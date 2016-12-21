@@ -38,7 +38,7 @@
 function varargout = ltc2380_24_dc2289a_a(num_samples, osr, verify, is_distributed_read, ...
                                         is_verbose, do_plot, do_write_to_file)
     if ~exist('num_samples', 'var'); num_samples = 32 * 1024; end
-    if ~exist('osr', 'var'); osr = 4; end
+    if ~exist('osr', 'var'); osr = 1; end
     if ~exist('verify', 'var'); verify = false; end
     if ~exist('is_distributed_read', 'var'); is_distributed_read = false; end
     do_demo = false;
@@ -56,7 +56,7 @@ function varargout = ltc2380_24_dc2289a_a(num_samples, osr, verify, is_distribut
     data = controller.collect(num_samples, llt.common.LtcControllerComm.TRIGGER_NONE);
     
     if do_plot
-        llt.common.plot(controller.get_n_bits(), data, 0, is_verbose);
+        llt.common.plot(controller.get_num_bits(), data, 0, is_verbose);
     end
     if do_write_to_file
         llt.common.write_to_file_32_bit('data.txt', data, false, is_verbose);
