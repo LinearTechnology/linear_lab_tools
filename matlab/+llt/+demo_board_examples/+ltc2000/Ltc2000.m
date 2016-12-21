@@ -46,7 +46,7 @@ classdef Ltc2000
         end
         
         function set_spi_registers(self, register_values)
-            self.vprint('Configuring DAC over SPI');
+            self.vprint('Configuring DAC over SPI\n');
             if ~isempty(register_values)
                 for i = 1:2:length(register_values)
                     self.lcc.spi_send_byte_at_address(self.cid, ...
@@ -58,39 +58,39 @@ classdef Ltc2000
         function send_data(self, data)
             num_samples = length(data);
             num_samples_reg_value = self.size_lookup(num_samples);
-            self.vprint('Reading PLL status');
-            pll_status = self.lcc.hs_fpga_read_data_at_address(self.cid, Ltc2000.FPGA_STATUS_REG);
+            self.vprint('Reading PLL status\n');
+            pll_status = bitand(self.expected_pll_status, ...
+                self.lcc.hs_fpga_read_data_at_address(self.cid, self.FPGA_STATUS_REG));
             if self.expected_pll_status ~= pll_status
                 error('LtcControllerComm:HardwareError', 'FPGA PLL status was bad');
             end
-            self.vprint('PLL status is OK');
+            self.vprint('PLL status is OK\n');
             pause(0.1);
             self.lcc.hs_fpga_write_data_at_address(self.cid, ...
-                Ltc2000.FPGA_CONTROL_REG, num_samples_reg_value);
-            if self.lcc.is_little_endian
+                self.FPGA_CONTROL_REG, num_samples_reg_value);
+            if self.is_little_endian
                 self.lcc.data_set_low_byte_first(self.cid);
             else
-                self.lcc.data.set_high_byte_first(self.cid);
+                self.lcc.data_set_high_byte_first(self.cid);
             end
             
-            self.lcc.hs_set_bit_mode(self.lcc.HS_BIT_MODE_FIFO);
-            self.vprint('Sending data');
-            num_bytes_sent = self.lcc.data_send_uint16_values(data);
-            self.lcc.hs_set_bit_mode(self.lcc.HS_BIT_MODE_MPSSE);
+            self.lcc.hs_set_bit_mode(self.cid, self.lcc.HS_BIT_MODE_FIFO);
+            self.vprint('Sending data\n');
+            num_bytes_sent = self.lcc.data_send_uint16_values(self.cid, data);
+            self.lcc.hs_set_bit_mode(self.cid, self.lcc.HS_BIT_MODE_MPSSE);
             if num_bytes_sent ~= num_samples * 2
                 error('LtcControllerComm:HardwareError', 'Not all data was sent');
             end
-            self.vprint('All data was sent (%d bytes)', num_bytes_sent);
+            self.vprint('All data was sent (%d bytes)\n', num_bytes_sent);
         end
     end
     
     methods (Access = private)
         function self = connect(self)
-           self.vprint('Looking for Controller');
+           self.vprint('Looking for Controller\n');
            for info = self.lcc.list_controllers(self.lcc.TYPE_HIGH_SPEED)
-               description = info.get_description();
-               if ~isempty(strfind(self.expected_description, description))
-                   self.vprint('Found a possible setup');
+               if ~isempty(strfind(info.description,self.expected_description))
+                   self.vprint('Found a possible setup\n');
                    self.cid = self.lcc.init(info);
                    return;
                end
@@ -102,13 +102,13 @@ classdef Ltc2000
             self.lcc.hs_set_bit_mode(self.cid, self.lcc.HS_BIT_MODE_MPSSE);
             self.lcc.hs_fpga_toggle_reset(self.cid);
             % Read FPGA ID register
-            id = self.lcc.hs_fpga_read_data_at_Address(self.cid, Ltc2000.FPGA_ID_REG);
-            self.vprint('FPGA Load ID: 0x%4X\n', id);
+            id = self.lcc.hs_fpga_read_data_at_address(self.cid, self.FPGA_ID_REG);
+            self.vprint('FPGA Load ID: 0x%2X\n', id);
             if self.expected_id ~= id
                 error('LtcControllerComm:HardwareError', 'Wrong FPGA Load');
             end
-            self.lcc.hs_fpga_write_data_at_address(self.cid, Ltc2000.FPGA_DAC_PD, 1);
-            self.lcc.set_spi_registers(self.cid, spi_reg_values);
+            self.lcc.hs_fpga_write_data_at_address(self.cid, self.FPGA_DAC_PD, 1);
+            self.set_spi_registers(spi_reg_values);
         end
         
         function vprint(self, varargin)
