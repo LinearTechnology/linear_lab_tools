@@ -83,7 +83,9 @@ class Dc2289aA(dc890.Demoboard):
         
     def collect(self, num_samples, trigger, timeout = 5, is_randomized = False, 
                 is_alternate_bit = False):
-        data = dc890.Demoboard.collect(self, num_samples*2, trigger, timeout, 
+        if self.verify:
+            num_samples *= 2
+        data = dc890.Demoboard.collect(self, num_samples, trigger, timeout, 
                                        is_randomized, is_alternate_bit)
         return data
 
@@ -164,12 +166,12 @@ class Dc2289aA(dc890.Demoboard):
     def fix_data(self, raw_data, is_randomized, is_alternate_bit):
         if self.verify:
             raw_data = self._get_data(raw_data)
-        return funcs.fix_data(raw_data,self.num_bits, self.alignment,
+        return funcs.fix_data(raw_data, self.num_bits, self.alignment,
                               self.is_bipolar, is_randomized, is_alternate_bit)
     
 if __name__ == '__main__':
     NUM_SAMPLES = 32 * 1024
-    OSR = 4
+    OSR = 1
     # to use this function in your own code you would typically do
     # data = ltc2380_24_dc2289a_a(num_samples, osr, verify, is_disributed_rd)
     ltc2380_24_dc2289a_a(NUM_SAMPLES, OSR, verify=False, is_disributed_rd=False, 
