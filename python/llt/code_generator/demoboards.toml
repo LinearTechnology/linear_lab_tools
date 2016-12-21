@@ -4,10 +4,230 @@
 ### DC718 ###
 #############
 
+["LTC2207 DC918C-A"]
+part_number           = "LTC2207"
+controller            = "DC718"
+dc_number             = "DC918C-A" 
+num_channels          = 1
+is_positive_clock     = true
+num_bits              = 16 
+alignment             = 16
+is_bipolar            = true
+
+["LTC2207 DC918C-B"]
+part_number           = "LTC2207"
+controller            = "DC718"
+dc_number             = "DC918C-B" 
+num_channels          = 1
+is_positive_clock     = true
+num_bits              = 16 
+alignment             = 16
+is_bipolar            = true
+
+["LTC2206 DC918C-C"]
+part_number           = "LTC2206"
+controller            = "DC718"
+dc_number             = "DC918C-C" 
+num_channels          = 1
+is_positive_clock     = true
+num_bits              = 16
+alignment             = 16
+is_bipolar            = true
+
+["LTC2206 DC918C-D"]
+part_number           = "LTC2206"
+controller            = "DC718"
+dc_number             = "DC918C-D" 
+num_channels          = 1
+is_positive_clock     = true
+num_bits              = 16 
+alignment             = 16
+is_bipolar            = true
+
+["LTC2205 DC918C-E"]
+part_number           = "LTC2205"
+controller            = "DC718"
+dc_number             = "DC918C-E" 
+num_channels          = 1
+is_positive_clock     = true
+num_bits              = 16 
+alignment             = 16
+is_bipolar            = true
+
+["LTC2205 DC918C-F"]
+part_number           = "LTC2205"
+controller            = "DC718"
+dc_number             = "DC918C-F" 
+num_channels          = 1
+is_positive_clock     = true
+num_bits              = 16 
+alignment             = 16
+is_bipolar            = true
+
+["LTC2204 DC918C-G"]
+part_number           = "LTC2204"
+controller            = "DC718"
+dc_number             = "DC918C-G" 
+num_channels          = 1
+is_positive_clock     = true
+num_bits              = 16 
+alignment             = 16
+is_bipolar            = true
+
+["LTC2206-14 DC918C-H"]
+part_number           = "LTC2206-14"
+controller            = "DC718"
+dc_number             = "DC918C-H" 
+num_channels          = 1
+is_positive_clock     = true
+num_bits              = 14 
+alignment             = 16
+is_bipolar            = true
+
+["LTC2205-14 DC918C-I"]
+part_number           = "LTC2205-14"
+controller            = "DC718"
+dc_number             = "DC918C-I" 
+num_channels          = 1
+is_positive_clock     = true
+num_bits              = 14 
+alignment             = 16
+is_bipolar            = true
+
+["LTC2206-14 DC918C-I"]
+part_number           = "LTC2206-14"
+controller            = "DC718"
+dc_number             = "DC918C-I" 
+num_channels          = 1
+is_positive_clock     = true
+num_bits              = 14 
+alignment             = 16
+is_bipolar            = true
+
+["LTC2206-14 DC918C-J"]
+part_number           = "LTC2206-14"
+controller            = "DC718"
+dc_number             = "DC918C-J" 
+num_channels          = 1
+is_positive_clock     = true
+num_bits              = 14 
+alignment             = 16
+is_bipolar            = true
+
+["LTC2206-14 DC918C-K"]
+part_number           = "LTC2206-14"
+controller            = "DC718"
+dc_number             = "DC918C-K" 
+num_channels          = 1
+is_positive_clock     = true
+num_bits              = 14 
+alignment             = 16
+is_bipolar            = true
+
+["LTC2205-14 DC918C-L"]
+part_number           = "LTC2205-14"
+controller            = "DC718"
+dc_number             = "DC918C-L" 
+num_channels          = 1
+is_positive_clock     = true
+num_bits              = 14 
+alignment             = 16
+is_bipolar            = true
+
+["LTC2207 DC919A-A"]
+part_number           = "LTC2207"
+controller            = "DC718"
+dc_number             = "DC919A-A" 
+num_channels          = 1
+is_positive_clock     = true
+num_bits              = 16 
+alignment             = 16
+is_bipolar            = true
+
+["LTC2206 DC919A-B"]
+part_number           = "LTC2206"
+controller            = "DC718"
+dc_number             = "DC919A-B" 
+num_channels          = 1
+is_positive_clock     = true
+num_bits              = 16 
+alignment             = 16
+is_bipolar            = true
+
+["LTC2205 DC919A-C"]
+part_number           = "LTC2205"
+controller            = "DC718"
+dc_number             = "DC919A-C" 
+num_channels          = 1
+is_positive_clock     = true
+num_bits              = 16 
+alignment             = 16
+is_bipolar            = true
+
 ["LTC2204 DC919A-D"]
 part_number           = "LTC2204"
 controller            = "DC718"
 dc_number             = "DC919A-D" 
+num_channels          = 1
+is_positive_clock     = true
+num_bits              = 16 
+alignment             = 16
+is_bipolar            = true
+
+["LTC2203 DC919A-E"]
+part_number           = "LTC2203"
+controller            = "DC718"
+dc_number             = "DC919A-E" 
+num_channels          = 1
+is_positive_clock     = true
+num_bits              = 16 
+alignment             = 16
+is_bipolar            = true
+
+["LTC2202 DC919A-F"]
+part_number           = "LTC2202"
+controller            = "DC718"
+dc_number             = "DC919A-F" 
+num_channels          = 1
+is_positive_clock     = true
+num_bits              = 16 
+alignment             = 16
+is_bipolar            = true
+
+["LTC2207-14 DC919A-G"]
+part_number           = "LTC2207-14"
+controller            = "DC718"
+dc_number             = "DC919A-G" 
+num_channels          = 1
+is_positive_clock     = true
+num_bits              = 14 
+alignment             = 16
+is_bipolar            = true
+
+["LTC2206-14 DC919A-H"]
+part_number           = "LTC2206-14"
+controller            = "DC718"
+dc_number             = "DC919A-H" 
+num_channels          = 1
+is_positive_clock     = true
+num_bits              = 14 
+alignment             = 16
+is_bipolar            = true
+
+["LTC2205-14 DC919A-I"]
+part_number           = "LTC2205-14"
+controller            = "DC718"
+dc_number             = "DC919A-I" 
+num_channels          = 1
+is_positive_clock     = true
+num_bits              = 14 
+alignment             = 16
+is_bipolar            = true
+
+["LTC2201 DC919A-J"]
+part_number           = "LTC2201"
+controller            = "DC718"
+dc_number             = "DC919A-J" 
 num_channels          = 1
 is_positive_clock     = true
 num_bits              = 16 
