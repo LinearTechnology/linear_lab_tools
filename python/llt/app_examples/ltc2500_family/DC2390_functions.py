@@ -81,29 +81,36 @@ SPI_SS = 0x14
 CW_EN_TRIG = 0x00000002
 CW_START = 0x00000001
 
+# LTC2500 Control Word Bitfields. These are defined such that they can be ORed
+# directly into the LED_BASE register, no shifting required.
+
+# LTC2500 DGC / DGE Bitmap
+LTC2500_DGC           = 0b1000000000000000
+LTC2500_DGE           = 0b0100000000000000
+
 # LTC2500 DSF Bitmap
-LTC2500_DF_4        = 0b00100000
-LTC2500_DF_8        = 0b00110000
-LTC2500_DF_16       = 0b01000000
-LTC2500_DF_32       = 0b01010000
-LTC2500_DF_64       = 0b01100000
-LTC2500_DF_128      = 0b01110000
-LTC2500_DF_256      = 0b10000000
-LTC2500_DF_512      = 0b10010000
-LTC2500_DF_1024     = 0b10100000
-LTC2500_DF_2048     = 0b10110000
-LTC2500_DF_4096     = 0b11000000
-LTC2500_DF_8192     = 0b11010000
-LTC2500_DF_16384    = 0b11100000
+LTC2500_DF_4            = 0b00100000000000
+LTC2500_DF_8            = 0b00110000000000
+LTC2500_DF_16           = 0b01000000000000
+LTC2500_DF_32           = 0b01010000000000
+LTC2500_DF_64           = 0b01100000000000
+LTC2500_DF_128          = 0b01110000000000
+LTC2500_DF_256          = 0b10000000000000
+LTC2500_DF_512          = 0b10010000000000
+LTC2500_DF_1024         = 0b10100000000000
+LTC2500_DF_2048         = 0b10110000000000
+LTC2500_DF_4096         = 0b11000000000000
+LTC2500_DF_8192         = 0b11010000000000
+LTC2500_DF_16384        = 0b11100000000000
 
 # LTC2500 Filter Type Bitmap
-LTC2500_SINC_FILT       = 0b0001
-LTC2500_SINC2_FILT      = 0b0010
-LTC2500_SINC3_FILT      = 0b0011
-LTC2500_SINC4_FILT      = 0b0100
-LTC2500_SSINC_FILT      = 0b0101
-LTC2500_SSCIN_FLAT_FILT = 0b0110
-LTC2500_VAR_DECIM_FILT  = 0b0111
+LTC2500_SINC_FILT       = 0b00000001000000
+LTC2500_SINC2_FILT      = 0b00000010000000
+LTC2500_SINC3_FILT      = 0b00000011000000
+LTC2500_SINC4_FILT      = 0b00000100000000
+LTC2500_SSINC_FILT      = 0b00000101000000
+LTC2500_SSCIN_FLAT_FILT = 0b00000110000000
+LTC2500_VAR_DECIM_FILT  = 0b00000111000000
 
 # PID controller setpoint source
 DC2390_PID_PULSE_GEN    = 0x00000000
@@ -267,13 +274,13 @@ def capture(client, recordlength, trigger = 0, timeout = 0.0):
     
     return block#data
 
-# A handy function to turn unsigned values from mem_read_block to signed
-# 32-bit values
-def uns32_to_signed32(data):
-    for i in range(0, len(data)):    
-        if(data[i] > 0x7FFFFFFF):
-            data[i] -= 0xFFFFFFFF
-    return data
+## A handy function to turn unsigned values from mem_read_block to signed
+## 32-bit values
+#def uns32_to_signed32(data):
+#    for i in range(0, len(data)):    
+#        if(data[i] > 0x7FFFFFFF):
+#            data[i] -= 0xFFFFFFFF
+#    return data
     
 def LTC6954_configure(client, divisor):
     client.reg_write(SPI_PORT_BASE | SPI_SS, 0x00000001) # CS[0]

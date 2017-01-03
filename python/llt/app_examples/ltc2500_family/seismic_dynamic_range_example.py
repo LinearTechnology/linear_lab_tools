@@ -149,96 +149,7 @@ def capture_seismic_data(client, filter_type):
     return nyq_data, nyq_filt_data, filt_25xx_data
     
     
-def capture_plot(client, plot, gain, filter_type):
-    """
-        Captures and plots data for the DC2390
-        Filter_type options - 0: sinc
-                            - 1: ssinc 256
-                            - 2: ssinc 1024
-                            - 3: ssinc 4096
-    """
-    # Construct or extract filter coefficients
-    if filter_type == 1:
-        length = 256
-        with open('../../../../common/ltc25xx_filters/ssinc_256.txt') as filter_coeff_file:
-            ltc25xx_filter = [float(line) for line in filter_coeff_file]
-        # Normalize to unity gain
-        sum_ltc25xx_filter = sum(ltc25xx_filter)
-        ltc25xx_filter[:] = [x / sum_ltc25xx_filter for x in ltc25xx_filter] 
-    elif filter_type == 2:    
-        length = 1024
-        with open('../../../../common/ltc25xx_filters/ssinc_1024.txt') as filter_coeff_file:
-            ltc25xx_filter = [float(line) for line in filter_coeff_file]
-        # Normalize to unity gain
-        sum_ltc25xx_filter = sum(ltc25xx_filter)
-        ltc25xx_filter[:] = [x / sum_ltc25xx_filter for x in ltc25xx_filter]
-    elif filter_type == 3:  
-        length = 4096
-        with open('../../../../common/ltc25xx_filters/ssinc_4096.txt') as filter_coeff_file:
-            ltc25xx_filter = [float(line) for line in filter_coeff_file]
-        # Normalize to unity gain
-        sum_ltc25xx_filter = sum(ltc25xx_filter)
-        ltc25xx_filter[:] = [x / sum_ltc25xx_filter for x in ltc25xx_filter]
-    else:
-        length = SINC_LEN
-        ltc25xx_filter = np.ones(SINC_LEN)      # Create the sinc filter coeff
-        ltc25xx_filter /= sum(ltc25xx_filter)   # Normalize to unity gain
 
-    # Read the unfiltered nyquist data
-    # -------------------------------------------------------------------------
-    # Set Mux for raw Nyquist data
-    # Set Dac A for SIN and Dac B for LUT
-    client.reg_write(DC2390.DATAPATH_CONTROL_BASE,DC2390.DC2390_FIFO_ADCB_NYQ |
-                                                  DC2390.DC2390_DAC_B_LUT |
-                                                  DC2390.DC2390_DAC_A_NCO_SIN |
-                                                  DC2390.DC2390_LUT_ADDR_COUNT |
-                                                  DC2390.DC2390_LUT_RUN_ONCE)
-    
-    # Capture the data
-    data = sockit_ltc2500_to_signed32(sockit_capture(client, NUM_SAMPLES, trigger = 0, timeout = 1.0))
-    avg = np.average(data[len(data)-1002:len(data)-2])
-    data -= avg
-    data *= gain
-    plot.subplot(3, 1, 1)
-    plot.title('Raw Nyquist Data')
-    plot.xlim([0,NUM_SAMPLES])
-    plot.plot(data)
-
-    # Apply the digital filter to the raw Nyquist data by convolution
-    # -------------------------------------------------------------------------
-    convt_time = time.time();
-    data = np.convolve(data,ltc25xx_filter) # Apply the filter coeff to the 
-                                            # nyquist data
-    print "The program took", time.time() - convt_time, "sec to run convolution"    
-
-    plot.subplot(3, 1, 2)
-    plot.title('Nyquist Data convolved with the Digital Filter')
-    plot.ylim([-1.5*10**9,2.5*10**9])
-    plot.xlim([0,NUM_SAMPLES])
-    plot.plot(data)
-    
-    # Read the LTC25xx filtered data 
-    # -------------------------------------------------------------------------
-    # Set Mux for filtered data
-    # Set Dac A for SIN and Dac B for LUT
-    client.reg_write(DC2390.DATAPATH_CONTROL_BASE, DC2390.DC2390_FIFO_ADCB_FIL |
-                                                   DC2390.DC2390_DAC_B_LUT |
-                                                   DC2390.DC2390_DAC_A_NCO_SIN |
-                                                   DC2390.DC2390_LUT_ADDR_COUNT |
-                                                   DC2390.DC2390_LUT_RUN_ONCE)
-    sleep(1.0) # Let any wiggles in progress die out
-    # Capture the data
-    data = sockit_uns32_to_signed32(sockit_capture(client, NUM_SAMPLES/length, trigger = 0, 
-                          timeout = 1))
-    avg = np.average(data[len(data)-6:len(data)-2])
-    data = data - avg
-    data = data * gain
-    
-    plot.subplot(3, 1, 3)
-    plot.title('Filtered Data')
-    plot.ylim([-1.5*10**9,2.5*10**9])
-    plot.xlim([0,NUM_SAMPLES/length])
-    plot.plot(data)
 
 
 if __name__ == "__main__":
@@ -298,9 +209,9 @@ if __name__ == "__main__":
     client.reg_write(DC2390.NUM_SAMPLES_BASE, NUM_SAMPLES)
     
     # Configure the LTC2500
-    ltc2500_cfg_led_on  = (((df | filt)<<6) | 
+    ltc2500_cfg_led_on  = (((df | filt)) | 
                              0x03 | (DC2390.LTC2500_N_FACTOR << 16))
-    ltc2500_cfg_led_off = (((df | filt)<<6) | 
+    ltc2500_cfg_led_off = (((df | filt)) | 
                             (DC2390.LTC2500_N_FACTOR << 16))
     
     client.reg_write(DC2390.LED_BASE, ltc2500_cfg_led_on)
@@ -387,3 +298,97 @@ if __name__ == "__main__":
                                                   DC2390.DC2390_LUT_RUN_CONT)        
     
     print "The program took", (time.time() - start_time)/60, "min to run"
+    
+    
+    
+
+#def capture_plot(client, plot, gain, filter_type):
+#    """
+#        Captures and plots data for the DC2390
+#        Filter_type options - 0: sinc
+#                            - 1: ssinc 256
+#                            - 2: ssinc 1024
+#                            - 3: ssinc 4096
+#    """
+#    # Construct or extract filter coefficients
+#    if filter_type == 1:
+#        length = 256
+#        with open('../../../../common/ltc25xx_filters/ssinc_256.txt') as filter_coeff_file:
+#            ltc25xx_filter = [float(line) for line in filter_coeff_file]
+#        # Normalize to unity gain
+#        sum_ltc25xx_filter = sum(ltc25xx_filter)
+#        ltc25xx_filter[:] = [x / sum_ltc25xx_filter for x in ltc25xx_filter] 
+#    elif filter_type == 2:    
+#        length = 1024
+#        with open('../../../../common/ltc25xx_filters/ssinc_1024.txt') as filter_coeff_file:
+#            ltc25xx_filter = [float(line) for line in filter_coeff_file]
+#        # Normalize to unity gain
+#        sum_ltc25xx_filter = sum(ltc25xx_filter)
+#        ltc25xx_filter[:] = [x / sum_ltc25xx_filter for x in ltc25xx_filter]
+#    elif filter_type == 3:  
+#        length = 4096
+#        with open('../../../../common/ltc25xx_filters/ssinc_4096.txt') as filter_coeff_file:
+#            ltc25xx_filter = [float(line) for line in filter_coeff_file]
+#        # Normalize to unity gain
+#        sum_ltc25xx_filter = sum(ltc25xx_filter)
+#        ltc25xx_filter[:] = [x / sum_ltc25xx_filter for x in ltc25xx_filter]
+#    else:
+#        length = SINC_LEN
+#        ltc25xx_filter = np.ones(SINC_LEN)      # Create the sinc filter coeff
+#        ltc25xx_filter /= sum(ltc25xx_filter)   # Normalize to unity gain
+#
+#    # Read the unfiltered nyquist data
+#    # -------------------------------------------------------------------------
+#    # Set Mux for raw Nyquist data
+#    # Set Dac A for SIN and Dac B for LUT
+#    client.reg_write(DC2390.DATAPATH_CONTROL_BASE,DC2390.DC2390_FIFO_ADCB_NYQ |
+#                                                  DC2390.DC2390_DAC_B_LUT |
+#                                                  DC2390.DC2390_DAC_A_NCO_SIN |
+#                                                  DC2390.DC2390_LUT_ADDR_COUNT |
+#                                                  DC2390.DC2390_LUT_RUN_ONCE)
+#    
+#    # Capture the data
+#    data = sockit_ltc2500_to_signed32(sockit_capture(client, NUM_SAMPLES, trigger = 0, timeout = 1.0))
+#    avg = np.average(data[len(data)-1002:len(data)-2])
+#    data -= avg
+#    data *= gain
+#    plot.subplot(3, 1, 1)
+#    plot.title('Raw Nyquist Data')
+#    plot.xlim([0,NUM_SAMPLES])
+#    plot.plot(data)
+#
+#    # Apply the digital filter to the raw Nyquist data by convolution
+#    # -------------------------------------------------------------------------
+#    convt_time = time.time();
+#    data = np.convolve(data,ltc25xx_filter) # Apply the filter coeff to the 
+#                                            # nyquist data
+#    print "The program took", time.time() - convt_time, "sec to run convolution"    
+#
+#    plot.subplot(3, 1, 2)
+#    plot.title('Nyquist Data convolved with the Digital Filter')
+#    plot.ylim([-1.5*10**9,2.5*10**9])
+#    plot.xlim([0,NUM_SAMPLES])
+#    plot.plot(data)
+#    
+#    # Read the LTC25xx filtered data 
+#    # -------------------------------------------------------------------------
+#    # Set Mux for filtered data
+#    # Set Dac A for SIN and Dac B for LUT
+#    client.reg_write(DC2390.DATAPATH_CONTROL_BASE, DC2390.DC2390_FIFO_ADCB_FIL |
+#                                                   DC2390.DC2390_DAC_B_LUT |
+#                                                   DC2390.DC2390_DAC_A_NCO_SIN |
+#                                                   DC2390.DC2390_LUT_ADDR_COUNT |
+#                                                   DC2390.DC2390_LUT_RUN_ONCE)
+#    sleep(1.0) # Let any wiggles in progress die out
+#    # Capture the data
+#    data = sockit_uns32_to_signed32(sockit_capture(client, NUM_SAMPLES/length, trigger = 0, 
+#                          timeout = 1))
+#    avg = np.average(data[len(data)-6:len(data)-2])
+#    data = data - avg
+#    data = data * gain
+#    
+#    plot.subplot(3, 1, 3)
+#    plot.title('Filtered Data')
+#    plot.ylim([-1.5*10**9,2.5*10**9])
+#    plot.xlim([0,NUM_SAMPLES/length])
+#    plot.plot(data)    

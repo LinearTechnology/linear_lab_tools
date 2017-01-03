@@ -63,14 +63,14 @@ import time
 # Change the parameters to run different scenarios.  
 
 # ADC 'U1' and 'U2' are the choices. UN-comment selected ADC
-#ADC = 'U1'
 ADC = 'U1'
+#ADC = 'U2'
 
 # DF of 32, 16, 8, 4 are the choices for the LTC2512
-#DF = 4
+DF = 4
 #DF = 8
 #DF = 16
-DF = 32
+#DF = 32
 
 
 
@@ -87,7 +87,8 @@ elif DF == 8:
 elif DF == 16:
     down_sample_factor = LTC2500_DF_16
 else:
-    down_sample_factor = LTC2500_DF_32
+    #down_sample_factor = LTC2500_DF_32
+    down_sample_factor = LTC2500_DF_64
     
 master_clock = 50000000
 SYSTEM_CLOCK_DIVIDER = 199 
@@ -110,14 +111,17 @@ print "\n/////////////////////////////////////"
 print "// LTC2512 Trace Filter Shape Demo //"
 print "/////////////////////////////////////"
 
-if DF == 4:
-    raw_input("\nPlease set SEL1, SEL0 jumpers to 0, 0 \nthen hit enter")
-elif DF == 8:
-    raw_input("\nPlease set SEL1, SEL0 jumpers to 0, 1 \nthen hit enter")
-elif DF == 16:
-    raw_input("\n\nPlease set SEL1, SEL0 jumpers to 1, 0 \nthen hit enter")
-else:
-    raw_input("\n\nPlease set SEL1, SEL0 jumpers to 1, 1 \nthen hit enter")
+ADC = 2500
+
+if ADC == 2512:
+    if DF == 4:
+        raw_input("\nPlease set SEL1, SEL0 jumpers to 0, 0 \nthen hit enter")
+    elif DF == 8:
+        raw_input("\nPlease set SEL1, SEL0 jumpers to 0, 1 \nthen hit enter")
+    elif DF == 16:
+        raw_input("\n\nPlease set SEL1, SEL0 jumpers to 1, 0 \nthen hit enter")
+    else:
+        raw_input("\n\nPlease set SEL1, SEL0 jumpers to 1, 1 \nthen hit enter")
 
 # Get the host from the command line argument. Can be numeric or hostname.
 HOST = sys.argv[1] if len(sys.argv) == 2 else '127.0.0.1'
@@ -139,29 +143,46 @@ client.reg_write(SYSTEM_CLOCK_BASE, ((LUT_NCO_DIVIDER << 16) | SYSTEM_CLOCK_DIVI
 client.reg_write(NUM_SAMPLES_BASE, NUM_SAMPLES)
 
 # Set the LTC6954 to output 50 MHz
-LTC6954_configure_default(client)
+#LTC6954_configure_default(client)
+LTC6954_configure(client, 5) # EXPERIMENT - try 40MHz
 
 # Set Mux for filtered data
 # Set Dac A for SIN and Dac B for LUT
 client.reg_write(DATAPATH_CONTROL_BASE, mux_port | 
                  DC2390_DAC_B_NCO_COS | DC2390_DAC_A_NCO_SIN | 
                  DC2390_LUT_ADDR_COUNT | DC2390_LUT_RUN_CONT)
+#ltc2500_cfg_led_on  = ((down_sample_factor | LTC2500_SINC_FILT)) | 0x03# | (LTC2500_N_FACTOR << 16)
+#ltc2500_cfg_led_off = ((down_sample_factor | LTC2500_SINC_FILT))# | (LTC2500_N_FACTOR << 16)
+ltc2500_cfg_led_on  = (((down_sample_factor | LTC2500_SSCIN_FLAT_FILT)) | 0x03) # | (LTC2500_N_FACTOR << 16)
+ltc2500_cfg_led_off = (((down_sample_factor | LTC2500_SSCIN_FLAT_FILT))       )# | (LTC2500_N_FACTOR << 16)
 
-ltc2500_cfg_led_on  = ((down_sample_factor | LTC2500_SSCIN_FLAT_FILT)<<6) | 0x03# | (LTC2500_N_FACTOR << 16)
-ltc2500_cfg_led_off = ((down_sample_factor | LTC2500_SSCIN_FLAT_FILT)<<6)# | (LTC2500_N_FACTOR << 16)
+#client.reg_write(LED_BASE,(LTC2500_DF_4 | LTC2500_SSINC_FILT))
+
+    # Configure the LTC2500
+#ltc2500_cfg_led_on  = (((df | filt)) | 0x03 | (DC2390.LTC2500_N_FACTOR << 16))
+#ltc2500_cfg_led_off = (((df | filt)) | (DC2390.LTC2500_N_FACTOR << 16))
+
+
+
 client.reg_write(LED_BASE, ltc2500_cfg_led_on)
 sleep(0.1)
 client.reg_write(LED_BASE, ltc2500_cfg_led_off)
 sleep(0.1)
 
+plt.figure(1) # Plot for time domain data
 
 # Seep the DAC freq and measure the filter respose
 filter_shape = []
 freq_bin = []
-for x in range(1, 100):
+for x in range(1, 250):
+#    client.reg_write(LED_BASE, ltc2500_cfg_led_on)
+#    sleep(0.1)
+#    client.reg_write(LED_BASE, ltc2500_cfg_led_off)
+#    sleep(0.1)
     print("Data point: " + str(x))
     # Calculate the NCO to coherent bin
     bin_number = x*8 # Number of cycles over the time record
+    bin_number = x*1 # Number of cycles over the time record
     
     # Produce different bin ranges based on DF
     if DF == 4:
@@ -184,11 +205,13 @@ for x in range(1, 100):
     # Capture the data
 #    data = capture(client, NUM_SAMPLES, timeout = 1.0) # Updating to new capture...
     sleep(0.5)
-    data_pre = sockit_capture(client, NUM_SAMPLES, trigger = 0, timeout = 1.0)
+    data_pre = sockit_capture(client, NUM_SAMPLES, trigger = 0, timeout = 0)
     data = sockit_uns32_to_signed32(data_pre)
     
     # Remove DC content
     data -= np.average(data)
+    
+
     
     # Apply windowing to data    
     data = data * np.blackman(NUM_SAMPLES)    
@@ -201,11 +224,27 @@ for x in range(1, 100):
     
     # Convert to dB
     fftdb = 20*np.log10(fftdata / max_amp)
-    
-    filter_shape.append(np.amax(fftdb[5:NUM_SAMPLES/2-1]))
+    amplitude = np.amax(fftdb[5:NUM_SAMPLES/2-1])
+    print("Amplitude of filtered data: " + str(amplitude))
+    filter_shape.append(amplitude)
+    if(x == 1):
+
+    # Plot time domain data
+        plt.plot(data)
+        plt.show()        
+        
+        bitmask = 1
+        for bit in range (0, 32):
+            bitcount = 0
+            for point in range(0, NUM_SAMPLES):
+                if((data_pre[point] & bitmask) == bitmask):
+                    bitcount += 1
+            print("Number of 1s in bit " + str(bit) + ": " + str(bitcount))
+            bitmask *= 2 # Test next bit...
 
 
 # Plot the results
+plt.figure(2)
 plt.plot(freq_bin,filter_shape)
 plt.title('LTC2512 Filter Shape')
 plt.xlabel("Bin")
