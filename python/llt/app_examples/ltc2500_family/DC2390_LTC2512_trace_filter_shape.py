@@ -62,17 +62,15 @@ import time
 
 # Change the parameters to run different scenarios.  
 
-# ADC 'U1' and 'U2' are the choices. UN-comment selected ADC
-ADC = 'U1'
-#ADC = 'U2'
+#ADC 'U1' and 'U2' are the choices. UN-comment selected ADC
+#ADC = 'U1'
+ADC = 'U2'
 
 # DF of 32, 16, 8, 4 are the choices for the LTC2512
-DF = 4
-#DF = 8
+#DF = 4
+DF = 8
 #DF = 16
 #DF = 32
-
-
 
 
 if ADC == 'U1':
@@ -87,8 +85,7 @@ elif DF == 8:
 elif DF == 16:
     down_sample_factor = LTC2500_DF_16
 else:
-    #down_sample_factor = LTC2500_DF_32
-    down_sample_factor = LTC2500_DF_64
+    down_sample_factor = LTC2500_DF_32
     
 master_clock = 50000000
 SYSTEM_CLOCK_DIVIDER = 199 
@@ -100,17 +97,22 @@ NUM_SAMPLES = 8192
 # Global Constants
 ###############################################################################
 
-LUT_NCO_DIVIDER = 0xFFFF
+LUT_NCO_DIVIDER = 0xFFFF # NCO updates every cycle
 nco_word_width = 32
 
 ###############################################################################
 # Main program
 ###############################################################################
 
-print "\n/////////////////////////////////////"
-print "// LTC2512 Trace Filter Shape Demo //"
-print "/////////////////////////////////////"
+print "\n/////////////////////////////////////////////"
+print "// LTC2512 / LTC2500 Trace Filter Shape Demo //"
+print "///////////////////////////////////////////////"
 
+# Uncomment one choice. The differences are that the LTC2500 does not
+# require manual configuration, and has a maximum MCLK sample rate of 1MSPS
+# vs. 1.6MSPS for the LTC2512.
+
+#ADC = 2512
 ADC = 2500
 
 if ADC == 2512:
@@ -143,8 +145,11 @@ client.reg_write(SYSTEM_CLOCK_BASE, ((LUT_NCO_DIVIDER << 16) | SYSTEM_CLOCK_DIVI
 client.reg_write(NUM_SAMPLES_BASE, NUM_SAMPLES)
 
 # Set the LTC6954 to output 50 MHz
-#LTC6954_configure_default(client)
-LTC6954_configure(client, 5) # EXPERIMENT - try 40MHz
+#LTC6954_configure_default(client) # Default 200MHz / 4
+
+# Divisors of 5, 6 will give CLK frequencies of 40MHz, 33.3MHz. This may be
+# useful for debugging FPGA timing.
+LTC6954_configure(client, 4 ) 
 
 # Set Mux for filtered data
 # Set Dac A for SIN and Dac B for LUT
@@ -156,14 +161,6 @@ client.reg_write(DATAPATH_CONTROL_BASE, mux_port |
 ltc2500_cfg_led_on  = (((down_sample_factor | LTC2500_SSCIN_FLAT_FILT)) | 0x03) # | (LTC2500_N_FACTOR << 16)
 ltc2500_cfg_led_off = (((down_sample_factor | LTC2500_SSCIN_FLAT_FILT))       )# | (LTC2500_N_FACTOR << 16)
 
-#client.reg_write(LED_BASE,(LTC2500_DF_4 | LTC2500_SSINC_FILT))
-
-    # Configure the LTC2500
-#ltc2500_cfg_led_on  = (((df | filt)) | 0x03 | (DC2390.LTC2500_N_FACTOR << 16))
-#ltc2500_cfg_led_off = (((df | filt)) | (DC2390.LTC2500_N_FACTOR << 16))
-
-
-
 client.reg_write(LED_BASE, ltc2500_cfg_led_on)
 sleep(0.1)
 client.reg_write(LED_BASE, ltc2500_cfg_led_off)
@@ -171,18 +168,14 @@ sleep(0.1)
 
 plt.figure(1) # Plot for time domain data
 
-# Seep the DAC freq and measure the filter respose
+# Sweep the DAC freq and measure the filter respose
 filter_shape = []
 freq_bin = []
-for x in range(1, 250):
-#    client.reg_write(LED_BASE, ltc2500_cfg_led_on)
-#    sleep(0.1)
-#    client.reg_write(LED_BASE, ltc2500_cfg_led_off)
-#    sleep(0.1)
+for x in range(0, 5):
     print("Data point: " + str(x))
     # Calculate the NCO to coherent bin
-    bin_number = x*8 # Number of cycles over the time record
-    bin_number = x*1 # Number of cycles over the time record
+    bin_number = (x+1)*8 # Number of cycles over the time record
+    bin_number = (x+1)*1 # Number of cycles over the time record
     
     # Produce different bin ranges based on DF
     if DF == 4:
@@ -211,15 +204,13 @@ for x in range(1, 250):
     # Remove DC content
     data -= np.average(data)
     
-
-    
     # Apply windowing to data    
     data = data * np.blackman(NUM_SAMPLES)    
     
     # Convert time domain data to frequncy domain
     fftdata = np.abs(np.fft.fft(data))
     
-    if x == 1:
+    if x == 0:
         max_amp = np.amax(fftdata)
     
     # Convert to dB

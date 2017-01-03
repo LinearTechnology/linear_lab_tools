@@ -149,9 +149,6 @@ def capture_seismic_data(client, filter_type):
     return nyq_data, nyq_filt_data, filt_25xx_data
     
     
-
-
-
 if __name__ == "__main__":
     
     PREFIX = "run2_120dB"
@@ -269,21 +266,21 @@ if __name__ == "__main__":
     
     plt.figure(1)    
     plt.subplot(2, 1, 1)
-    plt.title("LTC2378-20 mode seismic capture")
+    plt.title("Seismic pulse, LTC2500 Nyquist data")
     plt.plot(nyq_data_0)
     plt.subplot(2, 1, 2)
     plt.plot(nyq_data_120)
     
     plt.figure(2)
     plt.subplot(2, 1, 1)
-    plt.title("LTC2378-20 mode, post-processed w/ LTC2508 DF256 filter")
+    plt.title("LTC2500 Nyquist data, post-processed w/ SSINC DF256 filter")
     plt.plot(nyq_filt_data_0)
     plt.subplot(2, 1, 2)
     plt.plot(nyq_filt_data_120)
 
     plt.figure(3)
     plt.subplot(2, 1, 1)
-    plt.title("LTC2508, DF256 seismic capture")
+    plt.title("LTC2500 Filtered Data, SSINC DF256")
     plt.plot(filt_25xx_data_0)
     plt.subplot(2, 1, 2)
     plt.plot(filt_25xx_data_120)    

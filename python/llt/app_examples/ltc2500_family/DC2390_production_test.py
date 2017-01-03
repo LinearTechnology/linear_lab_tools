@@ -135,7 +135,7 @@ plt.plot(data)
 plt.subplot(2, 1, 2)
 plt.plot(fftdb)
 
-data_for_pscopeA = data_nodc / 128.0
+data_for_pscopeA = data_nodc / 256.0
 
 client.reg_write(DATAPATH_CONTROL_BASE, DC2390_FIFO_ADCB_NYQ) # First capture ADC B
 data = sockit_ltc2500_to_signed32(sockit_capture(client, NUM_SAMPLES, trigger = 0, timeout = 0.0))
@@ -150,10 +150,9 @@ plt.plot(data)
 plt.subplot(2, 1, 2)
 plt.plot(fftdb)
 
-data_for_pscopeB = data_nodc / 128.0
+data_for_pscopeB = data_nodc / 256.0
 
 #(out_path, num_bits, is_bipolar, num_samples, dc_num, ltc_num, *data):
-data_for_pscope = data_nodc / 128.0
 save_for_pscope("pscope_DC2390.adc",24 ,True, NUM_SAMPLES, "2390", "2500",
                 data_for_pscopeA, data_for_pscopeB)
 
