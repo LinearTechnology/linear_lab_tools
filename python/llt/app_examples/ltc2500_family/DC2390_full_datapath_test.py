@@ -249,7 +249,7 @@ for i in range(0, 22):
 cDataType = ctypes.c_uint * 65536
 cData     = cDataType()
 
-test_LUT_write = True
+test_LUT_write = False
 
 if(test_LUT_write == True):
     print("Writing downward ramp to LUT!")
