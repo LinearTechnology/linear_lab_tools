@@ -1281,6 +1281,326 @@ num_bits = 10
 alignment = 14
 is_bipolar = true
 
+["LTC2222 DC751A-A"]
+is_bipolar = true
+controller = "DC718"
+is_positive_clock = false
+part_number = "LTC2222"
+num_channels = 1
+num_bits = 12
+dc_number = "DC751A-A"
+alignment = 14
+
+["LTC2222-11 DC751A-M"]
+is_bipolar = true
+controller = "DC718"
+is_positive_clock = false
+part_number = "LTC2222-11"
+num_channels = 1
+num_bits = 11
+dc_number = "DC751A-M"
+alignment = 14
+
+["LTC2222 DC751A-E"]
+is_bipolar = true
+controller = "DC718"
+is_positive_clock = false
+part_number = "LTC2222"
+num_channels = 1
+num_bits = 12
+dc_number = "DC751A-E"
+alignment = 14
+
+["LTC2222-11 DC751A-N"]
+is_bipolar = true
+controller = "DC718"
+is_positive_clock = false
+part_number = "LTC2222-11"
+num_channels = 1
+num_bits = 11
+dc_number = "DC751A-N"
+alignment = 14
+
+["LTC2223 DC751A-B"]
+is_bipolar = true
+controller = "DC718"
+is_positive_clock = false
+part_number = "LTC2223"
+num_channels = 1
+num_bits = 12
+dc_number = "DC751A-B"
+alignment = 14
+
+["LTC2223 DC751A-F"]
+is_bipolar = true
+controller = "DC718"
+is_positive_clock = false
+part_number = "LTC2223"
+num_channels = 1
+num_bits = 12
+dc_number = "DC751A-F"
+alignment = 14
+
+["LTC2224 DC751A-K"]
+is_bipolar = true
+controller = "DC718"
+is_positive_clock = false
+part_number = "LTC2224"
+num_channels = 1
+num_bits = 12
+dc_number = "DC751A-K"
+alignment = 14
+
+["LTC2224 DC751A-I"]
+is_bipolar = true
+controller = "DC718"
+is_positive_clock = false
+part_number = "LTC2224"
+num_channels = 1
+num_bits = 12
+dc_number = "DC751A-I"
+alignment = 14
+
+["LTC2232 DC751A-C"]
+is_bipolar = true
+controller = "DC718"
+is_positive_clock = false
+part_number = "LTC2232"
+num_channels = 1
+num_bits = 10
+dc_number = "DC751A-C"
+alignment = 14
+
+["LTC2232 DC751A-G"]
+is_bipolar = true
+controller = "DC718"
+is_positive_clock = false
+part_number = "LTC2232"
+num_channels = 1
+num_bits = 10
+dc_number = "DC751A-G"
+alignment = 14
+
+["LTC2233 DC751A-H"]
+is_bipolar = true
+controller = "DC718"
+is_positive_clock = false
+part_number = "LTC2233"
+num_channels = 1
+num_bits = 10
+dc_number = "DC751A-H"
+alignment = 14
+
+["LTC2233 DC751A-D"]
+is_bipolar = true
+controller = "DC718"
+is_positive_clock = false
+part_number = "LTC2233"
+num_channels = 1
+num_bits = 10
+dc_number = "DC751A-D"
+alignment = 14
+
+["LTC2234 DC751A-J"]
+is_bipolar = true
+controller = "DC718"
+is_positive_clock = false
+part_number = "LTC2234"
+num_channels = 1
+num_bits = 10
+dc_number = "DC751A-J"
+alignment = 14
+
+["LTC2234 DC751A-L"]
+is_bipolar = true
+controller = "DC718"
+is_positive_clock = false
+part_number = "LTC2234"
+num_channels = 1
+num_bits = 10
+dc_number = "DC751A-L"
+alignment = 14
+
+["LTC2288 DC816A-P"]
+is_bipolar = true
+controller = "DC718"
+is_positive_clock = true
+part_number = "LTC2288"
+num_channels = 2
+num_bits = 10
+dc_number = "DC816A-P"
+alignment = 14
+
+["LTC2287 DC816A-Q"]
+is_bipolar = true
+controller = "DC718"
+is_positive_clock = true
+part_number = "LTC2287"
+num_channels = 2
+num_bits = 10
+dc_number = "DC816A-Q"
+alignment = 14
+
+["LTC2286 DC816A-R"]
+is_bipolar = true
+controller = "DC718"
+is_positive_clock = true
+part_number = "LTC2286"
+num_channels = 2
+num_bits = 10
+dc_number = "DC816A-R"
+alignment = 14
+
+["LTC2290 DC816A-L"]
+is_bipolar = true
+controller = "DC718"
+is_positive_clock = true
+part_number = "LTC2290"
+num_channels = 2
+num_bits = 12
+dc_number = "DC816A-L"
+alignment = 14
+
+["LTC2291 DC816A-K"]
+is_bipolar = true
+controller = "DC718"
+is_positive_clock = true
+part_number = "LTC2291"
+num_channels = 2
+num_bits = 12
+dc_number = "DC816A-K"
+alignment = 14
+
+["LTC2292 DC816A-J"]
+is_bipolar = true
+controller = "DC718"
+is_positive_clock = true
+part_number = "LTC2292"
+num_channels = 2
+num_bits = 12
+dc_number = "DC816A-J"
+alignment = 14
+
+["LTC2293 DC816A-I"]
+is_bipolar = true
+controller = "DC718"
+is_positive_clock = true
+part_number = "LTC2293"
+num_channels = 2
+num_bits = 12
+dc_number = "DC816A-I"
+alignment = 14
+
+["LTC2293 DC816A-N"]
+is_bipolar = true
+controller = "DC718"
+is_positive_clock = true
+part_number = "LTC2293"
+num_channels = 2
+num_bits = 12
+dc_number = "DC816A-N"
+alignment = 14
+
+["LTC2295 DC816A-E"]
+is_bipolar = true
+controller = "DC718"
+is_positive_clock = true
+part_number = "LTC2295"
+num_channels = 2
+num_bits = 14
+dc_number = "DC816A-E"
+alignment = 14
+
+["LTC2296 DC816A-D"]
+is_bipolar = true
+controller = "DC718"
+is_positive_clock = true
+part_number = "LTC2296"
+num_channels = 2
+num_bits = 14
+dc_number = "DC816A-D"
+alignment = 14
+
+["LTC2297 DC816A-C"]
+is_bipolar = true
+controller = "DC718"
+is_positive_clock = true
+part_number = "LTC2297"
+num_channels = 2
+num_bits = 14
+dc_number = "DC816A-C"
+alignment = 14
+
+["LTC2298 DC816A-G"]
+is_bipolar = true
+controller = "DC718"
+is_positive_clock = true
+part_number = "LTC2298"
+num_channels = 2
+num_bits = 14
+dc_number = "DC816A-G"
+alignment = 14
+
+["LTC2298 DC816A-B"]
+is_bipolar = true
+controller = "DC718"
+is_positive_clock = true
+part_number = "LTC2298"
+num_channels = 2
+num_bits = 14
+dc_number = "DC816A-B"
+alignment = 14
+
+["LTC2207-14 DC918C-I"]
+is_bipolar = true
+controller = "DC718"
+is_positive_clock = true
+part_number = "LTC2207-14"
+num_channels = 1
+num_bits = 14
+dc_number = "DC918C-I"
+alignment = 16
+
+["LTC2207-14 DC918C-H"]
+is_bipolar = true
+controller = "DC718"
+is_positive_clock = true
+part_number = "LTC2207-14"
+num_channels = 1
+num_bits = 14
+dc_number = "DC918C-H"
+alignment = 16
+
+["LTC2208-14 DC854D-D"]
+is_bipolar = true
+controller = "DC718"
+is_positive_clock = true
+part_number = "LTC2208-14"
+num_channels = 1
+num_bits = 14
+dc_number = "DC854D-D"
+alignment = 16
+
+["LTC2208-14 DC854C-Q"]
+is_bipolar = true
+controller = "DC718"
+is_positive_clock = true
+part_number = "LTC2208-14"
+num_channels = 1
+num_bits = 14
+dc_number = "DC854C-Q"
+alignment = 16
+
+["LTC2208 DC854C-P"]
+is_bipolar = true
+controller = "DC718"
+is_positive_clock = true
+part_number = "LTC2208"
+num_channels = 1
+num_bits = 16
+dc_number = "DC854C-P"
+alignment = 16
+
 #############
 ### DC890 ###
 #############
@@ -1299,20 +1619,6 @@ data_correction_code = """data = data[0] # Keep only one channel
 """
 fpga_load = 'DLVDS'
 spi_reg = "0x00, 0x80, 0x01, 0x00, 0x02, 0x00,0x03, 0x71, 0x04, 0x00"
-
-["LTC2351 DC1278A"]
-part_number = "LTC2351"
-dc_number = "DC1278A"
-controller = "DC890"
-num_channels = 6
-channels = "ch0, ch1, ch2, ch3, ch4, ch5"
-is_positive_clock = false
-num_bits = 14
-alignment = 14
-is_bipolar = false
-data_correction_code = ""
-fpga_load = 'S1408'
-spi_reg = ""
 
 ["LTC2378-20 DC1925A-A"]
 part_number = "LTC2378-20"
@@ -1471,8 +1777,904 @@ data_correction_code = ""
 fpga_load = 'CMOS'
 spi_reg = ""
 
+["LTC1403A DC1082A-D"]
+fpga_load = "S1407"
+is_bipolar = false
+data_correction_code = ""
+controller = "DC890"
+channels = "ch0"
+dc_number = "DC1082A-D"
+part_number = "LTC1403A"
+num_bits = 14
+is_positive_clock = false
+spi_reg = ""
+num_channels = 1
+alignment = 14
+
+["LTC1403A-1 DC1082A-C"]
+fpga_load = "S1407"
+is_bipolar = true
+data_correction_code = ""
+controller = "DC890"
+channels = "ch0"
+dc_number = "DC1082A-C"
+part_number = "LTC1403A-1"
+num_bits = 14
+is_positive_clock = false
+spi_reg = ""
+num_channels = 1
+alignment = 14
+
+["LTC1407A-1 DC1082A-A"]
+fpga_load = "S1407"
+is_bipolar = true
+data_correction_code = ""
+controller = "DC890"
+channels = "ch0, ch1"
+dc_number = "DC1082A-A"
+part_number = "LTC1407A-1"
+num_bits = 14
+is_positive_clock = false
+spi_reg = ""
+num_channels = 2
+alignment = 14
+
+["LTC1407A DC1082A-B"]
+fpga_load = "S1407"
+is_bipolar = false
+data_correction_code = ""
+controller = "DC890"
+channels = "ch0, ch1"
+dc_number = "DC1082A-B"
+part_number = "LTC1407A"
+num_bits = 14
+is_positive_clock = false
+spi_reg = ""
+num_channels = 2
+alignment = 14
+
+["LTC1408 DC887A"]
+fpga_load = "S1408"
+is_bipolar = true
+data_correction_code = ""
+controller = "DC890"
+channels = "ch0, ch1, ch2, ch3, ch4, ch5"
+dc_number = "DC887A"
+part_number = "LTC1408"
+num_bits = 14
+is_positive_clock = false
+spi_reg = ""
+num_channels = 6
+alignment = 14
+
+["LTC2220-1 DC750A-J"]
+fpga_load = "LVDS"
+is_bipolar = true
+data_correction_code = ""
+controller = "DC890"
+channels = "ch0"
+dc_number = "DC750A-J"
+part_number = "LTC2220-1"
+num_bits = 12
+is_positive_clock = false
+spi_reg = ""
+num_channels = 1
+alignment = 15
+
+["LTC2220-1 DC750A-K"]
+fpga_load = "LVDS"
+is_bipolar = true
+data_correction_code = ""
+controller = "DC890"
+channels = "ch0"
+dc_number = "DC750A-K"
+part_number = "LTC2220-1"
+num_bits = 12
+is_positive_clock = false
+spi_reg = ""
+num_channels = 1
+alignment = 15
+
+["LTC2220 DC750A-A"]
+fpga_load = "LVDS"
+is_bipolar = true
+data_correction_code = ""
+controller = "DC890"
+channels = "ch0"
+dc_number = "DC750A-A"
+part_number = "LTC2220"
+num_bits = 12
+is_positive_clock = false
+spi_reg = ""
+num_channels = 1
+alignment = 15
+
+["LTC2220 DC750A-E"]
+fpga_load = "LVDS"
+is_bipolar = true
+data_correction_code = ""
+controller = "DC890"
+channels = "ch0"
+dc_number = "DC750A-E"
+part_number = "LTC2220"
+num_bits = 12
+is_positive_clock = false
+spi_reg = ""
+num_channels = 1
+alignment = 15
+
+["LTC2221 DC750A-B"]
+fpga_load = "LVDS"
+is_bipolar = true
+data_correction_code = ""
+controller = "DC890"
+channels = "ch0"
+dc_number = "DC750A-B"
+part_number = "LTC2221"
+num_bits = 12
+is_positive_clock = false
+spi_reg = ""
+num_channels = 1
+alignment = 15
+
+["LTC2221 DC750A-F"]
+fpga_load = "LVDS"
+is_bipolar = true
+data_correction_code = ""
+controller = "DC890"
+channels = "ch0"
+dc_number = "DC750A-F"
+part_number = "LTC2221"
+num_bits = 12
+is_positive_clock = false
+spi_reg = ""
+num_channels = 1
+alignment = 15
+
+["LTC2230 DC750A-G"]
+fpga_load = "LVDS"
+is_bipolar = true
+data_correction_code = ""
+controller = "DC890"
+channels = "ch0"
+dc_number = "DC750A-G"
+part_number = "LTC2230"
+num_bits = 10
+is_positive_clock = false
+spi_reg = ""
+num_channels = 1
+alignment = 15
+
+["LTC2230 DC750A-C"]
+fpga_load = "LVDS"
+is_bipolar = true
+data_correction_code = ""
+controller = "DC890"
+channels = "ch0"
+dc_number = "DC750A-C"
+part_number = "LTC2230"
+num_bits = 10
+is_positive_clock = false
+spi_reg = ""
+num_channels = 1
+alignment = 15
+
+["LTC2231 DC750A-D"]
+fpga_load = "LVDS"
+is_bipolar = true
+data_correction_code = ""
+controller = "DC890"
+channels = "ch0"
+dc_number = "DC750A-D"
+part_number = "LTC2231"
+num_bits = 10
+is_positive_clock = false
+spi_reg = ""
+num_channels = 1
+alignment = 15
+
+["LTC2231 DC750A-H"]
+fpga_load = "LVDS"
+is_bipolar = true
+data_correction_code = ""
+controller = "DC890"
+channels = "ch0"
+dc_number = "DC750A-H"
+part_number = "LTC2231"
+num_bits = 10
+is_positive_clock = false
+spi_reg = ""
+num_channels = 1
+alignment = 15
+
+["LTC2240-12 DC997B-C"]
+fpga_load = "LVDS"
+is_bipolar = true
+data_correction_code = ""
+controller = "DC890"
+channels = "ch0"
+dc_number = "DC997B-C"
+part_number = "LTC2240-12"
+num_bits = 12
+is_positive_clock = false
+spi_reg = ""
+num_channels = 1
+alignment = 15
+
+["LTC2240-12 DC1133A-C"]
+fpga_load = "CMOS"
+is_bipolar = true
+data_correction_code = ""
+controller = "DC890"
+channels = "ch0"
+dc_number = "DC1133A-C"
+part_number = "LTC2240-12"
+num_bits = 12
+is_positive_clock = true
+spi_reg = ""
+num_channels = 1
+alignment = 16
+
+["LTC2240-10 DC1133A-F"]
+fpga_load = "CMOS"
+is_bipolar = true
+data_correction_code = ""
+controller = "DC890"
+channels = "ch0"
+dc_number = "DC1133A-F"
+part_number = "LTC2240-10"
+num_bits = 10
+is_positive_clock = true
+spi_reg = ""
+num_channels = 1
+alignment = 16
+
+["LTC2240-10 DC997B-F"]
+fpga_load = "LVDS"
+is_bipolar = true
+data_correction_code = ""
+controller = "DC890"
+channels = "ch0"
+dc_number = "DC997B-F"
+part_number = "LTC2240-10"
+num_bits = 10
+is_positive_clock = false
+spi_reg = ""
+num_channels = 1
+alignment = 15
+
+["LTC2241-12 DC997B-B"]
+fpga_load = "LVDS"
+is_bipolar = true
+data_correction_code = ""
+controller = "DC890"
+channels = "ch0"
+dc_number = "DC997B-B"
+part_number = "LTC2241-12"
+num_bits = 12
+is_positive_clock = false
+spi_reg = ""
+num_channels = 1
+alignment = 15
+
+["LTC2241-12 DC1133A-B"]
+fpga_load = "CMOS"
+is_bipolar = true
+data_correction_code = ""
+controller = "DC890"
+channels = "ch0"
+dc_number = "DC1133A-B"
+part_number = "LTC2241-12"
+num_bits = 12
+is_positive_clock = true
+spi_reg = ""
+num_channels = 1
+alignment = 16
+
+["LTC2241-10 DC997B-E"]
+fpga_load = "LVDS"
+is_bipolar = true
+data_correction_code = ""
+controller = "DC890"
+channels = "ch0"
+dc_number = "DC997B-E"
+part_number = "LTC2241-10"
+num_bits = 10
+is_positive_clock = false
+spi_reg = ""
+num_channels = 1
+alignment = 15
+
+["LTC2241-10 DC1133A-E"]
+fpga_load = "CMOS"
+is_bipolar = true
+data_correction_code = ""
+controller = "DC890"
+channels = "ch0"
+dc_number = "DC1133A-E"
+part_number = "LTC2241-10"
+num_bits = 10
+is_positive_clock = true
+spi_reg = ""
+num_channels = 1
+alignment = 16
+
+["LTC2242-10 DC1133A-D"]
+fpga_load = "CMOS"
+is_bipolar = true
+data_correction_code = ""
+controller = "DC890"
+channels = "ch0"
+dc_number = "DC1133A-D"
+part_number = "LTC2242-10"
+num_bits = 10
+is_positive_clock = true
+spi_reg = ""
+num_channels = 1
+alignment = 16
+
+["LTC2242-10 DC997B-D"]
+fpga_load = "LVDS"
+is_bipolar = true
+data_correction_code = ""
+controller = "DC890"
+channels = "ch0"
+dc_number = "DC997B-D"
+part_number = "LTC2242-10"
+num_bits = 10
+is_positive_clock = false
+spi_reg = ""
+num_channels = 1
+alignment = 15
+
+["LTC2242-12 DC997B-A"]
+fpga_load = "LVDS"
+is_bipolar = true
+data_correction_code = ""
+controller = "DC890"
+channels = "ch0"
+dc_number = "DC997B-A"
+part_number = "LTC2242-12"
+num_bits = 12
+is_positive_clock = false
+spi_reg = ""
+num_channels = 1
+alignment = 15
+
+["LTC2242-12 DC1133A-A"]
+fpga_load = "CMOS"
+is_bipolar = true
+data_correction_code = ""
+controller = "DC890"
+channels = "ch0"
+dc_number = "DC1133A-A"
+part_number = "LTC2242-12"
+num_bits = 12
+is_positive_clock = true
+spi_reg = ""
+num_channels = 1
+alignment = 16
+
+["LTC2280 DC851A-X"]
+fpga_load = "CMOS"
+is_bipolar = true
+data_correction_code = ""
+controller = "DC890"
+channels = "ch0, ch1"
+dc_number = "DC851A-X"
+part_number = "LTC2280"
+num_bits = 10
+is_positive_clock = true
+spi_reg = ""
+num_channels = 2
+alignment = 16
+
+["LTC2280 DC851A-W"]
+fpga_load = "CMOS"
+is_bipolar = true
+data_correction_code = ""
+controller = "DC890"
+channels = "ch0, ch1"
+dc_number = "DC851A-W"
+part_number = "LTC2280"
+num_bits = 10
+is_positive_clock = true
+spi_reg = ""
+num_channels = 2
+alignment = 16
+
+["LTC2281 DC1098A-D"]
+fpga_load = "CMOS"
+is_bipolar = true
+data_correction_code = ""
+controller = "DC890"
+channels = "ch0, ch1"
+dc_number = "DC1098A-D"
+part_number = "LTC2281"
+num_bits = 10
+is_positive_clock = true
+spi_reg = ""
+num_channels = 2
+alignment = 16
+
+["LTC2281 DC1098A-A"]
+fpga_load = "CMOS"
+is_bipolar = true
+data_correction_code = ""
+controller = "DC890"
+channels = "ch0, ch1"
+dc_number = "DC1098A-A"
+part_number = "LTC2281"
+num_bits = 10
+is_positive_clock = true
+spi_reg = ""
+num_channels = 2
+alignment = 16
+
+["LTC2282 DC851A-V"]
+fpga_load = "CMOS"
+is_bipolar = true
+data_correction_code = ""
+controller = "DC890"
+channels = "ch0, ch1"
+dc_number = "DC851A-V"
+part_number = "LTC2282"
+num_bits = 12
+is_positive_clock = true
+spi_reg = ""
+num_channels = 2
+alignment = 16
+
+["LTC2282 DC851A-U"]
+fpga_load = "CMOS"
+is_bipolar = true
+data_correction_code = ""
+controller = "DC890"
+channels = "ch0, ch1"
+dc_number = "DC851A-U"
+part_number = "LTC2282"
+num_bits = 12
+is_positive_clock = true
+spi_reg = ""
+num_channels = 2
+alignment = 16
+
+["LTC2283 DC1098A-B"]
+fpga_load = "CMOS"
+is_bipolar = true
+data_correction_code = ""
+controller = "DC890"
+channels = "ch0, ch1"
+dc_number = "DC1098A-B"
+part_number = "LTC2283"
+num_bits = 12
+is_positive_clock = true
+spi_reg = ""
+num_channels = 2
+alignment = 16
+
+["LTC2283 DC1098A-E"]
+fpga_load = "CMOS"
+is_bipolar = true
+data_correction_code = ""
+controller = "DC890"
+channels = "ch0, ch1"
+dc_number = "DC1098A-E"
+part_number = "LTC2283"
+num_bits = 12
+is_positive_clock = true
+spi_reg = ""
+num_channels = 2
+alignment = 16
+
+["LTC2284 DC851A-S"]
+fpga_load = "CMOS"
+is_bipolar = true
+data_correction_code = ""
+controller = "DC890"
+channels = "ch0, ch1"
+dc_number = "DC851A-S"
+part_number = "LTC2284"
+num_bits = 14
+is_positive_clock = true
+spi_reg = ""
+num_channels = 2
+alignment = 16
+
+["LTC2284 DC851A-T"]
+fpga_load = "CMOS"
+is_bipolar = true
+data_correction_code = ""
+controller = "DC890"
+channels = "ch0, ch1"
+dc_number = "DC851A-T"
+part_number = "LTC2284"
+num_bits = 14
+is_positive_clock = true
+spi_reg = ""
+num_channels = 2
+alignment = 16
+
+["LTC2285 DC1098A-F"]
+fpga_load = "CMOS"
+is_bipolar = true
+data_correction_code = ""
+controller = "DC890"
+channels = "ch0, ch1"
+dc_number = "DC1098A-F"
+part_number = "LTC2285"
+num_bits = 14
+is_positive_clock = true
+spi_reg = ""
+num_channels = 2
+alignment = 16
+
+["LTC2285 DC1098A-C"]
+fpga_load = "CMOS"
+is_bipolar = true
+data_correction_code = ""
+controller = "DC890"
+channels = "ch0, ch1"
+dc_number = "DC1098A-C"
+part_number = "LTC2285"
+num_bits = 14
+is_positive_clock = true
+spi_reg = ""
+num_channels = 2
+alignment = 16
+
+["LTC2286 DC851A-R"]
+fpga_load = "CMOS"
+is_bipolar = true
+data_correction_code = ""
+controller = "DC890"
+channels = "ch0, ch1"
+dc_number = "DC851A-R"
+part_number = "LTC2286"
+num_bits = 10
+is_positive_clock = true
+spi_reg = ""
+num_channels = 2
+alignment = 16
+
+["LTC2287 DC851A-Q"]
+fpga_load = "CMOS"
+is_bipolar = true
+data_correction_code = ""
+controller = "DC890"
+channels = "ch0, ch1"
+dc_number = "DC851A-Q"
+part_number = "LTC2287"
+num_bits = 10
+is_positive_clock = true
+spi_reg = ""
+num_channels = 2
+alignment = 16
+
+["LTC2288 DC851A-P"]
+fpga_load = "CMOS"
+is_bipolar = true
+data_correction_code = ""
+controller = "DC890"
+channels = "ch0, ch1"
+dc_number = "DC851A-P"
+part_number = "LTC2288"
+num_bits = 10
+is_positive_clock = true
+spi_reg = ""
+num_channels = 2
+alignment = 16
+
+["LTC2289 DC851A-O"]
+fpga_load = "CMOS"
+is_bipolar = true
+data_correction_code = ""
+controller = "DC890"
+channels = "ch0, ch1"
+dc_number = "DC851A-O"
+part_number = "LTC2289"
+num_bits = 10
+is_positive_clock = true
+spi_reg = ""
+num_channels = 2
+alignment = 16
+
+["LTC2290 DC851A-L"]
+fpga_load = "CMOS"
+is_bipolar = true
+data_correction_code = ""
+controller = "DC890"
+channels = "ch0, ch1"
+dc_number = "DC851A-L"
+part_number = "LTC2290"
+num_bits = 12
+is_positive_clock = true
+spi_reg = ""
+num_channels = 2
+alignment = 16
+
+["LTC2291 DC851A-K"]
+fpga_load = "CMOS"
+is_bipolar = true
+data_correction_code = ""
+controller = "DC890"
+channels = "ch0, ch1"
+dc_number = "DC851A-K"
+part_number = "LTC2291"
+num_bits = 12
+is_positive_clock = true
+spi_reg = ""
+num_channels = 2
+alignment = 16
+
+["LTC2292 DC851A-J"]
+fpga_load = "CMOS"
+is_bipolar = true
+data_correction_code = ""
+controller = "DC890"
+channels = "ch0, ch1"
+dc_number = "DC851A-J"
+part_number = "LTC2292"
+num_bits = 12
+is_positive_clock = true
+spi_reg = ""
+num_channels = 2
+alignment = 16
+
+["LTC2293 DC851A-I"]
+fpga_load = "CMOS"
+is_bipolar = true
+data_correction_code = ""
+controller = "DC890"
+channels = "ch0, ch1"
+dc_number = "DC851A-I"
+part_number = "LTC2293"
+num_bits = 12
+is_positive_clock = true
+spi_reg = ""
+num_channels = 2
+alignment = 16
+
+["LTC2293 DC851A-N"]
+fpga_load = "CMOS"
+is_bipolar = true
+data_correction_code = ""
+controller = "DC890"
+channels = "ch0, ch1"
+dc_number = "DC851A-N"
+part_number = "LTC2293"
+num_bits = 12
+is_positive_clock = true
+spi_reg = ""
+num_channels = 2
+alignment = 16
+
+["LTC2294 DC851A-M"]
+fpga_load = "CMOS"
+is_bipolar = true
+data_correction_code = ""
+controller = "DC890"
+channels = "ch0, ch1"
+dc_number = "DC851A-M"
+part_number = "LTC2294"
+num_bits = 12
+is_positive_clock = true
+spi_reg = ""
+num_channels = 2
+alignment = 16
+
+["LTC2294 DC851A-H"]
+fpga_load = "CMOS"
+is_bipolar = true
+data_correction_code = ""
+controller = "DC890"
+channels = "ch0, ch1"
+dc_number = "DC851A-H"
+part_number = "LTC2294"
+num_bits = 12
+is_positive_clock = true
+spi_reg = ""
+num_channels = 2
+alignment = 16
+
+["LTC2295 DC851A-E"]
+fpga_load = "CMOS"
+is_bipolar = true
+data_correction_code = ""
+controller = "DC890"
+channels = "ch0, ch1"
+dc_number = "DC851A-E"
+part_number = "LTC2295"
+num_bits = 14
+is_positive_clock = true
+spi_reg = ""
+num_channels = 2
+alignment = 16
+
+["LTC2296 DC851A-D"]
+fpga_load = "CMOS"
+is_bipolar = true
+data_correction_code = ""
+controller = "DC890"
+channels = "ch0, ch1"
+dc_number = "DC851A-D"
+part_number = "LTC2296"
+num_bits = 14
+is_positive_clock = true
+spi_reg = ""
+num_channels = 2
+alignment = 16
+
+["LTC2297 DC851A-C"]
+fpga_load = "CMOS"
+is_bipolar = true
+data_correction_code = ""
+controller = "DC890"
+channels = "ch0, ch1"
+dc_number = "DC851A-C"
+part_number = "LTC2297"
+num_bits = 14
+is_positive_clock = true
+spi_reg = ""
+num_channels = 2
+alignment = 16
+
+["LTC2298 DC851A-G"]
+fpga_load = "CMOS"
+is_bipolar = true
+data_correction_code = ""
+controller = "DC890"
+channels = "ch0, ch1"
+dc_number = "DC851A-G"
+part_number = "LTC2298"
+num_bits = 14
+is_positive_clock = true
+spi_reg = ""
+num_channels = 2
+alignment = 16
+
+["LTC2298 DC851A-B"]
+fpga_load = "CMOS"
+is_bipolar = true
+data_correction_code = ""
+controller = "DC890"
+channels = "ch0, ch1"
+dc_number = "DC851A-B"
+part_number = "LTC2298"
+num_bits = 14
+is_positive_clock = true
+spi_reg = ""
+num_channels = 2
+alignment = 16
+
+["LTC2299 DC851A-A"]
+fpga_load = "CMOS"
+is_bipolar = true
+data_correction_code = ""
+controller = "DC890"
+channels = "ch0, ch1"
+dc_number = "DC851A-A"
+part_number = "LTC2299"
+num_bits = 14
+is_positive_clock = true
+spi_reg = ""
+num_channels = 2
+alignment = 16
+
+["LTC2299 DC851A-F"]
+fpga_load = "CMOS"
+is_bipolar = true
+data_correction_code = ""
+controller = "DC890"
+channels = "ch0, ch1"
+dc_number = "DC851A-F"
+part_number = "LTC2299"
+num_bits = 14
+is_positive_clock = true
+spi_reg = ""
+num_channels = 2
+alignment = 16
+
+["LTC2355-14 DC1082A-F"]
+fpga_load = "S1407"
+is_bipolar = false
+data_correction_code = ""
+controller = "DC890"
+channels = "ch0"
+dc_number = "DC1082A-F"
+part_number = "LTC2355-14"
+num_bits = 14
+is_positive_clock = false
+spi_reg = ""
+num_channels = 1
+alignment = 14
+
+["LTC2356-14 DC1082A-E"]
+fpga_load = "S1407"
+is_bipolar = true
+data_correction_code = ""
+controller = "DC890"
+channels = "ch0"
+dc_number = "DC1082A-E"
+part_number = "LTC2356-14"
+num_bits = 14
+is_positive_clock = false
+spi_reg = ""
+num_channels = 1
+alignment = 14
+
+["LTC2208 DC996B-B"]
+fpga_load = "LVDS"
+is_bipolar = true
+data_correction_code = ""
+controller = "DC890"
+channels = "ch0"
+dc_number = "DC996B-B"
+part_number = "LTC2208"
+num_bits = 16
+is_positive_clock = true
+spi_reg = ""
+num_channels = 1
+alignment = 16
+
+["LTC2208-14 DC996B-D"]
+fpga_load = "LVDS"
+is_bipolar = true
+data_correction_code = ""
+controller = "DC890"
+channels = "ch0"
+dc_number = "DC996B-D"
+part_number = "LTC2208-14"
+num_bits = 14
+is_positive_clock = true
+spi_reg = ""
+num_channels = 1
+alignment = 16
+
+["LTC2208 DC996B-A"]
+fpga_load = "LVDS"
+is_bipolar = true
+data_correction_code = ""
+controller = "DC890"
+channels = "ch0"
+dc_number = "DC996B-A"
+part_number = "LTC2208"
+num_bits = 16
+is_positive_clock = true
+spi_reg = ""
+num_channels = 1
+alignment = 16
+
+["LTC2208-14 DC996B-C"]
+fpga_load = "LVDS"
+is_bipolar = true
+data_correction_code = ""
+controller = "DC890"
+channels = "ch0"
+dc_number = "DC996B-C"
+part_number = "LTC2208-14"
+num_bits = 14
+is_positive_clock = true
+spi_reg = ""
+num_channels = 1
+alignment = 16
+
+["LTC2351-14 DC1278A"]
+fpga_load = "S1407"
+is_bipolar = true
+data_correction_code = ""
+controller = "DC890"
+channels = "ch0, ch1, ch2, ch3, ch4, ch5"
+dc_number = "DC1278A"
+part_number = "LTC2351-14"
+num_bits = 14
+is_positive_clock = false
+spi_reg = ""
+num_channels = 6
+alignment = 14
+
 ##############
-### DC1370 ###
+### DC1371 ###
 ##############
 
 ["LTC2268 DC1532A"]
