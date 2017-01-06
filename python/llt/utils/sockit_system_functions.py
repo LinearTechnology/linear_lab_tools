@@ -77,21 +77,29 @@ SPI_STATUS = 0x08
 SPI_CONTROL = 0x0C
 SPI_SS = 0x14
 
-CW_EN_TRIG = 0x00000002
-CW_START = 0x00000001
+TRIG_NOW = 0x00000002 # Trigger immediately.
+TRIG_KEY1 = 0x00000000 # 
+TRIG_X10 = 0x00000040 # Trigger on test point X10
+CW_START = 0x00000001 # START is sort of a misnomer. When asserted, ring buffer is running.
 
 #Additional register definitions for CMOS_32_BIT_CAPTURE load
 CIC_RATE_BASE = 0x60
 
 
-def sockit_capture(client, recordlength, trigger = 0, timeout = 0.0):
+def sockit_capture(client, recordlength, trigger = TRIG_NOW, timeout = 0.0):
     dmy = False #Consider adding this as an argument.
 #    print("Starting Capture system...\n");
     client.reg_write(NUM_SAMPLES_BASE, recordlength)
     client.reg_write(CONTROL_BASE, CW_START)
     sleep(0.1) #sleep for a second
-    client.reg_write(CONTROL_BASE, CW_EN_TRIG|CW_START)
-#    client.reg_write(CONTROL_BASE, (CW_EN_TRIG)) # Drive trigger enable high, then low.
+    if(trigger == TRIG_NOW):
+        print("Software immediate trigger...")
+    if(trigger == TRIG_KEY1):
+        print("Waiting for trigger on KEY1...")
+    if(trigger == TRIG_X10):
+        print("Waiting for trigger on X10...")
+    client.reg_write(CONTROL_BASE, trigger|CW_START)
+#    client.reg_write(CONTROL_BASE, (TRIG_NOW)) # Drive trigger enable high, then low.
 
 #    client.reg_write(CONTROL_BASE, CW_START)
 #    sleep(timeout) #sleep for a second
@@ -148,7 +156,7 @@ def sockit_ramp_test(client, recordlength, trigger = 0, timeout = 0.0):
     client.reg_write(NUM_SAMPLES_BASE, recordlength)
     client.reg_write(CONTROL_BASE, CW_START)
     sleep(0.1) #sleep for a second
-    client.reg_write(CONTROL_BASE, CW_EN_TRIG|CW_START)
+    client.reg_write(CONTROL_BASE, TRIG_NOW|CW_START)
 
 # First, capture pattern data
     cap_start_time = time.time();
