@@ -63,13 +63,13 @@ import time
 # Change the parameters to run different scenarios.  
 
 #ADC 'U1' and 'U2' are the choices. UN-comment selected ADC
-#ADC = 'U1'
-ADC = 'U2'
+ADC = 'U1'
+#ADC = 'U2'
 
 # DF of 32, 16, 8, 4 are the choices for the LTC2512
 #DF = 4
-DF = 8
-#DF = 16
+#DF = 8
+DF = 16
 #DF = 32
 
 
@@ -198,7 +198,7 @@ for x in range(0, 5):
     # Capture the data
 #    data = capture(client, NUM_SAMPLES, timeout = 1.0) # Updating to new capture...
     sleep(0.5)
-    data_pre = sockit_capture(client, NUM_SAMPLES, trigger = 0, timeout = 0)
+    data_pre = sockit_capture(client, NUM_SAMPLES, trigger = TRIG_NOW, timeout = 0)
     data = sockit_uns32_to_signed32(data_pre)
     
     # Remove DC content

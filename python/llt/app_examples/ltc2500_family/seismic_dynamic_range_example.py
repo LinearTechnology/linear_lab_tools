@@ -57,9 +57,18 @@ from llt.utils.sockit_system_functions import *
 ###############################################################################
 
 SYSTEM_CLOCK_DIVIDER = 99 # 50MHz / 200 = 250 Ksps
-NUM_SAMPLES = 2**20
+#NUM_SAMPLES = 2**20
+NUM_SAMPLES = 2**18
 SINC_LEN = 2048
 FILTER_TYPE = 1
+
+# IMPORTANT NOTES ABOUT TRIG_KEY1 and TRIG_X10 MODES:
+# The trigger signal must stay high for the entire capture. We will make this
+# more convenient with a future FPGA load.
+
+#TRIG_MODE = TRIG_NOW
+#TRIG_MODE = TRIG_KEY1
+TRIG_MODE = TRIG_X10
 
 
 
@@ -76,20 +85,23 @@ def capture_seismic_data(client, filter_type):
     """
     # Construct or extract filter coefficients
     if filter_type == 1:
+        filter_str = "SSINC 256"
         length = 256
         with open('../../../../common/ltc25xx_filters/ssinc_256.txt') as filter_coeff_file:
             ltc25xx_filter = [float(line) for line in filter_coeff_file]
         # Normalize to unity gain
         sum_ltc25xx_filter = sum(ltc25xx_filter)
         ltc25xx_filter[:] = [x / sum_ltc25xx_filter for x in ltc25xx_filter] 
-    elif filter_type == 2:    
+    elif filter_type == 2:   
+        filter_str = "SSINC 1024"
         length = 1024
         with open('../../../../common/ltc25xx_filters/ssinc_1024.txt') as filter_coeff_file:
             ltc25xx_filter = [float(line) for line in filter_coeff_file]
         # Normalize to unity gain
         sum_ltc25xx_filter = sum(ltc25xx_filter)
         ltc25xx_filter[:] = [x / sum_ltc25xx_filter for x in ltc25xx_filter]
-    elif filter_type == 3:  
+    elif filter_type == 3:
+        filter_str = "SSINC 4096"
         length = 4096
         with open('../../../../common/ltc25xx_filters/ssinc_4096.txt') as filter_coeff_file:
             ltc25xx_filter = [float(line) for line in filter_coeff_file]
@@ -97,6 +109,7 @@ def capture_seismic_data(client, filter_type):
         sum_ltc25xx_filter = sum(ltc25xx_filter)
         ltc25xx_filter[:] = [x / sum_ltc25xx_filter for x in ltc25xx_filter]
     else:
+        filter_str = "SINC 2048"
         length = SINC_LEN
         ltc25xx_filter = np.ones(SINC_LEN)      # Create the sinc filter coeff
         ltc25xx_filter /= sum(ltc25xx_filter)   # Normalize to unity gain
@@ -112,7 +125,7 @@ def capture_seismic_data(client, filter_type):
                                                   DC2390.DC2390_LUT_RUN_ONCE)
     sleep(2.5) # Allow LUT to run through until end...
     # Capture the data
-    nyq_data_c = sockit_ltc2500_to_signed32(sockit_capture(client, NUM_SAMPLES, trigger = 0, timeout = 1.0))
+    nyq_data_c = sockit_ltc2500_to_signed32(sockit_capture(client, NUM_SAMPLES, trigger = TRIG_MODE, timeout = 1.0))
     nyq_data = np.zeros(len(nyq_data_c))
     nyq_data += nyq_data_c
     nyq_data *= (5.0 / 2147483648.0)
@@ -124,6 +137,7 @@ def capture_seismic_data(client, filter_type):
     # -------------------------------------------------------------------------
     # Set Mux for filtered data
     # Set Dac A for SIN and Dac B for LUT
+    sleep(1.0)
     client.reg_write(DC2390.DATAPATH_CONTROL_BASE, DC2390.DC2390_FIFO_ADCB_FIL |
                                                    DC2390.DC2390_DAC_B_LUT |
                                                    DC2390.DC2390_DAC_A_NCO_SIN |
@@ -132,7 +146,7 @@ def capture_seismic_data(client, filter_type):
     sleep(0.25)
                                                   
     # Capture the data
-    filt_25xx_data_c = sockit_uns32_to_signed32(sockit_capture(client, NUM_SAMPLES/length, trigger = 0, 
+    filt_25xx_data_c = sockit_uns32_to_signed32(sockit_capture(client, NUM_SAMPLES/length, trigger = TRIG_MODE, 
                           timeout = 1))
     filt_25xx_data = np.zeros(len(filt_25xx_data_c))
     filt_25xx_data += filt_25xx_data_c
@@ -155,15 +169,19 @@ if __name__ == "__main__":
     WRITE_FILES = False
     
     if FILTER_TYPE == 1:
+        filter_str = "SSINC 256"
         filt = DC2390.LTC2500_SSINC_FILT
         df = DC2390.LTC2500_DF_256
     elif FILTER_TYPE == 2:
+        filter_str = "SSINC 1024"
         filt = DC2390.LTC2500_SSINC_FILT
         df = DC2390.LTC2500_DF_1024
     elif FILTER_TYPE == 3:
+        filter_str = "SSINC 4096"
         filt = DC2390.LTC2500_SSINC_FILT
         df = DC2390.LTC2500_DF_4096
     else:
+        filter_str = "SINC 2048"
         filt = DC2390.LTC2500_SINC_FILT
         df = DC2390.LTC2500_DF_2048
 
@@ -273,14 +291,14 @@ if __name__ == "__main__":
     
     plt.figure(2)
     plt.subplot(2, 1, 1)
-    plt.title("LTC2500 Nyquist data, post-processed w/ SSINC DF256 filter")
+    plt.title("LTC2500 Nyquist data, post-processed w/\n " + filter_str + " filter coeffs.")
     plt.plot(nyq_filt_data_0)
     plt.subplot(2, 1, 2)
     plt.plot(nyq_filt_data_120)
 
     plt.figure(3)
     plt.subplot(2, 1, 1)
-    plt.title("LTC2500 Filtered Data, SSINC DF256")
+    plt.title("LTC2500 Filtered Data, " + filter_str + " filter")
     plt.plot(filt_25xx_data_0)
     plt.subplot(2, 1, 2)
     plt.plot(filt_25xx_data_120)    
@@ -296,8 +314,11 @@ if __name__ == "__main__":
     
     print "The program took", (time.time() - start_time)/60, "min to run"
     
-    
-    
+
+
+###############################
+#### Deprecated code below ####
+###############################
 
 #def capture_plot(client, plot, gain, filter_type):
 #    """
@@ -345,7 +366,7 @@ if __name__ == "__main__":
 #                                                  DC2390.DC2390_LUT_RUN_ONCE)
 #    
 #    # Capture the data
-#    data = sockit_ltc2500_to_signed32(sockit_capture(client, NUM_SAMPLES, trigger = 0, timeout = 1.0))
+#    data = sockit_ltc2500_to_signed32(sockit_capture(client, NUM_SAMPLES, trigger = TRIG_MODE, timeout = 1.0))
 #    avg = np.average(data[len(data)-1002:len(data)-2])
 #    data -= avg
 #    data *= gain
@@ -378,7 +399,7 @@ if __name__ == "__main__":
 #                                                   DC2390.DC2390_LUT_RUN_ONCE)
 #    sleep(1.0) # Let any wiggles in progress die out
 #    # Capture the data
-#    data = sockit_uns32_to_signed32(sockit_capture(client, NUM_SAMPLES/length, trigger = 0, 
+#    data = sockit_uns32_to_signed32(sockit_capture(client, NUM_SAMPLES/length, trigger = TRIG_MODE, 
 #                          timeout = 1))
 #    avg = np.average(data[len(data)-6:len(data)-2])
 #    data = data - avg
