@@ -15409,7 +15409,7 @@
                         {
                             "{9EF0B969-E518-4E46-987F-47570745A589}:_65E5D1488E9F4CDBA215EEBC67EF5CFF"
                             {
-                            "Name" = "8:+Llt"
+                            "Name" = "8:+llt"
                             "AlwaysCreate" = "11:FALSE"
                             "Condition" = "8:"
                             "Transitive" = "11:FALSE"
@@ -17141,7 +17141,7 @@
             }
             "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_4FDE7405E9EE4611841941DDC83774AC"
             {
-            "SourcePath" = "8:..\\Release\\ltc_controller_comm.dll"
+            "SourcePath" = "8:..\\Release\\ltc_controller_comm64.dll"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_31347820C9644DB1B9075B6D7E8760B0"
