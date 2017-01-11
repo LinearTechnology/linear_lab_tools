@@ -116,11 +116,11 @@ xfer_start_time = time.time()
 if(grab_filtered_data == True):
     client.reg_write(DATAPATH_CONTROL_BASE, FILTERED_ADC_DATA) # set MUX to filtered data
     client.reg_write(CIC_RATE_BASE, 64) # Set rate change factor (decimation factor)
-    data = sockit_uns32_to_signed32(sockit_capture(client, NUM_SAMPLES, trigger = 0, timeout = 2.0))
+    data = sockit_uns32_to_signed32(sockit_capture(client, NUM_SAMPLES, trigger = TRIG_NOW, timeout = 2.0))
 
 else:
     client.reg_write(DATAPATH_CONTROL_BASE, ADC_DATA)
-    data = sockit_uns32_to_signed32(sockit_capture(client, NUM_SAMPLES, trigger = 0, timeout = 2.0))
+    data = sockit_uns32_to_signed32(sockit_capture(client, NUM_SAMPLES, trigger = TRIG_NOW, timeout = 2.0))
 
 xfer_time = time.time() - xfer_start_time
 print("Capture / xfer time: " + str(xfer_time) + " Seconds...")
