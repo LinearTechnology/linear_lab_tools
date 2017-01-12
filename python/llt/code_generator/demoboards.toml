@@ -2677,9 +2677,177 @@ alignment = 14
 ### DC1371 ###
 ##############
 
-["LTC2268 DC1532A"]
-part_number = "LTC2268"
-dc_number = "DC1532A"
+["LTC2175-14 DC1525A-A"]
+part_number = "LTC2175-14"
+dc_number = "DC1525A-A"
+controller = "DC1371"
+num_channels = 4
+channels = "ch0, ch1, ch2, ch3"
+num_bits = 14
+alignment = 14
+is_bipolar = false
+fpga_load = "S2175"
+demo_config = "0x29000000"
+spi_reg = "0x00, 0x80, 0x01, 0x00, 0x02, 0x80, 0x03, 0x00, 0x04, 0x00"
+num_chip_selects = 1
+
+["LTC2174-14 DC1525A-B"]
+part_number = "LTC2174-14"
+dc_number = "DC1525A-B"
+controller = "DC1371"
+num_channels = 4
+channels = "ch0, ch1, ch2, ch3"
+num_bits = 14
+alignment = 14
+is_bipolar = false
+fpga_load = "S2175"
+demo_config = "0x29000000"
+spi_reg = "0x00, 0x80, 0x01, 0x00, 0x02, 0x80, 0x03, 0x00, 0x04, 0x00"
+num_chip_selects = 1
+
+["LTC2173-14 DC1525A-C"]
+part_number = "LTC2173-14"
+dc_number = "DC1525A-C"
+controller = "DC1371"
+num_channels = 4
+channels = "ch0, ch1, ch2, ch3"
+num_bits = 14
+alignment = 14
+is_bipolar = false
+fpga_load = "S2175"
+demo_config = "0x29000000"
+spi_reg = "0x00, 0x80, 0x01, 0x00, 0x02, 0x80, 0x03, 0x00, 0x04, 0x00"
+num_chip_selects = 1
+
+["LTC2172-14 DC1525B-D"]
+part_number = "LTC2172-14"
+dc_number = "DC1525B-D"
+controller = "DC1371"
+num_channels = 4
+channels = "ch0, ch1, ch2, ch3"
+num_bits = 14
+alignment = 14
+is_bipolar = false
+fpga_load = "S2175"
+demo_config = "0x29000000"
+spi_reg = "0x00, 0x80, 0x01, 0x00, 0x02, 0x80, 0x03, 0x00, 0x04, 0x00"
+num_chip_selects = 1
+
+["LTC2171-14 DC1525A-E"]
+part_number = "LTC2171-14"
+dc_number = "DC1525A-E"
+controller = "DC1371"
+num_channels = 4
+channels = "ch0, ch1, ch2, ch3"
+num_bits = 14
+alignment = 14
+is_bipolar = false
+fpga_load = "S2175"
+demo_config = "0x29000000"
+spi_reg = "0x00, 0x80, 0x01, 0x00, 0x02, 0x80, 0x03, 0x00, 0x04, 0x00"
+num_chip_selects = 1
+
+["LTC2170-14 DC1525A-F"]
+part_number = "LTC2170-14"
+dc_number = "DC1525A-F"
+controller = "DC1371"
+num_channels = 4
+channels = "ch0, ch1, ch2, ch3"
+num_bits = 14
+alignment = 14
+is_bipolar = false
+fpga_load = "S2175"
+demo_config = "0x29000000"
+spi_reg = "0x00, 0x80, 0x01, 0x00, 0x02, 0x80, 0x03, 0x00, 0x04, 0x00"
+num_chip_selects = 1
+
+["LTC2175-12 DC1525A-G"]
+part_number = "LTC2175-12"
+dc_number = "DC1525A-G"
+controller = "DC1371"
+num_channels = 4
+channels = "ch0, ch1, ch2, ch3"
+num_bits = 12
+alignment = 14
+is_bipolar = false
+fpga_load = "S2175"
+demo_config = "0x29000000"
+spi_reg = "0x00, 0x80, 0x01, 0x00, 0x02, 0x80, 0x03, 0x00, 0x04, 0x00"
+num_chip_selects = 1
+
+["LTC2174-12 DC1525A-H"]
+part_number = "LTC2174-12"
+dc_number = "DC1525A-H"
+controller = "DC1371"
+num_channels = 4
+channels = "ch0, ch1, ch2, ch3"
+num_bits = 12
+alignment = 14
+is_bipolar = false
+fpga_load = "S2175"
+demo_config = "0x29000000"
+spi_reg = "0x00, 0x80, 0x01, 0x00, 0x02, 0x80, 0x03, 0x00, 0x04, 0x00"
+num_chip_selects = 1
+
+["LTC2173-12 DC1525A-I"]
+part_number = "LTC2173-12"
+dc_number = "DC1525A-I"
+controller = "DC1371"
+num_channels = 4
+channels = "ch0, ch1, ch2, ch3"
+num_bits = 12
+alignment = 14
+is_bipolar = false
+fpga_load = "S2175"
+demo_config = "0x29000000"
+spi_reg = "0x00, 0x80, 0x01, 0x00, 0x02, 0x80, 0x03, 0x00, 0x04, 0x00"
+num_chip_selects = 1
+
+["LTC2172-12 DC1525A-J"]
+part_number = "LTC2172-12"
+dc_number = "DC1525A-J"
+controller = "DC1371"
+num_channels = 4
+channels = "ch0, ch1, ch2, ch3"
+num_bits = 12
+alignment = 14
+is_bipolar = false
+fpga_load = "S2175"
+demo_config = "0x29000000"
+spi_reg = "0x00, 0x80, 0x01, 0x00, 0x02, 0x80, 0x03, 0x00, 0x04, 0x00"
+num_chip_selects = 1
+
+["LTC2171-12 DC1525A-K"]
+part_number = "LTC2171-12"
+dc_number = "DC1525A-K"
+controller = "DC1371"
+num_channels = 4
+channels = "ch0, ch1, ch2, ch3"
+num_bits = 12
+alignment = 14
+is_bipolar = false
+fpga_load = "S2175"
+demo_config = "0x29000000"
+spi_reg = "0x00, 0x80, 0x01, 0x00, 0x02, 0x80, 0x03, 0x00, 0x04, 0x00"
+num_chip_selects = 1
+
+["LTC2170-12 DC1525A-L"]
+part_number = "LTC2171-12"
+dc_number = "DC1525A-K"
+controller = "DC1371"
+num_channels = 4
+channels = "ch0, ch1, ch2, ch3"
+num_bits = 12
+alignment = 14
+is_bipolar = false
+fpga_load = "S2175"
+demo_config = "0x29000000"
+spi_reg = "0x00, 0x80, 0x01, 0x00, 0x02, 0x80, 0x03, 0x00, 0x04, 0x00"
+num_chip_selects = 1
+
+["LTC2268-14 DC1532A-A"]
+part_number = "LTC2268-14"
+dc_number = "DC1532A-A"
 controller = "DC1371"
 num_channels = 2
 channels = "ch0, ch1"
@@ -2688,20 +2856,400 @@ alignment = 14
 is_bipolar = false
 fpga_load = "S2175"
 demo_config = "0x28000000"
-spi_reg = "0x00, 0x80, 0x01, 0x00, 0x02, 0x00, 0x03, 0x00, 0x04, 0x00"
+spi_reg = "0x00, 0x80, 0x01, 0x00, 0x02, 0x80, 0x03, 0x00, 0x04, 0x00"
+num_chip_selects = 1
 
-["LTC2157-14 DC1564A-A"]
-part_number = "LTC2157-14"
-dc_number = "DC1564A-A"
+["LTC2267-14 DC1532A-B"]
+part_number = "LTC2267-14"
+dc_number = "DC1532A-B"
+controller = "DC1371"
+num_channels = 2
+channels = "ch0, ch1"
+num_bits = 14
+alignment = 14
+is_bipolar = false
+fpga_load = "S2175"
+demo_config = "0x28000000"
+spi_reg = "0x00, 0x80, 0x01, 0x00, 0x02, 0x80, 0x03, 0x00, 0x04, 0x00"
+num_chip_selects = 1
+
+["LTC2266-14 DC1532A-C"]
+part_number = "LTC2266-14"
+dc_number = "DC1532A-C"
+controller = "DC1371"
+num_channels = 2
+channels = "ch0, ch1"
+num_bits = 14
+alignment = 14
+is_bipolar = false
+fpga_load = "S2175"
+demo_config = "0x28000000"
+spi_reg = "0x00, 0x80, 0x01, 0x00, 0x02, 0x80, 0x03, 0x00, 0x04, 0x00"
+num_chip_selects = 1
+
+["LTC2265-14 DC1532A-D"]
+part_number = "LTC2265-14"
+dc_number = "DC1532A-D"
+controller = "DC1371"
+num_channels = 2
+channels = "ch0, ch1"
+num_bits = 14
+alignment = 14
+is_bipolar = false
+fpga_load = "S2175"
+demo_config = "0x28000000"
+spi_reg = "0x00, 0x80, 0x01, 0x00, 0x02, 0x80, 0x03, 0x00, 0x04, 0x00"
+num_chip_selects = 1
+
+["LTC2264-14 DC1532A-E"]
+part_number = "LTC2264-14"
+dc_number = "DC1532A-E"
+controller = "DC1371"
+num_channels = 2
+channels = "ch0, ch1"
+num_bits = 14
+alignment = 14
+is_bipolar = false
+fpga_load = "S2175"
+demo_config = "0x28000000"
+spi_reg = "0x00, 0x80, 0x01, 0x00, 0x02, 0x80, 0x03, 0x00, 0x04, 0x00"
+num_chip_selects = 1
+
+["LTC2263-14 DC1532A-F"]
+part_number = "LTC2263-14"
+dc_number = "DC1532A-F"
+controller = "DC1371"
+num_channels = 2
+channels = "ch0, ch1"
+num_bits = 14
+alignment = 14
+is_bipolar = false
+fpga_load = "S2175"
+demo_config = "0x28000000"
+spi_reg = "0x00, 0x80, 0x01, 0x00, 0x02, 0x80, 0x03, 0x00, 0x04, 0x00"
+num_chip_selects = 1
+
+["LTC2268-12 DC1532A-G"]
+part_number = "LTC2268-12"
+dc_number = "DC1532A-G"
+controller = "DC1371"
+num_channels = 2
+channels = "ch0, ch1"
+num_bits = 12
+alignment = 14
+is_bipolar = false
+fpga_load = "S2175"
+demo_config = "0x28000000"
+spi_reg = "0x00, 0x80, 0x01, 0x00, 0x02, 0x80, 0x03, 0x00, 0x04, 0x00"
+num_chip_selects = 1
+
+["LTC2267-12 DC1532A-H"]
+part_number = "LTC2267-12"
+dc_number = "DC1532A-H"
+controller = "DC1371"
+num_channels = 2
+channels = "ch0, ch1"
+num_bits = 12
+alignment = 14
+is_bipolar = false
+fpga_load = "S2175"
+demo_config = "0x28000000"
+spi_reg = "0x00, 0x80, 0x01, 0x00, 0x02, 0x80, 0x03, 0x00, 0x04, 0x00"
+num_chip_selects = 1
+
+["LTC2266-12 DC1532A-I"]
+part_number = "LTC2266-12"
+dc_number = "DC1532A-I"
+controller = "DC1371"
+num_channels = 2
+channels = "ch0, ch1"
+num_bits = 12
+alignment = 14
+is_bipolar = false
+fpga_load = "S2175"
+demo_config = "0x28000000"
+spi_reg = "0x00, 0x80, 0x01, 0x00, 0x02, 0x80, 0x03, 0x00, 0x04, 0x00"
+num_chip_selects = 1
+
+["LTC2265-12 DC1532A-J"]
+part_number = "LTC2265-12"
+dc_number = "DC1532A-J"
+controller = "DC1371"
+num_channels = 2
+channels = "ch0, ch1"
+num_bits = 12
+alignment = 14
+is_bipolar = false
+fpga_load = "S2175"
+demo_config = "0x28000000"
+spi_reg = "0x00, 0x80, 0x01, 0x00, 0x02, 0x80, 0x03, 0x00, 0x04, 0x00"
+num_chip_selects = 1
+
+["LTC2264-12 DC1532A-K"]
+part_number = "LTC2264-12"
+dc_number = "DC1532A-K"
+controller = "DC1371"
+num_channels = 2
+channels = "ch0, ch1"
+num_bits = 12
+alignment = 14
+is_bipolar = false
+fpga_load = "S2175"
+demo_config = "0x28000000"
+spi_reg = "0x00, 0x80, 0x01, 0x00, 0x02, 0x80, 0x03, 0x00, 0x04, 0x00"
+num_chip_selects = 1
+
+["LTC2263-12 DC1532A-L"]
+part_number = "LTC2263-12"
+dc_number = "DC1532A-L"
+controller = "DC1371"
+num_channels = 2
+channels = "ch0, ch1"
+num_bits = 12
+alignment = 14
+is_bipolar = false
+fpga_load = "S2175"
+demo_config = "0x28000000"
+spi_reg = "0x00, 0x80, 0x01, 0x00, 0x02, 0x80, 0x03, 0x00, 0x04, 0x00"
+num_chip_selects = 1
+
+["LTM9012 DC1732B-AB"]
+part_number = "LTM9012"
+dc_number = "DC1732B-AB"
+controller = "DC1371"
+num_channels = 4
+channels = "ch0, ch1, ch2, ch3"
+num_bits = 14
+alignment = 14
+is_bipolar = false
+fpga_load = "S2175"
+demo_config = "0x28000000"
+spi_reg = "0x00, 0x80, 0x01, 0x00, 0x02, 0x80, 0x03, 0x00, 0x04, 0x00"
+num_chip_selects = 1
+
+["LTM9011-14 DC1751A-A"]
+part_number = "LTM9011"
+dc_number = "DC1751A-A"
+controller = "DC1371"
+num_channels = 8
+channels = "ch0, ch1, ch2, ch3, ch4, ch5, ch6, ch7"
+num_bits = 14
+alignment = 14
+is_bipolar = false
+fpga_load = "S9011"
+demo_config = "0x28321000"
+spi_reg = "0x00, 0x80, 0x01, 0x00, 0x02, 0x80, 0x03, 0x00, 0x04, 0x00"
+num_chip_selects = 2
+
+["LTM9010-14 DC1751A-B"]
+part_number = "LTM9010"
+dc_number = "DC1751A-B"
+controller = "DC1371"
+num_channels = 8
+channels = "ch0, ch1, ch2, ch3, ch4, ch5, ch6, ch7"
+num_bits = 14
+alignment = 14
+is_bipolar = false
+fpga_load = "S9011"
+demo_config = "0x28321000"
+spi_reg = "0x00, 0x80, 0x01, 0x00, 0x02, 0x80, 0x03, 0x00, 0x04, 0x00"
+num_chip_selects = 2
+
+["LTM9009-14 DC1751A-C"]
+part_number = "LTM9009"
+dc_number = "DC1751A-C"
+controller = "DC1371"
+num_channels = 8
+channels = "ch0, ch1, ch2, ch3, ch4, ch5, ch6, ch7"
+num_bits = 14
+alignment = 14
+is_bipolar = false
+fpga_load = "S9011"
+demo_config = "0x28321000"
+spi_reg = "0x00, 0x80, 0x01, 0x00, 0x02, 0x80, 0x03, 0x00, 0x04, 0x00"
+num_chip_selects = 2
+
+["LTM9008-14 DC1751A-D"]
+part_number = "LTM9008"
+dc_number = "DC1751A-D"
+controller = "DC1371"
+num_channels = 8
+channels = "ch0, ch1, ch2, ch3, ch4, ch5, ch6, ch7"
+num_bits = 14
+alignment = 14
+is_bipolar = false
+fpga_load = "S9011"
+demo_config = "0x28321000"
+spi_reg = "0x00, 0x80, 0x01, 0x00, 0x02, 0x80, 0x03, 0x00, 0x04, 0x00"
+num_chip_selects = 2
+
+["LTM9007-14 DC1751A-E"]
+part_number = "LTM9007"
+dc_number = "DC1751A-E"
+controller = "DC1371"
+num_channels = 8
+channels = "ch0, ch1, ch2, ch3, ch4, ch5, ch6, ch7"
+num_bits = 14
+alignment = 14
+is_bipolar = false
+fpga_load = "S9011"
+demo_config = "0x28321000"
+spi_reg = "0x00, 0x80, 0x01, 0x00, 0x02, 0x80, 0x03, 0x00, 0x04, 0x00"
+num_chip_selects = 2
+
+["LTM9006-14 DC1751A-F"]
+part_number = "LTM9006"
+dc_number = "DC1751A-F"
+controller = "DC1371"
+num_channels = 8
+channels = "ch0, ch1, ch2, ch3, ch4, ch5, ch6, ch7"
+num_bits = 14
+alignment = 14
+is_bipolar = false
+fpga_load = "S9011"
+demo_config = "0x28321000"
+spi_reg = "0x00, 0x80, 0x01, 0x00, 0x02, 0x80, 0x03, 0x00, 0x04, 0x00"
+num_chip_selects = 2
+
+["LTM9010-14 DC1884A-A"]
+part_number = "LTM9010"
+dc_number = "DC1884A-A"
+controller = "DC1371"
+num_channels = 8
+channels = "ch0, ch1, ch2, ch3, ch4, ch5, ch6, ch7"
+num_bits = 14
+alignment = 14
+is_bipolar = false
+fpga_load = "S9011"
+demo_config = "0x28321000"
+spi_reg = "0x00, 0x80, 0x01, 0x00, 0x02, 0x80, 0x03, 0x00, 0x04, 0x00"
+num_chip_selects = 2
+
+["LTM9010-14 DC1884A-B"]
+part_number = "LTM9010"
+dc_number = "DC1884A-B"
+controller = "DC1371"
+num_channels = 8
+channels = "ch0, ch1, ch2, ch3, ch4, ch5, ch6, ch7"
+num_bits = 14
+alignment = 14
+is_bipolar = false
+fpga_load = "S9011"
+demo_config = "0x28321000"
+spi_reg = "0x00, 0x80, 0x01, 0x00, 0x02, 0x80, 0x03, 0x00, 0x04, 0x00"
+num_chip_selects = 2
+
+["LTM9009-14 DC1884A-C"]
+part_number = "LTM9009"
+dc_number = "DC1884A-C"
+controller = "DC1371"
+num_channels = 8
+channels = "ch0, ch1, ch2, ch3, ch4, ch5, ch6, ch7"
+num_bits = 14
+alignment = 14
+is_bipolar = false
+fpga_load = "S9011"
+demo_config = "0x28321000"
+spi_reg = "0x00, 0x80, 0x01, 0x00, 0x02, 0x80, 0x03, 0x00, 0x04, 0x00"
+num_chip_selects = 2
+
+["LTM9008-14 DC1884A-D"]
+part_number = "LTM9008"
+dc_number = "DC1884A-D"
+controller = "DC1371"
+num_channels = 8
+channels = "ch0, ch1, ch2, ch3, ch4, ch5, ch6, ch7"
+num_bits = 14
+alignment = 14
+is_bipolar = false
+fpga_load = "S9011"
+demo_config = "0x28321000"
+spi_reg = "0x00, 0x80, 0x01, 0x00, 0x02, 0x80, 0x03, 0x00, 0x04, 0x00"
+num_chip_selects = 2
+
+["LTM9007-14 DC1884A-E"]
+part_number = "LTM9007"
+dc_number = "DC1884A-E"
+controller = "DC1371"
+num_channels = 8
+channels = "ch0, ch1, ch2, ch3, ch4, ch5, ch6, ch7"
+num_bits = 14
+alignment = 14
+is_bipolar = false
+fpga_load = "S9011"
+demo_config = "0x28321000"
+spi_reg = "0x00, 0x80, 0x01, 0x00, 0x02, 0x80, 0x03, 0x00, 0x04, 0x00"
+num_chip_selects = 2
+
+["LTM9006-14 DC1884A-F"]
+part_number = "LTM9006"
+dc_number = "DC1884A-F"
+controller = "DC1371"
+num_channels = 8
+channels = "ch0, ch1, ch2, ch3, ch4, ch5, ch6, ch7"
+num_bits = 14
+alignment = 14
+is_bipolar = false
+fpga_load = "S9011"
+demo_config = "0x28321000"
+spi_reg = "0x00, 0x80, 0x01, 0x00, 0x02, 0x80, 0x03, 0x00, 0x04, 0x00"
+num_chip_selects = 2
+
+["LTM9013 DC1931B"]
+part_number = "LTM9013"
+dc_number = "DC1931B"
 controller = "DC1371"
 num_channels = 2
 channels = "ch0, ch1"
 num_bits = 14
 alignment = 16
-is_bipolar = true
+is_bipolar = false
 fpga_load = "S2157"
 demo_config = "0x28000000"
+spi_reg = "0x00, 0x80, 0x01, 0x00, 0x02, 0x00, 0x03, 0x00, 0x04"
+num_chip_selects = 1
+
+["LTC2107 DC2183A-A"]
+part_number = "LTC2107"
+dc_number = "DC2183A-A"
+controller = "DC1371"
+num_channels = 1
+channels = "ch0"
+num_bits = 16
+alignment = 16
+is_bipolar = false
+fpga_load = "S2157"
+demo_config = "0x20000000"
+spi_reg = "0x00, 0x80, 0x01, 0x00, 0x03, 0x40, 0x04, 0x00"
+num_chip_selects = 1
+
+["LTC2107 DC2183A-B"]
+part_number = "LTC2107"
+dc_number = "DC2183A-B"
+controller = "DC1371"
+num_channels = 1
+channels = "ch0"
+num_bits = 16
+alignment = 16
+is_bipolar = false
+fpga_load = "S2157"
+demo_config = "0x20000000"
+spi_reg = "0x00, 0x80, 0x01, 0x00, 0x03, 0x40, 0x04, 0x00"
+num_chip_selects = 1
+
+["LTC2107 DC2266A"]
+part_number = "LTC2107"
+dc_number = "DC2266A"
+controller = "DC1371"
+num_channels = 2
+channels = "ch0, ch1"
+num_bits = 14
+alignment = 16
+is_bipolar = false
+fpga_load = "S2157"
+demo_config = "0x20000000"
 spi_reg = "0x00, 0x80, 0x01, 0x00, 0x02, 0x00, 0x03, 0x00, 0x04, 0x00"
+num_chip_selects = 1
 
 ["LTC2156-14 DC1564A-B"]
 part_number = "LTC2156-14"
@@ -2711,10 +3259,11 @@ num_channels = 2
 channels = "ch0, ch1"
 num_bits = 14
 alignment = 16
-is_bipolar = true
+is_bipolar = false
 fpga_load = "S2157"
 demo_config = "0x28000000"
 spi_reg = "0x00, 0x80, 0x01, 0x00, 0x02, 0x00, 0x03, 0x00, 0x04, 0x00"
+num_chip_selects = 1
 
 ["LTC2155-14 DC1564A-C"]
 part_number = "LTC2155-14"
@@ -2724,10 +3273,11 @@ num_channels = 2
 channels = "ch0, ch1"
 num_bits = 14
 alignment = 16
-is_bipolar = true
+is_bipolar = false
 fpga_load = "S2157"
 demo_config = "0x28000000"
 spi_reg = "0x00, 0x80, 0x01, 0x00, 0x02, 0x00, 0x03, 0x00, 0x04, 0x00"
+num_chip_selects = 1
 
 ["LTC2157-12 DC1564A-D"]
 part_number = "LTC2157-12"
@@ -2737,10 +3287,11 @@ num_channels = 2
 channels = "ch0, ch1"
 num_bits = 12
 alignment = 16
-is_bipolar = true
+is_bipolar = false
 fpga_load = "S2157"
 demo_config = "0x28000000"
 spi_reg = "0x00, 0x80, 0x01, 0x00, 0x02, 0x00, 0x03, 0x00, 0x04, 0x00"
+num_chip_selects = 1
 
 ["LTC2156-12 DC1564A-E"]
 part_number = "LTC2156-12"
@@ -2750,10 +3301,11 @@ num_channels = 2
 channels = "ch0, ch1"
 num_bits = 12
 alignment = 16
-is_bipolar = true
+is_bipolar = false
 fpga_load = "S2157"
 demo_config = "0x28000000"
 spi_reg = "0x00, 0x80, 0x01, 0x00, 0x02, 0x00, 0x03, 0x00, 0x04, 0x00"
+num_chip_selects = 1
 
 ["LTC2155-12 DC1564A-F"]
 part_number = "LTC2155-12"
@@ -2763,10 +3315,11 @@ num_channels = 2
 channels = "ch0, ch1"
 num_bits = 12
 alignment = 16
-is_bipolar = true
+is_bipolar = false
 fpga_load = "S2157"
 demo_config = "0x28000000"
 spi_reg = "0x00, 0x80, 0x01, 0x00, 0x02, 0x00, 0x03, 0x00, 0x04, 0x00"
+num_chip_selects = 1
 
 ["LTC2158-14 DC1564A-G"]
 part_number = "LTC2158-14"
@@ -2776,10 +3329,11 @@ num_channels = 2
 channels = "ch0, ch1"
 num_bits = 14
 alignment = 16
-is_bipolar = true
+is_bipolar = false
 fpga_load = "S2157"
 demo_config = "0x28000000"
 spi_reg = "0x00, 0x80, 0x01, 0x00, 0x02, 0x00, 0x03, 0x00, 0x04, 0x00"
+num_chip_selects = 1
 
 ["LTC2158-12 DC1564A-H"]
 part_number = "LTC2158-12"
@@ -2789,10 +3343,11 @@ num_channels = 2
 channels = "ch0, ch1"
 num_bits = 12
 alignment = 16
-is_bipolar = true
+is_bipolar = false
 fpga_load = "S2157"
 demo_config = "0x28000000"
 spi_reg = "0x00, 0x80, 0x01, 0x00, 0x02, 0x00, 0x03, 0x00, 0x04, 0x00"
+num_chip_selects = 1
 
 ["LTC2158-14 DC1946A-A"]
 part_number = "LTC2158-14"
@@ -2802,11 +3357,11 @@ num_channels = 2
 channels = "ch0, ch1"
 num_bits = 14
 alignment = 16
-is_bipolar = true
+is_bipolar = false
 fpga_load = "S2157"
 demo_config = "0x28000000"
 spi_reg = "0x00, 0x80, 0x01, 0x00, 0x02, 0x00, 0x03, 0x00, 0x04, 0x00"
-
+num_chip_selects = 1
 
 ["LTC2152-14 DC1565A-A"]
 part_number = "LTC2152-14"
@@ -2816,10 +3371,11 @@ num_channels = 1
 channels = "ch0"
 num_bits = 14
 alignment = 16
-is_bipolar = true
+is_bipolar = false
 fpga_load = "S2157"
 demo_config = "0x20000000"
 spi_reg = "0x00, 0x80, 0x01, 0x00, 0x02, 0x00, 0x03, 0x00, 0x04, 0x00"
+num_chip_selects = 1
 
 ["LTC2151-14 DC1565A-B"]
 part_number = "LTC2151-14"
@@ -2829,10 +3385,11 @@ num_channels = 1
 channels = "ch0"
 num_bits = 14
 alignment = 16
-is_bipolar = true
+is_bipolar = false
 fpga_load = "S2157"
 demo_config = "0x20000000"
 spi_reg = "0x00, 0x80, 0x01, 0x00, 0x02, 0x00, 0x03, 0x00, 0x04, 0x00"
+num_chip_selects = 1
 
 ["LTC2150-14 DC1565A-C"]
 part_number = "LTC2150-14"
@@ -2842,10 +3399,11 @@ num_channels = 1
 channels = "ch0"
 num_bits = 14
 alignment = 16
-is_bipolar = true
+is_bipolar = false
 fpga_load = "S2157"
 demo_config = "0x20000000"
 spi_reg = "0x00, 0x80, 0x01, 0x00, 0x02, 0x00, 0x03, 0x00, 0x04, 0x00"
+num_chip_selects = 1
 
 ["LTC2152-12 DC1565A-D"]
 part_number = "LTC2152-12"
@@ -2855,10 +3413,11 @@ num_channels = 1
 channels = "ch0"
 num_bits = 12
 alignment = 16
-is_bipolar = true
+is_bipolar = false
 fpga_load = "S2157"
 demo_config = "0x20000000"
 spi_reg = "0x00, 0x80, 0x01, 0x00, 0x02, 0x00, 0x03, 0x00, 0x04, 0x00"
+num_chip_selects = 1
 
 ["LTC2151-12 DC1565A-E"]
 part_number = "LTC2151-12"
@@ -2868,10 +3427,11 @@ num_channels = 1
 channels = "ch0"
 num_bits = 12
 alignment = 16
-is_bipolar = true
+is_bipolar = false
 fpga_load = "S2157"
 demo_config = "0x20000000"
 spi_reg = "0x00, 0x80, 0x01, 0x00, 0x02, 0x00, 0x03, 0x00, 0x04, 0x00"
+num_chip_selects = 1
 
 ["LTC2150-12 DC1565A-F"]
 part_number = "LTC2150-12"
@@ -2881,10 +3441,11 @@ num_channels = 1
 channels = "ch0"
 num_bits = 12
 alignment = 16
-is_bipolar = true
+is_bipolar = false
 fpga_load = "S2157"
 demo_config = "0x20000000"
 spi_reg = "0x00, 0x80, 0x01, 0x00, 0x02, 0x00, 0x03, 0x00, 0x04, 0x00"
+num_chip_selects = 1
 
 ["LTC2153-14 DC1565A-G"]
 part_number = "LTC2153-14"
@@ -2894,10 +3455,11 @@ num_channels = 1
 channels = "ch0"
 num_bits = 14
 alignment = 16
-is_bipolar = true
+is_bipolar = false
 fpga_load = "S2157"
 demo_config = "0x20000000"
 spi_reg = "0x00, 0x80, 0x01, 0x00, 0x02, 0x00, 0x03, 0x00, 0x04, 0x00"
+num_chip_selects = 1
 
 ["LTC2153-12 DC1565A-H"]
 part_number = "LTC2153-12"
@@ -2907,10 +3469,11 @@ num_channels = 1
 channels = "ch0"
 num_bits = 12
 alignment = 16
-is_bipolar = true
+is_bipolar = false
 fpga_load = "S2157"
 demo_config = "0x20000000"
 spi_reg = "0x00, 0x80, 0x01, 0x00, 0x02, 0x00, 0x03, 0x00, 0x04, 0x00"
+num_chip_selects = 1
 
 ["LTC2195 DC1763A-A"]
 part_number = "LTC2195"
@@ -2920,10 +3483,11 @@ num_channels = 2
 channels = "ch0, ch1"
 num_bits = 16
 alignment = 16
-is_bipolar = true
+is_bipolar = false
 fpga_load = "S2195"
 demo_config = "0x28000000"
 spi_reg = "0x00, 0x80, 0x01, 0x00, 0x02, 0x00, 0x03, 0x00, 0x04, 0x00"
+num_chip_selects = 1
 
 ["LTC2194 DC1763A-B"]
 part_number = "LTC2194"
@@ -2933,10 +3497,11 @@ num_channels = 2
 channels = "ch0, ch1"
 num_bits = 16
 alignment = 16
-is_bipolar = true
+is_bipolar = false
 fpga_load = "S2195"
 demo_config = "0x28000000"
 spi_reg = "0x00, 0x80, 0x01, 0x00, 0x02, 0x00, 0x03, 0x00, 0x04, 0x00"
+num_chip_selects = 1
 
 ["LTC2193 DC1763A-C"]
 part_number = "LTC2193"
@@ -2946,10 +3511,11 @@ num_channels = 2
 channels = "ch0, ch1"
 num_bits = 16
 alignment = 16
-is_bipolar = true
+is_bipolar = false
 fpga_load = "S2195"
 demo_config = "0x28000000"
 spi_reg = "0x00, 0x80, 0x01, 0x00, 0x02, 0x00, 0x03, 0x00, 0x04, 0x00"
+num_chip_selects = 1
 
 ["LTC2192 DC1763A-D"]
 part_number = "LTC2192"
@@ -2959,10 +3525,11 @@ num_channels = 2
 channels = "ch0, ch1"
 num_bits = 16
 alignment = 16
-is_bipolar = true
+is_bipolar = false
 fpga_load = "S2195"
 demo_config = "0x28000000"
 spi_reg = "0x00, 0x80, 0x01, 0x00, 0x02, 0x00, 0x03, 0x00, 0x04, 0x00"
+num_chip_selects = 1
 
 ["LTC2191 DC1763A-E"]
 part_number = "LTC2191"
@@ -2972,10 +3539,11 @@ num_channels = 2
 channels = "ch0, ch1"
 num_bits = 16
 alignment = 16
-is_bipolar = true
+is_bipolar = false
 fpga_load = "S2195"
 demo_config = "0x28000000"
 spi_reg = "0x00, 0x80, 0x01, 0x00, 0x02, 0x00, 0x03, 0x00, 0x04, 0x00"
+num_chip_selects = 1
 
 ["LTC2190 DC1763A-F"]
 part_number = "LTC2190"
@@ -2985,10 +3553,11 @@ num_channels = 2
 channels = "ch0, ch1"
 num_bits = 16
 alignment = 16
-is_bipolar = true
+is_bipolar = false
 fpga_load = "S2195"
 demo_config = "0x28000000"
 spi_reg = "0x00, 0x80, 0x01, 0x00, 0x02, 0x00, 0x03, 0x00, 0x04, 0x00"
+num_chip_selects = 1
 
 ["LTC2271 DC1763A-G"]
 part_number = "LTC2271"
@@ -2998,8 +3567,8 @@ num_channels = 2
 channels = "ch0, ch1"
 num_bits = 16
 alignment = 16
-is_bipolar = true
+is_bipolar = false
 fpga_load = "S2195"
 demo_config = "0x28000000"
 spi_reg = "0x00, 0x80, 0x01, 0x00, 0x02, 0x00, 0x03, 0x00, 0x04, 0x00"
-
+num_chip_selects = 1

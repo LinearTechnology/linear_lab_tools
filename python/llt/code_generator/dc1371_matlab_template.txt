@@ -73,12 +73,12 @@ end
 
 function controller = init_controller(spi_registers, is_verbose)
     lcc = llt.common.LtcControllerComm();
-    controller = llt.common.Dc1371(lcc, '?dc_number?', ... dc_number
-                                        '?fpga_load?', ... fpga_load
-                                        ?num_channels?, ... num_channels
-                                        ?num_bits?, ... num_bits
-                                        ?alignment?, ... alignmnent
-                                        ?is_bipolar?, ... is_bipolar
-                                        '?demo_config?', ... demo_config
-                                        spi_registers, is_verbose);
+    controller = llt.common.?dc1371_type?(lcc, '?dc_number?', ... dc_number
+                                          '?fpga_load?', ... fpga_load
+                                          ?num_channels?, ... num_channels
+                                          ?num_bits?, ... num_bits
+                                          ?alignment?, ... alignmnent
+                                          ?is_bipolar?, ... is_bipolar
+                                          '?demo_config?', ... demo_config
+                                          spi_registers, is_verbose);
 end

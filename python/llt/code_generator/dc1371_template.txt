@@ -53,7 +53,7 @@ def ?func_name?(num_samples, spi_registers, verbose = False, do_plot = False,
                                                  verbose=verbose)
         return ?channels?
 
-class ?class_name?(dc1371.Demoboard):
+class ?class_name?(dc1371.?dc1371_type?):
     """
         A DC1371 demo board with settings for the ?dc_number?
     """
