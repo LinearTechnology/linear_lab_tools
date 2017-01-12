@@ -30,14 +30,14 @@
 
     Description:
         The purpose of this module is to demonstrate how to communicate with 
-        the LTM9011 demo board through python with the DC1371.
+        the LTM9011-14 demo board through python with the DC1371.
 """
 
 import llt.common.dc1371 as dc1371
 import llt.common.functions as funcs
 import llt.common.constants as consts
 
-def ltm9011_dc1884a_a(num_samples, spi_registers, verbose = False, do_plot = False, 
+def ltm9011_14_dc1884a_a(num_samples, spi_registers, verbose = False, do_plot = False, 
                       do_write_to_file = False):
     with Dc1884aA(spi_registers, verbose) as controller:
         # You can call this multiple times with the same controller if you need to
@@ -53,9 +53,9 @@ def ltm9011_dc1884a_a(num_samples, spi_registers, verbose = False, do_plot = Fal
                                                  verbose=verbose)
         return ch0, ch1, ch2, ch3, ch4, ch5, ch6, ch7
 
-class Dc1884aA(dc1371.Demoboard):
+class Dc1884aA(dc1371.Demoboard2ChipSelects):
     """
-        A DC1371 demo board with settings for the DC1884A
+        A DC1371 demo board with settings for the DC1884A-A
     """
     def __init__(self, spi_registers, verbose = False):
         dc1371.Demoboard.__init__(self, 
@@ -68,31 +68,17 @@ class Dc1884aA(dc1371.Demoboard):
                                   demo_config    = 0x28321000,
                                   spi_reg_values = spi_registers,
                                   verbose        = verbose)
-    def set_spi_registers(self, register_values):
-        if register_values != []:
-            self.vprint('Updating SPI registers')
-            self.controller.dc1371_spi_choose_chip_select(1) # First bank of 4 channels
-            for x in range(0,len(register_values), 2):
-                self.controller.spi_send_byte_at_address(register_values[x], register_values[x+1])
-            self.controller.dc1371_spi_choose_chip_select(2) # Second bank of 4 channels
-            for x in range(0,len(register_values), 2):
-                self.controller.spi_send_byte_at_address(register_values[x], register_values[x+1])
-        # The DC1371 needs to check for FPGA load after a change in the SPI registers
-        if not self.controller.fpga_get_is_loaded(self.fpga_load):
-            self.vprint('Loading FPGA')
-            self.controller.fpga_load_file(self.fpga_load)
-        else:
-            self.vprint('FPGA already loaded')
 
 if __name__ == '__main__':
     NUM_SAMPLES = 32 * 1024
     spi_reg = [ # addr, value
                   0x00, 0x80,
                   0x01, 0x00,
-                  0x02, 0x00,
+                  0x02, 0x80,
                   0x03, 0x00,
                   0x04, 0x00
               ]
     # to use this function in your own code you would typically do
-    # data = ltm9011_dc1884a_a(num_samples, spi_reg)
-    ltm9011_dc1884a_a(NUM_SAMPLES, spi_reg, verbose=True, do_plot=True, do_write_to_file=True)
+    # data = ltm9011_14_dc1884a_a(num_samples, spi_reg)
+    ltm9011_14_dc1884a_a(NUM_SAMPLES, spi_reg, verbose=True, do_plot=True, do_write_to_file=True)
+
