@@ -64,7 +64,7 @@ class Dc1565aH(dc1371.Demoboard):
                                   num_channels   = 1,
                                   num_bits       = 12,
                                   alignment      = 16,
-                                  is_bipolar     = True,
+                                  is_bipolar     = False,
                                   demo_config    = 0x20000000,
                                   spi_reg_values = spi_registers,
                                   verbose        = verbose)

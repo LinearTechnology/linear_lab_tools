@@ -8,7 +8,7 @@
 % $Revision: 5756 $
 % $Date: 2016-09-16 12:58:34 -0700 (Fri, 16 Sep 2016) $
 %
-% Copyright (c) 2016, Linear Technology Corp.(LTC)
+% Copyright (c) 2017, Linear Technology Corp.(LTC)
 % All rights reserved.
 % 
 % Redistribution and use in source and binary forms, with or without
@@ -78,11 +78,11 @@ end
 function controller = init_controller(spi_registers, is_verbose)
     lcc = llt.common.LtcControllerComm();
     controller = llt.common.Dc1371(lcc, 'DC1946A-A', ... dc_number
-                                        'S2157', ... fpga_load
-                                        2, ... num_channels
-                                        14, ... num_bits
-                                        16, ... alignmnent
-                                        true, ... is_bipolar
-                                        '0x28000000', ... demo_config
-                                        spi_registers, is_verbose);
+                                          'S2157', ... fpga_load
+                                          2, ... num_channels
+                                          14, ... num_bits
+                                          16, ... alignmnent
+                                          false, ... is_bipolar
+                                          '0x28000000', ... demo_config
+                                          spi_registers, is_verbose);
 end
