@@ -111,5 +111,25 @@ class Demoboard():
     def get_num_bits(self):
         return self.num_bits
  
+class Demoboard2ChipSelects(Demoboard):
+    """
+        A DC90XX demo board with 2 chip selects
+    """
+
+    def set_spi_registers(self, register_values):
+        if register_values != []:
+            self.vprint('Updating SPI registers')
+            self.controller.dc1371_spi_choose_chip_select(1) # First bank of 4 channels
+            for x in range(0,len(register_values), 2):
+                self.controller.spi_send_byte_at_address(register_values[x], register_values[x+1])
+            self.controller.dc1371_spi_choose_chip_select(2) # Second bank of 4 channels
+            for x in range(0,len(register_values), 2):
+                self.controller.spi_send_byte_at_address(register_values[x], register_values[x+1])
+        # The DC1371 needs to check for FPGA load after a change in the SPI registers
+        if not self.controller.fpga_get_is_loaded(self.fpga_load):
+            self.vprint('Loading FPGA')
+            self.controller.fpga_load_file(self.fpga_load)
+        else:
+            self.vprint('FPGA already loaded')
 
                 
