@@ -103,6 +103,18 @@ def format_spi_regs(spi_regs, template, is_matlab):
             return "# No SPI regs for this part."
         # join the items in each tuple with ', '; join the tuples with '\n'
         return (',\n' + space).join(map(', '.join, pair_up_items(split_and_strip(spi_regs))))
+        
+def make_dc1371_type(num_chip_selects, is_matlab):
+    if num_chip_selects == 2:
+        if is_matlab:
+            return "Dc1371With2ChipSelects"
+        else:
+            return "Demoboard2ChipSelects"
+    else:
+        if is_matlab:
+            return "Dc1371"
+        else:
+            return "Demoboard"
 
 def generate(template_file_name, toml_file_name, controller, is_matlab=False):
             
@@ -119,6 +131,8 @@ def generate(template_file_name, toml_file_name, controller, is_matlab=False):
             value["func_name"] = func_name
             value["class_name"] = class_name
             value["year"] = str(datetime.datetime.now().year)
+            if controller == "DC1371":            
+                value["dc1371_type"] = make_dc1371_type(value["num_chip_selects"], is_matlab)
             try:
                 value["spi_reg"] = format_spi_regs(value["spi_reg"], template, is_matlab)
             except:
@@ -137,9 +151,9 @@ def generate(template_file_name, toml_file_name, controller, is_matlab=False):
                 out_file.write(instance)
 
 if __name__ == "__main__":
-    generate("dc718_template.txt", "demoboards.toml", 'DC718')
-    generate("dc890_template.txt", "demoboards.toml", 'DC890')
+    #generate("dc718_template.txt", "demoboards.toml", 'DC718')
+    #generate("dc890_template.txt", "demoboards.toml", 'DC890')
     generate("dc1371_template.txt", "demoboards.toml", 'DC1371')
-    generate("dc718_matlab_template.txt", "demoboards.toml", "DC718", is_matlab=True)
+    #generate("dc718_matlab_template.txt", "demoboards.toml", "DC718", is_matlab=True)
     generate("dc1371_matlab_template.txt", "demoboards.toml", "DC1371", is_matlab=True)
-    generate("dc890_matlab_template.txt", "demoboards.toml", "DC890", is_matlab=True)
+    #generate("dc890_matlab_template.txt", "demoboards.toml", "DC890", is_matlab=True)
