@@ -8,7 +8,7 @@
 % $Revision: 5756 $
 % $Date: 2016-09-16 12:58:34 -0700 (Fri, 16 Sep 2016) $
 %
-% Copyright (c) 2016, Linear Technology Corp.(LTC)
+% Copyright (c) 2017, Linear Technology Corp.(LTC)
 % All rights reserved.
 % 
 % Redistribution and use in source and binary forms, with or without
