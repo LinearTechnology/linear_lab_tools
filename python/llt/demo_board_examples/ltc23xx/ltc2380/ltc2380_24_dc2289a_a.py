@@ -30,7 +30,7 @@
 
     Description:
         The purpose of this module is to demonstrate how to communicate with 
-        the LTC2261 demo board through python with the DC890.
+        the LTC2380-24 demo board through python with the DC890.
 """
 
 import llt.common.dc890 as dc890
