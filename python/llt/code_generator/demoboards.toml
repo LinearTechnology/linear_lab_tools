@@ -3125,20 +3125,6 @@ demo_config = "0x28321000"
 spi_reg = "0x00, 0x80, 0x01, 0x00, 0x02, 0x80, 0x03, 0x00, 0x04, 0x00"
 num_chip_selects = 2
 
-["LTM9010-14 DC1884A-A"]
-part_number = "LTM9010"
-dc_number = "DC1884A-A"
-controller = "DC1371"
-num_channels = 8
-channels = "ch0, ch1, ch2, ch3, ch4, ch5, ch6, ch7"
-num_bits = 14
-alignment = 14
-is_bipolar = false
-fpga_load = "S9011"
-demo_config = "0x28321000"
-spi_reg = "0x00, 0x80, 0x01, 0x00, 0x02, 0x80, 0x03, 0x00, 0x04, 0x00"
-num_chip_selects = 2
-
 ["LTM9010-14 DC1884A-B"]
 part_number = "LTM9010"
 dc_number = "DC1884A-B"
