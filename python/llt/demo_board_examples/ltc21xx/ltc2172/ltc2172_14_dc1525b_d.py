@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-    Copyright (c) 2016, Linear Technology Corp.(LTC)
+    Copyright (c) 2017, Linear Technology Corp.(LTC)
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -29,56 +29,9 @@
     policies, either expressed or implied, of Linear Technology Corp.
 
     Description:
-        The purpose of this module is to demonstrate how to communicate with 
-        the LTC2172-14 demo board through python with the DC1371.
+        The purpose of this module is to point the user to the correct module.
 """
 
-import llt.common.dc1371 as dc1371
-import llt.common.functions as funcs
-import llt.common.constants as consts
+import llt.common.exceptions as errs
 
-def ltc2172_14_dc1525b_d(num_samples, spi_registers, verbose = False, do_plot = False, 
-                      do_write_to_file = False):
-    with Dc1525bD(spi_registers, verbose) as controller:
-        # You can call this multiple times with the same controller if you need to
-        ch0, ch1, ch2, ch3 = controller.collect(num_samples, consts.TRIGGER_NONE)
-        
-        if do_plot:
-            funcs.plot_channels(controller.get_num_bits(), 
-                                ch0, ch1, ch2, ch3, 
-                                verbose=verbose)
-        if do_write_to_file:
-            funcs.write_channels_to_file_32_bit("data.txt", 
-                                                ch0, ch1, ch2, ch3,
-                                                 verbose=verbose)
-        return ch0, ch1, ch2, ch3
-
-class Dc1525bD(dc1371.Demoboard):
-    """
-        A DC1371 demo board with settings for the DC1525B-D
-    """
-    def __init__(self, spi_registers, verbose = False):
-        dc1371.Demoboard.__init__(self, 
-                                  dc_number      = 'DC1525B-D', 
-                                  fpga_load      = 'S2175',
-                                  num_channels   = 4,
-                                  num_bits       = 14,
-                                  alignment      = 14,
-                                  is_bipolar     = False,
-                                  demo_config    = 0x29000000,
-                                  spi_reg_values = spi_registers,
-                                  verbose        = verbose)
-
-if __name__ == '__main__':
-    NUM_SAMPLES = 32 * 1024
-    spi_reg = [ # addr, value
-                  0x00, 0x80,
-                  0x01, 0x00,
-                  0x02, 0x80,
-                  0x03, 0x00,
-                  0x04, 0x00
-              ]
-    # to use this function in your own code you would typically do
-    # data = ltc2172_14_dc1525b_d(num_samples, spi_reg)
-    ltc2172_14_dc1525b_d(NUM_SAMPLES, spi_reg, verbose=True, do_plot=True, do_write_to_file=True)
-
+raise errs.NotSupportedError("Please use ltc2172_14_dc1525a_d.py to run this demo board")

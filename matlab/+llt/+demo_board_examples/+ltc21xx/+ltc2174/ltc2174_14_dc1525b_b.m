@@ -1,6 +1,6 @@
-% DC1525B-D / LTC2172-14 Interface Example
+% DC1525B-B / LTC2174-14 Interface Example
 %
-% The purpose of this funtion is to point the user to the correct function.
+% The purpose of this function is to point the user to the correct function.
 % 
 % REVISION HISTORY
 % $Revision: 5756 $
@@ -33,5 +33,6 @@
 % of the authors and should not be interpreted as representing official policies,
 % either expressed or implied, of Linear Technology Corp.
 
-function varargout = ltc2172_14_dc1525b_d(varargin)
-    error('LtcControllerComm:NotSupportedError', 'Please use ltc2172_14_dc1525a_d.m to run this demo board');
+function varargout = ltc2172_14_dc1525b_b(varargin)
+    error('LtcControllerComm:NotSupportedError', 'Please use ltc2172_14_dc1525a_b.m to run this demo board');
+            
