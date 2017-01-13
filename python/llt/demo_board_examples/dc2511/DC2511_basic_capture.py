@@ -185,3 +185,5 @@ if(mem_bw_test == True):
     errors = sockit_ramp_test(client, 2**21, trigger = TRIG_NOW, timeout = 1.0)
     print("Number of errors: " + str(errors))
     client.reg_write(DATAPATH_CONTROL_BASE, ADC_DATA) # Set datapath back to ADC
+
+print ("To shut down SoCkit, type \"client.shutdown()\" in console, then hit enter.")
