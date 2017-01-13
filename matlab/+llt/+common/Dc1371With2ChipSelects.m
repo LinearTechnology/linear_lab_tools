@@ -92,11 +92,11 @@ classdef Dc1371With2ChipSelects
         function set_spi_registers(self, register_values)
             if ~isempty(register_values)
                 self.vprint('Updating SPI registers...');
-                self.lcc.dc1371_spi_set_chip_select(self.cid, 0);
+                self.lcc.dc1371_spi_choose_chip_select(self.cid, 0);
                 for i = 1:2:length(register_values)
                     self.lcc.spi_send_byte_at_address(self.cid, register_values(i), register_values(i+1));
                 end
-                self.lcc.dc1371_spi_set_chip_select(self.cid, 1);
+                self.lcc.dc1371_spi_choose_chip_select(self.cid, 1);
                 for i = 1:2:length(register_values)
                     self.lcc.spi_send_byte_at_address(self.cid, register_values(i), register_values(i+1));
                 end
