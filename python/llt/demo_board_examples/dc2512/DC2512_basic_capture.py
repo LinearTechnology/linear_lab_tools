@@ -234,7 +234,7 @@ if(save_pscope_data == True):
 if(mem_bw_test == True):
     client.reg_write(DATAPATH_CONTROL_BASE, RAMP_DATA) # Capture a test pattern
     print("Ramp test!")
-    errors = sockit_ramp_test(client, mem_bw_test_depth, trigger = 0, timeout = 1.0)
+    errors = sockit_ramp_test(client, mem_bw_test_depth, trigger = TRIG_NOW, timeout = 1.0)
     print("Number of errors: " + str(errors))
     client.reg_write(DATAPATH_CONTROL_BASE, ADC_DATA) # Set datapath back to ADC
     
