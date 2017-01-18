@@ -38,17 +38,17 @@ import llt.common.constants as consts
 
 def ltc2320_14_dc2395a_d(num_samples, verbose = False, do_plot = False, 
                          do_write_to_file = False):
-    with ltc2320(dc_number = 'DC2395A-D', 
-                 num_channels = 8,
-                 num_bits = 14,
-                 verbose = verbose) as controller:
+    with ltc2320.Ltc2320(dc_number = 'DC2395A-D', 
+                         num_channels = 8,
+                         num_bits = 14,
+                         verbose = verbose) as controller:
         # You can call this multiple times with the same controller if you need to
         ch0, ch1, ch2, ch3, ch4, ch5, ch6, ch7 = controller.collect(num_samples, consts.TRIGGER_NONE)
 
         if do_plot:
             funcs.plot_channels(controller.get_num_bits(), 
-                       ch0, ch1, ch2, ch3, ch4, ch5, ch6, ch7,
-                       verbose=verbose)
+                                ch0, ch1, ch2, ch3, ch4, ch5, ch6, ch7,
+                                verbose=verbose)
         if do_write_to_file:
             funcs.write_channels_to_file_32_bit("data.txt",
                                                 ch0, ch1, ch2, ch3, ch4, ch5, ch6, ch7,
