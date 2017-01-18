@@ -52,6 +52,7 @@ classdef Ltc2320 < llt.common.Dc890
             if ~exist('timeout', 'var'); timeout = 5; end
             if ~exist('is_randomized', 'var'); is_randomized = false; end
             if ~exist('is_alternate_bit', 'var'); is_alternate_bit = false; end
+            MAX_TOTAL_SAMPLES = 64 * 1024;
             if (num_samples * self.num_channels) > MAX_TOTAL_SAMPLES
                 error('LtcControllerComm:InvalidArgument', ...
                     'Num samples must be <= %d', MAX_TOTAL_SAMPLES / self.num_channels)
@@ -79,7 +80,7 @@ classdef Ltc2320 < llt.common.Dc890
 
         function data = get_data(self, data)
             num_samples = length(data) / 2;
-            start_sample = self.get_start_sample(data(0));
+            start_sample = self.get_start_sample(data(1));
             data = data(start_sample:(start_sample + num_samples - 1));
             for i = 1:num_samples
                 if bitand(data(i), 7) ~= mod((i-1), self.num_channels)

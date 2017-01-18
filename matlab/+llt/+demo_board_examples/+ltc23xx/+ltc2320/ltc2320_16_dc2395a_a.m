@@ -37,7 +37,7 @@
 
 function varargout = ltc2320_16_dc2395a_a(num_samples, is_verbose, do_plot, ...
                                           do_write_to_file)
-    if ~exist('num_samples', 'var'); num_samples = 32 * 1024; end
+    if ~exist('num_samples', 'var'); num_samples = 8 * 1024; end
     do_demo = false;
     if nargout == 0
         do_demo = true;
