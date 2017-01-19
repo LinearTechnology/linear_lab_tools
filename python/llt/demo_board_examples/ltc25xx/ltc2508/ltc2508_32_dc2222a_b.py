@@ -41,7 +41,7 @@ import llt.common.exceptions as errs
 def ltc2508_24_dc2222a_b(num_samples, osr, verify, is_disributed_rd,
                          is_filtered_data, verbose = False, do_plot = False, 
                          do_write_to_file = False):
-    with Dc2222aB(osr, verify, is_disributed_rd, verbose) as controller:
+    with Dc2222aB(osr, verify, is_disributed_rd, is_filtered_data, verbose) as controller:
         # You can call this multiple times with the same controller if you need tos
         data, cm_data = controller.collect(num_samples, consts.TRIGGER_NONE)
 
@@ -56,7 +56,7 @@ def ltc2508_24_dc2222a_b(num_samples, osr, verify, is_disributed_rd,
             
             if cm_data is not None:
                 from matplotlib import pyplot as plt
-                plt.figure(1)
+                plt.figure(2)
                 plt.plot(cm_data)
                 plt.title('Common Mode Time Domain Samples')
                 plt.show()
@@ -96,7 +96,7 @@ class Dc2222aB(dc890.Demoboard):
                                  verbose               = verbose)
         self.config_cpld(osr, verify, is_disributed_rd, is_filtered_data)
         
-    def collect(self, num_samples, trigger, timeout = 5, is_randomized = False, 
+    def collect(self, num_samples, trigger, timeout = 10, is_randomized = False, 
                 is_alternate_bit = False):
         if self.verify:
             num_samples *= 2
@@ -189,8 +189,9 @@ class Dc2222aB(dc890.Demoboard):
         return funcs.uint32_to_int32(data)
     
     def _get_data_and_common_mode(self, raw_data):
-        cm_data = funcs.fix_data(raw_data, 8, True)
-        data = funcs.fix_data([d >> 18 for d in raw_data], 8, True)
+        cm_data = funcs.fix_data(raw_data[:], 8, 18, True)
+        cm_data = funcs.uint32_to_int32(cm_data)
+        data = funcs.fix_data([int(d >> 18) for d in raw_data], 14, 14, True)
         return data, cm_data
         
     def fix_data(self, raw_data, is_randomized, is_alternate_bit):
@@ -204,9 +205,14 @@ class Dc2222aB(dc890.Demoboard):
         else:
             data, cm_data = self._get_data_and_common_mode(raw_data)
         return data, cm_data
+    def get_num_bits(self):
+            if self.is_filtered_data:
+                return self.num_bits
+            else:
+                return 14
     
 if __name__ == '__main__':
-    NUM_SAMPLES = 32 * 1024
+    NUM_SAMPLES = 8 * 1024
     OSR = 256
     # to use this function in your own code you would typically do
     # data = ltc2508_24_dc2222a_b(num_samples, osr, verify, is_disributed_rd)
