@@ -184,3 +184,6 @@ def start_collect(controller_board, num_samples, trigger, timeout = 5):
                 return
             time.sleep(SLEEP_TIME)
         raise err.HardwareError('Data collect timed out (missing clock?)')
+
+def uint32_to_int32(data): 
+    return [(int(d - 4294967296 if d > 2147483647 else d)) for d in data] 
