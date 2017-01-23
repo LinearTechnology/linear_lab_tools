@@ -30,7 +30,7 @@
 
     Description:
         The purpose of this module is to demonstrate how to communicate with 
-        the LTC508-32 demo board through python with the DC890.
+        the LTC512-24 demo board through python with the DC890.
 """
 
 import llt.common.dc890 as dc890
@@ -38,10 +38,10 @@ import llt.common.functions as funcs
 import llt.common.constants as consts
 import llt.common.exceptions as errs
 
-def ltc2508_32_dc2222a_b(num_samples, df, verify, is_distributed_rd,
+def ltc2512_24_dc2222a_c(num_samples, df, verify, is_distributed_rd,
                          is_filtered_data, verbose = False, do_plot = False, 
                          do_write_to_file = False):
-    with Dc2222aB(df, verify, is_distributed_rd, is_filtered_data, verbose) as controller:
+    with Dc2222aC(df, verify, is_distributed_rd, is_filtered_data, verbose) as controller:
         # You can call this multiple times with the same controller if you need tos
         data, cm_data = controller.collect(num_samples, consts.TRIGGER_NONE)
 
@@ -75,35 +75,27 @@ def ltc2508_32_dc2222a_b(num_samples, df, verify, is_distributed_rd,
 # setup. You dont need to pay any attention to it. Just skip to the bottom
 # for the sample call.
 ###############################################################################
-class Dc2222aB(dc890.Demoboard):
+class Dc2222aC(dc890.Demoboard):
     """
         A DC890 demo board with settings for the DC2289A-A
     """
     def __init__(self, df, verify, is_distributed_rd, is_filtered_data, 
                  verbose = False):
-        self.df_map = {256: 0, 1024: 1, 4096: 2, 16384: 3}
+        self.df_map = {4: 0, 8: 1, 16: 2, 32: 3}
         if df not in self.df_map:
-            raise ValueError("df must be one of 256, 1024, 4096, 16384")
+            raise ValueError("DF must be one of 4, 8, 16, 32")
         dc890.Demoboard.__init__(self, 
-                                 dc_number             = 'DC2222A-B', 
+                                 dc_number             = 'DC2222A-C', 
                                  fpga_load             = 'CMOS',
                                  num_channels          = 1,
                                  is_positive_clock     = False, 
-                                 num_bits              = 32,
+                                 num_bits              = 24,
                                  alignment             = 32,
                                  is_bipolar            = True,
                                  spi_reg_values        = [], # No SPI registers
                                  verbose               = verbose)
         self.config_cpld(df, verify, is_distributed_rd, is_filtered_data)
         
-    def collect(self, num_samples, trigger, timeout = 10, is_randomized = False, 
-                is_alternate_bit = False):
-        if self.verify:
-            num_samples *= 2
-        data = dc890.Demoboard.collect(self, num_samples, trigger, timeout, 
-                                       is_randomized, is_alternate_bit)
-        return data
-
     def config_cpld(self, df, verify, is_distributed_rd, is_filtered_data):
         if not is_filtered_data and (verify or is_distributed_rd):
             raise errs.NotSupportedError(
@@ -120,7 +112,7 @@ class Dc2222aB(dc890.Demoboard):
         # steps two and three can be done in either order.
         
         # Dist. Read: bit 11
-        # df code (0-> df 256, 1-> df 1024, 2-> df 4096, 3-> 16384) bits 8:5
+        # df code (0-> df 4, 1-> df 8, 2-> df 16, 3-> 32) bits 8:5
         # A/B (0->nyquist data, 1->filtered data) bit 0
         
         # IO expander bit numbers        
@@ -167,32 +159,18 @@ class Dc2222aB(dc890.Demoboard):
         
         # figure out the expected metadata
         df_code = self.df_map[self.df]
-        check = (((df_code * 2 + 8) << 4) | 0x05) << 24
-        check_mask = 0xFF000000
-
-        # figure out which is data and which is metadata
-        data_0 = data[0::2]
-        data_1 = data[1::2]
-        data = data_0
-        meta = data_1
-        for d0, d1 in zip(data_0, data_1):
-            if (d0 & check_mask) != check:
-                # data_0 is the data 
-                break
-            elif (d1 & check_mask) != check:
-                data = data_1
-                meta = data_0
-                break;
+        check = ((df_code + 2) << 4) | 0x06
+        check_mask = 0x000000FF
         
         # check metadata
-        for m in meta:
-            if (m & check_mask) != check:
+        for d in data:
+            if (d & check_mask) != check:
                 raise errs.HardwareError("Invalid metadata")
                 
-        return funcs.uint32_to_int32(data)
+        return funcs.fix_data([d >> 8 for d in data], 24, 24, True) 
     
     def _get_data_and_common_mode(self, raw_data):
-        cm_data = funcs.fix_data(raw_data[:], 8, 18, True)
+        cm_data = funcs.fix_data(raw_data[:], 8, 8, True)
         cm_data = funcs.uint32_to_int32(cm_data)
         data = funcs.fix_data([int(d >> 18) for d in raw_data], 14, 14, True)
         return data, cm_data
@@ -203,8 +181,7 @@ class Dc2222aB(dc890.Demoboard):
         if self.verify:
             data = self._get_data_and_check_df(raw_data)
         elif self.is_filtered_data:
-            funcs.uint32_to_int32(raw_data) 
-            data = raw_data
+            data = funcs.fix_data([d >> 8 for d in raw_data], 24, 24, True) 
         else:
             data, cm_data = self._get_data_and_common_mode(raw_data)
         return data, cm_data
@@ -216,10 +193,10 @@ class Dc2222aB(dc890.Demoboard):
     
 if __name__ == '__main__':
     NUM_SAMPLES = 8 * 1024
-    df = 256
+    df = 4
     # to use this function in your own code you would typically do
-    # data = ltc2508_32_dc2222a_b(num_samples, df, verify, is_distributed_rd)
-    ltc2508_32_dc2222a_b(NUM_SAMPLES, df, verify=False, is_distributed_rd=False, 
-                         is_filtered_data=True, verbose=True, do_plot=True, 
+    # data = ltc2512_24_dc2222a_c(num_samples, df, verify, is_distributed_rd)
+    ltc2512_24_dc2222a_c(NUM_SAMPLES, df, verify=False, is_distributed_rd=False, 
+                         is_filtered_data=False, verbose=True, do_plot=True, 
                          do_write_to_file=True)
 
