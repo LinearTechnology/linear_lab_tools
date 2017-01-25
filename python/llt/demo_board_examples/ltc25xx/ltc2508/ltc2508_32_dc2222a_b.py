@@ -203,8 +203,7 @@ class Dc2222aB(dc890.Demoboard):
         if self.verify:
             data = self._get_data_and_check_df(raw_data)
         elif self.is_filtered_data:
-            funcs.uint32_to_int32(raw_data) 
-            data = raw_data
+            data = funcs.uint32_to_int32(raw_data)
         else:
             data, cm_data = self._get_data_and_common_mode(raw_data)
         return data, cm_data
@@ -219,7 +218,7 @@ if __name__ == '__main__':
     df = 256
     # to use this function in your own code you would typically do
     # data = ltc2508_32_dc2222a_b(num_samples, df, verify, is_distributed_rd)
-    ltc2508_32_dc2222a_b(NUM_SAMPLES, df, verify=False, is_distributed_rd=False, 
+    ltc2508_32_dc2222a_b(NUM_SAMPLES, df, verify=True, is_distributed_rd=False, 
                          is_filtered_data=True, verbose=True, do_plot=True, 
                          do_write_to_file=True)
 
