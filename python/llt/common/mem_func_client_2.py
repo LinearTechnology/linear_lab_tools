@@ -51,7 +51,8 @@ class MemClient(object):
     MEM_WRITE_FROM_FILE = 10
     REG_WRITE_LUT = 11
     
-    I2C_DC590 = 90
+    DC590_TPP_COMMANDS = 90
+    
     I2C_IDENTIFY = 12
     I2C_WRITE_BYTE = 17
     I2C_TESTING = 18
@@ -414,9 +415,30 @@ class MemClient(object):
         print 'Files transfer done!'
         return val
         
+    def read_eeprom_id(self, i2c_output_base_reg, i2c_input_base_reg):
+        #string = 'sSA0S00psSA1RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRQp'
+        string = 'sSA0S00psSA1RRRRRRRRRRRRRRRRRRRQp'
+        ret = MemClient.send_dc590(self, i2c_output_base_reg, i2c_input_base_reg, string)
+        eeprom_id = ''
+        result = ''
+        count = 0
+        for character in ret:
+            result = result + character    
+            count = count + 1
+            if(count == 2):
+                #print result
+                hex_result = '0x'+result
+                #print hex_result
+                eeprom_id = eeprom_id + chr(int(hex_result, 16))
+                result = ''
+                count = 0
+        #print eeprom_id    
+        return eeprom_id
+        
+        
     def send_dc590(self, i2c_output_base_reg, i2c_input_base_reg, DC590_command, dummy = False):
         size = len(DC590_command)
-        command = MemClient.FILE_TRANSFER | MemClient.I2C_DC590
+        command = MemClient.DC590_TPP_COMMANDS | MemClient.COMMAND_SENT
         length = 16 + size
         if (dummy == True):
             command = command | MemClient.DUMMY_FUNC   
@@ -427,8 +449,9 @@ class MemClient(object):
         s.send(str(DC590_command))
         
         response = recvall(s, 8)
-        (response_command, response_length) = struct.unpack('II', response)
         ret = s.recv(100)
+        (response_command, response_length) = struct.unpack('II', response)
+        
         s.close()
 #        print 'DC590 command executed!'
 #        print type(ret)
