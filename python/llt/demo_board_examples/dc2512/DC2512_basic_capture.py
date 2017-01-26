@@ -46,26 +46,42 @@ import time
 from matplotlib import pyplot as plt
 # Okay, now the big one... this is the module that communicates with the SoCkit
 from llt.common.mem_func_client_2 import MemClient
-#from DC2390_functions import *
 from llt.utils.sockit_system_functions import *
+
 # Get the host from the command line argument. Can be numeric or hostname.
 HOST = sys.argv[1] if len(sys.argv) == 2 else '127.0.0.1'
 
+# Default script parameters
 save_pscope_data = False
 grab_filtered_data = False
 mem_bw_test = False # Set to true to run a ramp test after ADC capture
 mem_bw_test_depth = 64 * 2**20
-bit_counter = False
 
+bit_counter = False
+plot_data = True
 
 numbits = 18 # Tested with LTC2386 / DC2290
-#NUM_SAMPLES = 16 * 2**20#65536 #131072 #8192
-NUM_SAMPLES = 2**20 #1 megasamples
+NUM_SAMPLES = 2**20 #16 * 2**20 #65536 #131072 #8192
 
 # For BIG captures, downsample time-domain data before plotting
 # and only show NUM_SAMPLES / downsample_factor bins of the FFT.
 #downsample_factor = 64
 downsample_factor = 1
+
+# This script is also used to test the DC2512 in production. Test pattern is
+# an 18-bit counter applied to the data bus. Linduino / QuikEval header must
+# have a 32-bit delay between MOSI and MISO - an LTC2668 demo board (DC2025)
+# can be used for this purpose.
+
+DC2512_production_test = False
+if DC2512_production_test == True:
+    save_pscope_data = False
+    grab_filtered_data = False
+    mem_bw_test = False
+    bit_counter = False
+    plot_data = False
+    numbits = 18
+    NUM_SAMPLES = 2**19 # Twice through all 18 bits
 
 # MUX selection
 ADC_DATA       = 0x00000000
@@ -91,16 +107,6 @@ print ('FPGA load revision: %04X' % rev)
 if type_id != 0x0001:
     print("FPGA type is NOT 0x0001! Make sure you know what you're doing!")
 
-#datapath fields: lut_addr_select, dac_a_select, dac_b_select[1:0], fifo_data_select
-#lut addresses: 0=lut_addr_counter, 1=dac_a_data_signed, 2=0x4000, 3=0xC000
-
-# FIFO Data:
-# 0 = ADC data
-# 1 = Filtered ADC data 
-# 2 = Counters
-# 3 = DEADBEEF
-
-
 print ('Okay, now lets blink some lights and run some tests!!')
 
 client.reg_write(LED_BASE, 0x01)
@@ -108,9 +114,7 @@ sleep(0.1)
 client.reg_write(LED_BASE, 0x00)
 sleep(0.1)
 
-
 # Capture data!
-
 xfer_start_time = time.time()
 
 if(grab_filtered_data == True):
@@ -166,9 +170,6 @@ if(bit_counter == True):
 timeplot_data = downsample(data, downsample_factor)
 
 
-
-
-
 adc_amplitude = 2.0**(numbits-1)
 
 data_no_dc = data - np.average(data) # Remove DC to avoid leakage when windowing
@@ -206,30 +207,27 @@ freq_domain_magnitude[1:NUM_SAMPLES/2] *= 2
 freq_domain_magnitude_db = 20 * np.log10(freq_domain_magnitude/adc_amplitude)
 
 
-
-#data_nodc *= np.blackman(NUM_SAMPLES)
-#fftdata = np.abs(np.fft.fft(data_nodc)) / NUM_SAMPLES
-#fftdb = 20*np.log10(fftdata / 2.0**31)
-plt.figure(1)
-if(downsample_factor == 1):
-    plt.title("Time Record")
-else:
-    plt.title("Time Record, downsampled by a factor of " + str(downsample_factor))
-plt.plot(timeplot_data)
-plt.figure(2)
-if(downsample_factor == 1):
-    plt.title("FFT")
-else:
-    plt.title("FFT, first " + str(NUM_SAMPLES / (2*downsample_factor)) + " bins")
-plt.plot(freq_domain_magnitude_db[0:len(freq_domain_magnitude_db)/downsample_factor])
+if plot_data:
+    #data_nodc *= np.blackman(NUM_SAMPLES)
+    #fftdata = np.abs(np.fft.fft(data_nodc)) / NUM_SAMPLES
+    #fftdb = 20*np.log10(fftdata / 2.0**31)
+    plt.figure(1)
+    if(downsample_factor == 1):
+        plt.title("Time Record")
+    else:
+        plt.title("Time Record, downsampled by a factor of " + str(downsample_factor))
+    plt.plot(timeplot_data)
+    plt.figure(2)
+    if(downsample_factor == 1):
+        plt.title("FFT")
+    else:
+        plt.title("FFT, first " + str(NUM_SAMPLES / (2*downsample_factor)) + " bins")
+    plt.plot(freq_domain_magnitude_db[0:len(freq_domain_magnitude_db)/downsample_factor])
 
 if(save_pscope_data == True):
     save_for_pscope("pscope_DC2390.adc",24 ,True, NUM_SAMPLES, "2390", "2500",
                     data)
                 
-
-
-
 
 if(mem_bw_test == True):
     client.reg_write(DATAPATH_CONTROL_BASE, RAMP_DATA) # Capture a test pattern
@@ -238,5 +236,22 @@ if(mem_bw_test == True):
     print("Number of errors: " + str(errors))
     client.reg_write(DATAPATH_CONTROL_BASE, ADC_DATA) # Set datapath back to ADC
     
+    
+if DC2512_production_test == True:
+    seed = data[0]
+    errors = 0
+    for i in range (1, NUM_SAMPLES):
+        if(data[i] - 1 != seed):
+            errors += 1
+        if(data[i] == 131072): # Account for rollover...
+            seed = -131072
+        else:
+            seed = data[i]
+    print("DC2512 Production test!!")
+    print("Number of errors: " + str(errors))
+    
+    Linduino_Loopback_test(client)
+
 run_time = time.time() - start_time
 print("Run time: " + str(run_time) + " Seconds...")
+print ("To shut down SoCkit, type \"client.shutdown()\" in console, then hit enter.")

@@ -37,33 +37,54 @@ FPGA load type ID: 0001 is loaded into the FPGA.
 
 """
 
-import sys #, os, socket, ctypes, struct
+
+
+import sys
 from llt.utils.save_for_pscope import save_for_pscope
 import numpy as np
-#from subprocess import call
 from time import sleep
 from matplotlib import pyplot as plt
 # Okay, now the big one... this is the module that communicates with the SoCkit
 from llt.common.mem_func_client_2 import MemClient
-#from DC2390_functions import *
 from llt.utils.sockit_system_functions import *
+
 # Get the host from the command line argument. Can be numeric or hostname.
-#HOST = sys.argv.pop() if len(sys.argv) == 2 else '127.0.0.1'
 HOST = sys.argv[1] if len(sys.argv) == 2 else '127.0.0.1'
 
-
+# Default script parameters
+save_pscope_data = False
+grab_filtered_data = False
 mem_bw_test = False # Set to true to run a ramp test after ADC capture
+mem_bw_test_depth = 64 * 2**20
+
+bit_counter = False
+plot_data = True
+
+numbits = 16
 NUM_SAMPLES = 2**16#65536 #131072 #8192
 
-DEADBEEF = -559038737 # For now, need to re-justify.
+# This script is also used to test the DC2511 in production. Test pattern is
+# two 16-bit counters applied to the upper and lower 16-bit fields of the 
+# 32-bit data bus. Linduino / QuikEval header must
+# have a 32-bit delay between MOSI and MISO - an LTC2668 demo board (DC2025)
+# can be used for this purpose.
+
+DC2511_production_test = False
+if DC2511_production_test == True:
+    save_pscope_data = False
+    grab_filtered_data = False
+    mem_bw_test = False
+    bit_counter = False
+    plot_data = False
+    numbits = 16
+    NUM_SAMPLES = 2**17 # Twice through all 16 bits
 
 # MUX selection
 ADC_DATA       = 0x00000000
 FILTERED_ADC_DATA = 0x00000001
 RAMP_DATA  = 0x00000004
 
-
-
+start_time = time.time();
 print('Starting client')
 client = MemClient(host=HOST)
 #Read FPGA type and revision
@@ -72,38 +93,25 @@ type_id = rev_id & 0x0000FFFF
 rev = (rev_id >> 16) & 0x0000FFFF
 print ('FPGA load type ID: %04X' % type_id)
 print ('FPGA load revision: %04X' % rev)
+if type_id != 0x0001:
+    print("FPGA type is NOT 0x0001! Make sure you know what you're doing!")
 
-#datapath fields: lut_addr_select, dac_a_select, dac_b_select[1:0], fifo_data_select
-#lut addresses: 0=lut_addr_counter, 1=dac_a_data_signed, 2=0x4000, 3=0xC000
-
-# FIFO Data:
-# 0 = ADC data
-# 1 = Filtered ADC data 
-# 2 = Counters
-# 3 = DEADBEEF
-
-pltnum = 1
-# Bit fields for control register
-# std_ctrl_wire = {26'bz, lut_write_enable, ltc6954_sync , gpo1, gpo0, en_trig, start };
 
 print ('Okay, now lets blink some lights and run some tests!!')
-
 
 client.reg_write(LED_BASE, 0x01)
 sleep(0.1)
 client.reg_write(LED_BASE, 0x00)
 sleep(0.1)
 
+# Capture data!
+xfer_start_time = time.time()
 
-# Capture a sine wave
 client.reg_write(DATAPATH_CONTROL_BASE, ADC_DATA) # First capture ADC A
-data = sockit_uns32_to_signed32(sockit_capture(client, NUM_SAMPLES, trigger = TRIG_NOW, timeout = 2.0))
+data = sockit_uns32_to_signed32(sockit_capture(client, NUM_SAMPLES, edge = NEG, trigger = TRIG_NOW, timeout = 2.0))
 
-data_ch0 = np.ndarray(NUM_SAMPLES, dtype=float)
-data_ch1 = np.ndarray(NUM_SAMPLES, dtype=float)
-
-numbits = 16
-bit_counter = True
+data_ch0 = np.ndarray(NUM_SAMPLES, dtype=int)
+data_ch1 = np.ndarray(NUM_SAMPLES, dtype=int)
 
 if(numbits == 16):
     for i in range(0, NUM_SAMPLES):
@@ -119,6 +127,9 @@ if(numbits == 12):
         data_ch0[i] = (data[i] & 0x00000FFF)
         if(data_ch0[i] > 2**11):
             data_ch0[i] -= 2**12
+        data_ch1[i] = (data[i] >> 16 & 0x00000FFF)
+        if(data_ch1[i] > 2**11):
+            data_ch1[i] -= 2**12        
 
 if(bit_counter == True): # Simple test to make sure no bits are stuck at zero or one...
     bitmask = 1
@@ -130,37 +141,35 @@ if(bit_counter == True): # Simple test to make sure no bits are stuck at zero or
         print("Number of 1s in bit " + str(bit) + ": " + str(bitcount))
         bitmask *= 2 # Test next bit...
 
+if plot_data:
+    data_nodc0 = data_ch0 - np.average(data_ch0) # Remove DC content prior to windowing
+    data_nodc1 = data_ch1 - np.average(data_ch1)
+    
+    scaling_factor = NUM_SAMPLES / np.sum(np.blackman(NUM_SAMPLES))
+    
+    
+    data_nodc0 *= np.blackman(NUM_SAMPLES)
+    data_nodc0 *= scaling_factor
+    fftdata0 = np.abs(np.fft.fft(data_nodc0)) / NUM_SAMPLES
+    fftdb0 = 20*np.log10(fftdata0 / 2.0**(numbits-1))
+    data_nodc1 *= np.blackman(NUM_SAMPLES)
+    data_nodc1 *= scaling_factor
+    fftdata1 = np.abs(np.fft.fft(data_nodc1)) / NUM_SAMPLES
+    fftdb1 = 20*np.log10(fftdata1 / 2.0**(numbits-1))
+    
+    plt.figure(1)
+    plt.subplot(2, 1, 1)
+    plt.title("Time Domain Data")
+    plt.plot(data_ch0)
+    plt.subplot(2, 1, 2)
+    plt.plot(data_ch1)
 
-data_nodc0 = data_ch0 - np.average(data_ch0) # Remove DC content prior to windowing
-data_nodc1 = data_ch1 - np.average(data_ch1)
-
-scaling_factor = NUM_SAMPLES / np.sum(np.blackman(NUM_SAMPLES))
-
-
-data_nodc0 *= np.blackman(NUM_SAMPLES)
-data_nodc0 *= scaling_factor
-fftdata0 = np.abs(np.fft.fft(data_nodc0)) / NUM_SAMPLES
-fftdb0 = 20*np.log10(fftdata0 / 2.0**(numbits-1))
-data_nodc1 *= np.blackman(NUM_SAMPLES)
-data_nodc1 *= scaling_factor
-fftdata1 = np.abs(np.fft.fft(data_nodc1)) / NUM_SAMPLES
-fftdb1 = 20*np.log10(fftdata1 / 2.0**(numbits-1))
-
-plt.figure(pltnum)
-plt.plot(data_ch0)
-
-pltnum +=1
-plt.figure(pltnum)
-plt.plot(data_ch1)
-
-pltnum +=1
-plt.figure(pltnum)
-plt.plot(fftdb0)
-
-pltnum +=1
-plt.figure(pltnum)
-plt.plot(fftdb1)
-
+    plt.figure(2)
+    plt.subplot(2, 1, 1)
+    plt.title("FFT")
+    plt.plot(fftdb0)
+    plt.subplot(2, 1, 2)    
+    plt.plot(fftdb1)
 
 
 data_for_pscopeA = data_nodc0 / 256.0
@@ -169,7 +178,6 @@ data_for_pscopeA = data_nodc0 / 256.0
 save_for_pscope("pscope_DC2390.adc",24 ,True, NUM_SAMPLES, "2390", "2500",
                 data_for_pscopeA)
                 
-grab_filtered_data = False
 if(grab_filtered_data == True):
     client.reg_write(DATAPATH_CONTROL_BASE, FILTERED_ADC_DATA) # set MUX to filtered data
     client.reg_write(CIC_RATE_BASE, 64) # Set rate change factor (decimation factor)
@@ -186,4 +194,38 @@ if(mem_bw_test == True):
     print("Number of errors: " + str(errors))
     client.reg_write(DATAPATH_CONTROL_BASE, ADC_DATA) # Set datapath back to ADC
 
+if DC2511_production_test == True:
+    seed0 = data_ch0[0]
+    seed1 = data_ch1[0]
+    errors_ch0 = 0
+    errors_ch1 = 0
+    for i in range (1, NUM_SAMPLES):
+        # Channel 0
+        if(data_ch0[i] - 1 != seed0):
+        #if(np.abs(data_ch0[i] - 1 - seed0) > 0.0001):
+            errors_ch0 += 1
+            print("ch0 delta: " + str(data_ch0[i] - seed0) + " on point: " + str(i))
+        if(data_ch0[i] == 32768): # Account for rollover...
+            seed0 = -32768
+        else:
+            seed0 = data_ch0[i]
+            
+        # Channel 1
+        if(data_ch1[i] - 1 != seed1):
+        #if(np.abs(data_ch1[i] - 1 - seed1) > 0.0001):
+            errors_ch1 += 1
+            print("ch1 delta: " + str(data_ch1[i] - seed1) + " on point: " + str(i))
+        if(data_ch1[i] == 32768): # Account for rollover...
+            seed1 = -32768
+        else:
+            seed1 = data_ch1[i]            
+            
+    print("DC2511 Production test!!")
+    print("Number of errors on ch0: " + str(errors_ch0))
+    print("Number of errors on ch1: " + str(errors_ch1))
+    
+    Linduino_Loopback_test(client)
+
+run_time = time.time() - start_time
+print("Run time: " + str(run_time) + " Seconds...")
 print ("To shut down SoCkit, type \"client.shutdown()\" in console, then hit enter.")
