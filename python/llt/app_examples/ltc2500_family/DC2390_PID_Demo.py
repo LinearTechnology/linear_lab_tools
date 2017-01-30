@@ -24,8 +24,9 @@ from llt.utils.sockit_system_functions import *
 #HOST = sys.argv.pop() if len(sys.argv) == 2 else '127.0.0.1'
 HOST = sys.argv[1] if len(sys.argv) == 2 else '127.0.0.1'
 
-
-
+# Override
+#HOST = '10.54.6.24'
+#HOST = '192.168.1.231'
 
 FOS_TAU = 0x8000
 FOS_GAIN = 0x0002
@@ -58,21 +59,15 @@ print("Tuning Word:" + str(tuning_word))
 print('Starting client')
 client = MemClient(host=HOST)
 #First thing's First!! Configure clocks...
-LTC6954_configure_default(client)
-#Read FPGA type and revision
-rev_id = client.reg_read(REV_ID_BASE)
-type_id = rev_id & 0x0000FFFF
-rev = (rev_id >> 16) & 0x0000FFFF
-print ('FPGA load type ID: %04X' % type_id)
-print ('FPGA load revision: %04X' % rev)
+LTC6954_configure(client)
+#Check FPGA type and revision
+type_rev_check(client, 0xABCD, 0x1246)
 
 print("Setting up system parameters.\n");
 client.reg_write(SYSTEM_CLOCK_BASE, SYSTEM_CLOCK_DIVIDER)
 client.reg_write(SYSTEM_CLOCK_BASE, (LUT_NCO_DIVIDER << 16 | SYSTEM_CLOCK_DIVIDER))
 client.reg_write(NUM_SAMPLES_BASE, NUM_SAMPLES)
 
-
-LTC6954_configure_default(client)
 pll_locked = client.reg_read(DATA_READY_BASE) # Check data ready signal
 if((pll_locked & 0x02) == 0x02):
     print("PLL is LOCKED!")
@@ -144,7 +139,7 @@ client.reg_write(PID_KD_BASE, PID_KD)
 #PID controller
 client.reg_write(DATAPATH_CONTROL_BASE, datapath_word_pid)
 #data = capture(client, NUM_SAMPLES, trigger = 0, timeout = 0.0)
-data = sockit_ltc2500_to_signed32(capture(client, NUM_SAMPLES, trigger = 0, timeout = 0.0))
+data = sockit_ltc2500_to_signed32(sockit_capture(client, NUM_SAMPLES, trigger = TRIG_NOW, timeout = 1.0))
 plt.figure(pltnum)
 plt.plot(data, color="red")
 
@@ -157,7 +152,7 @@ client.reg_write(PID_KD_BASE, PID_KD)
 
 client.reg_write(DATAPATH_CONTROL_BASE, datapath_word_pid)
 #data = capture(client, NUM_SAMPLES, trigger = 0, timeout = 0.0)
-data = sockit_ltc2500_to_signed32(capture(client, NUM_SAMPLES, trigger = 0, timeout = 0.0))
+data = sockit_ltc2500_to_signed32(sockit_capture(client, NUM_SAMPLES, trigger = TRIG_NOW, timeout = 1.0))
 plt.figure(pltnum)
 pltnum +=1
 plt.xlim([0,1500])

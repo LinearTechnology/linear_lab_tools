@@ -66,9 +66,9 @@ FILTER_TYPE = 1
 # The trigger signal must stay high for the entire capture. We will make this
 # more convenient with a future FPGA load.
 
-#TRIG_MODE = TRIG_NOW
+TRIG_MODE = TRIG_NOW
 #TRIG_MODE = TRIG_KEY1
-TRIG_MODE = TRIG_X10
+#TRIG_MODE = TRIG_X10
 
 
 

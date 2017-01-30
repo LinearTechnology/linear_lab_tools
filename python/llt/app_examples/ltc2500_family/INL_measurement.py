@@ -144,7 +144,7 @@ def inl_test(client, meter_inst, num_pts, daca_start, daca_end, dacb_start,
     else:
         print("Running Test")
     
-    fig1 = plt.figure()
+    fig1 = plt.figure(1)
     plt.subplot(1, 1, 1)
     plt.title("INL Battle! LTC2508 vs. LTC2758")
     mng = plt.get_current_fig_manager()
@@ -182,7 +182,8 @@ def inl_test(client, meter_inst, num_pts, daca_start, daca_end, dacb_start,
         time.sleep(0.01)
         
         # Capture the data
-        data = sockit_ltc2500_to_signed32(DC2390.capture(client, NUM_SAMPLES, trigger = 0, timeout = maxtime))
+        #data = sockit_ltc2500_to_signed32(DC2390.capture(client, NUM_SAMPLES, trigger = 0, timeout = maxtime))
+        data = sockit_ltc2500_to_signed32(sockit_capture(client, NUM_SAMPLES, trigger = TRIG_NOW, timeout = maxtime))
         
         hp_data.append(v_hp)
         adc_data.append(np.average(data))
@@ -295,7 +296,9 @@ def sampling_rate_sweep(client, meter_inst, dac_vref ,v_min, v_max, file_name):
         time.sleep(0.1)
         capture_time = 1.0 + (float(NUM_SAMPLES) / float(sweep_rate[i]))
         # Capture the data
-        data = sockit_ltc2500_to_signed32(DC2390.capture(client, NUM_SAMPLES, trigger = 0, timeout = capture_time))
+        #data = sockit_ltc2500_to_signed32(DC2390.capture(client, NUM_SAMPLES, trigger = 0, timeout = capture_time))
+        data = sockit_ltc2500_to_signed32(sockit_capture(client, NUM_SAMPLES, trigger = TRIG_NOW, timeout = maxtime))
+        
         
         hp_data1.append(v_hp)
         data1.append(np.average(data))
@@ -382,7 +385,11 @@ if __name__ == "__main__":
         # Get the host from the command line argument. 
         # Can be numeric or hostname.
         HOST = sys.argv[1] if len(sys.argv) == 2 else '127.0.0.1'
-    
+
+# Override
+        #HOST = '10.54.6.24'
+        #HOST = '192.168.1.231'    
+
         # Connect to the SoC 
         client = MemClient(host=HOST)
         

@@ -131,8 +131,8 @@ DC2390_LUT_CONS_HC000 = 0x00003000
 # DAC A source
 DC2390_DAC_A_NCO_SIN         = 0x00000000
 DC2390_DAC_A_PID             = 0x00000100
-DC2390_DAC_A_PULSE_VAL_TRIGD = 0x00000200 # Formerly DC2390_DAC_A_CONS_H4000
-DC2390_DAC_A_PULSE_VAL       = 0x00000300 # Formerly DC2390_DAC_A_CONS_HC000
+DC2390_DAC_A_PULSE_VAL_TRIGD = 0x00000200
+DC2390_DAC_A_PULSE_VAL       = 0x00000300
 
 # DAC B source
 DC2390_DAC_B_NCO_COS    = 0x00000000
@@ -150,7 +150,8 @@ DC2390_FIFO_FORMATTER_FILT = 0x00000005
 DC2390_FIFO_FORMATTER_NYQ  = 0x00000006
 DC2390_FIFO_CONS_HDEADBEEF = 0x00000007
  
-# Number of samples to average in variable decimation mode
+# Number of samples to average in variable decimation mode. Can be redefined
+# at top-level
 LTC2500_N_FACTOR = 64
 
 def LTC6954_reg_write(client, base, cs_mask, addr, data):
@@ -160,129 +161,8 @@ def LTC6954_reg_write(client, base, cs_mask, addr, data):
     client.reg_write(base | SPI_TXDATA, data)
     client.reg_write(base | SPI_CONTROL, 0x00000000) #Raise CS
 
-def LTC6954_configure_default(client):
-    client.reg_write(SPI_PORT_BASE | SPI_SS, 0x00000001) # CS[0]
-    client.reg_write(SPI_PORT_BASE | SPI_CONTROL, 0x00000400) # Drop CS
-    client.reg_write(SPI_PORT_BASE | SPI_TXDATA, 0x00) # LTC6954 Reg 0
-    client.reg_write(SPI_PORT_BASE | SPI_TXDATA, 0x00)
-    client.reg_write(SPI_PORT_BASE | SPI_CONTROL, 0x00000000) #Raise CS
     
-    spistat = client.reg_read(SPI_PORT_BASE | SPI_STATUS)
-    print ("SPI Status: " + str(spistat))
-    
-
-    # Register 1 controls the DAC clock outputs. The phase may need to be tweaked.
-    # Try changing to 0x83 (delay by 3 200M clock cycles, equivalent to advancing by one.)
-    #client.reg_write(SPI_PORT_BASE + SPI_SS, 0x00000000) # CS[0]
-    client.reg_write(SPI_PORT_BASE + SPI_CONTROL, 0x00000400) # Drop CS
-    client.reg_write(SPI_PORT_BASE + SPI_TXDATA, 0x02) # LTC6954 Reg 1
-    client.reg_write(SPI_PORT_BASE + SPI_TXDATA, 0x83)
-    client.reg_write(SPI_PORT_BASE + SPI_CONTROL, 0x00000000) #Raise CS
-    
-    spistat = client.reg_read(SPI_PORT_BASE | SPI_STATUS)
-    print ("SPI Status: " + str(spistat))
-    
-    #client.reg_write(SPI_PORT_BASE + SPI_SS, 0x00000001) # CS[0]
-    client.reg_write(SPI_PORT_BASE + SPI_CONTROL, 0x00000400) # Drop CS
-    client.reg_write(SPI_PORT_BASE + SPI_TXDATA, 0x04) # LTC6954 Reg 2
-    client.reg_write(SPI_PORT_BASE + SPI_TXDATA, 0x04)
-    client.reg_write(SPI_PORT_BASE + SPI_CONTROL, 0x00000000) #Raise CS
-    
-    client.reg_write(SPI_PORT_BASE + SPI_SS, 0x00000001) # CS[0]
-    client.reg_write(SPI_PORT_BASE + SPI_CONTROL, 0x00000400) # Drop CS
-    client.reg_write(SPI_PORT_BASE + SPI_TXDATA, 0x06) # LTC6954 Reg 3
-    client.reg_write(SPI_PORT_BASE + SPI_TXDATA, 0x80)
-    client.reg_write(SPI_PORT_BASE + SPI_CONTROL, 0x00000000) #Raise CS
-    
-    client.reg_write(SPI_PORT_BASE + SPI_SS, 0x00000001) # CS[0]
-    client.reg_write(SPI_PORT_BASE + SPI_CONTROL, 0x00000400) # Drop CS
-    client.reg_write(SPI_PORT_BASE + SPI_TXDATA, 0x08) # LTC6954 Reg 4
-    client.reg_write(SPI_PORT_BASE + SPI_TXDATA, 0x04)
-    client.reg_write(SPI_PORT_BASE + SPI_CONTROL, 0x00000000) #Raise CS
-    
-    client.reg_write(SPI_PORT_BASE + SPI_SS, 0x00000001) # CS[0]
-    client.reg_write(SPI_PORT_BASE + SPI_CONTROL, 0x00000400) # Drop CS
-    client.reg_write(SPI_PORT_BASE + SPI_TXDATA, 0x0A) # LTC6954 Reg 5
-    client.reg_write(SPI_PORT_BASE + SPI_TXDATA, 0x80)
-    client.reg_write(SPI_PORT_BASE + SPI_CONTROL, 0x00000000) #Raise CS
-    
-    client.reg_write(SPI_PORT_BASE + SPI_SS, 0x00000001) # CS[0]
-    client.reg_write(SPI_PORT_BASE + SPI_CONTROL, 0x00000400) # Drop CS
-    client.reg_write(SPI_PORT_BASE + SPI_TXDATA, 0x0C) # LTC6954 Reg 6
-    client.reg_write(SPI_PORT_BASE + SPI_TXDATA, 0x04)
-    client.reg_write(SPI_PORT_BASE + SPI_CONTROL, 0x00000000) #Raise CS
-    
-    print ("Sync pulse")
-    #Issue SYNC pulse
-    client.reg_write(CONTROL_BASE, 0x00000010);
-    sleep(0.1)
-    client.reg_write(CONTROL_BASE, 0x00000000);
-    
-def capture(client, recordlength, trigger = 0, timeout = 0.0):
-#    print("Starting Capture system...\n");
-    client.reg_write(NUM_SAMPLES_BASE, recordlength)
-    client.reg_write(CONTROL_BASE, CW_START)
-    sleep(0.1) #sleep for a second
-    client.reg_write(CONTROL_BASE, CW_EN_TRIG|CW_START)
-#    client.reg_write(CONTROL_BASE, (CW_EN_TRIG)) # Drive trigger enable high, then low.
-
-#    client.reg_write(CONTROL_BASE, CW_START)
-#    sleep(timeout) #sleep for a second
-    cap_start_time = time.time();
-    ready = client.reg_read(DATA_READY_BASE) # Check data ready signal
-    while((ready & 0x01) == 1):
-        ready = client.reg_read(DATA_READY_BASE) # Check data ready signal
-    cap_time = time.time() - cap_start_time
-    print('ready signal is %d' % ready)
-    print("After " + str(cap_time) + " Seconds...")
-    if(cap_time > timeout):
-        print("TIMED OUT!!")
-    client.reg_write(CONTROL_BASE, 0x0)
-#    print("Control system execution finished.\n")
-#    print("Pulling START signal low.")
-
-#    print("attempting to read stop address...")
-    stopaddress = client.reg_read(BUFFER_ADDRESS_BASE)
-#    print("Ending address of ring buffer: " + str(stopaddress))
-    read_start_address = stopaddress - 4*recordlength - 128*4
-#    read_start_address = stopaddress - 16*NUM_SAMPLES # Trying to find triggered data!!
-    
-#    print("Are we still counting??")
-#    sleep(1.0)
-#    print("attempting to read stop address...")
-#    stopaddress = client.reg_read(BUFFER_ADDRESS_BASE)
-#    print("Ending address of ring buffer: " + str(stopaddress))
-#    read_start_address = stopaddress - NUM_SAMPLES
-#    print("Apparently not. Let's capture for another second and see where we are...")    
-#    client.reg_write(CONTROL_BASE, CHANNEL | 0x00000001);
-#    sleep(1.0) #Collect a second worth of data
-#    client.reg_write(CONTROL_BASE, CHANNEL | 0);
-#    newaddress = client.reg_read(BUFFER_ADDRESS_BASE)
-#    print("went this many samples further:" + str(newaddress - stopaddress))
-
-#    print('Reading a block...')
-    print 'Starting address: '
-    print read_start_address
-    block = client.mem_read_block(read_start_address, recordlength)
-#    dummy, block = client.mem_read_block(stopaddress, NUM_SAMPLES) # Trying to find triggered data!!
-#    data = (ctypes.c_int * recordlength).from_buffer(bytearray(block))
-#    print('Got a %d byte block back' % len(block))
-#    print('first 16 values:')
-#    for j in range(0, 16):
-#        print('value %d' % data[j])
-#    print('and the last value: %d' % data[recordlength - 1])
-    
-    return block#data
-
-## A handy function to turn unsigned values from mem_read_block to signed
-## 32-bit values
-#def uns32_to_signed32(data):
-#    for i in range(0, len(data)):    
-#        if(data[i] > 0x7FFFFFFF):
-#            data[i] -= 0xFFFFFFFF
-#    return data
-    
-def LTC6954_configure(client, divisor):
+def LTC6954_configure(client, divisor = 4):
     client.reg_write(SPI_PORT_BASE | SPI_SS, 0x00000001) # CS[0]
     client.reg_write(SPI_PORT_BASE | SPI_CONTROL, 0x00000400) # Drop CS
     client.reg_write(SPI_PORT_BASE | SPI_TXDATA, 0x00) # LTC6954 Reg 0
@@ -397,3 +277,141 @@ def ramp_test(client, recordlength, trigger = 0, timeout = 0.0):
             seed = data[i]
     print("Pardon the Obi-One error, we'll fix it shortly... we promise.")
     return errors
+    
+    
+'''
+
+
+
+def capture(client, recordlength, trigger = 0, timeout = 0.0):
+#    print("Starting Capture system...\n");
+    client.reg_write(NUM_SAMPLES_BASE, recordlength)
+    client.reg_write(CONTROL_BASE, CW_START)
+    sleep(0.1) #sleep for a second
+    client.reg_write(CONTROL_BASE, CW_EN_TRIG|CW_START)
+#    client.reg_write(CONTROL_BASE, (CW_EN_TRIG)) # Drive trigger enable high, then low.
+
+#    client.reg_write(CONTROL_BASE, CW_START)
+#    sleep(timeout) #sleep for a second
+    cap_start_time = time.time();
+    ready = client.reg_read(DATA_READY_BASE) # Check data ready signal
+    while((ready & 0x01) == 1):
+        ready = client.reg_read(DATA_READY_BASE) # Check data ready signal
+    cap_time = time.time() - cap_start_time
+    print('ready signal is %d' % ready)
+    print("After " + str(cap_time) + " Seconds...")
+    if(cap_time > timeout):
+        print("TIMED OUT!!")
+    client.reg_write(CONTROL_BASE, 0x0)
+#    print("Control system execution finished.\n")
+#    print("Pulling START signal low.")
+
+#    print("attempting to read stop address...")
+    stopaddress = client.reg_read(BUFFER_ADDRESS_BASE)
+#    print("Ending address of ring buffer: " + str(stopaddress))
+    read_start_address = stopaddress - 4*recordlength - 128*4
+#    read_start_address = stopaddress - 16*NUM_SAMPLES # Trying to find triggered data!!
+    
+#    print("Are we still counting??")
+#    sleep(1.0)
+#    print("attempting to read stop address...")
+#    stopaddress = client.reg_read(BUFFER_ADDRESS_BASE)
+#    print("Ending address of ring buffer: " + str(stopaddress))
+#    read_start_address = stopaddress - NUM_SAMPLES
+#    print("Apparently not. Let's capture for another second and see where we are...")    
+#    client.reg_write(CONTROL_BASE, CHANNEL | 0x00000001);
+#    sleep(1.0) #Collect a second worth of data
+#    client.reg_write(CONTROL_BASE, CHANNEL | 0);
+#    newaddress = client.reg_read(BUFFER_ADDRESS_BASE)
+#    print("went this many samples further:" + str(newaddress - stopaddress))
+
+#    print('Reading a block...')
+    print 'Starting address: '
+    print read_start_address
+    block = client.mem_read_block(read_start_address, recordlength)
+#    dummy, block = client.mem_read_block(stopaddress, NUM_SAMPLES) # Trying to find triggered data!!
+#    data = (ctypes.c_int * recordlength).from_buffer(bytearray(block))
+#    print('Got a %d byte block back' % len(block))
+#    print('first 16 values:')
+#    for j in range(0, 16):
+#        print('value %d' % data[j])
+#    print('and the last value: %d' % data[recordlength - 1])
+    
+    return block#data
+
+## A handy function to turn unsigned values from mem_read_block to signed
+## 32-bit values
+#def uns32_to_signed32(data):
+#    for i in range(0, len(data)):    
+#        if(data[i] > 0x7FFFFFFF):
+#            data[i] -= 0xFFFFFFFF
+#    return data
+
+
+
+def LTC6954_configure_default(client):
+    client.reg_write(SPI_PORT_BASE | SPI_SS, 0x00000001) # CS[0]
+    client.reg_write(SPI_PORT_BASE | SPI_CONTROL, 0x00000400) # Drop CS
+    client.reg_write(SPI_PORT_BASE | SPI_TXDATA, 0x00) # LTC6954 Reg 0
+    client.reg_write(SPI_PORT_BASE | SPI_TXDATA, 0x00)
+    client.reg_write(SPI_PORT_BASE | SPI_CONTROL, 0x00000000) #Raise CS
+    
+    spistat = client.reg_read(SPI_PORT_BASE | SPI_STATUS)
+    print ("SPI Status: " + str(spistat))
+    
+
+    # Register 1 controls the DAC clock outputs. The phase may need to be tweaked.
+    # Try changing to 0x83 (delay by 3 200M clock cycles, equivalent to advancing by one.)
+    #client.reg_write(SPI_PORT_BASE + SPI_SS, 0x00000000) # CS[0]
+    client.reg_write(SPI_PORT_BASE + SPI_CONTROL, 0x00000400) # Drop CS
+    client.reg_write(SPI_PORT_BASE + SPI_TXDATA, 0x02) # LTC6954 Reg 1
+    client.reg_write(SPI_PORT_BASE + SPI_TXDATA, 0x83)
+    client.reg_write(SPI_PORT_BASE + SPI_CONTROL, 0x00000000) #Raise CS
+    
+    spistat = client.reg_read(SPI_PORT_BASE | SPI_STATUS)
+    print ("SPI Status: " + str(spistat))
+    
+    #client.reg_write(SPI_PORT_BASE + SPI_SS, 0x00000001) # CS[0]
+    client.reg_write(SPI_PORT_BASE + SPI_CONTROL, 0x00000400) # Drop CS
+    client.reg_write(SPI_PORT_BASE + SPI_TXDATA, 0x04) # LTC6954 Reg 2
+    client.reg_write(SPI_PORT_BASE + SPI_TXDATA, 0x04)
+    client.reg_write(SPI_PORT_BASE + SPI_CONTROL, 0x00000000) #Raise CS
+    
+    client.reg_write(SPI_PORT_BASE + SPI_SS, 0x00000001) # CS[0]
+    client.reg_write(SPI_PORT_BASE + SPI_CONTROL, 0x00000400) # Drop CS
+    client.reg_write(SPI_PORT_BASE + SPI_TXDATA, 0x06) # LTC6954 Reg 3
+    client.reg_write(SPI_PORT_BASE + SPI_TXDATA, 0x80)
+    client.reg_write(SPI_PORT_BASE + SPI_CONTROL, 0x00000000) #Raise CS
+    
+    client.reg_write(SPI_PORT_BASE + SPI_SS, 0x00000001) # CS[0]
+    client.reg_write(SPI_PORT_BASE + SPI_CONTROL, 0x00000400) # Drop CS
+    client.reg_write(SPI_PORT_BASE + SPI_TXDATA, 0x08) # LTC6954 Reg 4
+    client.reg_write(SPI_PORT_BASE + SPI_TXDATA, 0x04)
+    client.reg_write(SPI_PORT_BASE + SPI_CONTROL, 0x00000000) #Raise CS
+    
+    client.reg_write(SPI_PORT_BASE + SPI_SS, 0x00000001) # CS[0]
+    client.reg_write(SPI_PORT_BASE + SPI_CONTROL, 0x00000400) # Drop CS
+    client.reg_write(SPI_PORT_BASE + SPI_TXDATA, 0x0A) # LTC6954 Reg 5
+    client.reg_write(SPI_PORT_BASE + SPI_TXDATA, 0x80)
+    client.reg_write(SPI_PORT_BASE + SPI_CONTROL, 0x00000000) #Raise CS
+    
+    client.reg_write(SPI_PORT_BASE + SPI_SS, 0x00000001) # CS[0]
+    client.reg_write(SPI_PORT_BASE + SPI_CONTROL, 0x00000400) # Drop CS
+    client.reg_write(SPI_PORT_BASE + SPI_TXDATA, 0x0C) # LTC6954 Reg 6
+    client.reg_write(SPI_PORT_BASE + SPI_TXDATA, 0x04)
+    client.reg_write(SPI_PORT_BASE + SPI_CONTROL, 0x00000000) #Raise CS
+    
+    print ("Sync pulse")
+    #Issue SYNC pulse
+    client.reg_write(CONTROL_BASE, 0x00000010);
+    sleep(0.1)
+    client.reg_write(CONTROL_BASE, 0x00000000);
+
+
+
+
+'''
+
+
+
+    

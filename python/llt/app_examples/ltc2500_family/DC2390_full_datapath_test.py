@@ -69,7 +69,7 @@ print("Tuning Word:" + str(tuning_word))
 print('Starting client')
 client = MemClient(host=HOST)
 #First thing's First!! Configure clocks...
-LTC6954_configure_default(client)
+LTC6954_configure(client, 0x04)
 #Read FPGA type and revision
 rev_id = client.reg_read(REV_ID_BASE)
 type_id = rev_id & 0x0000FFFF
@@ -88,7 +88,6 @@ client.reg_write(PULSE_LOW_BASE, PULSE_LOW)
 client.reg_write(PULSE_HIGH_BASE, PULSE_HIGH)
 client.reg_write(PULSE_VAL_BASE, PULSE_VAL)
 
-LTC6954_configure_default(client)
 
 #datapath fields: lut_addr_select, dac_a_select, dac_b_select[1:0], fifo_data_select
 #lut addresses: 0=lut_addr_counter, 1=dac_a_data_signed, 2=0x4000, 3=0xC000
