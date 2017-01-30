@@ -24,19 +24,20 @@ reg_address = 0x60
 reg_value = 0xB6
 if(verbose == True):
     print 'Writing 0x%X to dummy register 0x%X...' %(reg_value, reg_address)
-client.reg_write(reg_address, reg_value, dummy = False)
+client.reg_write(reg_address, reg_value, dummy = True)
 if(verbose == True):
     print 'Reading back dummy register 0x%X...' % reg_address
-reg_value_read = client.reg_read(reg_address, dummy = False)
+reg_value_read = client.reg_read(reg_address, dummy = True)
 if(verbose == True):
     print 'Value at dummy register 0x%X: ' % reg_address,
     print hex(reg_value_read)
 if(reg_value == reg_value_read):
     print '** Tested Reg read and write. **\n'
     
-reg_value_read = client.reg_read(0x00000140, dummy = False)
+reg_value_read = client.reg_read(0x00000140, dummy = True)
 print 'I2c reg: ',
 print reg_value_read
+
 # Testing mem read and mem write
 mem_address = 0x56
 mem_value = 0xB5
@@ -45,7 +46,7 @@ if(verbose == True):
 client.mem_write(mem_address, mem_value, dummy = False)
 if(verbose == True):
     print 'Reading back dummy memory location 0x%X...'% mem_address
-mem_value_read = client.mem_read(mem_address, dummy = False)
+mem_value_read = client.mem_read(mem_address, dummy = True)
 if(verbose == True):
     print 'Value at dummy memory location 0x%X : ' % mem_address,
     print hex(mem_value_read)
@@ -63,7 +64,7 @@ for i in range(1, number_of_writes+1):
     reg_values.append(i*2)
 if(verbose == True):
     print 'Writing block of %d values to dummy register location %d...' % (number_of_writes, starting_address)
-last_location = client.reg_write_block(starting_address, number_of_writes, reg_values, dummy = False)
+last_location = client.reg_write_block(starting_address, number_of_writes, reg_values, dummy = True)
 if(verbose == True):
     print 'Last location written into: %d' % last_location
 if(last_location == starting_address + ((number_of_writes-1) * 4)):
@@ -71,8 +72,8 @@ if(last_location == starting_address + ((number_of_writes-1) * 4)):
     
 # Testing reg read block
 starting_address = 0x60
-number_of_reads = 3
-values = client.reg_read_block(starting_address, number_of_reads, dummy = False)
+number_of_reads = 50
+values = client.reg_read_block(starting_address, number_of_reads, dummy = True)
 if(verbose):
     print 'Reading out block of %d values from dummy register location %d... ' % (number_of_reads, starting_address)
     print values
@@ -86,33 +87,43 @@ for i in range(0, number_of_writes):
     mem_values.append(i*2)
 if(verbose == True):
     print 'Writing block of %d values to dummy memory location %d...' % (number_of_writes, starting_address)
-last_location = client.mem_write_block(starting_address, number_of_writes, mem_values, dummy = False)
+last_location = client.mem_write_block(starting_address, number_of_writes, mem_values, dummy = True)
 if(verbose == True):
     print 'Last location written into: %d' % last_location
 if(last_location == starting_address + ((number_of_writes-1) * 4)):
     print '** Tested mem_write_block. **\n'
-    
+
 #Testing mem_read_block
 starting_address = 800
-number_of_reads = 50
-values = client.mem_read_block(starting_address, number_of_reads, dummy = False)
+number_of_reads = 10
+values = client.mem_read_block(starting_address, number_of_reads, dummy = True)
 if(verbose):
     print 'Reading out block of %d values from dummy memory location %d... ' % (number_of_reads, starting_address)
     print values
 print '** Tested mem_read_block. **\n'
 
+if(verbose):
+    print 'Reading memory out to file and writing to memory from file'
 client.mem_read_to_file(starting_address, number_of_reads, 'hello.txt', dummy = True)
 client.mem_write_from_file(starting_address + 100, number_of_reads, 'hello.txt', dummy = True)
 values = client.mem_read_block(starting_address + 100, number_of_reads, dummy = False)
 print values
+print '** Tested mem_read_to_file and mem_write_from_file**\n'
 
-print 'Testing DC590 commands'
+
+print 'TESTING DC590 COMMANDS'
 command = ""
 while(command != "0"):
     command = raw_input("\nEnter a string: ")   
     if(command != "0"):
         rawstring = client.send_dc590(0x120, 0x140, command)
-        print("Raw data, no interpretation: " + str(rawstring))
+        print("Raw data, no interpretation: "),
+        print rawstring
+print '**Tested DC590 commands**\n'
+        
+print 'Reading EEPROM: '
+eeprom_id = client.read_eeprom_id(0x120, 0x140)
+print eeprom_id
 
 #testing file transfer
 file_to_read = "C:/Users/MSajikumar/Documents/DC2390_ABCD_123F.rbf"

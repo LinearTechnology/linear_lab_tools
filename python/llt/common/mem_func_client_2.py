@@ -29,7 +29,8 @@ def check_address_range(address):
     if (address % 4 != 0):
         print('Address needs to be word aligned.')
         return 0
-
+    
+    # FIX THIS
     if (address > 0x10000000):
         print('Address out of range. Must be less than 0x100000')
         return 0
@@ -71,48 +72,48 @@ class MemClient(object):
         self.port = port
         self.host = host
     
+    # Func Desc: Read a register
     def reg_read(self, address, dummy = False):
         check_address_range(address)
         length = 12 # 4 bytes CMD + 4 bytes LN + 4 bytes Register Location
         command = MemClient.REG_READ | MemClient.COMMAND_SENT
         if (dummy == True):
             command = command | MemClient.DUMMY_FUNC
-#        register_value = MemClient.handle_command(self, command, length, address)        
             
         sock_msg = struct.pack('III', command, length, address)
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.connect((self.host, self.port))
         s.sendall(sock_msg)
         
-#        response = s.recv(128)
+        # register value is 32 bits
         response = recvall(s, 12)
         (response_command, response_length, register_value) = struct.unpack('III', response)
         #check for error
         s.close()
-        
         return register_value
-        
+      
+    # Func Desc: Write into a register
     def reg_write(self, address, value, dummy = False):
         check_address_range(address)
         length = 16
         command = MemClient.REG_WRITE | MemClient.COMMAND_SENT
         if (dummy == True):
             command = command | MemClient.DUMMY_FUNC
-#        register_location = MemClient.handle_command(self, command, length, (address, value))        
+        # register_location = MemClient.handle_command(self, command, length, (address, value))        
         
         sock_msg = struct.pack('IIII', command, length, address, value)
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.connect((self.host, self.port))
         s.sendall(sock_msg)
-#        response = s.recv(128)
-        response = recvall(s, 12)
         
-        # third parameter is the register location that was written into
+        # third parameter is the register location that was written into    
+        response = recvall(s, 12)
         (response_command, response_length, register_location) = struct.unpack('III', response)
         s.close()
 
         return register_location
 
+    # Func Desc: Read a memory location
     def mem_read(self, address, dummy = False):
         check_address_range(address)
         length = 12
@@ -123,13 +124,13 @@ class MemClient(object):
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.connect((self.host, self.port))
         s.sendall(sock_msg)
-#        response = s.recv(128)
         response = recvall(s, 12)
         (response_command, response_length, memory_value) = struct.unpack('III', response)
         s.close()
 
         return memory_value
-        
+    
+    # Func Desc: Write into memory location    
     def mem_write(self, address, value, dummy = False):
         check_address_range(address)
         length = 16
@@ -140,14 +141,14 @@ class MemClient(object):
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.connect((self.host, self.port))
         s.sendall(sock_msg)
-#        response = s.recv(128)
         response = recvall(s, 12)
         # third parameter is the register location that was written into
         (response_command, response_length, memory_location) = struct.unpack('III', response)
         s.close()
         
         return memory_location
-
+    
+    # Func Desc: Read a block of registers
     def reg_read_block(self, address, size, dummy = False):
         check_address_range(address)
         length = 16
@@ -158,7 +159,7 @@ class MemClient(object):
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.connect((self.host, self.port))
         s.sendall(sock_msg)
-#        sleep(1.0)
+        
         block = recvall(s, size * 4)
         ret=[]
         for i in range(0, size*4, 4):
@@ -166,7 +167,26 @@ class MemClient(object):
         s.close()
         return ret
         
-
+    # Func Desc: Read a block of memory locations    
+    def mem_read_block(self, address, capture_size, dummy = False):
+        check_address_range(address)
+        length = 16
+        command = MemClient.MEM_READ_BLOCK | MemClient.COMMAND_SENT
+        if (dummy == True):
+            command = command | MemClient.DUMMY_FUNC
+        sock_msg = struct.pack('IIII', command, length, address, capture_size)
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.connect((self.host, self.port))
+        s.sendall(sock_msg)
+        ret = 0
+        block = recvall(s, capture_size * 4)
+        ret=[]
+        for i in range(0, capture_size*4, 4):
+            ret.append(struct.unpack('I', block[i:i+4])[0])
+        s.close()
+        return ret        
+            
+    # Func Desc: Write into a block of register locations
     def reg_write_block(self, address, size, reg_values, dummy = False):
         check_address_range(address)
         length = 16 + size * 4
@@ -177,25 +197,45 @@ class MemClient(object):
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.connect((self.host, self.port))
         s.sendall(sock_msg)
-        
-        # transmit each value as a string (32 bits)
-        for i in range(0,size):
-            value = struct.pack('I', reg_values[i])            
-            s.sendall(value)
+        # transmit each value as a string (32 bits)        
+        val = struct.pack('I'*size, *reg_values)
+        s.sendall(val)
 
         response = recvall(s, 12)
         # third parameter is the register location that was last written into
         (response_command, response_length, last_location) = struct.unpack('III', response)
         if(last_location != (address + (size - 1)*4)):
             print 'Not all locations written!'
-            print 'Last location written into: ',
-            print last_location
-            print 'Should have been: ',
-            print address + size*4
         s.close()
-
         return last_location
     
+    # Func Desc: Write into a block of memory locations
+    def mem_write_block(self, address, size, mem_values, dummy = False):
+        check_address_range(address)
+        length = 16 + size * 4
+        command = MemClient.MEM_WRITE_BLOCK | MemClient.COMMAND_SENT
+        if (dummy == True):
+            command = command | MemClient.DUMMY_FUNC
+        sock_msg = struct.pack('IIII', command, length, address, size)
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.connect((self.host, self.port))
+        s.sendall(sock_msg)
+        # transmit each value as a string (32 bits)
+        val = struct.pack('I'*size, *mem_values)
+        s.sendall(val)
+
+        response = recvall(s, 12)
+        # third parameter is the register location that was last written into
+        (response_command, response_length, last_location) = struct.unpack('III', response)
+        if(last_location != (address + (size - 1)*4)):
+            print 'Not all locations written!'
+        s.close()
+        return last_location
+        
+        
+        
+        
+        
     # read a block of memory and write into a file
     def mem_read_to_file(self, address, capture_size, filename, dummy = False):
         check_address_range(address)
@@ -252,50 +292,8 @@ class MemClient(object):
 
         return last_location            
 
-
-        
-    def mem_read_block(self, address, capture_size, dummy = False):
-        check_address_range(address)
-        length = 16
-        command = MemClient.MEM_READ_BLOCK | MemClient.COMMAND_SENT
-        if (dummy == True):
-            command = command | MemClient.DUMMY_FUNC
-        sock_msg = struct.pack('IIII', command, length, address, capture_size)
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.connect((self.host, self.port))
-        s.sendall(sock_msg)
-        ret = 0
-        block = recvall(s, capture_size * 4)
-        ret=[]
-        for i in range(0, capture_size*4, 4):
-            ret.append(struct.unpack('I', block[i:i+4])[0])
-        s.close()
-        return ret        
     
-    def mem_write_block(self, address, size, mem_values, dummy = False):
-        check_address_range(address)
-        length = 16 + size * 4
-        command = MemClient.MEM_WRITE_BLOCK | MemClient.COMMAND_SENT
-        if (dummy == True):
-            command = command | MemClient.DUMMY_FUNC
-        sock_msg = struct.pack('IIII', command, length, address, size)
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.connect((self.host, self.port))
-        s.sendall(sock_msg)
 
-        # transmit each value as a string (32 bits)
-        for i in range(0,size):
-            value = struct.pack('I', mem_values[i])            
-            s.sendall(value)
-
-        response = recvall(s, 12)
-        # third parameter is the register location that was last written into
-        (response_command, response_length, last_location) = struct.unpack('III', response)
-        if(last_location != (address + (size - 1)*4)):
-            print 'Not all locations written!'
-        s.close()
-
-        return last_location
      
     def i2c_identify(self, dummy = False):
         length = 12
