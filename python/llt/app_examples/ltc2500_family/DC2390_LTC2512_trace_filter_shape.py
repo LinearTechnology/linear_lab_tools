@@ -57,10 +57,18 @@ import time
 
 
 ###############################################################################
-# Parameters
+# Script Parameters
+# Change the parameters to run different scenarios.  
 ###############################################################################
 
-# Change the parameters to run different scenarios.  
+
+# Uncomment one choice. The differences are that the LTC2500 does not
+# require manual configuration, and has a maximum MCLK sample rate of 1MSPS
+# vs. 1.6MSPS for the LTC2512.
+
+#ADC = 2512
+ADC = 2500
+
 
 #ADC 'U1' and 'U2' are the choices. UN-comment selected ADC
 ADC = 'U1'
@@ -72,6 +80,14 @@ ADC = 'U1'
 DF = 16
 #DF = 32
 
+# Set sample depth, for each frequency that is tested
+NUM_SAMPLES = 8192
+# Number of frequencies to plot
+NUM_FREQS = 256
+
+# Plot out first bin time domain data, count bits for this point. Useful
+# for hardware / software / Verilog debugging
+DEBUG = False
 
 if ADC == 'U1':
     mux_port = DC2390_FIFO_ADCA_FIL
@@ -87,11 +103,10 @@ elif DF == 16:
 else:
     down_sample_factor = LTC2500_DF_32
     
-master_clock = 50000000
-SYSTEM_CLOCK_DIVIDER = 199 
+master_clock = 50000000 # 50MHz, standard setting for DC2390
+SYSTEM_CLOCK_DIVIDER = 99 # Divide by 100, 500ksps Nyquist rate
 
-# Set sample depth
-NUM_SAMPLES = 8192
+
 
 ###############################################################################
 # Global Constants
@@ -108,12 +123,7 @@ print "\n/////////////////////////////////////////////"
 print "// LTC2512 / LTC2500 Trace Filter Shape Demo //"
 print "///////////////////////////////////////////////"
 
-# Uncomment one choice. The differences are that the LTC2500 does not
-# require manual configuration, and has a maximum MCLK sample rate of 1MSPS
-# vs. 1.6MSPS for the LTC2512.
 
-#ADC = 2512
-ADC = 2500
 
 if ADC == 2512:
     if DF == 4:
@@ -145,11 +155,10 @@ client.reg_write(SYSTEM_CLOCK_BASE, ((LUT_NCO_DIVIDER << 16) | SYSTEM_CLOCK_DIVI
 client.reg_write(NUM_SAMPLES_BASE, NUM_SAMPLES)
 
 # Set the LTC6954 to output 50 MHz
-#LTC6954_configure_default(client) # Default 200MHz / 4
-
 # Divisors of 5, 6 will give CLK frequencies of 40MHz, 33.3MHz. This may be
 # useful for debugging FPGA timing.
-LTC6954_configure(client, 4 ) 
+LTC6954_configure(client, 4 )
+client.reg_write(LED_BASE, (LTC2500_DF_64 | LTC2500_SSCIN_FLAT_FILT)) # Initial LTC2500 SYNC
 
 # Set Mux for filtered data
 # Set Dac A for SIN and Dac B for LUT
@@ -166,12 +175,12 @@ sleep(0.1)
 client.reg_write(LED_BASE, ltc2500_cfg_led_off)
 sleep(0.1)
 
-plt.figure(1) # Plot for time domain data
+
 
 # Sweep the DAC freq and measure the filter respose
 filter_shape = []
 freq_bin = []
-for x in range(0, 5):
+for x in range(0, NUM_FREQS):
     print("Data point: " + str(x))
     # Calculate the NCO to coherent bin
     bin_number = (x+1)*8 # Number of cycles over the time record
@@ -190,6 +199,7 @@ for x in range(0, 5):
     cycles_per_dac_sample = cycles_per_sample / (SYSTEM_CLOCK_DIVIDER + 1)
     tuning_word = int(cycles_per_dac_sample * 2**nco_word_width)
     print("Tuning Word:" + str(tuning_word))
+    print("Bin Number:" + str(bin_number) + " / " + str(NUM_SAMPLES/2))
     freq_bin.append(bin_number)
     
     # Set the NCO
@@ -198,7 +208,7 @@ for x in range(0, 5):
     # Capture the data
 #    data = capture(client, NUM_SAMPLES, timeout = 1.0) # Updating to new capture...
     sleep(0.5)
-    data_pre = sockit_capture(client, NUM_SAMPLES, trigger = TRIG_NOW, timeout = 0)
+    data_pre = sockit_capture(client, NUM_SAMPLES, trigger = TRIG_NOW, timeout = 1.0)
     data = sockit_uns32_to_signed32(data_pre)
     
     # Remove DC content
@@ -218,9 +228,11 @@ for x in range(0, 5):
     amplitude = np.amax(fftdb[5:NUM_SAMPLES/2-1])
     print("Amplitude of filtered data: " + str(amplitude))
     filter_shape.append(amplitude)
-    if(x == 1):
 
+    # Extra debug info - for first bin, plot time domain data and bit counter    
+    if(x == 1 and DEBUG == True):
     # Plot time domain data
+        plt.figure(1) # Plot for time domain data
         plt.plot(data)
         plt.show()        
         
