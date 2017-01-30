@@ -82,15 +82,33 @@ TRIG_KEY1 = 0x00000000 #
 TRIG_X10 = 0x00000040 # Trigger on test point X10
 CW_START = 0x00000001 # START is sort of a misnomer. When asserted, ring buffer is running.
 
+NEG = 0x00000000 # 
+POS = 0x00000010 # 
+
 #Additional register definitions for CMOS_32_BIT_CAPTURE load
 CIC_RATE_BASE = 0x60
 
+def type_rev_check(client, expected_type, minimum_rev):
+    rev_id = client.reg_read(REV_ID_BASE)
+    type_id = rev_id & 0x0000FFFF
+    rev = (rev_id >> 16) & 0x0000FFFF
+    if (type_id == expected_type):
+        print ("FPGA load type ID: %04X - Correct Type!" % type_id)
+    else:
+        print ("FPGA load type ID: %04X - Expecting %04X, make sure you know what you\'re doing!"
+            % (type_id, expected_type))
+    if(rev >= minimum_rev):
+        print ("FPGA load revision: %04X - Correct rev!" % rev)
+    else:
+        print ("FPGA load revision: %04X - Minimum is %04X, make sure you know what you\'re doing!"
+            % (rev, minimum_rev))
 
-def sockit_capture(client, recordlength, trigger = TRIG_NOW, timeout = 0.0):
+
+def sockit_capture(client, recordlength, trigger = TRIG_NOW, edge = NEG, timeout = 0.0):
     dmy = False #Consider adding this as an argument.
 #    print("Starting Capture system...\n");
     client.reg_write(NUM_SAMPLES_BASE, recordlength)
-    client.reg_write(CONTROL_BASE, CW_START)
+    client.reg_write(CONTROL_BASE, edge|CW_START)
     sleep(0.1) #sleep for a second
     if(trigger == TRIG_NOW):
         print("Software immediate trigger...")
@@ -98,7 +116,7 @@ def sockit_capture(client, recordlength, trigger = TRIG_NOW, timeout = 0.0):
         print("Waiting for trigger on KEY1...")
     if(trigger == TRIG_X10):
         print("Waiting for trigger on X10...")
-    client.reg_write(CONTROL_BASE, trigger|CW_START)
+    client.reg_write(CONTROL_BASE, edge|trigger|CW_START)
 #    client.reg_write(CONTROL_BASE, (TRIG_NOW)) # Drive trigger enable high, then low.
 
 #    client.reg_write(CONTROL_BASE, CW_START)
@@ -106,7 +124,7 @@ def sockit_capture(client, recordlength, trigger = TRIG_NOW, timeout = 0.0):
     cap_start_time = time.time();
     ready = client.reg_read(DATA_READY_BASE) # Check data ready signal
     while((ready & 0x01) == 1):
-        time.sleep(0.5) ########## VERY IMPORTANT - It's NOT a good idea to keep hammering on a
+        time.sleep(0.1) ########## VERY IMPORTANT - It's NOT a good idea to keep hammering on a
         ########################## port in a tight busy loop - it (may) leave the port in a
         ########################## "half-open" state too many times...
         ready = client.reg_read(DATA_READY_BASE) # Check data ready signal
@@ -115,7 +133,7 @@ def sockit_capture(client, recordlength, trigger = TRIG_NOW, timeout = 0.0):
     print("After " + str(cap_time) + " Seconds...")
     if(cap_time > timeout):
         print("TIMED OUT!!")
-    client.reg_write(CONTROL_BASE, 0x0)
+    client.reg_write(CONTROL_BASE, edge|0x0)
 #    print("Control system execution finished.\n")
 #    print("Pulling START signal low.")
 
@@ -227,3 +245,48 @@ def sockit_ltc2500_to_signed32(data):
         if(data[i] > 0x7FFFFFFF):
             data[i] -= 0xFFFFFFFF
     return data
+    
+    
+    
+# Test Linduino header. Expects a 32-bit delay between MOSI and MISO -
+# You can use an LTC2664/6/8 demo board for this purpose. Also expects
+# a pullup resistor on MISO to verify CS#
+def Linduino_Loopback_test(client):
+    client.reg_write(SPI_PORT_BASE | SPI_SS, 0x00000002) # CS[0]
+    client.reg_write(SPI_PORT_BASE | SPI_CONTROL, 0x00000400) # Drop CS
+    client.reg_write(SPI_PORT_BASE | SPI_TXDATA, 0x12)
+    client.reg_write(SPI_PORT_BASE | SPI_TXDATA, 0x34)
+    client.reg_write(SPI_PORT_BASE | SPI_TXDATA, 0x56)
+    client.reg_write(SPI_PORT_BASE | SPI_TXDATA, 0x78)
+    client.reg_write(SPI_PORT_BASE | SPI_CONTROL, 0x00000000) #Raise CS
+    
+    client.reg_write(SPI_PORT_BASE | SPI_CONTROL, 0x00000400) # Drop CS
+    client.reg_write(SPI_PORT_BASE | SPI_TXDATA, 0x00)
+    byte3 = client.reg_read(SPI_PORT_BASE | SPI_RXDATA)
+    client.reg_write(SPI_PORT_BASE | SPI_TXDATA, 0xAA)
+    byte2 = client.reg_read(SPI_PORT_BASE | SPI_RXDATA)
+    client.reg_write(SPI_PORT_BASE | SPI_TXDATA, 0xBB)
+    byte1 = client.reg_read(SPI_PORT_BASE | SPI_RXDATA)
+    client.reg_write(SPI_PORT_BASE | SPI_TXDATA, 0x00)
+    byte0 = client.reg_read(SPI_PORT_BASE | SPI_RXDATA)
+    client.reg_write(SPI_PORT_BASE | SPI_CONTROL, 0x00000000) #Raise CS
+    print ("SPI loopback test with real data to verify MOSI / MISO")
+    print ("Read Back: %02X" % byte3)
+    print ("Read Back: %02X" % byte2)
+    print ("Read Back: %02X" % byte1)
+    print ("Read Back: %02X" % byte0)
+    
+    client.reg_write(SPI_PORT_BASE | SPI_SS, 0x00000000) # NO chip select...
+    client.reg_write(SPI_PORT_BASE | SPI_TXDATA, 0x00)
+    byte3 = client.reg_read(SPI_PORT_BASE | SPI_RXDATA)
+    client.reg_write(SPI_PORT_BASE | SPI_TXDATA, 0xCC)
+    byte2 = client.reg_read(SPI_PORT_BASE | SPI_RXDATA)
+    client.reg_write(SPI_PORT_BASE | SPI_TXDATA, 0xDD)
+    byte1 = client.reg_read(SPI_PORT_BASE | SPI_RXDATA)
+    client.reg_write(SPI_PORT_BASE | SPI_TXDATA, 0x00)
+    byte0 = client.reg_read(SPI_PORT_BASE | SPI_RXDATA)
+    print ("SPI loopback test with CS# high")
+    print ("Read Back: %02X" % byte3)
+    print ("Read Back: %02X" % byte2)
+    print ("Read Back: %02X" % byte1)
+    print ("Read Back: %02X" % byte0)
