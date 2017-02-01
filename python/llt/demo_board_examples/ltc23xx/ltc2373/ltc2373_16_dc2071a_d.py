@@ -36,7 +36,7 @@
 import llt.common.dc890 as dc890
 import llt.common.functions as funcs
 import llt.common.constants as consts
-import llt.common.exceptions as errs
+import llt.demo_board_examples.ltc23xx.ltc2373.ltc2373_18_dc2071a_a as dc2071
 
 CH_MUX_P0_N1   = (0x0 << 3) | 0x80
 CH_MUX_P2_N3   = (0x1 << 3) | 0x80
@@ -64,12 +64,12 @@ CH_ENABLE_DGC  = 0x1
 CH_DISABLE_DGC = 0x0
 
 
-def ltc2373_18_dc2071a_a(num_samples, spi_registers, verbose = False, do_plot = False, 
+def ltc2373_16_dc2071a_d(num_samples, spi_registers, verbose = False, do_plot = False, 
                          do_write_to_file = False):
-    with Ltc2373(dc_number = 'DC2071A-A',
+    with Ltc2373(dc_number = 'DC2071A-D',
                  spi_registers = spi_registers,
                  num_channels = len(spi_registers),
-                 num_bits = 18,
+                 num_bits = 16,
                  verbose = verbose) as controller:
         # You can call this multiple times with the same controller if you need to
         data = controller.collect(num_samples, consts.TRIGGER_NONE)
@@ -88,7 +88,7 @@ def ltc2373_18_dc2071a_a(num_samples, spi_registers, verbose = False, do_plot = 
 # The following code is a little complicated. Just skip to the bottom
 # for the sample call.
 ###############################################################################
-class Ltc2373(dc890.Demoboard):
+class Ltc2373(dc2071.Ltc2373):
     """
         A DC890 demo board with settings for the LTC2373
     """
@@ -104,69 +104,10 @@ class Ltc2373(dc890.Demoboard):
                                  spi_reg_values        = spi_registers,
                                  verbose               = verbose)
                                  
-    def collect(self, num_samples, trigger, timeout = 10, is_randomized = False, 
-                is_alternate_bit = False):
-        data = dc890.Demoboard.collect(self, 2*num_samples, trigger, timeout, 
-                                       is_randomized, is_alternate_bit)
-        return data
-    
-    def set_spi_registers(self, register_values):
-        self.spi_reg_values = register_values
-        
-        # IO expander bit numbers        
-        WRITE_IN_2_BIT  = 7
-        SDI_BIT         = 6
-        SCK_BIT         = 5
-        CNV_BIT         = 4
-        WRITE_IN_1_BIT  = 3
-        #HIGH_SPEED_BIT = 2
-        UNUSED_1_BIT    = 1
-        UNUSED_0_BIT    = 0
-        
-        base = (1 << UNUSED_1_BIT) | (1 << UNUSED_0_BIT)
-
-        self.controller.dc890_gpio_spi_set_bits(0, SCK_BIT, SDI_BIT)
-        
-        for val in self.spi_reg_values:
-            if val & 0x80 == 0:
-                raise errs.ValueError("Most significant bit must be set.")
-
-            self.controller.dc890_gpio_set_byte(base)
-        
-            self.controller.spi_send_no_chip_select([val])
-        
-        base |= 1 << WRITE_IN_2_BIT
-        self.controller.dc890_gpio_set_byte(base)
-        
-        base |= (1 << CNV_BIT) | (1 << WRITE_IN_1_BIT) 
-        self.controller.dc890_gpio_set_byte(base)
-
-    def _get_data_subset(self, data):
-        seq_len = len(self.spi_reg_values)
-        for i in range(seq_len):
-            found_start = True
-            for j in range(seq_len):
-                check_idx = (i+j) % seq_len
-                if (data[j]>>1) & 0x7F != self.spi_reg_values[check_idx] & 0x7F:
-                    found_start = False
-                    break
-            if found_start:
-                start = 0 if i == 0 else seq_len - i
-                return data[start:len(data)/2 + start]
-        raise errs.HardwareError("Could not find correct config from data")
-
-    def _check_data(self, data):
-        seq_len = len(self.spi_reg_values)
-        check_idx = 0
-        for d in data:
-            if (d >> 1) & 0x7F != self.spi_reg_values[check_idx] & 0x7F:
-                raise errs.HardwareError("Detected incorrect config in data")
-            check_idx = (check_idx + 1) % seq_len
-
     def fix_data(self, raw_data, is_randomized, is_alternate_bit):
         raw_data = self._get_data_subset(raw_data)
         self._check_data(raw_data)
-        return funcs.fix_data([d >> 14 for d in raw_data], self.num_bits, 18,
+        return funcs.fix_data(raw_data, self.num_bits, 30,
                               self.is_bipolar, is_randomized, is_alternate_bit)
     
 if __name__ == '__main__':
@@ -177,5 +118,5 @@ if __name__ == '__main__':
                  CH_MUX_P6_N7 | CH_RANGE_FULL_DIFF_2S_COMP | CH_DISABLE_DGC,
                ]
     # to use this function in your own code you would typically do
-    # data = ltc2373_18_dc2071a_a(num_samples)
-    ltc2373_18_dc2071a_a(NUM_SAMPLES, spi_reg, verbose=True, do_plot=True, do_write_to_file=True)
+    # data = ltc2373_16_dc2071a_d(num_samples)
+    ltc2373_16_dc2071a_d(NUM_SAMPLES, spi_reg, verbose=True, do_plot=True, do_write_to_file=True)
