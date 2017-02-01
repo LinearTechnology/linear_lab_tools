@@ -35,7 +35,13 @@ def check_address_range(address):
         print('Address out of range. Must be less than 0x100000')
         return 0
 
-         
+def check_for_error(command):
+    if(command & MemClient.ERROR == MemClient.ERROR):
+        print 'ERROR! wrong command sent.'
+        return 1
+    else:         
+        return 0
+        
 class MemClient(object):
     """Class for the socket server"""
 
@@ -88,8 +94,8 @@ class MemClient(object):
         # register value is 32 bits
         response = recvall(s, 12)
         (response_command, response_length, register_value) = struct.unpack('III', response)
-        #check for error
         s.close()
+        check_for_error(response_command)
         return register_value
       
     # Func Desc: Write into a register
@@ -110,7 +116,7 @@ class MemClient(object):
         response = recvall(s, 12)
         (response_command, response_length, register_location) = struct.unpack('III', response)
         s.close()
-
+        check_for_error(response_command)
         return register_location
 
     # Func Desc: Read a memory location
@@ -127,7 +133,7 @@ class MemClient(object):
         response = recvall(s, 12)
         (response_command, response_length, memory_value) = struct.unpack('III', response)
         s.close()
-
+        check_for_error(response_command)        
         return memory_value
     
     # Func Desc: Write into memory location    
@@ -145,7 +151,7 @@ class MemClient(object):
         # third parameter is the register location that was written into
         (response_command, response_length, memory_location) = struct.unpack('III', response)
         s.close()
-        
+        check_for_error(response_command)        
         return memory_location
     
     # Func Desc: Read a block of registers
@@ -232,11 +238,7 @@ class MemClient(object):
         s.close()
         return last_location
         
-        
-        
-        
-        
-    # read a block of memory and write into a file
+    # Func Desc: Read a block of memory and write into a file
     def mem_read_to_file(self, address, capture_size, filename, dummy = False):
         check_address_range(address)
         length = 16 + len(filename)
@@ -253,7 +255,7 @@ class MemClient(object):
         (response_command, response_length, val) = struct.unpack('III', response)
         s.close()
         
-      
+    # Func Desc: Read a file and write into memory  
     def mem_write_from_file(self, address, capture_size, filename, dummy = False):
         check_address_range(address)
         length = 16 + len(filename)
@@ -269,6 +271,102 @@ class MemClient(object):
         response = recvall(s, 12)
         (response_command, response_length, val) = struct.unpack('III', response)
         s.close()
+
+    # Func Desc: Send DC590 command as a string.
+    def send_dc590(self, i2c_output_base_reg, i2c_input_base_reg, DC590_command, dummy = False):
+        size = len(DC590_command)
+        command = MemClient.DC590_TPP_COMMANDS | MemClient.COMMAND_SENT
+        length = 16 + size
+        if (dummy == True):
+            command = command | MemClient.DUMMY_FUNC   
+        sock_msg = struct.pack('IIII', command, length, i2c_output_base_reg, i2c_input_base_reg)
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.connect((self.host, self.port))
+        s.sendall(sock_msg)
+        s.send(str(DC590_command))
+        
+        response = recvall(s, 8)
+        ret = s.recv(100)
+        (response_command, response_length) = struct.unpack('II', response)
+        
+        s.close()
+#        print 'DC590 command executed!'
+#        print type(ret)
+#        print 'String returned: ',
+#        print ret
+#        print 'String returned in hex: ',
+#        for i in range(1, len(ret)):
+#            print format(ord(ret[i]), "x"),
+#            print ', ',
+        return ret
+        
+    # Func Desc: Calls send_dc590() to read the EEPROM using I2C.
+    def read_eeprom_id(self, i2c_output_base_reg, i2c_input_base_reg):
+        #string = 'sSA0S00psSA1RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRQp'
+        string = 'sSA0S00psSA1RRRRRRRRRRRRRRRRRRRQp'
+        ret = MemClient.send_dc590(self, i2c_output_base_reg, i2c_input_base_reg, string)
+        eeprom_id = ''
+        result = ''
+        count = 0
+        for character in ret:
+            result = result + character    
+            count = count + 1
+            if(count == 2):
+                #print result
+                hex_result = '0x'+result
+                #print hex_result
+                eeprom_id = eeprom_id + chr(int(hex_result, 16))
+                result = ''
+                count = 0
+        #print eeprom_id    
+        return eeprom_id
+
+    # Func Desc: Transfer the data in a file. Store it in the new location sent.
+    def file_transfer(self, file_to_read, file_write_path, dummy = False):   
+        print '\nTesting file transfer...'        
+        path_size = len(file_write_path)    
+        print path_size
+        # Size of the file transferred
+        fp = open(file_to_read, "rb")
+        fp.seek(0, os.SEEK_END)
+        size = fp.tell()
+        fp.close()
+        
+        print 'File size = ',
+        print size,
+        print ' bytes'
+        command = MemClient.FILE_TRANSFER | MemClient.COMMAND_SENT
+        length = 12 + path_size + size
+        if (dummy == True):
+            command = command | MemClient.DUMMY_FUNC        
+
+        sock_msg = struct.pack('III', command, length, path_size)
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.connect((self.host, self.port))
+        s.sendall(sock_msg)
+
+        # Transfer file_path and the file
+        s.send(file_write_path)
+        
+        # Read the file to be transferred
+        fp = open(file_to_read, "rb")
+        packet_size = 1024
+        print("Reading file...")
+ 
+        file_data = fp.read(packet_size)
+        while(file_data):
+            s.send(file_data)
+            file_data = fp.read(packet_size)
+
+        fp.close()  
+        response = recvall(s, 12)
+        (response_command, response_length, val) = struct.unpack('III', response)
+        s.close()
+        print 'Files transfer done!'
+        return val
+
+
+
 
         
     def reg_write_LUT(self, address, size, data_array, dummy = False):
@@ -370,97 +468,8 @@ class MemClient(object):
         else:
             return False       
         
-    def file_transfer(self, file_to_read, file_write_path, dummy = False):   
-        print '\nTesting file transfer...'        
-        path_size = len(file_write_path)    
-        print path_size
-        # Size of the file transferred
-        fp = open(file_to_read, "rb")
-        fp.seek(0, os.SEEK_END)
-        size = fp.tell()
-        fp.close()
-        
-        print 'File size = ',
-        print size,
-        print ' bytes'
-        command = MemClient.FILE_TRANSFER | MemClient.COMMAND_SENT
-        length = 12 + path_size + size
-        if (dummy == True):
-            command = command | MemClient.DUMMY_FUNC        
 
-        sock_msg = struct.pack('III', command, length, path_size)
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.connect((self.host, self.port))
-        s.sendall(sock_msg)
-
-        # Transfer file_path and the file
-        s.send(file_write_path)
-        
-        # Read the file to be transferred
-        fp = open(file_to_read, "rb")
-        packet_size = 1024
-        print("Reading file...")
- 
-        file_data = fp.read(packet_size)
-        while(file_data):
-            s.send(file_data)
-            file_data = fp.read(packet_size)
-
-        fp.close()  
-        response = recvall(s, 12)
-        (response_command, response_length, val) = struct.unpack('III', response)
-        s.close()
-        print 'Files transfer done!'
-        return val
-        
-    def read_eeprom_id(self, i2c_output_base_reg, i2c_input_base_reg):
-        #string = 'sSA0S00psSA1RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRQp'
-        string = 'sSA0S00psSA1RRRRRRRRRRRRRRRRRRRQp'
-        ret = MemClient.send_dc590(self, i2c_output_base_reg, i2c_input_base_reg, string)
-        eeprom_id = ''
-        result = ''
-        count = 0
-        for character in ret:
-            result = result + character    
-            count = count + 1
-            if(count == 2):
-                #print result
-                hex_result = '0x'+result
-                #print hex_result
-                eeprom_id = eeprom_id + chr(int(hex_result, 16))
-                result = ''
-                count = 0
-        #print eeprom_id    
-        return eeprom_id
-        
-        
-    def send_dc590(self, i2c_output_base_reg, i2c_input_base_reg, DC590_command, dummy = False):
-        size = len(DC590_command)
-        command = MemClient.DC590_TPP_COMMANDS | MemClient.COMMAND_SENT
-        length = 16 + size
-        if (dummy == True):
-            command = command | MemClient.DUMMY_FUNC   
-        sock_msg = struct.pack('IIII', command, length, i2c_output_base_reg, i2c_input_base_reg)
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.connect((self.host, self.port))
-        s.sendall(sock_msg)
-        s.send(str(DC590_command))
-        
-        response = recvall(s, 8)
-        ret = s.recv(100)
-        (response_command, response_length) = struct.unpack('II', response)
-        
-        s.close()
-#        print 'DC590 command executed!'
-#        print type(ret)
-#        print 'String returned: ',
-#        print ret
-#        print 'String returned in hex: ',
-#        for i in range(1, len(ret)):
-#            print format(ord(ret[i]), "x"),
-#            print ', ',
-        return ret
-
+    
         
         
     def send_json(self, command_line, dummy = False):

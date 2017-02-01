@@ -153,8 +153,8 @@ print 'File transfer done!'
 #print 'I2C read EEPROM... ',
 #print client.i2c_read()
 #
-#choice = raw_input('Shutdown: y/n? ')
-#if(choice == 'y'):
-#    shut = client.shutdown(dummy = True)
-#    print('Shutting down...' if shut == True else 'Shutdown Failed!')
+choice = raw_input('Shutdown: y/n? ')
+if(choice == 'y'):
+    shut = client.shutdown(dummy = False)
+    print('Shutting down...' if shut == True else 'Shutdown Failed!')
     
