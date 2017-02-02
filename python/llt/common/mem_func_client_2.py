@@ -210,8 +210,8 @@ class MemClient(object):
         response = recvall(s, 12)
         # third parameter is the register location that was last written into
         (response_command, response_length, last_location) = struct.unpack('III', response)
-        if(last_location != (address + (size - 1)*4)):
-            print 'Not all locations written!'
+        check_for_error(response_command)    
+        if(last_location != (address + (size - 1)*4)):    print 'Not all locations written!'
         s.close()
         return last_location
     
@@ -233,19 +233,19 @@ class MemClient(object):
         response = recvall(s, 12)
         # third parameter is the register location that was last written into
         (response_command, response_length, last_location) = struct.unpack('III', response)
-        if(last_location != (address + (size - 1)*4)):
-            print 'Not all locations written!'
+        check_for_error(response_command)    
+        if(last_location != (address + (size - 1)*4)):    print 'Not all locations written!'
         s.close()
         return last_location
         
     # Func Desc: Read a block of memory and write into a file
-    def mem_read_to_file(self, address, capture_size, filename, dummy = False):
-        check_address_range(address)
+    def mem_read_to_file(self, memory_address, block_size, filename, dummy = False):
+        check_address_range(memory_address)
         length = 16 + len(filename)
         command = MemClient.MEM_READ_TO_FILE | MemClient.COMMAND_SENT
         if (dummy == True):
             command = command | MemClient.DUMMY_FUNC
-        sock_msg = struct.pack('IIII', command, length, address, capture_size)
+        sock_msg = struct.pack('IIII', command, length, memory_address, block_size)
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.connect((self.host, self.port))
         s.sendall(sock_msg)
@@ -254,15 +254,17 @@ class MemClient(object):
         response = recvall(s, 12)
         (response_command, response_length, val) = struct.unpack('III', response)
         s.close()
+        check_for_error(response_command)    
+        return 0
         
     # Func Desc: Read a file and write into memory  
-    def mem_write_from_file(self, address, capture_size, filename, dummy = False):
-        check_address_range(address)
+    def mem_write_from_file(self, memory_address, block_size, filename, dummy = False):
+        check_address_range(memory_address)
         length = 16 + len(filename)
         command = MemClient.MEM_WRITE_FROM_FILE | MemClient.COMMAND_SENT
         if (dummy == True):
             command = command | MemClient.DUMMY_FUNC
-        sock_msg = struct.pack('IIII', command, length, address, capture_size)
+        sock_msg = struct.pack('IIII', command, length, memory_address, block_size)
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.connect((self.host, self.port))
         s.sendall(sock_msg)
@@ -286,9 +288,9 @@ class MemClient(object):
         s.send(str(DC590_command))
         
         response = recvall(s, 8)
-        ret = s.recv(100)
+        #ret = s.recv(100)
         (response_command, response_length) = struct.unpack('II', response)
-        
+        ret_string = s.recv(response_length)
         s.close()
 #        print 'DC590 command executed!'
 #        print type(ret)
@@ -298,7 +300,7 @@ class MemClient(object):
 #        for i in range(1, len(ret)):
 #            print format(ord(ret[i]), "x"),
 #            print ', ',
-        return ret
+        return ret_string
         
     # Func Desc: Calls send_dc590() to read the EEPROM using I2C.
     def read_eeprom_id(self, i2c_output_base_reg, i2c_input_base_reg):
@@ -323,20 +325,16 @@ class MemClient(object):
 
     # Func Desc: Transfer the data in a file. Store it in the new location sent.
     def file_transfer(self, file_to_read, file_write_path, dummy = False):   
-        print '\nTesting file transfer...'        
-        path_size = len(file_write_path)    
-        print path_size
         # Size of the file transferred
         fp = open(file_to_read, "rb")
         fp.seek(0, os.SEEK_END)
-        size = fp.tell()
+        file_size = fp.tell()
         fp.close()
+        # print 'File size = %d bytes' % file_size
+        path_size = len(file_write_path)    
         
-        print 'File size = ',
-        print size,
-        print ' bytes'
         command = MemClient.FILE_TRANSFER | MemClient.COMMAND_SENT
-        length = 12 + path_size + size
+        length = 12 + path_size + file_size
         if (dummy == True):
             command = command | MemClient.DUMMY_FUNC        
 
@@ -344,15 +342,12 @@ class MemClient(object):
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.connect((self.host, self.port))
         s.sendall(sock_msg)
-
         # Transfer file_path and the file
         s.send(file_write_path)
         
-        # Read the file to be transferred
+        # Read the file to be transferred in packets of size 1024
         fp = open(file_to_read, "rb")
         packet_size = 1024
-        print("Reading file...")
- 
         file_data = fp.read(packet_size)
         while(file_data):
             s.send(file_data)
@@ -362,13 +357,8 @@ class MemClient(object):
         response = recvall(s, 12)
         (response_command, response_length, val) = struct.unpack('III', response)
         s.close()
-        print 'Files transfer done!'
         return val
 
-
-
-
-        
     def reg_write_LUT(self, address, size, data_array, dummy = False):
         check_address_range(address)
         length = 16 + size * 4

@@ -33,7 +33,10 @@ mem_values = []
 for i in range(0, number_of_writes):
     reg_values.append(i*2)
     mem_values.append(i*2)
-        
+
+i2c_output_base_reg = 0x120
+i2c_input_base_reg = 0x140
+
 # Testing reg_write
 if(verbose == True):    print 'Writing 0x%X to register 0x%X...' %(reg_value, reg_address)
 written_address = client.reg_write(reg_address, reg_value, dummy)
@@ -102,36 +105,49 @@ if(verbose):
     print values
 print '** Tested mem_read_block. **\n'
 
-# Testing mem_read_to_file and mem_write_from_file
-if(verbose):
-    print 'Reading memory out to file and writing to memory from file'
-client.mem_read_to_file(starting_address, number_of_reads, 'hello.txt', dummy = True)
-client.mem_write_from_file(starting_address + 100, number_of_reads, 'hello.txt', dummy = True)
-values = client.mem_read_block(starting_address + 100, number_of_reads, dummy = False)
-print values
-print '** Tested mem_read_to_file and mem_write_from_file**\n'
+# Testing mem_read_to_file
+if(verbose):    print 'Reading block of memory and writing into file...'
+client.mem_read_to_file(starting_address, number_of_reads, 'hello.txt', dummy)
+print '** Tested mem_read_to_file. **\n'
 
-# Testing DC590 commands
-print 'TESTING DC590 COMMANDS'
-command = ""
-while(command != "0"):
-    command = raw_input("\nEnter a string: ")   
-    if(command != "0"):
-        rawstring = client.send_dc590(0x120, 0x140, command)
-        print("Raw data, no interpretation: "),
-        print rawstring
-print '**Tested DC590 commands**\n'
-        
-print 'Reading EEPROM: '
-eeprom_id = client.read_eeprom_id(0x120, 0x140)
-print eeprom_id
+# Testing mem_write_from_file
+if(verbose):    print 'Reading a file and writing into memory...'
+client.mem_write_from_file(starting_address + 100, number_of_reads, 'hello.txt', dummy)
+values = client.mem_read_block(starting_address + 100, number_of_reads, dummy)
+if(verbose):
+    print 'Values read out:'
+    print values
+print '** Tested mem_write_from_file**\n'
 
 # Testing file transfer
 file_to_read = "C:/Users/MSajikumar/Documents/DC2390_ABCD_123F.rbf"
 file_write_path = "/home/sockit/fpga_bitfiles/test.rbf"
-path_size = 64
+if(verbose):
+    print 'Transferring a file to deamon...'
+    print 'File to read: %s' % file_to_read
+    print 'File write path: %s' % file_write_path
 client.file_transfer(file_to_read, file_write_path)
-print 'File transfer done!'
+print '**Tested File transfer**\n'
+
+# Testing DC590 commands - Non-dummy functions
+print 'TESTING DC590 COMMANDS'
+print 'Enter 0 to stop.'
+command = ""
+while(command != "0"):
+    command = raw_input("\nEnter a string: ")   
+    if(command != "0"):
+        rawstring = client.send_dc590(i2c_output_base_reg, i2c_input_base_reg, command)
+        print("Raw data, no interpretation: %s") % rawstring
+    
+# Testing Read EEPROM    
+print '\nReading EEPROM...'
+eeprom_id = client.read_eeprom_id(i2c_output_base_reg, i2c_input_base_reg)
+if(verbose):    print 'EEPROM ID string: %s' % eeprom_id
+print 'IC identified: %s' %(eeprom_id.split(','))[0]
+
+print '**Tested DC590 commands**\n'
+
+
 
 
 ############client.send_json("cd fpga_bitfiles")
@@ -154,7 +170,7 @@ print 'File transfer done!'
 #print 'I2C read EEPROM... ',
 #print client.i2c_read()
 #
-choice = raw_input('Shutdown: y/n? ')
+choice = raw_input('\nShutdown: y/n? ')
 if(choice == 'y'):
     shut = client.shutdown(dummy = False)
     print('Shutting down...' if shut == True else 'Shutdown Failed!')
