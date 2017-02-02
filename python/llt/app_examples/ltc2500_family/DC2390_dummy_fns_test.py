@@ -15,93 +15,94 @@ HOST = sys.argv[1] if len(sys.argv) == 2 else '127.0.0.1'
 print('Starting client\n')
 client = MemClient(host=HOST)
 
-verbose = True
-
 # no need for any configuration
+verbose = True
+dummy = True
+error = 0
 
-# Testing reg_read and reg_write
 reg_address = 0x60
-reg_value = 0xB6
-if(verbose == True):
-    print 'Writing 0x%X to dummy register 0x%X...' %(reg_value, reg_address)
-client.reg_write(reg_address, reg_value, dummy = True)
-if(verbose == True):
-    print 'Reading back dummy register 0x%X...' % reg_address
-reg_value_read = client.reg_read(reg_address, dummy = True)
-if(verbose == True):
-    print 'Value at dummy register 0x%X: ' % reg_address,
-    print hex(reg_value_read)
-if(reg_value == reg_value_read):
-    print '** Tested Reg read and write. **\n'
-    
-reg_value_read = client.reg_read(0x00000140, dummy = True)
-print 'I2c reg: ',
-print reg_value_read
-
-# Testing mem read and mem write
-mem_address = 0x56
+reg_value = 0xB7
+mem_address = 0x88
 mem_value = 0xB5
-if(verbose == True):
-    print 'Writing 0x%X to dummy memory location 0x%X...' % (mem_value, mem_address)
-client.mem_write(mem_address, mem_value, dummy = False)
-if(verbose == True):
-    print 'Reading back dummy memory location 0x%X...'% mem_address
-mem_value_read = client.mem_read(mem_address, dummy = True)
-if(verbose == True):
-    print 'Value at dummy memory location 0x%X : ' % mem_address,
-    print hex(mem_value_read)
-if(mem_value_read == mem_address):
-    print '** Tested mem read and write. **\n'
-else:
-    print '** Check mem read and write ** \n'
-    
-    
-# Testing reg write block
-starting_address = 0x60
 number_of_writes = 3
+number_of_reads = 50
+starting_address = reg_address
+
 reg_values = []
-for i in range(1, number_of_writes+1):
+mem_values = []
+for i in range(0, number_of_writes):
     reg_values.append(i*2)
-if(verbose == True):
-    print 'Writing block of %d values to dummy register location %d...' % (number_of_writes, starting_address)
-last_location = client.reg_write_block(starting_address, number_of_writes, reg_values, dummy = True)
-if(verbose == True):
-    print 'Last location written into: %d' % last_location
-if(last_location == starting_address + ((number_of_writes-1) * 4)):
-    print '** Tested reg_write_block. **\n'
+    mem_values.append(i*2)
+        
+# Testing reg_write
+if(verbose == True):    print 'Writing 0x%X to register 0x%X...' %(reg_value, reg_address)
+written_address = client.reg_write(reg_address, reg_value, dummy)
+if (written_address != reg_address):    
+    print 'ERROR in Register Write. Returned wrong address.'
+    error = error + 1
+    
+# Testing reg_read
+if(verbose == True):    print 'Reading back register 0x%X...' % reg_address
+reg_value_read = client.reg_read(reg_address, dummy)
+if(verbose == True):    print 'Value at register 0x%X: 0x%X' % (reg_address, reg_value_read)
+if(reg_value_read != reg_value):    
+    print 'ERROR in Register Read. Returned wrong value.'
+    error = error + 1
+    
+print '** Tested Reg read and write. **\n'
+
+# Testing mem write
+if(verbose == True):    print 'Writing 0x%X to memory location 0x%X...' % (mem_value, mem_address)
+written_address = client.mem_write(mem_address, mem_value, dummy)
+if (written_address != mem_address):    
+    print 'ERROR in Memory Write. Returned wrong address.'
+    error = error + 1
+
+# Testing mem read
+if(verbose == True):    print 'Reading back memory location 0x%X...'% mem_address
+mem_value_read = client.mem_read(mem_address, dummy)
+if(verbose == True):    print 'Value at memory location 0x%X : 0x%X' % (mem_address, mem_value_read)
+if(mem_value_read != mem_value):
+    print 'ERROR in Memroy Read. Returned wrong value.'
+    error = error + 1
+    
+print '** Tested Mem read and write. **\n'
+
+# Testing reg write block
+if(verbose == True):    print 'Writing block of %d values to register location 0x%X...' % (number_of_writes, starting_address)
+last_location = client.reg_write_block(starting_address, number_of_writes, reg_values, dummy)
+if(verbose == True):    print 'Last location written into: 0x%X' % last_location
+if(last_location != (starting_address + (number_of_writes-1)*4)):
+    print 'ERROR in Reg Write Block. Returned wrong last location'
+    error = error + 1
+print '** Tested reg_write_block. **\n'
     
 # Testing reg read block
-starting_address = 0x60
-number_of_reads = 50
-values = client.reg_read_block(starting_address, number_of_reads, dummy = True)
+values = client.reg_read_block(starting_address, number_of_reads, dummy)
 if(verbose):
-    print 'Reading out block of %d values from dummy register location %d... ' % (number_of_reads, starting_address)
+    print 'Reading out block of %d values from register location 0x%X... ' % (number_of_reads, starting_address)
+    print 'Values read out:'
     print values
 print '** Tested reg_read_block. **\n'
 
 # Testing mem_write_block
-starting_address = 800
-number_of_writes = 25
-mem_values = []
-for i in range(0, number_of_writes):
-    mem_values.append(i*2)
-if(verbose == True):
-    print 'Writing block of %d values to dummy memory location %d...' % (number_of_writes, starting_address)
-last_location = client.mem_write_block(starting_address, number_of_writes, mem_values, dummy = True)
-if(verbose == True):
-    print 'Last location written into: %d' % last_location
-if(last_location == starting_address + ((number_of_writes-1) * 4)):
-    print '** Tested mem_write_block. **\n'
+if(verbose == True):    print 'Writing block of %d values to memory location 0x%X...' % (number_of_writes, starting_address)
+last_location = client.mem_write_block(starting_address, number_of_writes, mem_values, dummy)
+if(verbose == True):    print 'Last location written into: 0x%X' % last_location
+if(last_location != (starting_address + (number_of_writes-1)*4)):
+    print 'ERROR in Mem Write Block. Returned wrong last location'
+    error = error + 1
+print '** Tested mem_write_block. **\n'
 
-#Testing mem_read_block
-starting_address = 800
-number_of_reads = 10
-values = client.mem_read_block(starting_address, number_of_reads, dummy = True)
+# Testing mem_read_block
+values = client.mem_read_block(starting_address, number_of_reads, dummy)
 if(verbose):
-    print 'Reading out block of %d values from dummy memory location %d... ' % (number_of_reads, starting_address)
+    print 'Reading out block of %d values from memory location 0x%X... ' % (number_of_reads, starting_address)
+    print 'Values read out:'
     print values
 print '** Tested mem_read_block. **\n'
 
+# Testing mem_read_to_file and mem_write_from_file
 if(verbose):
     print 'Reading memory out to file and writing to memory from file'
 client.mem_read_to_file(starting_address, number_of_reads, 'hello.txt', dummy = True)
@@ -110,7 +111,7 @@ values = client.mem_read_block(starting_address + 100, number_of_reads, dummy = 
 print values
 print '** Tested mem_read_to_file and mem_write_from_file**\n'
 
-
+# Testing DC590 commands
 print 'TESTING DC590 COMMANDS'
 command = ""
 while(command != "0"):
@@ -125,7 +126,7 @@ print 'Reading EEPROM: '
 eeprom_id = client.read_eeprom_id(0x120, 0x140)
 print eeprom_id
 
-#testing file transfer
+# Testing file transfer
 file_to_read = "C:/Users/MSajikumar/Documents/DC2390_ABCD_123F.rbf"
 file_write_path = "/home/sockit/fpga_bitfiles/test.rbf"
 path_size = 64
