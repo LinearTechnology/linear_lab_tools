@@ -73,7 +73,7 @@ downsample_factor = 1
 # have a 32-bit delay between MOSI and MISO - an LTC2668 demo board (DC2025)
 # can be used for this purpose.
 
-DC2512_production_test = False
+DC2512_production_test = True
 if DC2512_production_test == True:
     save_pscope_data = False
     grab_filtered_data = False

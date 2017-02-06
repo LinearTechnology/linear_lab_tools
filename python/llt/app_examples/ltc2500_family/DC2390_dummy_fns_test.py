@@ -17,7 +17,7 @@ client = MemClient(host=HOST)
 
 # no need for any configuration
 verbose = True
-dummy = True
+dummy = False
 error = 0
 
 reg_address = 0x60
@@ -120,8 +120,8 @@ if(verbose):
 print '** Tested mem_write_from_file**\n'
 
 # Testing file transfer
-file_to_read = "C:/Users/MSajikumar/Documents/DC2390_ABCD_123F.rbf"
-file_write_path = "/home/sockit/fpga_bitfiles/test.rbf"
+file_to_read = "test_file.txt"
+file_write_path = "/home/sockit/fpga_bitfiles/test_file.txt"
 if(verbose):
     print 'Transferring a file to deamon...'
     print 'File to read: %s' % file_to_read
