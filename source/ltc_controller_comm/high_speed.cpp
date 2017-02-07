@@ -4,6 +4,9 @@
 #include "high_speed.hpp"
 #include "utilities.hpp"
 
+#ifdef min
+#undef min
+#endif
 
 using std::this_thread::sleep_for;
 using std::chrono::milliseconds;
@@ -41,15 +44,13 @@ static const uint8_t FPGA_READ_WRITE_BIT = 0x20;
 static const uint8_t FPGA_ADDRESS_DATA_BIT = 0x40;
 static const uint8_t FPGA_RESET_BIT = 0x80;
 
-#pragma warning(push)
-#pragma warning(disable : 4245) // ~ wants to make an int, causing sign mismatch
+// This SHOULD just be the ~ of the above, but FPGA_RESET_BIT confuses linux too
+// So I am just hard coding them.
+static const uint8_t FPGA_ACTION_MASK = 0xEF;
+static const uint8_t FPGA_READ_WRITE_MASK = 0xDF;
+static const uint8_t FPGA_ADDRESS_DATA_MASK = 0xBF;
+static const uint8_t FPGA_RESET_MASK = 0x7F;
 
-static const uint8_t FPGA_ACTION_MASK = ~FPGA_ACTION_BIT;
-static const uint8_t FPGA_READ_WRITE_MASK = ~FPGA_READ_WRITE_BIT;
-static const uint8_t FPGA_ADDRESS_DATA_MASK = ~FPGA_ADDRESS_DATA_BIT;
-static const uint8_t FPGA_RESET_MASK = ~FPGA_RESET_BIT;
-
-#pragma warning(pop)
 
 static const uint8_t FPGA_I2C_SDA_BIT = 0x01;
 static const uint8_t FPGA_I2C_SCL_BIT = 0x02;
@@ -75,14 +76,14 @@ static const uint8_t MPSSE_ENABLE_DIVIDE_BY_5_OPCODE = 0x8B;
 static const uint8_t MPSSE_DISABLE_DIVIDE_BY_5_OPCODE = 0x8A;
 static const uint8_t MPSSE_CLK_DIVIDE_OPCODE = 0x86;
 
-#define MUST_NOT_HAVE_HIGH_BIT(arg) if ((arg) & 0x80) { throw invalid_argument(CAT(QUOTE(arg), " must not have high bit set.")); }
+#define MUST_NOT_HAVE_HIGH_BIT(arg) if ((arg) & 0x80) { throw invalid_argument(QUOTE(arg) " must not have high bit set."); }
 
 // General functions
 
 HighSpeed::HighSpeed(const Ftdi& ftdi, const LccControllerInfo& info) : ftdi(ftdi),
     description(info.description), serial_number_a(string(info.serial_number) + 'A'),
-    serial_number_b(string(info.serial_number) + 'B'), index_a(Narrow<WORD>(info.id & 0xFFFF)),
-    index_b(Narrow<WORD>(info.id >> 16)), command_buffer(new uint8_t[COMMAND_BUFFER_SIZE]) { }
+    serial_number_b(string(info.serial_number) + 'B'), index_a(narrow<WORD>(info.id & 0xFFFF)),
+    index_b(narrow<WORD>(info.id >> 16)), command_buffer(new uint8_t[COMMAND_BUFFER_SIZE]) { }
 
 HighSpeed::~HighSpeed() {
     Close();
@@ -256,8 +257,8 @@ void HighSpeed::MpsseEnableDivideBy5(bool enable) {
 void HighSpeed::MpsseSetClkDivider(uint16_t divider) {
     OpenIfNeeded();
     command_buffer[0] = MPSSE_CLK_DIVIDE_OPCODE;
-    command_buffer[1] = Narrow<uint8_t>(divider & 0xFF);
-    command_buffer[2] = Narrow<uint8_t>(divider >> 8);
+    command_buffer[1] = narrow<uint8_t>(divider & 0xFF);
+    command_buffer[2] = narrow<uint8_t>(divider >> 8);
     Write(channel_b, command_buffer, COMMAND_PREFIX_3_BYTES);
 }
 
@@ -269,7 +270,7 @@ int HighSpeed::WriteBytes(uint8_t values[], int total_bytes) {
     OpenIfNeeded();
     int num_bytes_sent = 0;
     while (num_bytes_sent < total_bytes) {
-        int num_bytes = Min(total_bytes, MAX_FIFO_WRITE_SIZE);
+        int num_bytes = std::min(total_bytes, MAX_FIFO_WRITE_SIZE);
         auto num_written = Write(channel_a, values, num_bytes, true);
         if (num_written == 0) {
             break;
@@ -286,7 +287,7 @@ int HighSpeed::ReadBytes(uint8_t values[], int total_bytes) {
     OpenIfNeeded();
     int num_bytes_received = 0;
     while (num_bytes_received < total_bytes) {
-        int num_bytes = Min(total_bytes, MAX_FIFO_READ_SIZE);
+        int num_bytes = std::min(total_bytes, MAX_FIFO_READ_SIZE);
         auto num_read = Read(channel_a, reinterpret_cast<uint8_t*>(values), num_bytes, true);
         if (num_read == 0) {
             break;
@@ -323,9 +324,9 @@ void HighSpeed::SpiSendAtAddress(uint8_t address, uint8_t* values, int num_value
     // 3 bytes of the command buffer, so we start at index three, copy the address and data
     // bytes ourselves, and let the low-level routine know not to do its memcpy. This saves us
     // from needing to allocate a new buffer to combine the address and values.
-    memcpy_s(command_buffer + COMMAND_PREFIX_3_BYTES,
+    safe_memcpy(command_buffer + COMMAND_PREFIX_3_BYTES,
              COMMAND_BUFFER_SIZE - COMMAND_PREFIX_3_BYTES, &address, ADDRESS_SIZE);
-    memcpy_s(command_buffer + COMMAND_PREFIX_3_BYTES + ADDRESS_SIZE,
+    safe_memcpy(command_buffer + COMMAND_PREFIX_3_BYTES + ADDRESS_SIZE,
              COMMAND_BUFFER_SIZE - COMMAND_PREFIX_3_BYTES - ADDRESS_SIZE, values, num_values);
 
     SpiSend(command_buffer, ADDRESS_SIZE + num_values, true);
@@ -359,7 +360,7 @@ void HighSpeed::SpiSendNoChipSelect(uint8_t* values, int num_values, bool is_dat
     command_buffer[2] = (num_values >> 8) & 0xFF;
     ++num_values;
     if (!is_data_preset) {
-        memcpy_s(command_buffer + COMMAND_PREFIX_3_BYTES, COMMAND_BUFFER_SIZE - COMMAND_PREFIX_3_BYTES,
+        safe_memcpy(command_buffer + COMMAND_PREFIX_3_BYTES, COMMAND_BUFFER_SIZE - COMMAND_PREFIX_3_BYTES,
                  values, num_values);
     }
 
@@ -378,7 +379,7 @@ void HighSpeed::SpiReceiveNoChipSelect(uint8_t* values, int num_values) {
 
     Write(channel_b, command_buffer, COMMAND_PREFIX_3_BYTES);
     ++num_values; // now we want the actual number again
-    Read(channel_b, values, num_values, nullptr);
+    Read(channel_b, values, num_values, false);
 }
 void HighSpeed::SpiTransceiveNoChipSelect(uint8_t* send_values, uint8_t* receive_values,
                                           int num_values) {
@@ -393,7 +394,7 @@ void HighSpeed::SpiTransceiveNoChipSelect(uint8_t* send_values, uint8_t* receive
     command_buffer[1] = num_values & 0xFF;
     command_buffer[2] = (num_values >> 8) & 0xFF;
     ++num_values;
-    memcpy_s(command_buffer + COMMAND_PREFIX_3_BYTES, COMMAND_BUFFER_SIZE - COMMAND_PREFIX_3_BYTES,
+    safe_memcpy(command_buffer + COMMAND_PREFIX_3_BYTES, COMMAND_BUFFER_SIZE - COMMAND_PREFIX_3_BYTES,
              send_values, num_values);
 
     Write(channel_b, command_buffer, COMMAND_PREFIX_3_BYTES + num_values);
@@ -537,7 +538,7 @@ void HighSpeed::FpgaI2cSendNoAddress(uint8_t* values, int num_values) {
 
     int total_values = num_values;
     while (total_values > 0) {
-        num_values = Min(total_values, I2C_BLOCK_SIZE);
+        num_values = std::min(total_values, I2C_BLOCK_SIZE);
         int buffer_index = 0;
         for (int value_index = 0; value_index < num_values; ++value_index) {
             uint8_t value = values[value_index];
@@ -579,7 +580,7 @@ void HighSpeed::FpgaI2cReceiveNoAddress(uint8_t* values, int num_values) {
     int total_values = num_values - 1; // last byte is special
     int buffer_index = 0;
     while (total_values > 0) {
-        num_values = Min(total_values, I2C_BLOCK_SIZE);
+        num_values = std::min(total_values, I2C_BLOCK_SIZE);
         buffer_index = 0;
         for (int value_index = 0; value_index < num_values; ++value_index) {
             for (int bit_index = 0; bit_index < 8; ++bit_index) {

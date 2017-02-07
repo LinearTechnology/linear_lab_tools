@@ -1,8 +1,17 @@
 #pragma once
 #include <cstdint>
+#ifndef LTC_CONTROLLER_COMM_API
+#define LTC_CONTROLLER_COMM_API
+#endif
 #include "ltc_controller_comm.h"
 #include "utilities.hpp"
 #include <functional>
+#ifdef max
+#undef max
+#endif
+#include <gsl>
+
+using gsl::narrow;
 
 namespace linear {
 
@@ -32,7 +41,7 @@ public :
     static LccControllerInfo MakeControllerInfo(Type type, const string& description,
                                                 const string& serial_number, uint16_t index_0, uint16_t index_1 = 0) {
         LccControllerInfo info;
-        info.type = Narrow<int>(type);
+        info.type = narrow<int>(type);
         CopyToBuffer(info.description, sizeof(info.description), description);
         CopyToBuffer(info.serial_number, sizeof(info.serial_number), serial_number);
         info.id = (index_1 << 16) | index_0;

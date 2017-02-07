@@ -21,9 +21,20 @@ using std::chrono::seconds;
 using std::ofstream;
 #endif
 
+#ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
-#include <Windows.h>
+#define LIB_HANDLE HMODULE
+#else
+#define LIB_HANDLE void*
+#endif
 #include "ftd2xx.h"
+#ifdef min
+#undef min
+#undef max
+#endif
+#ifndef LTC_CONTROLLER_COMM_API
+#define LTC_CONTROLLER_COMM_API
+#endif
 #include "ltc_controller_comm.h"
 #include "error.hpp"
 #include "controller.hpp"
@@ -403,7 +414,7 @@ private:
     GetDeviceInfoFunction        get_device_info         = nullptr;
     GetStatusFunction            get_status              = nullptr;
     SetCharsFunction             set_chars               = nullptr;
-    HMODULE                      ftdi                    = nullptr;
+    LIB_HANDLE                   ftdi                    = nullptr;
 };
 }
 

@@ -7,6 +7,10 @@ using std::to_string;
 using std::this_thread::sleep_for;
 using std::chrono::milliseconds;
 
+#ifdef min
+#undef min
+#endif
+
 namespace linear {
 const int MAX_CONTROLLER_BYTES = 512 * 1024;
 
@@ -47,10 +51,11 @@ void FtdiAdc::DataStartCollect(int total_samples, Trigger trigger) {
     }
 
     char buffer[100];
-    sprintf_s(buffer, "T %d\nL %d\nD %d\nW %c\nH %d\nC\n", trigger_value,
+    safe_sprintf(buffer, "T %d\nL %d\nD %d\nW %c\nH %d\nC\n", trigger_value,
               total_samples * sample_multiplier, sample_bytes > 2 ? 2 : 1,
               is_sampled_on_positive_edge ? '+' : '-', is_multichannel ? 1 : 0);
-    Write(buffer, Narrow<DWORD>(strlen(buffer)));
+
+    Write(buffer, narrow<DWORD>(strlen(buffer)));
     collect_was_read = false;
 }
 
@@ -151,14 +156,14 @@ int FtdiAdc::ReadBytes(uint8_t data[], int num_bytes) {
     if (!collect_was_read) {
         collect_was_read = true;
         const char* read_command = is_multichannel ? "S 1\n" : "R 0\n";
-        Write(read_command, Narrow<DWORD>(strlen(read_command)));
+        Write(read_command, narrow<DWORD>(strlen(read_command)));
     }
 
     ftdi.DisableEventChar(handle);
     SetTimeouts(1000);
     int total_read = 0;
     while (num_bytes > 0) {
-        auto chunk_bytes = Min(MAX_BYTES_READ, num_bytes);
+        auto chunk_bytes = std::min(MAX_BYTES_READ, num_bytes);
         auto num_read = Read(data, chunk_bytes);
         if (num_read != chunk_bytes) {
             Close();
@@ -175,14 +180,15 @@ int FtdiAdc::ReadBytes(uint8_t data[], int num_bytes) {
 }
 
 void FtdiAdc::EepromReadString(char* buffer, int buffer_size) {
+    const int EEPROM_SIZE = Ftdi::EEPROM_ID_STRING_SIZE; // get around gcc weirdness
     Write("I\n", 2);
-    buffer_size = Min(Ftdi::EEPROM_ID_STRING_SIZE, buffer_size);
+    buffer_size = std::min(EEPROM_SIZE, buffer_size);
     auto num_read = Read(buffer, buffer_size);
-    buffer[Min(num_read, Ftdi::EEPROM_ID_STRING_SIZE - 1)] = '\0';
+    buffer[std::min(num_read, EEPROM_SIZE - 1)] = '\0';
     if (num_read != buffer_size) {
         Close();
         throw HardwareError("Not all EEPROM bytes received.");
-    } else if (num_read != Ftdi::EEPROM_ID_STRING_SIZE) {
+    } else if (num_read != EEPROM_SIZE) {
         Flush();
     }
 }
@@ -222,7 +228,7 @@ void FtdiAdc::OpenIfNeeded() {
 
     auto is_same = OpenByIndex();
     if (!is_same) {
-        auto info_list = ftdi.ListControllers(Narrow<int>(GetType()), 100);
+        auto info_list = ftdi.ListControllers(narrow<int>(GetType()), 100);
         for (auto info_iter = info_list.begin(); info_iter != info_list.end(); ++info_iter) {
             if (info_iter->type == FT_DEVICE_BM &&
                 (serial_number.substr(0, serial_number.size() - 1) ==

@@ -77,55 +77,53 @@ namespace linear {
 }
 
 #ifndef QUOTE
-#define QUOTE(x) #x
-#endif
-#ifndef CAT
-#define CAT(x, y) x ## y
+#define QUOTE_DETAIL(x) #x
+#define QUOTE(x) QUOTE_DETAIL(x)
 #endif
 
-#define ASSERT_POSITIVE(arg)                                       \
-if ((arg) < 1) {                                                   \
-    throw invalid_argument(CAT(QUOTE(arg), " must be positive.")); \
+#define ASSERT_POSITIVE(arg)                                 \
+if ((arg) < 1) {                                             \
+    throw invalid_argument(QUOTE(arg) " must be positive."); \
 }
 
-#define ASSERT_NOT_NEGATIVE(arg)                                       \
-if ((arg) < 0) {                                                       \
-    throw invalid_argument(CAT(QUOTE(arg), " must not be negative.")); \
+#define ASSERT_NOT_NEGATIVE(arg)                                 \
+if ((arg) < 0) {                                                 \
+    throw invalid_argument(QUOTE(arg) " must not be negative."); \
 }
 
-#define ASSERT_SMALLER(arg, size)                                                            \
-do {                                                                                         \
-    auto MACRO_SIZE_ = size;                                                                 \
-    if ((arg) >= MACRO_SIZE_) {                                                              \
-        throw invalid_argument(CAT(QUOTE(arg), " must be smaller than " + to_string(size))); \
-    }                                                                                        \
+#define ASSERT_SMALLER(arg, size)                                                      \
+do {                                                                                   \
+    auto MACRO_SIZE_ = size;                                                           \
+    if ((arg) >= MACRO_SIZE_) {                                                        \
+        throw invalid_argument(QUOTE(arg) " must be smaller than " + to_string(size)); \
+    }                                                                                  \
 } while(0)
 
-#define ASSERT_NOT_SMALLER(arg, size)                                                            \
-do {                                                                                             \
-    auto MACRO_SIZE_ = size;                                                                     \
-    if ((arg) < MACRO_SIZE_) {                                                                   \
-        throw invalid_argument(CAT(QUOTE(arg), " must not be smaller than " + to_string(size))); \
-    }                                                                                            \
+#define ASSERT_NOT_SMALLER(arg, size)                                                      \
+do {                                                                                       \
+    auto MACRO_SIZE_ = size;                                                               \
+    if ((arg) < MACRO_SIZE_) {                                                             \
+        throw invalid_argument(QUOTE(arg) " must not be smaller than " + to_string(size)); \
+    }                                                                                      \
 } while(0)
 
-#define ASSERT_LARGER(arg, size)                                                            \
-do {                                                                                        \
-    auto MACRO_SIZE_ = size;                                                                \
-    if ((arg) <= MACRO_SIZE_) {                                                             \
-        throw invalid_argument(CAT(QUOTE(arg), " must be larger than " + to_string(size))); \
-    }                                                                                       \
+#define ASSERT_LARGER(arg, size)                                                      \
+do {                                                                                  \
+    auto MACRO_SIZE_ = size;                                                          \
+    if ((arg) <= MACRO_SIZE_) {                                                       \
+        throw invalid_argument(QUOTE(arg) " must be larger than " + to_string(size)); \
+    }                                                                                 \
 } while(0)
 
-#define ASSERT_NOT_LARGER(arg, size)                                                            \
-do {                                                                                            \
-    auto MACRO_SIZE_ = size;                                                                    \
-    if ((arg) > MACRO_SIZE_) {                                                                  \
-        throw invalid_argument(CAT(QUOTE(arg), " must not be larger than " + to_string(size))); \
-    }                                                                                           \
+#define ASSERT_NOT_LARGER(arg, size)                                                      \
+do {                                                                                      \
+    auto MACRO_SIZE_ = size;                                                              \
+    if ((arg) > MACRO_SIZE_) {                                                            \
+        throw invalid_argument(QUOTE(arg) " must not be larger than " + to_string(size)); \
+    }                                                                                     \
 } while(0)
 
-#define ASSERT_NOT_NULL(arg)                                       \
-if ((arg) == nullptr) {                                            \
-    throw invalid_argument(CAT(QUOTE(arg), " must not be null.")); \
+#define ASSERT_NOT_NULL(arg)                                 \
+if ((arg) == nullptr) {                                      \
+    throw invalid_argument(QUOTE(arg) " must not be null."); \
 }

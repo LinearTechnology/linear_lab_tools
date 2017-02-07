@@ -2,8 +2,6 @@
 #include <thread>
 #include <exception>
 #include <fstream>
-#define WIN32_LEAN_AND_MEAN
-#include <Windows.h>
 #include "dc1371.hpp"
 #include "utilities.hpp"
 
@@ -17,6 +15,8 @@ using std::make_pair;
 using std::this_thread::sleep_for;
 using std::chrono::milliseconds;
 using std::make_unique;
+using std::experimental::filesystem::exists;
+using std::experimental::filesystem::file_size;
 
 const DWORD ANSWER_SIGNTURE = 0x52446839;    // 9hDR -- answr signature
 const DWORD PASSWORD_SIGNTURE = 0x4B74694C;    // LitK -- passwd for commnds
@@ -132,8 +132,8 @@ void Dc1371::Reset() {
 uint8_t GetFpgaLoadIdFromFile(string fpga_filename) {
     // File names are "S2157.sqz", "S2175.sqz", "S2195.sqz", "S2274.sqz", "S9011.sqz"
 
-    auto fpga_path = Path(ToUtf16(fpga_filename));
-    string load = ToUtf8(fpga_path.BaseName());
+    auto fpga_path = path(fpga_filename);
+    auto load = fpga_path.stem().u8string();
     if ((load[0] & 0xDF) != 'S') {
         throw invalid_argument(fpga_filename + "is not a valid FPGA load file");
     }
@@ -177,37 +177,38 @@ bool Dc1371::FpgaGetIsLoaded(const string& fpga_filename) {
     return FpgaGetIsLoaded(load_id);
 }
 
-void Dc1371::FpgaStartLoadFile(const string& fpga_filename) {
+void Dc1371::FpgaStartLoadFile(const path& fpga_path) {
     fpga_load_started = true;
-    auto load_id = GetFpgaLoadIdFromFile(fpga_filename);
-    auto path = Path(ToUtf16(fpga_filename));
-    auto path_string = path.Fullpath();
+    auto load_id = GetFpgaLoadIdFromFile(fpga_path.u8string());
 
-    if (!DoesFileExist(path_string)) {
-        auto location = GetPathFromRegistry(L"SOFTWARE\\Linear Technology\\LinearLabTools");
-        path = Path(location + L"fpga_loads", path.BaseName(), L".sqz");
-        if (!DoesFileExist(path.Fullpath())) {
-            throw runtime_error("Could not find file " + ToUtf8(path.Fullpath()));
+    path location;
+    if (exists(fpga_path)) {
+        location = fpga_path;
+    } else {
+        location = GetInstallPath().append("fpga_loads").
+            append(fpga_path.stem()).replace_extension("sqz");
+        if (!exists(location)) {
+            throw runtime_error("Could not find file " + location.u8string());
         }
-        path_string = path.Fullpath();
     }
 
-    auto size = GetFileSize(path_string);
+    auto fpga_str = location.u8string();
+    auto size = file_size(location);
     if (size < 1) {
-        throw runtime_error("Could not read file (or is empty) " + ToUtf8(path.Fullpath()));
+        throw runtime_error("Could not read file (or is empty) " + fpga_str);
     }
 
     // Original code calclulates a "tail" which is the last block and may be partial.
     // However the actual file read and send loop assumes the tail is a full block.
     // The implmementation of the squeeze algorithm pads to a full block so this code
     // assumes a full tail throughout.
-    auto num_blocks = Narrow<WORD>(size / BLOCK_SIZE);
+    auto num_blocks = narrow<WORD>(size / BLOCK_SIZE);
 
     Command command(Opcode::LOAD_FPGA);
     command.header.SetNumBlocks(num_blocks);
     command.header.SetTail(BLOCK_SIZE);
 
-    fpga_load_info = make_unique<FpgaLoadInfo>(path_string, load_id,
+    fpga_load_info = make_unique<FpgaLoadInfo>(fpga_str, load_id,
                      num_blocks, drive_letter);
 
     try {
@@ -220,14 +221,14 @@ void Dc1371::FpgaStartLoadFile(const string& fpga_filename) {
 
 void Dc1371::FpgaLoadChunk() {
     try {
-        auto send_blocks = Min(MAX_BLOCKS, fpga_load_info->num_blocks);
+        auto send_blocks = std::min(MAX_BLOCKS, fpga_load_info->num_blocks);
         auto send_bytes = send_blocks * BLOCK_SIZE;
-        ifstream input(fpga_load_info->path, ios::binary | ios::beg);
+        ifstream input(fpga_load_info->file_path, ios::binary | ios::beg);
         if (!input.seekg(fpga_load_info->offset, ios::beg)) {
-            throw runtime_error("Error reading file " + ToUtf8(fpga_load_info->path));
+            throw runtime_error("Error reading file " + fpga_load_info->file_path.u8string());
         }
         if (!input.read(fpga_load_info->data.data(), send_bytes)) {
-            throw runtime_error("Error reading file " + ToUtf8(fpga_load_info->path));
+            throw runtime_error("Error reading file " + fpga_load_info->file_path.u8string());
         }
         fpga_load_info->offset += send_bytes;
 
@@ -256,9 +257,9 @@ void Dc1371::FpgaFinishLoadFile() {
     fpga_load_started = false;
 }
 
-int Dc1371::FpgaLoadFileChunked(const string& fpga_filename) {
+int Dc1371::FpgaLoadFileChunked(const path& fpga_path) {
     if (!fpga_load_started) {
-        FpgaStartLoadFile(fpga_filename);
+        FpgaStartLoadFile(fpga_path);
     } else {
         FpgaLoadChunk();
         if (fpga_load_info->num_blocks == 0) {
@@ -378,7 +379,7 @@ int Dc1371::ReadBytes(uint8_t data[], int total_bytes) {
         command.header.opcode = Opcode::READ_SRAM;
         command.header.byte_param = 0x00;
 
-        WORD num_blocks = Min(MAX_BLOCKS, total_blocks);
+        WORD num_blocks = std::min(MAX_BLOCKS, total_blocks);
         int block_bytes = num_blocks * BLOCK_SIZE;
         block_file.Read(data, block_bytes);
 
@@ -402,7 +403,7 @@ void Dc1371::SpiBufferLowerChipSelect(Command& command, int& offset) {
     const int CHIP_SELECT_DOWN_COMMAND_SIZE = 3;
     SPI_MUST_NOT_BE_TOO_LARGE(offset + CHIP_SELECT_DOWN_COMMAND_SIZE, MAX_COMMAND_DATA);
     char* spi_chars = command.data + offset;
-    sprintf_s(spi_chars, MAX_COMMAND_DATA - offset, "s%02d", Narrow<int>(chip_select));
+    sprintf_s(spi_chars, MAX_COMMAND_DATA - offset, "s%02d", narrow<int>(chip_select));
     offset += CHIP_SELECT_DOWN_COMMAND_SIZE;
 }
 
@@ -439,7 +440,7 @@ void Dc1371::SpiBufferReceive(Command& command, int& offset, int num_values) {
 
 void Dc1371::SpiDoTransaction(Command& command, uint8_t* receive_values, int num_values) {
     CommandFile command_file(drive_letter);
-    command.header.word_param = Narrow<WORD>(strlen(command.data));
+    command.header.word_param = narrow<WORD>(strlen(command.data));
     command_file.Write(command);
     CheckCommandResult(command, command_file, receive_values, num_values);
 }
@@ -464,12 +465,12 @@ uint8_t Dc1371::GetCommandResult(Command& command, CommandFile& command_file,
     }
     if (command.header.opcode != original_opcode) {
         throw HardwareError("DC1371A response opcode mismatch (got " +
-                            std::to_string(Narrow<uint8_t>(command.header.opcode)) + ").");
+                            std::to_string(narrow<uint8_t>(command.header.opcode)) + ").");
     }
 
     auto result = command.header.GetStatus();
     if ((result == Dc1371Error::OK) && (data != nullptr) && (num_data > 0)) {
-        memcpy_s(data, num_data, command.data, Min(num_data, Narrow<int>(command.header.GetLength())));
+        safe_memcpy(data, num_data, command.data, std::min(num_data, narrow<int>(command.header.GetLength())));
     }
     return result;
 }
@@ -596,7 +597,7 @@ void Dc1371::EepromReadString(char * buffer, int buffer_size) {
     CommandFile command_file(drive_letter);
     command_file.Write(command);
     CheckCommandResult(command, command_file, reinterpret_cast<uint8_t*>(buffer), buffer_size);
-    buffer[Min(Narrow<int>(command.header.GetLength()), buffer_size - 1)] = '\0';
+    buffer[std::min(narrow<int>(command.header.GetLength()), buffer_size - 1)] = '\0';
 }
 
 }

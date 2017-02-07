@@ -1,6 +1,9 @@
 #include <unordered_map>
 #include "ftdi.hpp"
 #include "dc718.hpp"
+#ifndef _WIN32
+#include <dlfcn.h>
+#endif
 
 namespace linear {
 
@@ -122,67 +125,89 @@ vector<LccControllerInfo> Ftdi::ListControllers(int search_type, int max_control
     return (controller_info_list);
 }
 
+void* LoadFunc(LIB_HANDLE ftdi, const char* name) {
+#ifdef _WIN32
+    return GetProcAddress(ftdi, name);
+#else
+    return dlsym(ftdi, name);
+#endif
+}
+
 void Ftdi::LoadDll() {
+#ifdef _WIN32
 #ifdef X64
     ftdi = LoadLibraryW(L"ftd2xx64.dll");
 #else
     ftdi = LoadLibraryW(L"ftd2xx.dll");
 #endif
+#else
+#ifdef X64
+    ftdi = dlopen("libftd2xx64.so", RTLD_NOW);
+#else
+    ftdi = dlopen("libftd2xx.so", RTLD_NOW);
+#endif
+#endif
+
     if (ftdi != nullptr) {
-        close = reinterpret_cast<CloseFunction>(GetProcAddress(ftdi, "FT_Close"));
+        close = reinterpret_cast<CloseFunction>(LoadFunc(ftdi, "FT_Close"));
 
         create_device_info_list = reinterpret_cast<CreateDeviceInfoListFunction>(
-                                      GetProcAddress(ftdi, "FT_CreateDeviceInfoList"));
+                                      LoadFunc(ftdi, "FT_CreateDeviceInfoList"));
 
         get_device_info_list = reinterpret_cast<GetDeviceInfoListFunction>(
-                                   GetProcAddress(ftdi, "FT_GetDeviceInfoList"));
+                                   LoadFunc(ftdi, "FT_GetDeviceInfoList"));
 
-        open = reinterpret_cast<OpenFunction>(GetProcAddress(ftdi, "FT_Open"));
+        open = reinterpret_cast<OpenFunction>(LoadFunc(ftdi, "FT_Open"));
 
-        open_ex = reinterpret_cast<OpenExFunction>(GetProcAddress(ftdi, "FT_OpenEx"));
+        open_ex = reinterpret_cast<OpenExFunction>(LoadFunc(ftdi, "FT_OpenEx"));
 
         get_driver_version = reinterpret_cast<GetDriverVersionFunction>(
-                                 GetProcAddress(ftdi, "FT_GetdllVersion"));
+                                 LoadFunc(ftdi, "FT_GetdllVersion"));
 
         get_library_version = reinterpret_cast<GetLibraryVersionFunction>
-                              (GetProcAddress(ftdi, "FT_GetLibraryVersion"));
+                              (LoadFunc(ftdi, "FT_GetLibraryVersion"));
 
         set_timeouts = reinterpret_cast<SetTimeoutsFunction>(
-                           GetProcAddress(ftdi, "FT_SetTimeouts"));
+                           LoadFunc(ftdi, "FT_SetTimeouts"));
 
         set_usb_parameters = reinterpret_cast<SetUSBParametersFunction>(
-                                 GetProcAddress(ftdi, "FT_SetUSBParameters"));
+                                 LoadFunc(ftdi, "FT_SetUSBParameters"));
 
-        write = reinterpret_cast<WriteFunction>(GetProcAddress(ftdi, "FT_Write"));
+        write = reinterpret_cast<WriteFunction>(LoadFunc(ftdi, "FT_Write"));
 
-        read = reinterpret_cast<ReadFunction>(GetProcAddress(ftdi, "FT_Read"));
+        read = reinterpret_cast<ReadFunction>(LoadFunc(ftdi, "FT_Read"));
 
-        purge = reinterpret_cast<PurgeFunction>(GetProcAddress(ftdi, "FT_Purge"));
+        purge = reinterpret_cast<PurgeFunction>(LoadFunc(ftdi, "FT_Purge"));
 
         set_bit_mode = reinterpret_cast<SetBitModeFunction>(
-                           GetProcAddress(ftdi, "FT_SetBitMode"));
+                           LoadFunc(ftdi, "FT_SetBitMode"));
 
         set_latency_timer = reinterpret_cast<SetLatencyTimerFunction>(
-                                GetProcAddress(ftdi, "FT_SetLatencyTimer"));
+                                LoadFunc(ftdi, "FT_SetLatencyTimer"));
 
         set_flow_control = reinterpret_cast<SetFlowControlFunction>(
-                               GetProcAddress(ftdi, "FT_SetFlowControl"));
+                               LoadFunc(ftdi, "FT_SetFlowControl"));
 
         get_device_info = reinterpret_cast<GetDeviceInfoFunction>(
-                              GetProcAddress(ftdi, "FT_GetDeviceInfo"));
+                              LoadFunc(ftdi, "FT_GetDeviceInfo"));
 
         get_status = reinterpret_cast<GetStatusFunction>(
-                         GetProcAddress(ftdi, "FT_GetStatus"));
+                         LoadFunc(ftdi, "FT_GetStatus"));
 
         set_chars = reinterpret_cast<SetCharsFunction>(
-                        GetProcAddress(ftdi, "FT_SetChars"));
+                        LoadFunc(ftdi, "FT_SetChars"));
     }
 }
 
 void Ftdi::UnloadDll() {
     if (ftdi != nullptr) {
+#ifdef _WIN32
         FreeLibrary(ftdi);
+#else
+        dlclose(ftdi);
+#endif
     }
+
     ftdi                    = nullptr;
     close                   = nullptr;
     create_device_info_list = nullptr;

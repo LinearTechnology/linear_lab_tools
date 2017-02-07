@@ -1,5 +1,7 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
+#undef min
+#undef max
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #include <stdexcept>
@@ -98,7 +100,7 @@ namespace linear {
     }
 
     void TcpClientSocket::send_str(const char* str) {
-        auto result = ::send(pimpl->native_socket, str, Narrow<int>(strlen(str)), 0);
+        auto result = ::send(pimpl->native_socket, str, narrow<int>(strlen(str)), 0);
         if (result == SOCKET_ERROR) {
             throw_message_and_code("send failed", WSAGetLastError());
         }

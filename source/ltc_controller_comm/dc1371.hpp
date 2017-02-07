@@ -5,6 +5,8 @@
 #include <memory>
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
+#undef min
+#undef max
 #include "i_collect.hpp"
 #include "i_reset.hpp"
 #include "i_data_endian.hpp"
@@ -13,6 +15,10 @@
 #include "i_fpga_load.hpp"
 #include "controller.hpp"
 #include "error.hpp"
+#include <experimental/filesystem>
+#include "gsl"
+
+using gsl::narrow;
 
 using std::string;
 using std::vector;
@@ -77,7 +83,7 @@ public:
     static bool IsDc1371(char drive_letter);
     static LccControllerInfo MakeControllerInfo(char drive_letter);
 
-    Dc1371(const LccControllerInfo& info) : drive_letter(Narrow<char>(info.id)) { }
+    Dc1371(const LccControllerInfo& info) : drive_letter(narrow<char>(info.id)) { }
     Dc1371(const Dc1371&) = delete;
     Dc1371(Dc1371&&) = default;
     Dc1371& operator=(const Dc1371& other) = delete;
@@ -88,7 +94,7 @@ public:
     void Reset() override;
 
     bool FpgaGetIsLoaded(const string& fpga_filename) override;
-    int FpgaLoadFileChunked(const string& fpga_filename) override;
+    int FpgaLoadFileChunked(const path& fpga_filename) override;
     void FpgaCancelLoad() override;
 
     void SetGenericConfig(uint32_t generic_config) {
@@ -333,14 +339,14 @@ private:
 
     struct FpgaLoadInfo {
         vector<char> data;
-        wstring path;
+        path file_path;
         uint8_t load_id;
         int offset;
         int num_blocks;
         CommandFile command_file;
         BlockFile block_file;
-        FpgaLoadInfo(wstring path, uint8_t load_id, int num_blocks, char drive_letter) :
-            data(MAX_BLOCKS * BLOCK_SIZE), path(path), load_id(load_id), offset(0),
+        FpgaLoadInfo(path file_path, uint8_t load_id, int num_blocks, char drive_letter) :
+            data(MAX_BLOCKS * BLOCK_SIZE), file_path(file_path), load_id(load_id), offset(0),
             num_blocks(num_blocks), command_file(drive_letter), block_file(drive_letter) { }
         FpgaLoadInfo(FpgaLoadInfo&& other) = delete;
         FpgaLoadInfo(const FpgaLoadInfo& other) = delete;
@@ -348,7 +354,7 @@ private:
         ~FpgaLoadInfo() = default;
     };
 
-    void FpgaStartLoadFile(const string& fpga_filename);
+    void FpgaStartLoadFile(const path& fpga_filename);
     void FpgaLoadChunk();
     void FpgaFinishLoadFile();
     void SpiDoTransaction(Command& command, uint8_t* receive_values, int num_values);

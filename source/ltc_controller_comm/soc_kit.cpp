@@ -85,7 +85,7 @@ namespace linear {
         for (uint32_t i = 0; i < packet.payload.size(); ++i) {
             values[i] = ntohl(packet.payload[i]);
         }
-        return Narrow<int>(packet.payload.size());
+        return narrow<int>(packet.payload.size());
     }
 
     int SocKit::ReadBlock(uint32_t command, uint32_t address, uint32_t values[], uint32_t num_values) {
@@ -116,7 +116,7 @@ namespace linear {
         begin = reinterpret_cast<const uint8_t*>(values);
         payload.insert(payload.end(), begin, begin + data_size);
 
-        SwapBytesUint32(payload.data(), Narrow<uint32_t>(payload.size()));
+        SwapBytesUint32(payload.data(), narrow<uint32_t>(payload.size()));
         SendAndReceivePacket(Packet::with_command(command, payload));
     }
 
@@ -146,13 +146,13 @@ namespace linear {
         for (int i = 0; i < sizeof(packet.command_word); ++i) {
             bytes.push_back(command_bytes[i]);
         }
-        auto size = Narrow<uint32_t>(packet.payload.size()) + MIN_PACKET_SIZE;
+        auto size = narrow<uint32_t>(packet.payload.size()) + MIN_PACKET_SIZE;
         auto size_bytes = reinterpret_cast<uint8_t*>(&size);
         for (int i = 0; i < sizeof(packet.command_word); ++i) {
             bytes.push_back(size_bytes[i]);
         }
         bytes.insert(bytes.end(), packet.payload.begin(), packet.payload.end());
-        client_socket.send(bytes.data(), Narrow<int>(bytes.size()));
+        client_socket.send(bytes.data(), narrow<int>(bytes.size()));
     }
 
     Packet SocKit::SendAndReceivePacket(Packet packet) {

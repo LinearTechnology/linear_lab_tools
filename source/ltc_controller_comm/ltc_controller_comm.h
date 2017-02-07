@@ -53,8 +53,14 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#ifdef _WIN32
 #ifndef LTC_CONTROLLER_COMM_API
 #define LTC_CONTROLLER_COMM_API __declspec(dllimport)
+#endif
+#else
+#ifndef LTC_CONTROLLER_COMM_API
+#define LTC_CONTROLLER_COMM_API
+#endif
 #endif
 
 // Controller types

@@ -1,12 +1,17 @@
 #include "dc890.hpp"
 #include <regex>
 #include <fstream>
+#include <experimental/filesystem>
 
 namespace linear {
 using std::regex;
 using std::regex_search;
 using std::smatch;
 using std::ifstream;
+using std::experimental::filesystem::path;
+using std::experimental::filesystem::exists;
+using std::experimental::filesystem::directory_iterator;
+
 
 Dc890::FpgaLoad Dc890::GetFpgaLoadIdFromFile(const string& fpga_filename) {
     // File names are "dcmosr1.sqz", "dlvdsr1.sqz", "s1407r3.sqz", "s1408r3.sqz",
@@ -17,17 +22,14 @@ Dc890::FpgaLoad Dc890::GetFpgaLoadIdFromFile(const string& fpga_filename) {
     } else if (CompareI(fpga_filename, "lvds")) {
         return FpgaLoad(1, 0);
     }
-    auto fpga_path = Path(ToUtf16(FpgaGetPath(fpga_filename)));
+    auto fpga_path = FpgaGetPath(fpga_filename);
+    auto stem_str = fpga_path.stem().u8string();
+    int revision = Last<char>(stem_str) - '0';
 
-    int revision = Last<wchar_t>(fpga_path.BaseName()) - L'0';
+    if (CompareFileNameStart(stem_str, "dcmos")) { return FpgaLoad(9, revision); }
+    if (CompareFileNameStart(stem_str, "dlvds")) { return FpgaLoad(10, revision); }
 
-    if (StartsWithI(fpga_path.BaseName(), L"dcmos")) {
-        return FpgaLoad(9, revision);
-    } else if (StartsWithI(fpga_path.BaseName(), L"dlvds")) {
-        return FpgaLoad(10, revision);
-    }
-
-    auto number = strtol(ToUtf8(fpga_path.BaseName()).c_str() + 1, nullptr, 10);
+    auto number = strtol(stem_str.c_str() + 1, nullptr, 10);
     switch (number) {
     case 1407:
         return FpgaLoad(5, revision);
@@ -54,8 +56,8 @@ bool Dc890::FpgaGetIsLoaded(const string& fpga_filename) {
 
     Flush();
 
-    sprintf_s(buffer, "Q %X%X", FPGA_LOAD_TYPE_ADDRESS, FPGA_LOAD_TYPE_SIZE);
-    Write(buffer, Narrow<DWORD>(strlen(buffer)));
+    safe_sprintf(buffer, "Q %X%X", FPGA_LOAD_TYPE_ADDRESS, FPGA_LOAD_TYPE_SIZE);
+    Write(buffer, narrow<DWORD>(strlen(buffer)));
     auto num_read = Read(buffer, NUM_CHARS);
     if (num_read != NUM_CHARS) {
         throw HardwareError("Not all bytes of the FPGA register read.");
@@ -71,11 +73,11 @@ bool Dc890::FpgaGetIsLoaded(const string& fpga_filename) {
     return (load_id == load.load_id) && (load_id < 3 || revision == load.revision);
 }
 
-void Dc890::FpgaPageBuffer::Reset(const wstring& path) {
+void Dc890::FpgaPageBuffer::Reset(const path& fpga_path) {
     total_bytes = 0;
     page_bytes = 0;
     delete file;
-    file = new ifstream(path, std::ios::binary | std::ios::beg);
+    file = new ifstream(fpga_path.native(), std::ios::binary | std::ios::in);
     if (file->bad()) {
         delete file;
         file = nullptr;
@@ -129,7 +131,7 @@ bool Dc890::FpgaPageBuffer::GetPage(char data[FPGA_PAGE_SIZE]) {
     return false;
 }
 
-int Dc890::FpgaFileToFlashChunked(const wstring& filename) {
+int Dc890::FpgaFileToFlashChunked(const path& fpga_path) {
     if (!fpga_load_started) {
         fpga_load_started = true;
         fpga_page_index = 0;
@@ -144,18 +146,18 @@ int Dc890::FpgaFileToFlashChunked(const wstring& filename) {
             throw HardwareError("Did not receive ACK on SRAM erase.");
         }
 
-        fpga_page_buffer.Reset(filename);
+        fpga_page_buffer.Reset(fpga_path);
     }
 
     if (!fpga_page_buffer) {
-        throw runtime_error("Unable to open file " + ToUtf8(filename));
+        throw runtime_error("Unable to open file " + fpga_path.u8string());
     }
 
     const int BANK_ID = 3;
     if (fpga_page_buffer.GetPage(fpga_page_data)) {
         auto header = string("F ") +
-                      ToHex(Narrow<uint16_t>(BANK_ID * NUM_FPGA_PAGES + fpga_page_index));
-        Write(header.c_str(), Narrow<DWORD>(header.size()));
+                      ToHex(narrow<uint16_t>(BANK_ID * NUM_FPGA_PAGES + fpga_page_index));
+        Write(header.c_str(), narrow<DWORD>(header.size()));
         Write(fpga_page_data, FPGA_PAGE_SIZE);
         Read(fpga_page_data, 4);
         if (fpga_page_data[0] != 'A') {
@@ -217,8 +219,8 @@ bool Dc890::FpgaFlashToLoaded(uint16_t load_id, uint8_t revision) {
     const int FPGA_LOAD_TIMEOUT = 2000;
     // now load from FLASH into FPGA.  This is done directly with the 'e' command.
     SetTimeouts(FPGA_LOAD_TIMEOUT);
-    sprintf_s(buffer, "e %X\n", bank);
-    Write(buffer, Narrow<DWORD>(strlen(buffer)));
+    safe_sprintf(buffer, "e %X\n", bank);
+    Write(buffer, narrow<DWORD>(strlen(buffer)));
     num_read = Read(buffer, 4);
     if (num_read != 4 || buffer[0] != 'A') {
         throw HardwareError("Did not get an ACK when loading FPGA from flash.");
@@ -235,39 +237,36 @@ void Dc890::FpgaCancelLoad() {
     Close();
 }
 
-static std::tuple<bool, string> FindFile(const Path& path, const string& folder) {
-    
-    auto folder16 = ToUtf16(folder);
-    for (auto& path_name : ListFiles(folder16)) {
-        Path file_path(path_name);
-        if (StartsWithI(file_path.BaseName(), path.BaseName())) {
-            return std::make_tuple(true, ToUtf8(Path(folder16, file_path.BaseName(), L".sqz").Fullpath()));
+static std::tuple<bool, string> FindFpgaFile(const path& fpga_path) {
+    auto directory = fpga_path.parent_path();
+    auto stem_str = fpga_path.stem().u8string();
+    for (auto&& p : directory_iterator(directory)) {
+        if (CompareFileNameStart(p.path().stem().u8string(), stem_str)) {
+            return std::make_tuple(true, p.path().u8string());
         }
     }
     return std::make_tuple(false, "");
 }
 
-string Dc890::FpgaGetPath(const string& load_filename, const string& folder) {
-    if (CompareI(load_filename, "cmos") || CompareI(load_filename, "lvds")) {
-        return load_filename;
+path Dc890::FpgaGetPath(const string& fpga_filename) {
+    if (CompareI(fpga_filename, "cmos") || CompareI(fpga_filename, "lvds")) {
+        return fpga_filename;
     }
-    string load_name;
-    Path path(ToUtf16(load_filename));
-    if (DoesFileExist(path.Fullpath())) {
-        return ToUtf8(path.Fullpath());
+    auto fpga_path = path(fpga_filename);
+    if (exists(fpga_path)) {
+        return fpga_path;
     }
 
-    if (!folder.empty()) {
-        auto result = FindFile(path, folder);
+    if (fpga_path.has_parent_path()) {
+        auto result = FindFpgaFile(fpga_path);
         if (std::get<0>(result)) {
             return std::get<1>(result);
         }
     }
 
-    auto location = GetPathFromRegistry(L"SOFTWARE\\Linear Technology\\LinearLabTools") +
-                    L"fpga_loads";
+    auto location = GetInstallPath().append("fpga_loads");
 
-    auto result = FindFile(path, ToUtf8(location));
+    auto result = FindFpgaFile(location.append(fpga_filename));
     if (std::get<0>(result)) {
         return std::get<1>(result);
     }
@@ -275,10 +274,10 @@ string Dc890::FpgaGetPath(const string& load_filename, const string& folder) {
     throw invalid_argument("Invalid load file name.");
 }
 
-int Dc890::FpgaLoadFileChunked(const string& fpga_filename) {
+int Dc890::FpgaLoadFileChunked(const path& fpga_path) {
+    auto fpga_str = fpga_path.u8string();
     if (!fpga_load_started) {
-
-        auto load = GetFpgaLoadIdFromFile(fpga_filename);
+        auto load = GetFpgaLoadIdFromFile(fpga_str);
         auto flash_result = FpgaFlashToLoaded(load.load_id, load.revision);
 
         if ((load.load_id == 1 || load.load_id == 2) && !flash_result) {
@@ -291,11 +290,10 @@ int Dc890::FpgaLoadFileChunked(const string& fpga_filename) {
             return 0;
         }
     }
-    auto fpga_path = ToUtf16(FpgaGetPath(fpga_filename));
     auto progress = FpgaFileToFlashChunked(fpga_path);
     if (progress == 0) {
         fpga_load_started = false;
-        auto load = GetFpgaLoadIdFromFile(fpga_filename);
+        auto load = GetFpgaLoadIdFromFile(fpga_str);
         bool is_loaded = FpgaFlashToLoaded(load.load_id, load.revision);
         if (!is_loaded) {
             Close();
@@ -310,7 +308,7 @@ void Dc890::GpioSendByte(uint8_t byte) {
     // 0 to 0xFF (which means the read bit is set, but oh well) just to wake it up before
     // the real command is sent.
     string buffer = "MIsSFFS00sS40S" + ToHex(byte) + "p";
-    Write(buffer.c_str(), Narrow<DWORD>(buffer.size()));
+    Write(buffer.c_str(), narrow<DWORD>(buffer.size()));
 }
 
 void Dc890::SpiSend(uint8_t* values, int num_values) {
@@ -368,7 +366,7 @@ void Dc890::SpiSendNoChipSelect(uint8_t* values, int num_values) {
             value <<= 1;
         }
         buffer += 'p';
-        Write(buffer.c_str(), Narrow<DWORD>(buffer.size()));
+        Write(buffer.c_str(), narrow<DWORD>(buffer.size()));
     }
 }
 }

@@ -5,8 +5,9 @@
 #include "ftdi_adc.hpp"
 #include "controller.hpp"
 #include "error.hpp"
+#include <experimental/filesystem>
 
-#define CHECK_BIT_VALUE(bit) if (bit < 0 || bit > 7) { throw invalid_argument(CAT(QUOTE(bit), " must be between 0 and 7, inclusive")); }
+#define CHECK_BIT_VALUE(bit) if (bit < 0 || bit > 7) { throw invalid_argument(QUOTE(bit) " must be between 0 and 7, inclusive"); }
 
 namespace linear {
 
@@ -22,9 +23,9 @@ public:
     void EepromReadString(char* buffer, int buffer_size) override {
         return FtdiAdc::EepromReadString(buffer, buffer_size);
     }
-    string FpgaGetPath(const string& load_filename, const string& folder = "");
+    path FpgaGetPath(const string& fpga_filename);
     bool FpgaGetIsLoaded(const string& fpga_filename) override;
-    int FpgaLoadFileChunked(const string& fpga_filename) override;
+    int FpgaLoadFileChunked(const path& fpga_path) override;
     void FpgaCancelLoad() override;
 
     void GpioSetByte(uint8_t byte) {
@@ -65,7 +66,7 @@ private:
         ~FpgaPageBuffer() {
             delete file;
         }
-        void Reset(const wstring& path);
+        void Reset(const path& file_path);
         void Reset();
         explicit operator bool() {
             return file != nullptr;
@@ -78,7 +79,7 @@ private:
         char buffer[2 * FPGA_PAGE_SIZE];
     };
 
-    int FpgaFileToFlashChunked(const wstring& path);
+    int FpgaFileToFlashChunked(const path& file_path);
     bool FpgaFlashToLoaded(uint16_t load_id, uint8_t revision);
     FpgaLoad GetFpgaLoadIdFromFile(const string& fpga_filename);
     void GpioSendByte(uint8_t byte);

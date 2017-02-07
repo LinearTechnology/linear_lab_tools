@@ -36,10 +36,12 @@ To connect do something like this:
 """
 
 import ctypes as ct
-import _winreg
+import os
 import sys
 import llt.common.constants as consts
 import llt.common.exceptions as errs
+if os.name != 'posix':
+    import _winreg
 
 # non-public method to map a type string to the appropriate c_types type
 def _ctype_from_string(type_string):
@@ -78,17 +80,24 @@ class ControllerInfo(ct.Structure):
     def get_description(self):
         return self._description[:consts.DESCRIPTION_BUFFER_SIZE]
 
-# non-public DLL loading stuff
-_reg_key = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, "SOFTWARE\\Linear Technology\\LinearLabTools")
-_dll_file, _ = _winreg.QueryValueEx(_reg_key, "Location")
-_dll_file += "ltc_controller_comm"
+# non-public DLL/.so loading stuff
 _is_64_bit = sys.maxsize > 2 ** 32
-if _is_64_bit:
-    _dll_file += "64.dll"
+if os.name == 'posix':
+    if _is_64_bit:
+        _so_file = 'lib_ltc_controller_comm64.so'
+    else:
+        _so_file = 'lib_ltc_controller_comm.so'
+    _dll = ct.CDLL(_so_file)
 else:
-    _dll_file += ".dll"
-
-_dll = ct.CDLL(_dll_file)
+    _reg_key = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, "SOFTWARE\\Linear Technology\\LinearLabTools")
+    _dll_file, _ = _winreg.QueryValueEx(_reg_key, "Location")
+    _dll_file += "ltc_controller_comm"
+    if _is_64_bit:
+        _dll_file += "64.dll"
+    else:
+        _dll_file += ".dll"
+    
+    _dll = ct.CDLL(_dll_file)
 
 
 def list_controllers(controller_type):

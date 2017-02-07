@@ -1,12 +1,29 @@
+#ifdef _WIN32
 #define LTC_CONTROLLER_COMM_API __declspec(dllexport)
+#else
+#define LTC_CONTROLLER_COMM_API
+#endif
+
 #include "ltc_controller_comm.h"
 #include "high_speed.hpp"
+#ifdef _WIN32
 #include "dc1371.hpp"
+#endif
 #include "dc718.hpp"
 #include "dc890.hpp"
-#include "soc_kit.hpp"
+//#include "soc_kit.hpp"
 #include "error.hpp"
+#include "utilities.hpp"
+#ifdef max
+#undef max
+#endif
+#include <gsl>
 using namespace linear;
+using gsl::narrow;
+
+#ifdef min
+#undef min
+#endif
 
 extern Ftdi ftdi;
 
@@ -55,10 +72,13 @@ do {                                                                       \
 
 LTC_CONTROLLER_COMM_API int LccGetNumControllers(int controller_types, int max_controllers,
                                                  int* num_controllers) {
+    *num_controllers = 0;
     try {
+#ifdef _WIN32
         if (controller_types & LCC_TYPE_DC1371) {
-            *num_controllers = Dc1371::GetNumControllers(Min(max_controllers, Dc1371::MAX_CONTROLLERS));
+            *num_controllers = Dc1371::GetNumControllers(std::min(max_controllers, Dc1371::MAX_CONTROLLERS));
         }
+#endif
         if (*num_controllers < max_controllers) {
             *num_controllers += ftdi.GetNumControllers(controller_types,
                                                        max_controllers - *num_controllers);
@@ -83,8 +103,9 @@ LTC_CONTROLLER_COMM_API int LccGetControllerList(int controller_types,
                                                  LccControllerInfo* controller_info_list, int num_controllers) {
     try {
         int index = 0;
+#ifdef _WIN32
         if (controller_types & LCC_TYPE_DC1371) {
-            auto dc1371s = Dc1371::ListControllers(Min(num_controllers, Dc1371::MAX_CONTROLLERS));
+            auto dc1371s = Dc1371::ListControllers(std::min(num_controllers, Dc1371::MAX_CONTROLLERS));
             for (auto dc1371 : dc1371s) {
                 controller_info_list[index] = dc1371;
                 ++index;
@@ -93,7 +114,7 @@ LTC_CONTROLLER_COMM_API int LccGetControllerList(int controller_types,
                 }
             }
         }
-
+#endif
         if (controller_types & ~LCC_TYPE_DC1371) {
             auto ftdis = ftdi.ListControllers(controller_types, num_controllers - index);
             for (auto ft_itr = ftdis.begin();
@@ -122,10 +143,13 @@ LTC_CONTROLLER_COMM_API int LccGetControllerInfoFromId(int controller_type, cons
                                                        LccControllerInfo* controller_info) {
     switch (controller_type) {
     case LCC_TYPE_DC1371: {
+#ifdef _WIN32
         if (Dc1371::IsDc1371(id[0])) {
             *controller_info = Dc1371::MakeControllerInfo(id[0]);
             return LCC_ERROR_OK;
-        } else {
+        } else
+#endif
+        {
             return LCC_ERROR_HARDWARE;
         }
     }
@@ -140,7 +164,7 @@ LTC_CONTROLLER_COMM_API int LccGetControllerInfoFromId(int controller_type, cons
         }
         vector<LccControllerInfo> info_list(num_controllers);
         result = LccGetControllerList(controller_type, info_list.data(),
-                                      Narrow<int>(info_list.size()));
+                                      narrow<int>(info_list.size()));
         if (result != LCC_ERROR_OK) {
             return result;
         }
@@ -166,10 +190,14 @@ LTC_CONTROLLER_COMM_API int LccInitController(LccHandle* handle,
     auto new_handle = new Handle(nullptr);
     switch (controller_info->type) {
     case LCC_TYPE_DC1371: {
+#ifdef _WIN32
         int code = ToErrorCode([&] { return new Dc1371(*controller_info); },
                                new_handle->controller, new_handle->error_string);
         *handle = new_handle;
         return code;
+#else
+        return LCC_ERROR_HARDWARE;
+#endif
     }
     case LCC_TYPE_HIGH_SPEED: {
         int code = ToErrorCode([&] { return new HighSpeed(ftdi, *controller_info); },
@@ -189,12 +217,12 @@ LTC_CONTROLLER_COMM_API int LccInitController(LccHandle* handle,
         *handle = new_handle;
         return code;
     }
-    case LCC_TYPE_SOC_KIT: {
-        int code = ToErrorCode([&] { return new SocKit(*controller_info); },
-                               new_handle->controller, new_handle->error_string);
-        *handle = new_handle;
-        return code;
-    }
+    //case LCC_TYPE_SOC_KIT: {
+    //    int code = ToErrorCode([&] { return new SocKit(*controller_info); },
+    //                           new_handle->controller, new_handle->error_string);
+    //    *handle = new_handle;
+    //    return code;
+    //}
 
     default        :
         new_handle->error_string = "Invalid device type in device info.";
@@ -216,12 +244,11 @@ LTC_CONTROLLER_COMM_API int LccGetDescription(LccHandle handle, char* descriptio
     int code = ToErrorCode(
                    [&] { return controller->GetDescription(); }, description, *error_string);
     if (code != LCC_ERROR_OK) { return code; }
-    auto string_size = Narrow<int>(description.size() + 1);
+    auto string_size = narrow<int>(description.size() + 1);
     if (description_buffer_size < string_size || description_buffer == nullptr) {
         return string_size;
     } else {
-        strcpy_s(description_buffer, description_buffer_size, description.c_str());
-        description_buffer[string_size - 1] = '\0';
+        CopyToBuffer(description_buffer, description_buffer_size, description);
         return LCC_ERROR_OK;
     }
 }
@@ -233,12 +260,11 @@ LTC_CONTROLLER_COMM_API int LccGetSerialNumber(LccHandle handle, char* serial_nu
     int code = ToErrorCode(
                    [&] { return controller->GetSerialNumber(); }, serial_number, *error_string);
     if (code != LCC_ERROR_OK) { return code; }
-    auto string_size = Narrow<int>(serial_number.size() + 1);
+    auto string_size = narrow<int>(serial_number.size() + 1);
     if (serial_number_buffer_size < string_size || serial_number_buffer == nullptr) {
         return string_size;
     } else {
-        strcpy_s(serial_number_buffer, serial_number_buffer_size, serial_number.c_str());
-        serial_number_buffer[string_size - 1] = '\0';
+        CopyToBuffer(serial_number_buffer, serial_number_buffer_size, serial_number);
         return LCC_ERROR_OK;
     }
 }
@@ -262,18 +288,18 @@ LTC_CONTROLLER_COMM_API int LccGetErrorInfo(LccHandle handle, char* message_buff
                                             int buffer_size) {
     if (handle == nullptr) {
         string error_string = "LccHandle is null.";
-        if (Narrow<int>(error_string.size()) > buffer_size) {
-            return Narrow<int>(error_string.size());
+        if (narrow<int>(error_string.size()) > buffer_size) {
+            return narrow<int>(error_string.size());
         } else {
-            strcpy_s(message_buffer, buffer_size, error_string.c_str());
+            CopyToBuffer(message_buffer, buffer_size, error_string);
         }
         return LCC_ERROR_INVALID_ARG;
     }
     GET_STRING(handle, error_string);
-    if (Narrow<int>(error_string->size()) > buffer_size) {
-        return Narrow<int>(error_string->size());
+    if (narrow<int>(error_string->size()) > buffer_size) {
+        return narrow<int>(error_string->size());
     } else {
-        strcpy_s(message_buffer, buffer_size, error_string->c_str());
+        CopyToBuffer(message_buffer, buffer_size, *error_string);
     }
     return LCC_ERROR_OK;
 }
@@ -511,7 +537,7 @@ LTC_CONTROLLER_COMM_API int LccHsFpgaEepromSetBitBangRegister(LccHandle handle,
     GET(handle, controller, HighSpeed, error_string);
     CALL(controller, error_string, FpgaEepromSetBitBangRegister, register_address);
 }
-
+#ifdef _WIN32
 LTC_CONTROLLER_COMM_API int Lcc1371SetGenericConfig(LccHandle handle, uint32_t generic_config) {
     GET(handle, controller, Dc1371, error_string);
     CALL(controller, error_string, SetGenericConfig, generic_config);
@@ -525,7 +551,7 @@ LTC_CONTROLLER_COMM_API int Lcc1371SpiChooseChipSelect(LccHandle handle, int new
     GET(handle, controller, Dc1371, error_string);
     CALL(controller, error_string, SpiChooseChipSelect, Dc1371::ChipSelect(new_chip_select));
 }
-
+#endif
 LTC_CONTROLLER_COMM_API int Lcc890GpioSetByte(LccHandle handle, uint8_t byte) {
     GET(handle, controller, Dc890, error_string);
     CALL(controller, error_string, GpioSetByte, byte);

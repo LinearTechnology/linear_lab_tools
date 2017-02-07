@@ -8,7 +8,7 @@
 #include "i_data_receive.hpp"
 #include "i_spi.hpp"
 #include "controller.hpp"
-#include "Ftdi.hpp"
+#include "ftdi.hpp"
 
 namespace linear {
 

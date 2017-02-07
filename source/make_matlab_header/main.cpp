@@ -5,9 +5,9 @@
 #include <utility>
 #include <regex>
 #include <stdexcept>
+#include "gsl"
 
 using std::string;
-using std::wstring;
 using std::ifstream;
 using std::ofstream;
 using std::vector;
@@ -18,17 +18,7 @@ using std::smatch;
 using std::regex_search;
 using std::runtime_error;
 
-// safe way to eliminate warnings on type coersion
-template <typename Dest, typename Source>
-Dest narrow(Source item) {
-    auto result = static_cast<Dest>(item);
-    if (static_cast<Source>(result) != item) {
-        throw runtime_error(
-            "Attempt to narrow value failed (value could not be represented in new type)"
-        );
-    }
-    return result;
-}
+using gsl::narrow;
 
 void remove_includes(string& code) {
     const regex include_re("#include[ \\t]+[^\\n]+\\n");

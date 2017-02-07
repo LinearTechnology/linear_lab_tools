@@ -1,15 +1,57 @@
 #include "utilities.hpp"
-
+#ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
+#undef min
+#undef max
+#endif
 #include <stdexcept>
+
+
 using std::runtime_error;
 
 namespace linear {
 
-using std::make_pair;
+#ifdef _WIN32
+#define FIX_CHAR(c) tolower(c)
+#else
+#define FIX_CHAR(c) c
+#endif
+bool CompareFileNameStart(const string& file_name, const string& prefix) {
+    if (prefix.size() > file_name.size()) { return false; }
+    std::string::const_iterator a = file_name.begin();
+    for (std::string::const_iterator b = prefix.begin(); b != prefix.end(); ++a, ++b) {
+        if (FIX_CHAR(*a) != FIX_CHAR(*b)) {
+            return false;
+        }
+    }
+    return true;
+}
 
-wstring GetPathFromRegistry(const wstring& key_name, const wstring& key_value_name) {
+bool CompareFileName(const string& file_name_1, const string& file_name_2) {
+    if (file_name_1.size() != file_name_2.size()) { return false; }
+    std::string::const_iterator a = file_name_1.begin();
+    for (std::string::const_iterator b = file_name_2.begin(); b != file_name_2.end(); ++a, ++b) {
+        if (FIX_CHAR(*a) != FIX_CHAR(*b)) {
+            return false;
+        }
+    }
+    return true;
+}
+
+bool CompareI(const string& str_a, const string& str_b) {
+    if (str_a.size() != str_b.size()) { return false; }
+    std::string::const_iterator a = str_a.begin();
+    for (std::string::const_iterator b = str_b.begin(); b != str_b.end(); ++a, ++b) {
+        if (tolower(*a) != tolower(*b)) {
+            return false;
+        }
+    }
+    return true;
+}
+
+#ifdef _WIN32
+path GetPathFromRegistry(const wstring& key_name, const wstring& key_value_name) {
     HKEY key;
     auto result = RegOpenKeyExW(HKEY_LOCAL_MACHINE, key_name.c_str(), 0, KEY_READ, &key);
     if (result != ERROR_SUCCESS) {
@@ -17,7 +59,7 @@ wstring GetPathFromRegistry(const wstring& key_name, const wstring& key_value_na
     }
 
     wstring path(MAX_PATH, L'\0');
-    auto size = Narrow<DWORD>(path.size());
+    auto size = narrow<DWORD>(path.size());
     result = RegQueryValueExW(key, key_value_name.c_str(), 0, nullptr, reinterpret_cast<BYTE*>(&path[0]), &size);
     RegCloseKey(key);
 
@@ -30,67 +72,63 @@ wstring GetPathFromRegistry(const wstring& key_name, const wstring& key_value_na
 }
 
 string ToUtf8(const wstring& utf16) {
-    auto utf8_length = WideCharToMultiByte(CP_UTF8, 0, utf16.c_str(), Narrow<int>(utf16.size()),
+    auto utf8_length = WideCharToMultiByte(CP_UTF8, 0, utf16.c_str(), narrow<int>(utf16.size()),
                                            nullptr, 0, nullptr, nullptr);
     string utf8(utf8_length, '\0');
-    WideCharToMultiByte(CP_UTF8, 0, utf16.c_str(), Narrow<int>(utf16.size()), &utf8[0], utf8_length, 0, 0);
+    WideCharToMultiByte(CP_UTF8, 0, utf16.c_str(), narrow<int>(utf16.size()), &utf8[0], utf8_length, 0, 0);
     return utf8;
 }
+
 wstring ToUtf16(const string& utf8) {
-    auto utf16_length = MultiByteToWideChar(CP_UTF8, 0, utf8.c_str(), Narrow<int>(utf8.size()), nullptr, 0);
+    auto utf16_length = MultiByteToWideChar(CP_UTF8, 0, utf8.c_str(), narrow<int>(utf8.size()), nullptr, 0);
     wstring utf16(utf16_length, '\0');
-    MultiByteToWideChar(CP_UTF8, 0, utf8.c_str(), Narrow<int>(utf8.size()), &utf16[0], utf16_length);
+    MultiByteToWideChar(CP_UTF8, 0, utf8.c_str(), narrow<int>(utf8.size()), &utf16[0], utf16_length);
     return utf16;
 }
 
-size_t GetFileSize(const wstring& file_name) {
-    HANDLE file = CreateFileW(file_name.c_str(), GENERIC_READ,
-                              FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr, OPEN_EXISTING,
-                              FILE_ATTRIBUTE_NORMAL, nullptr);
-    if (file == INVALID_HANDLE_VALUE) {
-        throw runtime_error("Could not open file '" + ToUtf8(file_name) + "'");
-    }
-    // Guarantee that the file is closed no matter what.
-    auto raii_file = MakeRaiiCleanup([&file] { CloseHandle(file); });
+#else
+#include <cstdlib>
+path GetPathFromEnvironment(const string& var_name) {
+    auto path_str = std::getenv(var_name.c_str());
+    return path(path_str);
+}
+#endif
 
-    LARGE_INTEGER size;
-    if (!GetFileSizeEx(file, &size)) {
-        throw runtime_error("Could not get size of file '" + ToUtf8(file_name) + "'");
-    }
-    return Narrow<size_t>(size.QuadPart);
+vector<path> ListFiles(path directory) {
+    vector<path> file_names;
+    
+    return file_names;
 }
 
-bool DoesFileExist(const wstring& file_name) {
-    HANDLE file = CreateFileW(file_name.c_str(), GENERIC_READ,
-                              FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr, OPEN_EXISTING,
-                              FILE_ATTRIBUTE_NORMAL, nullptr);
-    if (file == INVALID_HANDLE_VALUE) {
-        return false;
-    } else {
-        CloseHandle(file);
-        return true;
+vector<string> SplitString(const string& str, const char* delimiters, bool keep_empty_fields) {
+    if (delimiters == nullptr) {
+        delimiters = " \t\n\r\v\f";
     }
+    vector<string> strs;
+    size_t next = -1;
+    do {
+        auto current = next + 1;
+        next = str.find_first_of(delimiters, current);
+        auto field = str.substr(current, next - current);
+        if (keep_empty_fields || field.size() > 0) {
+            strs.push_back(field);
+        }
+    } while (next != string::npos);
+    return strs;
 }
 
-vector<wstring> ListFiles(wstring path) {
-    vector<wstring> names;
-    PathFixSeparator(path);
-    if (path[path.size() - 1] != L'/') {
-        path += L'/';
-    }
-    path += L"*.*";
-
-    WIN32_FIND_DATAW find_data;
-    HANDLE hFind = FindFirstFileW(path.c_str(), &find_data);
-    if (hFind != INVALID_HANDLE_VALUE) {
-        do {
-            if (!(find_data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)) {
-                names.push_back(find_data.cFileName);
-            }
-        } while (FindNextFileW(hFind, &find_data));
-        FindClose(hFind);
-    }
-    return names;
+vector<string> SplitString(const string& str, char delimiter, bool keep_empty_fields) {
+    vector<string> strs;
+    size_t next = -1;
+    do {
+        auto current = next + 1;
+        next = str.find(delimiter, current);
+        auto field = str.substr(current, next - current);
+        if (keep_empty_fields || field.size() > 0) {
+            strs.push_back(field);
+        }
+    } while (next != string::npos);
+    return strs;
 }
 
 void SwapBytesUint32(uint8_t* values, uint32_t num_values) {

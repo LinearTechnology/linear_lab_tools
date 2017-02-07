@@ -16,6 +16,7 @@ using linear::HighSpeed;
 using linear::Ftdi;
 using linear::FtdiError;
 using linear::SocKit;
+using linear::safe_memcpy;
 
 extern Ftdi ftdi;
 
@@ -25,6 +26,9 @@ namespace LtcControllerComm {
 #undef ASSERT_NOT_NULL
 #endif
 
+#ifdef QUOTE
+#undef QUOTE
+#endif
 #define QUOTE(x) #x
 #define ASSERT_NOT_NULL(pointer)                                           \
 if((pointer) == nullptr) {                                                 \
@@ -87,7 +91,7 @@ array<Controller::Info>^ Controller::GetControllerList(Type acceptableTypes) {
             ftdi_info = ftdi.ListControllers(acceptable_types, 20);
         }
         auto controllers = gcnew array<Controller::Info>(
-            linear::Narrow<int>(dc1371_info.size() + ftdi_info.size()));
+            linear::narrow<int>(dc1371_info.size() + ftdi_info.size()));
         int index = 0;
         for (auto& info : dc1371_info) {
             controllers[index] = Controller::Info(
@@ -113,11 +117,11 @@ Controller::Controller(Info controllerInfo) {
     TRY({
         LccControllerInfo info;
         info.type = static_cast<int>(controllerInfo.type);
-        memcpy_s(info.description, LCC_MAX_DESCRIPTION_SIZE,
+        safe_memcpy(info.description, LCC_MAX_DESCRIPTION_SIZE,
         marshal_as<std::string>(controllerInfo.description).c_str(),
         controllerInfo.description->Length);
         info.description[controllerInfo.description->Length] = '\0';
-        memcpy_s(info.serial_number, LCC_MAX_SERIAL_NUMBER_SIZE,
+        safe_memcpy(info.serial_number, LCC_MAX_SERIAL_NUMBER_SIZE,
         marshal_as<std::string>(controllerInfo.serial_number).c_str(),
         controllerInfo.serial_number->Length);
         info.serial_number[controllerInfo.serial_number->Length] = '\0';

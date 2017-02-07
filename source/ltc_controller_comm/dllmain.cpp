@@ -4,7 +4,9 @@ using namespace linear;
 
 Ftdi ftdi;
 
+#ifdef _WIN32
 BOOL APIENTRY DllMain(HMODULE, DWORD, LPVOID) {
     return TRUE;
 }
+#endif
 

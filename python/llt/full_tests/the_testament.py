@@ -253,8 +253,9 @@ if __name__ == '__main__':
         test_dc1925a_a(linduino)
         test_dc1369a_a()
         test_dc1563a_a(linduino)
-        test_dc1532a_a()
-        test_dc2085a_a()
+        if os.name != 'posix':
+            test_dc1532a_a()
+            test_dc2085a_a()
 
         linduino.transfer_packets("K00K01K02\n")
 
