@@ -72,6 +72,9 @@ bool CompareFileName(const string& file_name_1, const string& file_name_2);
 vector<path> ListFiles(path directory);
 
 bool CompareI(const string& a, const string& b);
+inline bool CompareStart(const string& a, const string& b) {
+    return b.size() <= a.size() ? a.substr(0, b.size()) == b : false;
+}
 
 inline void SwapBytes(uint8_t*, int) { }
 inline uint8_t SwapBytes(uint8_t value) { return value; }
