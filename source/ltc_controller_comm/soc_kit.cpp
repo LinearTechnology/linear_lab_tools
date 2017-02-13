@@ -1,16 +1,31 @@
 #include <chrono>
 #include <thread>
-#include <Winsock2.h>
 #include "soc_kit.hpp"
 
 namespace linear {
-
     using namespace std::chrono_literals;
 
     typedef std::vector<uint8_t> Uint8Vec;
     typedef std::vector<uint32_t> Uint32Vec;
 
     static const uint32_t CHUNK_SIZE = 1 * 1024 * 2014;
+    const char* SocKit::PORT = "1992";
+    const string SocKit::DESCRIPTION = "Cyclone V SoC Board";
+
+    string SocKit::FormatIpAddress(uint32_t ip_address) {
+        return std::to_string((ip_address >> 24) & 0xFF) + "." +
+               std::to_string((ip_address >> 16) & 0xFF) + "." +
+               std::to_string((ip_address >> 8) & 0xFF) + "." +
+               std::to_string((ip_address >> 0) & 0xFF);
+    }
+
+    std::unique_ptr<tcp::socket> SocKit::MakeSocket() {
+        asio::io_service io_service;
+        auto socket_ptr = std::make_unique<tcp::socket>(io_service);
+        tcp::resolver resolver(io_service);
+        asio::connect(*socket_ptr, resolver.resolve({ ip_address, PORT }));
+        return socket_ptr;
+    }
 
     void SocKit::DataStartCollect(int total_samples, Trigger trigger) {
         WriteRegister(NUM_SAMPLES_BASE, total_samples);
@@ -133,12 +148,12 @@ namespace linear {
     void SocKit::Shutdown() {
         constexpr uint32_t SHUTDOWN_PAYLOAD = "HALT"_as_u32;
         auto packet = Packet::with_command(Packet::SHUTDOWN, ToUint8Vec(&SHUTDOWN_PAYLOAD, 1));
-        SendPacket(packet, TcpClientSocket(ip_address, PORT));
+        SendPacket(packet, *MakeSocket());
     }
 
     static const int MIN_PACKET_SIZE = 2 * sizeof(uint32_t);
 
-    void SocKit::SendPacket(Packet packet, TcpClientSocket& client_socket) {
+    void SocKit::SendPacket(Packet packet, tcp::socket& socket) {
         Uint8Vec bytes;
         bytes.reserve(MIN_PACKET_SIZE + packet.payload.size());
 
@@ -152,20 +167,22 @@ namespace linear {
             bytes.push_back(size_bytes[i]);
         }
         bytes.insert(bytes.end(), packet.payload.begin(), packet.payload.end());
-        client_socket.send(bytes.data(), narrow<int>(bytes.size()));
+        asio::write(socket, asio::buffer(bytes, bytes.size()));
     }
 
     Packet SocKit::SendAndReceivePacket(Packet packet) {
-        TcpClientSocket client_socket(ip_address, PORT);
-        SendPacket(packet, client_socket);
-        auto response_command_and_size = client_socket.receive(MIN_PACKET_SIZE);
+        auto socket = MakeSocket();
+        SendPacket(packet, *socket);
+        std::vector<uint8_t> command_and_size(MIN_PACKET_SIZE);
+        size_t reply_length = asio::read(*socket, asio::buffer(command_and_size, MIN_PACKET_SIZE));
 
-        auto command = ToUint32(response_command_and_size.data());
-        auto size = ToUint32(response_command_and_size.data() + sizeof(uint32_t));
+        auto command = ToUint32(command_and_size.data());
+        auto size = ToUint32(command_and_size.data() + sizeof(uint32_t));
 
         size -= MIN_PACKET_SIZE;
         if (size > 0) {
-            auto payload = client_socket.receive(size);
+            std::vector<uint8_t> payload(size);
+            size_t reply_length = asio::read(*socket, asio::buffer(payload, size));
             return Packet(command, payload).check(packet.command_word);
         } else {
             return Packet(command, Uint8Vec()).check(packet.command_word);

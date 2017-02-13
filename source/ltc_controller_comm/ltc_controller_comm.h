@@ -42,7 +42,7 @@
 // }
 //
 // LccHandle handle = NULL;
-// status = LccInitDevice(&handle, device_info[device_index]);
+// status = LccInitController(&handle, device_info[device_index]);
 // if (status != LCC_ERROR_OK) {
 //     return status;
 // }
@@ -427,6 +427,18 @@ LTC_CONTROLLER_COMM_API int Lcc890GpioSpiSetBits(LccHandle handle, int cs_bit,
 
 // Flush commands and clear IO buffers
 LTC_CONTROLLER_COMM_API int Lcc890Flush(LccHandle handle);
+
+//////////////////////////
+// Functions for SocKit //
+//////////////////////////
+
+// There is no (good) way to "scan" for a SocKit board, you have to know the IP address. This 
+// function lets you get an LccControllerInfo struct from the IP address to pass to 
+// LccInitController.
+LTC_CONTROLLER_COMM_API int LccSocKitInfoFromIp(const char* ip_address, LccControllerInfo* info);
+
+// Same as above but with a uint32 IP address
+LTC_CONTROLLER_COMM_API int LccSocKitInfoFromIntIp(uint32_t ip_address, LccControllerInfo* info);
 
 #ifdef __cplusplus
 }

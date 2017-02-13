@@ -11,7 +11,7 @@
 #endif
 #include "dc718.hpp"
 #include "dc890.hpp"
-//#include "soc_kit.hpp"
+#include "soc_kit.hpp"
 #include "error.hpp"
 #include "utilities.hpp"
 #ifdef max
@@ -139,49 +139,6 @@ LTC_CONTROLLER_COMM_API int LccGetControllerList(int controller_types,
     }
 }
 
-LTC_CONTROLLER_COMM_API int LccGetControllerInfoFromId(int controller_type, const char* id,
-                                                       LccControllerInfo* controller_info) {
-    switch (controller_type) {
-    case LCC_TYPE_DC1371: {
-#ifdef _WIN32
-        if (Dc1371::IsDc1371(id[0])) {
-            *controller_info = Dc1371::MakeControllerInfo(id[0]);
-            return LCC_ERROR_OK;
-        } else
-#endif
-        {
-            return LCC_ERROR_HARDWARE;
-        }
-    }
-    case LCC_TYPE_DC718:
-    case LCC_TYPE_DC890:
-    case LCC_TYPE_HIGH_SPEED: {
-        // we could make this more efficient in the future
-        int num_controllers = 0;
-        auto result = LccGetNumControllers(controller_type, 100, &num_controllers);
-        if (result != LCC_ERROR_OK) {
-            return result;
-        }
-        vector<LccControllerInfo> info_list(num_controllers);
-        result = LccGetControllerList(controller_type, info_list.data(),
-                                      narrow<int>(info_list.size()));
-        if (result != LCC_ERROR_OK) {
-            return result;
-        }
-
-        for (auto&& info: info_list) {
-            if (strcmp(info.serial_number, id) == 0) {
-                *controller_info = info;
-                return LCC_ERROR_OK;
-            }
-        }
-
-        return LCC_ERROR_HARDWARE;
-    }
-    default:
-        return LCC_ERROR_INVALID_ARG;
-    }
-}
 
 LTC_CONTROLLER_COMM_API int LccInitController(LccHandle* handle,
                                               LccControllerInfo* controller_info) {
@@ -217,14 +174,14 @@ LTC_CONTROLLER_COMM_API int LccInitController(LccHandle* handle,
         *handle = new_handle;
         return code;
     }
-    //case LCC_TYPE_SOC_KIT: {
-    //    int code = ToErrorCode([&] { return new SocKit(*controller_info); },
-    //                           new_handle->controller, new_handle->error_string);
-    //    *handle = new_handle;
-    //    return code;
-    //}
+    case LCC_TYPE_SOC_KIT: {
+        int code = ToErrorCode([&] { return new SocKit(*controller_info); },
+                               new_handle->controller, new_handle->error_string);
+        *handle = new_handle;
+        return code;
+    }
 
-    default        :
+    default:
         new_handle->error_string = "Invalid device type in device info.";
         return LCC_ERROR_INVALID_ARG;
     }
@@ -566,4 +523,45 @@ LTC_CONTROLLER_COMM_API int Lcc890GpioSpiSetBits(LccHandle handle, int cs_bit,
 LTC_CONTROLLER_COMM_API int Lcc890Flush(LccHandle handle) {
     GET(handle, controller, Dc890, error_string);
     CALL(controller, error_string, Flush);
+}
+
+inline static uint8_t MakeByte(const string& str) {
+    auto value = std::stoi(str);
+    if (value < 0 || value > 255) {
+        throw new invalid_argument("invalid number in string");
+    }
+    return narrow<uint32_t>(value);
+}
+
+LTC_CONTROLLER_COMM_API int LccSocKitInfoFromIp(const char* ip_address, LccControllerInfo* info) {
+    C_MUST_NOT_BE_NULL(ip_address);
+    auto fields = SplitString(ip_address, ".");
+    if (fields.size() != 4) {
+        return LCC_ERROR_INVALID_ARG;
+    }
+    uint32_t int_ip_address = 0;
+    try {
+        int_ip_address |= MakeByte(fields[0]) << 24;
+        int_ip_address |= MakeByte(fields[1]) << 16;
+        int_ip_address |= MakeByte(fields[2]) << 8;
+        int_ip_address |= MakeByte(fields[3]);
+    } catch (invalid_argument&) {
+        return LCC_ERROR_INVALID_ARG;
+    }
+    return LccSocKitInfoFromIntIp(int_ip_address, info);
+}
+
+// Same as above but with a uint32 IP address
+LTC_CONTROLLER_COMM_API int LccSocKitInfoFromIntIp(uint32_t ip_address, LccControllerInfo* info) {
+    C_MUST_NOT_BE_NULL(info);
+    const string not_set_str = "Not Set";
+
+    info->type = LCC_TYPE_SOC_KIT;
+    info->id = ip_address;
+    safe_memcpy(info->description, LCC_MAX_DESCRIPTION_SIZE, 
+                SocKit::DESCRIPTION.c_str(), SocKit::DESCRIPTION.size()+1);
+    safe_memcpy(info->serial_number, LCC_MAX_SERIAL_NUMBER_SIZE, 
+                not_set_str.c_str(), not_set_str.size()+1);
+    
+    return LCC_ERROR_OK;
 }
