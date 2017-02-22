@@ -93,6 +93,7 @@ class Ltc2373(dc890.Demoboard):
         A DC890 demo board with settings for the LTC2373
     """
     def __init__(self, dc_number, spi_registers, num_channels, num_bits, verbose = False):
+        self.is_high_speed = False
         dc890.Demoboard.__init__(self, 
                                  dc_number             = dc_number, 
                                  fpga_load             = 'CMOS',
@@ -119,11 +120,13 @@ class Ltc2373(dc890.Demoboard):
         SCK_BIT         = 5
         CNV_BIT         = 4
         WRITE_IN_1_BIT  = 3
-        #HIGH_SPEED_BIT = 2
+        HIGH_SPEED_BIT  = 2
         UNUSED_1_BIT    = 1
         UNUSED_0_BIT    = 0
         
         base = (1 << UNUSED_1_BIT) | (1 << UNUSED_0_BIT)
+        if self.is_high_speed:
+            base |= (1 << HIGH_SPEED_BIT)
 
         self.controller.dc890_gpio_spi_set_bits(0, SCK_BIT, SDI_BIT)
         
@@ -144,24 +147,22 @@ class Ltc2373(dc890.Demoboard):
     def _get_data_subset(self, data):
         seq_len = len(self.spi_reg_values)
         for i in range(seq_len):
-            found_start = True
-            for j in range(seq_len):
-                check_idx = (i+j) % seq_len
-                if (data[j]>>1) & 0x7F != self.spi_reg_values[check_idx] & 0x7F:
-                    found_start = False
-                    break
-            if found_start:
-                start = 0 if i == 0 else seq_len - i
-                return data[start:len(data)/2 + start]
+            if (data[i] & 0x100) != 0:
+                return data[i:(len(data) / 2 + i)]
         raise errs.HardwareError("Could not find correct config from data")
 
     def _check_data(self, data):
         seq_len = len(self.spi_reg_values)
-        check_idx = 0
-        for d in data:
-            if (d >> 1) & 0x7F != self.spi_reg_values[check_idx] & 0x7F:
-                raise errs.HardwareError("Detected incorrect config in data")
-            check_idx = (check_idx + 1) % seq_len
+        if self.is_high_speed:
+            for i in range(0, len(data), seq_len):
+                if (data[i] & 0x100) == 0:
+                    raise errs.HardwareError("Detected incorrect config in data")
+        else:
+            check_idx = 0
+            for d in data:
+                if (d >> 1) & 0x7F != self.spi_reg_values[check_idx] & 0x7F:
+                    raise errs.HardwareError("Detected incorrect config in data")
+                check_idx = (check_idx + 1) % seq_len
 
     def fix_data(self, raw_data, is_randomized, is_alternate_bit):
         raw_data = self._get_data_subset(raw_data)

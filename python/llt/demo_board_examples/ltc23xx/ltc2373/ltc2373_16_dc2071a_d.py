@@ -33,7 +33,6 @@
         the LTC2373 demo board through python with the DC890.
 """
 
-import llt.common.dc890 as dc890
 import llt.common.functions as funcs
 import llt.common.constants as consts
 import llt.demo_board_examples.ltc23xx.ltc2373.ltc2373_18_dc2071a_a as dc2071
@@ -93,16 +92,12 @@ class Ltc2373(dc2071.Ltc2373):
         A DC890 demo board with settings for the LTC2373
     """
     def __init__(self, dc_number, spi_registers, num_channels, num_bits, verbose = False):
-        dc890.Demoboard.__init__(self, 
-                                 dc_number             = dc_number, 
-                                 fpga_load             = 'CMOS',
-                                 num_channels          = num_channels,
-                                 is_positive_clock     = False, 
-                                 num_bits              = num_bits,
-                                 alignment             = 32,
-                                 is_bipolar            = True,
-                                 spi_reg_values        = spi_registers,
-                                 verbose               = verbose)
+        dc2071.Ltc2373.__init__(self, 
+                                dc_number             = dc_number, 
+                                num_channels          = num_channels, 
+                                num_bits              = num_bits,
+                                spi_registers        = spi_registers,
+                                verbose               = verbose)
                                  
     def fix_data(self, raw_data, is_randomized, is_alternate_bit):
         raw_data = self._get_data_subset(raw_data)
