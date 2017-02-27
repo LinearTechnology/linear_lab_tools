@@ -304,9 +304,9 @@ class MemClient(object):
         
     # Func Desc: Calls send_dc590() to read the EEPROM using I2C.
     def read_eeprom_id(self, i2c_output_base_reg, i2c_input_base_reg):
-        #string = 'sSA0S00psSA1RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRQp'
-        string = 'sSA0S00psSA1RRRRRRRRRRRRRRRRRRRQp'
-        ret = MemClient.send_dc590(self, i2c_output_base_reg, i2c_input_base_reg, string)
+        #command_string = 'sSA0S00psSA1RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRQp'
+        command_string = 'sSA0S00psSA1RRRRRRRRRRRRRRRRRRRQp'
+        ret = MemClient.send_dc590(self, i2c_output_base_reg, i2c_input_base_reg, command_string)
         eeprom_id = ''
         result = ''
         count = 0
@@ -322,6 +322,18 @@ class MemClient(object):
                 count = 0
         #print eeprom_id    
         return eeprom_id
+        
+    # Func Desc: Calls send_dc590() to read the EEPROM using I2C.
+    def write_eeprom_id(self, i2c_output_base_reg, i2c_input_base_reg, id_string):
+        command_string = 'sSA0S00'        
+        for each_char in id_string:
+            command_string = command_string + 'S'
+            ascii_val = hex(ord(each_char))
+            command_string = command_string + ascii_val[2:]
+        command_string = command_string + 'p'
+        print command_string
+        ret = MemClient.send_dc590(self, i2c_output_base_reg, i2c_input_base_reg, id_string)
+        return ret
 
     # Func Desc: Transfer the data in a file. Store it in the new location sent.
     def file_transfer(self, file_to_read, file_write_path, dummy = False):   
@@ -429,7 +441,7 @@ class MemClient(object):
             command = command | MemClient.DUMMY_FUNC
         val = 0xFF
         sock_msg = struct.pack('III', command, length, val)
-        s = socket.socket(socket.AF_INET, socket.SOCK_STR/EAM)
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.connect((self.host, self.port))
         s.sendall(sock_msg)
         response = recvall(s, 12)
@@ -493,62 +505,6 @@ class MemClient(object):
         else:
             return False
 
-#    def handle_command(self, command, length, payload):
-#        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-#        s.connect((self.host, self.port))
-#        
-#        if(length == 12):
-#            transmit_packet = struct.pack('III', (command | MemClient.COMMAND_SENT), length, payload)
-#        elif(length == 16):
-#            transmit_packet = struct.pack('IIII', (command | MemClient.COMMAND_SENT), length, payload[0], payload[1]) 
-#        
-#        print '\nTransmitting command: ',
-#        print command
-#        print 'Length of packet: ',
-#        print length
-#        s.sendall(transmit_packet)
-#
-#        response = s.recv(8) # Specify the maximum number of bytes that can be received.
-#        (command_received, length_received) = struct.unpack('II', response)      
-#        print 'Response received: ',
-#        print command_received
-#        print 'Length received: ',
-#        print length_received
-#        #size_payload = length_received - 8
-#        size_payload = 4
-#        print 'Expected response payload size: ',
-#        print size_payload
-#        payload = recvall(s, size_payload)
-#
-#        
-#        print 'Size of payload: ',       
-#        print len(payload)
-#        
-#        if(length_received == 12):
-#            payload_received = struct.unpack('I', payload)[0]
-#        elif(length_received == 16):
-#            payload_received = struct.unpack('II', payload)
-#        else:
-#            payload_received = payload
-#        
-#        command_key = command_received & 0x00FFFFFF
-#        
-#        if(command_received != (command | MemClient.RESPONSE_RECEIVED)):
-#            print 'Received corrupted response packet - Wrong command field received!!'
-#        if(command_received & MemClient.RESPONSE_RECEIVED != MemClient.RESPONSE_RECEIVED):
-#            print 'Received corrupted response packet - Response bit not set!!'
-#        if(command_received & MemClient.ERROR == MemClient.ERROR):
-#            print 'Received ERROR bit!!'
-#            
-#        # check for 0xDEADC0DE
-#        s.close()
-#        
-##        response = recvall(s, 12)
-##        (command_received, length_received, payload_received) = struct.unpack('III', response)        
-##        s.close()
-#        
-#        return payload_received
-        
         
 if __name__ == '__main__':
     client = MemClient()
@@ -573,26 +529,3 @@ if __name__ == '__main__':
     
     
     
-    
-    
-#    def send_msg(self, cmd=0, length=0, param1=0, param2=0, msg=''):
-#        # assemble socket message
-#        sock_msg = struct.pack('IIII64s', cmd, length, param1, param2, msg)
-#        if (cmd == MemClient.MEM_READ_BLOCK):
-#            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-#            s.connect((self.host, self.port))
-#            s.sendall(sock_msg)
-#            sleep(1.0)
-#            ret = 0
-#            block = recvall(s, param2 * 4)
-#            #print ('got this block: ' + repr(block))
-#            s.close()
-#        else:    
-#            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-#            s.connect((self.host, self.port))
-#            s.sendall(sock_msg)
-#            response = s.recv(128)
-#            block = ''
-#            ret = struct.unpack('I', response)[0]
-#            s.close()
-#        return ret, block
