@@ -50,13 +50,17 @@ from matplotlib import pyplot as plt
 # Okay, now the big one... this is the module that communicates with the SoCkit
 from llt.common.mem_func_client_2 import MemClient
 from llt.utils.sockit_system_functions import *
+from llt.utils.DC2390_functions import *
 
 # Get the host from the command line argument. Can be numeric or hostname.
 HOST = sys.argv[1] if len(sys.argv) == 2 else '127.0.0.1'
 # Override here if desired
-HOST = "192.168.1.231"
+#HOST = "192.168.1.231"
+HOST = "10.54.6.26"
 
 # Default script parameters
+demo_board = 2390 #UN comment one of these. Only use internal ramp for DC2390,
+#demo_board = 2512 # DC2512 can use either internal ramp or external 18-bit ramp generator.
 save_pscope_data = False
 grab_filtered_data = False
 mem_bw_test = False # Set to true to run a ramp test after ADC capture
@@ -99,7 +103,14 @@ print('Starting client')
 client = MemClient(host=HOST)
 #Read FPGA type and revision
 
-type_rev_check(client, 0x0001, 0x0104)
+if demo_board == 2512:
+    type_rev_check(client, 0x0001, 0x0104)
+elif demo_board == 2390:
+    type_rev_check(client, 0xABCD, 0x1246)
+    LTC6954_configure(client, 4 )
+    client.reg_write(SYSTEM_CLOCK_BASE, 99) # 50MHz / (99 + 1) = 500ksps
+    
+
 #rev_id = client.reg_read(REV_ID_BASE)
 #type_id = rev_id & 0x0000FFFF
 #rev = (rev_id >> 16) & 0x0000FFFF
