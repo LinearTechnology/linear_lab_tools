@@ -305,8 +305,10 @@ class MemClient(object):
     # Func Desc: Calls send_dc590() to read the EEPROM using I2C.
     def read_eeprom_id(self, i2c_output_base_reg, i2c_input_base_reg):
         #command_string = 'sSA0S00psSA1RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRQp'
-        command_string = 'sSA0S00psSA1RRRRRRRRRRRRRRRRRRRQp'
+        command_string = 'sSA0S00psSA1QQQQQQQQQQQQQQQQQQQRp'
         ret = MemClient.send_dc590(self, i2c_output_base_reg, i2c_input_base_reg, command_string)
+        print ("eeprom ID: ")
+        print (ret)
         eeprom_id = ''
         result = ''
         count = 0
@@ -332,7 +334,7 @@ class MemClient(object):
             command_string = command_string + ascii_val[2:]
         command_string = command_string + 'p'
         print command_string
-        ret = MemClient.send_dc590(self, i2c_output_base_reg, i2c_input_base_reg, id_string)
+        ret = MemClient.send_dc590(self, i2c_output_base_reg, i2c_input_base_reg, command_string)
         return ret
 
     # Func Desc: Transfer the data in a file. Store it in the new location sent.
