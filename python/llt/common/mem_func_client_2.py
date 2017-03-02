@@ -304,10 +304,10 @@ class MemClient(object):
         
     # Func Desc: Calls send_dc590() to read the EEPROM using I2C.
     def read_eeprom_id(self, i2c_output_base_reg, i2c_input_base_reg):
-        #command_string = 'sSA0S00psSA1RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRQp'
-        command_string = 'sSA0S00psSA1QQQQQQQQQQQQQQQQQQQRp'
+        command_string = 'sSA0S00psSA1QQQQQQQQQQQQQQQQQQQQQQQQQQQQQQRp'
+        #command_string = 'sSA0S00psSA1QQQQQQQQQQQQQQQQQQQRp'
         ret = MemClient.send_dc590(self, i2c_output_base_reg, i2c_input_base_reg, command_string)
-        print ("eeprom ID: ")
+        print ("Raw EEPROM Data: "),
         print (ret)
         eeprom_id = ''
         result = ''
@@ -327,14 +327,25 @@ class MemClient(object):
         
     # Func Desc: Calls send_dc590() to read the EEPROM using I2C.
     def write_eeprom_id(self, i2c_output_base_reg, i2c_input_base_reg, id_string):
-        command_string = 'sSA0S00'        
+#        command_string = 'sSA0S00'        
+#        for each_char in id_string:
+#            command_string = command_string + 'S'
+#            ascii_val = hex(ord(each_char))
+#            command_string = command_string + ascii_val[2:]
+#        command_string = command_string + 'p'
+#        print command_string
+#        ret = MemClient.send_dc590(self, i2c_output_base_reg, i2c_input_base_reg, command_string)
+        ret = ''        
+        i = 0        
         for each_char in id_string:
-            command_string = command_string + 'S'
+            command_string = 'sSA0'
+            command_string = command_string + 'S' + "{:02x}".format(i) + 'S'
             ascii_val = hex(ord(each_char))
             command_string = command_string + ascii_val[2:]
-        command_string = command_string + 'p'
-        print command_string
-        ret = MemClient.send_dc590(self, i2c_output_base_reg, i2c_input_base_reg, command_string)
+            command_string = command_string + 'p'
+            print command_string
+            ret = ret + MemClient.send_dc590(self, i2c_output_base_reg, i2c_input_base_reg, command_string)
+            i = i+1
         return ret
 
     # Func Desc: Transfer the data in a file. Store it in the new location sent.
