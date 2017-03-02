@@ -41,7 +41,7 @@
 ###############################################################################
 
 import sys # os, socket, ctypes, struct
-import DC2390_functions as DC2390
+import llt.utils.DC2390_functions as DC2390
 import math
 
 
