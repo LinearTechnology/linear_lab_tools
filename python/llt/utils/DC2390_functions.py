@@ -81,6 +81,33 @@ SPI_SS = 0x14
 CW_EN_TRIG = 0x00000002
 CW_START = 0x00000001
 
+# A text list for above register map
+register_list = [
+'REV_ID_BASE          ',
+'CONTROL_BASE         ',
+'DATA_READY_BASE      ',
+'LED_BASE             ',
+'NUM_SAMPLES_BASE     ',
+'PID_KP_BASE          ',
+'PID_KI_BASE          ',
+'PID_KD_BASE          ',
+'PULSE_LOW_BASE       ',
+'PULSE_HIGH_BASE      ',
+'PULSE_VAL_BASE       ',
+'SYSTEM_CLOCK_BASE    ',
+'DATAPATH_CONTROL_BASE',
+'LUT_ADDR_DATA_BASE   ',
+'TUNING_WORD_BASE     ',
+'BUFFER_ADDRESS_BASE  ',
+'SPI_PORT_BASE        ',
+'SPI_RXDATA           ',
+'SPI_TXDATA           ',
+'SPI_STATUS           ',
+'SPI_CONTROL          ',
+'SPI_SS               ']
+
+
+
 # LTC2500 Control Word Bitfields. These are defined such that they can be ORed
 # directly into the LED_BASE register, no shifting required.
 
