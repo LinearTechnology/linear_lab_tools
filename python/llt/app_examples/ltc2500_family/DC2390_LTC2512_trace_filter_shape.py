@@ -1,5 +1,10 @@
 # -*- coding: utf-8 -*-
 """
+    Description:
+        The purpose of this module is to perform a sweep of frequencies to
+        trace the filter shape of the LTC2512.
+
+
     Created by: Noe Quintero
     E-mail: nquintero@linear.com
 
@@ -35,9 +40,7 @@
     those of the authors and should not be interpreted as representing official
     policies, either expressed or implied, of Linear Technology Corp.
 
-    Description:
-        The purpose of this module is to perform a sweep of frequencies to
-        trace the filter shape of the LTC2512.
+
 """
 
 ###############################################################################
@@ -51,7 +54,8 @@ from time import sleep
 from matplotlib import pyplot as plt
 # Okay, now the big one... this is the module that communicates with the SoCkit
 from llt.common.mem_func_client_2 import MemClient ## Updated to client_2
-from DC2390_functions import *
+#from llt.utils.DC2390_functions import *
+from llt.utils.DC2390_functions import * # Leaving here as a commend during restructuring
 from llt.utils.sockit_system_functions import *
 import time
 
@@ -180,6 +184,19 @@ sleep(0.1)
 # Sweep the DAC freq and measure the filter respose
 filter_shape = []
 freq_bin = []
+
+fig1 = plt.figure(1)
+plt.subplot(1, 1, 1)
+
+plt.title('LTC25xx Filter Shape')
+plt.xlabel("Bin")
+plt.ylabel("dB")
+plt.xlim([0,NUM_FREQS])
+mng = plt.get_current_fig_manager()
+#mng.window.showMaximized()
+plt.ion() # Go interactive...
+
+
 for x in range(0, NUM_FREQS):
     print("Data point: " + str(x))
     # Calculate the NCO to coherent bin
@@ -229,10 +246,25 @@ for x in range(0, NUM_FREQS):
     print("Amplitude of filtered data: " + str(amplitude))
     filter_shape.append(amplitude)
 
+    plt.cla()
+    plt.title('LTC25xx Filter Shape')
+    plt.xlabel("Bin")
+    plt.ylabel("dB")
+
+    plt.plot(freq_bin, filter_shape, marker='o', linestyle='-', color="green")
+    plt.show()
+    plt.pause(0.0001) # Small delay
+
+
+
+
+
+
+
     # Extra debug info - for first bin, plot time domain data and bit counter    
     if(x == 1 and DEBUG == True):
     # Plot time domain data
-        plt.figure(1) # Plot for time domain data
+        plt.figure(2) # Plot for time domain data
         plt.plot(data)
         plt.show()        
         
@@ -247,11 +279,11 @@ for x in range(0, NUM_FREQS):
 
 
 # Plot the results
-plt.figure(2)
-plt.plot(freq_bin,filter_shape)
-plt.title('LTC2512 Filter Shape')
-plt.xlabel("Bin")
-plt.ylabel("dB")
-plt.show()
+#plt.figure(1)
+#plt.plot(freq_bin,filter_shape)
+#plt.title('LTC2512 Filter Shape')
+#plt.xlabel("Bin")
+#plt.ylabel("dB")
+#plt.show()
 
 print "The program took", (time.time() - start_time)/60, "min to run"
