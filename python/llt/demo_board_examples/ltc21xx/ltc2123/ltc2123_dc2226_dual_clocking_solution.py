@@ -47,6 +47,8 @@ either expressed or implied, of Linear Technology Corp.
 '''
 
 import llt.common.ltc_controller_comm as comm
+import llt.common.constants as consts
+import llt.common.exceptions as errs
 from ltc2123_functions import * # Import support functions
 from dc2226_clock_configuration import * # Import clock configuration functions
 import numpy as np # Import NumPy for analysis
@@ -119,12 +121,12 @@ if verbose:
 device = None
 descriptions = frozenset(['LTC UFO Board', 'LTC Communication Interface', 'LTC2000 Demoboard', 'LTC2000, DC2085A-A'])
 device_info = None    
-for info in comm.list_controllers(comm.TYPE_HIGH_SPEED):
+for info in comm.list_controllers(consts.TYPE_HIGH_SPEED):
     if info.get_description() in descriptions:
         device_info = info
         break
 if device_info is None:
-    raise(comm.HardwareError('Could not find a compatible device'))
+    raise(errs.HardwareError('Could not find a compatible device'))
 
 delay=0
 while((runs < 1 or continuous == 1) and runs_with_errors < 100000):
@@ -140,7 +142,7 @@ while((runs < 1 or continuous == 1) and runs_with_errors < 100000):
     # MPSSE Mode, Issue Reset Pulse
     ################################################
     with comm.Controller(device_info) as device:
-        device.hs_set_bit_mode(comm.HS_BIT_MODE_MPSSE)
+        device.hs_set_bit_mode(consts.HS_BIT_MODE_MPSSE)
         if do_reset:
             device.hs_fpga_toggle_reset()
 

@@ -30,6 +30,7 @@ of the authors and should not be interpreted as representing official policies,
 either expressed or implied, of Linear Technology Corp.
 '''
 import llt.common.ltc_controller_comm as comm
+import llt.common.constants as consts
 
 from time import sleep
 sleep_time = 0.1
@@ -106,7 +107,7 @@ def initialize_DC2226_CLOCKS_ParallelSync_250(device, verbose):
     
     if(verbose != 0):
         print "Configuring clock generators over SPI:"
-    device.hs_set_bit_mode(comm.HS_BIT_MODE_MPSSE)
+    device.hs_set_bit_mode(consts.HS_BIT_MODE_MPSSE)
     
     #LTC6954 config
     print "Configuring LTC6954 (REF distribution)"
@@ -186,7 +187,7 @@ def initialize_DC2226_CLOCKS_ParallelSync_250(device, verbose):
 def DC2226_MUTE_LTC6951_SYREF(device, verbose):
     if(verbose != 0):
         print "Configuring clock generators over SPI:"
-    device.hs_set_bit_mode(comm.HS_BIT_MODE_MPSSE)
+    device.hs_set_bit_mode(consts.HS_BIT_MODE_MPSSE)
 
 #LTC6951config
     print "Configuring U10 (LTC6951): MUTE ADC2 SYSREF"
@@ -202,7 +203,7 @@ def DC2226_MUTE_LTC6951_SYREF(device, verbose):
 def DC2226_PDOUT_LTC6951_SYREF(device, verbose):
     if(verbose != 0):
         print "Configuring clock generators over SPI:"
-    device.hs_set_bit_mode(comm.HS_BIT_MODE_MPSSE)
+    device.hs_set_bit_mode(consts.HS_BIT_MODE_MPSSE)
 
 #LTC6951config
     print "Configuring U10 (LTC6951): POWER DOWN OUTPUT, ADC2 SYSREF"
@@ -218,7 +219,7 @@ def DC2226_PDOUT_LTC6951_SYREF(device, verbose):
 def DC2226_PDDIV_LTC6951_SYREF(device, verbose):
     if(verbose != 0):
         print "Configuring clock generators over SPI:"
-    device.hs_set_bit_mode(comm.HS_BIT_MODE_MPSSE)
+    device.hs_set_bit_mode(consts.HS_BIT_MODE_MPSSE)
 
 #LTC6951config
     print "Configuring U10 (LTC6951): POWER DOWN DIV & OUTPUT, ADC2 SYSREF"
@@ -235,7 +236,7 @@ def DC2226_PDDIV_LTC6951_SYREF(device, verbose):
 def initialize_DC2226_version2_clocks_250(device, verbose):
     if(verbose != 0):
         print "Configuring clock generators over SPI:"
-    device.hs_set_bit_mode(comm.HS_BIT_MODE_MPSSE)
+    device.hs_set_bit_mode(consts.HS_BIT_MODE_MPSSE)
 
     #LTC6954 config
     print "Configuring LTC6954 (REF distribution)"
@@ -317,7 +318,7 @@ def initialize_DC2226_rev_3_clocks_250(device, verbose):
 #def initialize_DC2226_version2_clocks_250(device, verbose):
     if(verbose != 0):
         print "Configuring clock generators over SPI:"
-    device.hs_set_bit_mode(comm.HS_BIT_MODE_MPSSE)
+    device.hs_set_bit_mode(consts.HS_BIT_MODE_MPSSE)
 
     #LTC6954 config
     print "Configuring LTC6954 (REF distribution)"
@@ -402,7 +403,7 @@ def initialize_DC2226_rev_3_clocks_250(device, verbose):
 def initialize_DC2226_version2_clocks_300(device, verbose):
     if(verbose != 0):
         print "Configuring clock generators over SPI:"
-    device.hs_set_bit_mode(comm.HS_BIT_MODE_MPSSE)
+    device.hs_set_bit_mode(consts.HS_BIT_MODE_MPSSE)
 
     #LTC6954 config
     print "Configuring LTC6954 (REF distribution)"
