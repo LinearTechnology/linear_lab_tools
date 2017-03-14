@@ -97,7 +97,7 @@ else:
     else:
         _dll_file += ".dll"
     
-    _dll = ct.CDLL(_dll_file)
+    _dll = ct.CDLL(str(_dll_file))
 
 
 def list_controllers(controller_type):
