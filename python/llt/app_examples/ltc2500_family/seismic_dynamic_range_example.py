@@ -129,6 +129,7 @@ def capture_seismic_data(client, filter_type):
     nyq_data = np.zeros(len(nyq_data_c))
     nyq_data += nyq_data_c
     nyq_data *= (5.0 / 2147483648.0)
+    print ("Nyquist Noise: " + str(np.std(nyq_data)))
     # Remove offset, based on a slice of data points near the end
     avg = np.average(nyq_data[len(nyq_data)-2000:len(nyq_data)-1000])
     nyq_data = nyq_data - avg    

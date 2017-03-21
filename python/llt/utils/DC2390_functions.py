@@ -130,6 +130,28 @@ LTC2500_DF_4096         = 0b11000000000000
 LTC2500_DF_8192         = 0b11010000000000
 LTC2500_DF_16384        = 0b11100000000000
 
+# A handy class associating DF and bitfields, with text that can
+# be used to build filename of filter coefficient file
+class Downsample_Factor_information:
+    def __init__(self, df, df_ctrl_bits, df_txt):
+        self.DF = df
+        self.DF_ctrl_bits = df_ctrl_bits
+        self.DF_txt = df_txt
+    
+DF4   = Downsample_Factor_information(4,     LTC2500_DF_4,     "4")
+DF8   = Downsample_Factor_information(8,     LTC2500_DF_8,     "8")
+DF16  = Downsample_Factor_information(16,    LTC2500_DF_16,    "16")
+DF32  = Downsample_Factor_information(32,    LTC2500_DF_32,    "32")
+DF64  = Downsample_Factor_information(64,    LTC2500_DF_64,    "64")
+DF128 = Downsample_Factor_information(128,   LTC2500_DF_128,   "128")
+DF256 = Downsample_Factor_information(256,   LTC2500_DF_256,   "256")
+DF512 = Downsample_Factor_information(512,   LTC2500_DF_512,   "512")
+DF1k  = Downsample_Factor_information(1024,  LTC2500_DF_1024,  "1024")
+DF2k  = Downsample_Factor_information(2048,  LTC2500_DF_2048,  "2048")
+DF4k  = Downsample_Factor_information(4096,  LTC2500_DF_4096,  "4096")
+DF8k  = Downsample_Factor_information(8192,  LTC2500_DF_8192,  "8192")
+DF16k = Downsample_Factor_information(16384, LTC2500_DF_16384, "16384")
+
 # LTC2500 Filter Type Bitmap
 LTC2500_SINC_FILT       = 0b00000001000000
 LTC2500_SINC2_FILT      = 0b00000010000000
@@ -138,6 +160,21 @@ LTC2500_SINC4_FILT      = 0b00000100000000
 LTC2500_SSINC_FILT      = 0b00000101000000
 LTC2500_SSCIN_FLAT_FILT = 0b00000110000000
 LTC2500_VAR_DECIM_FILT  = 0b00000111000000
+
+# A handy class associating filter type and bitfields, with text that can
+# be used to build filename of filter coefficient file
+class Filt_Type_information:
+    def __init__(self, ft_ctrl_bits, ft_txt):
+        self.FT_ctrl_bits = ft_ctrl_bits
+        self.FT_txt = ft_txt
+
+FTSINC1 = Filt_Type_information(LTC2500_SINC_FILT, "sinc1")
+FTSINC2 = Filt_Type_information(LTC2500_SINC2_FILT, "sinc2")
+FTSINC3 = Filt_Type_information(LTC2500_SINC3_FILT, "sinc3")
+FTSINC4 = Filt_Type_information(LTC2500_SINC4_FILT, "sinc4")
+FTSSINC = Filt_Type_information(LTC2500_SSINC_FILT, "ssinc")
+FT_FLAT = Filt_Type_information(LTC2500_SSCIN_FLAT_FILT, "ssinc_flat")
+        
 
 # PID controller setpoint source
 DC2390_PID_PULSE_GEN    = 0x00000000

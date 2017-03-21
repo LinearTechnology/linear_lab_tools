@@ -78,6 +78,15 @@ def freqz_by_fft(filter_coeffs, points_per_coeff):
     fftlength = num_coeffs * points_per_coeff
     resp = abs(np.fft.fft(np.concatenate((filter_coeffs, np.zeros(fftlength - num_coeffs))))) # filter and a bunch more zeros
     return resp
+    
+def freqz_by_fft_numpoints(filter_coeffs, numpoints):
+    num_coeffs = len(filter_coeffs)
+    if numpoints < num_coeffs:
+        print("freqz_by_fft_numpoints: numpoints must be greater than # filter coefficients")
+        return []
+    fftlength = numpoints
+    resp = abs(np.fft.fft(np.concatenate((filter_coeffs, np.zeros(fftlength - num_coeffs))))) # filter and a bunch more zeros
+    return resp
 
 # Upsample an array and stuff zeros between data points.
 # Upsample_factor is the total number of output points per
@@ -90,6 +99,12 @@ def upsample_zero_stuff(data, upsample_factor):
         upsample_data[upsample_factor*i] = data[i]
     return upsample_data
 
+
+def linecount(fname): # A handy functon to count lines in a file.
+    with open(fname) as f:
+        for i, l in enumerate(f):
+            pass
+    return i + 1
 
 
 if __name__ == "__main__":
