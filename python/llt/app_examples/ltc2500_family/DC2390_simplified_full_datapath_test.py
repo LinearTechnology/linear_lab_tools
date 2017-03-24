@@ -63,12 +63,6 @@ from llt.utils.sockit_system_functions import *
 # Get the host from the command line argument. Can be numeric or hostname.
 HOST = sys.argv[1] if len(sys.argv) >= 2 else '127.0.0.1'
 
-# Enable / disable simple memory bandwidth test using internal digital
-# pattern generator
-mem_bw_test = False
-
-# Set to true to write a downward ramp to DAC lookup table
-test_LUT_write = True
 
 # Timing / data record length
 SYSTEM_CLOCK_DIVIDER = 199 # 50MHz / (n+1), set to 99 for 500ksps, 199 for 250ksps, etc.
@@ -200,32 +194,23 @@ plt.plot(fftdb)
 
 
 
-# Leave DAC set to arbitrary waveform generator
+# Write a new set of values to the LUT. A Ricker wavelet is a handy little wiggle
+# That's easy to distinguish from the default windowed SINC function that is
+# pre-programmed into the FPGA load. You need to send exactly 2^16 points, 
+# this is the number of points in the lookup table. Data points need to be
+# in the range from -32768 to +32767, which maps to -10V to +10V at the BNC
+# DAC output.
 
-data = signal.ricker(100, 4)
-data *= (30000 / max(data))
+data = 1000000*signal.ricker(65536, 2000) # First, make some data points.
+print ("Maximum voltage: " + str(10 * max(data) / 32768)) # Double-check these
+print ("Minimum voltage: " + str(10 * min(data) / 32768)) # voltages with a scope
 
-load_arb_lookup_table(client, data)
+load_arb_lookup_table(client, data) # Then, send to client.
 
+# Set the DAC data mux to the lookup table, run continuously
+# (Yes, this needs to be bundled into a nicer looking function)
 client.reg_write(DATAPATH_CONTROL_BASE, datapath_word_lut_continuous)
 
-
-
-
-# Okay, now let's try writing to the DAC lookup table remotely!
-#if(test_LUT_write == True):
-#    cDataType = ctypes.c_uint * 65536
-#    cData     = cDataType()
-#    print("Writing downward ramp to LUT!")
-#    for i in range(0, 65536): # Reverse ramp...
-#        cData[i] = (i << 16 | (65535 - i))
-#    
-#    client.reg_write(DATAPATH_CONTROL_BASE, datapath_word_lut_continuous) 
-#    
-#    client.reg_write(CONTROL_BASE, 0x00000020) # Enable writing from blob side...
-#    client.reg_write_LUT(LUT_ADDR_DATA_BASE, 65535, cData)
-#    client.reg_write(CONTROL_BASE, 0x00000000) # Disable writing from blob side...
-#    print("Done writing to LUT! Hope it went okay!")
 
 
 
