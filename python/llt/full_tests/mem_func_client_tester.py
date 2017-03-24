@@ -4,11 +4,13 @@
 SoCkit network communication tester. This script exercises all of the functionality
 of the mem_func_client_2 / mem_func_daemon_2 pair, using both "dummy"
 functions that do not require any interaction with the FPGA side of the SoC,
-as well as "real" functions that assume that the cmos_32bit_capture program
-is loaded into the FPGA. A DC2512 and test jig that apples an 18-bit ramp
-to the data input is assumed, although the ramp generator internal to the
-FPGA is preferred because only a clock needs to be applied.
+as well as "real" functions that assume that EITHER:
 
+1) The cmos_32bit_capture program is loaded into the FPGA, and the A DC2511 or DC2512
+is installed, and a clock is applied.
+-or-
+2) A DC2390 is installed (which has an onboard clock generator and takes
+power directly from the SoCkit.)
 
 
     Copyright (c) 2015, Linear Technology Corp.(LTC)
