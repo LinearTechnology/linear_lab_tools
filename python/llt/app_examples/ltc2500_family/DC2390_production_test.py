@@ -17,7 +17,7 @@ from time import sleep
 from matplotlib import pyplot as plt
 # Okay, now the big one... this is the module that communicates with the SoCkit
 from llt.common.mem_func_client_2 import MemClient
-from DC2390_functions import *
+from llt.utils.DC2390_functions import *
 from llt.utils.sockit_system_functions import *
 
 HOST = sys.argv[1] if len(sys.argv) == 2 else '127.0.0.1'
@@ -36,7 +36,7 @@ FOS_TAU = 0x8000
 FOS_GAIN = 0x0002
 FOS_CLOCK = 4
 
-SYSTEM_CLOCK_DIVIDER = 199
+SYSTEM_CLOCK_DIVIDER = 99
 LUT_NCO_DIVIDER = 0xFFFF # 0xFFFF for divide by 1
 NUM_SAMPLES = 65536 #131072 #8192
 
@@ -61,7 +61,7 @@ print("Tuning Word:" + str(tuning_word))
 print('Starting client')
 client = MemClient(host=HOST)
 #First thing's First!! Configure clocks...
-LTC6954_configure_default(client)
+LTC6954_configure(client)
 #Read FPGA type and revision
 rev_id = client.reg_read(REV_ID_BASE)
 type_id = rev_id & 0x0000FFFF
@@ -80,7 +80,7 @@ client.reg_write(PULSE_LOW_BASE, PULSE_LOW)
 client.reg_write(PULSE_HIGH_BASE, PULSE_HIGH)
 client.reg_write(PULSE_VAL_BASE, PULSE_VAL)
 
-LTC6954_configure_default(client)
+LTC6954_configure(client)
 
 #datapath fields: lut_addr_select, dac_a_select, dac_b_select[1:0], fifo_data_select
 #lut addresses: 0=lut_addr_counter, 1=dac_a_data_signed, 2=0x4000, 3=0xC000
@@ -113,17 +113,28 @@ pltnum = 1
 print ('Okay, now lets blink some lights and run some tests!!')
 print ('First test - sweep a couple of sinewaves on ADC B')
 
-# print ('run # %d ' % i)
-client.reg_write(LED_BASE, (N << 16) | 0x0F) #Was 234
+# Set filter mode / DF. With fs = 500ksps, DF=512, the first lobe of a SINCx filter
+# will be at 1.5 * 500k / 512 = 1464.84375kHz.
+# SINC1 should be down 9dB, SINC4 should be down 54dB
+
+ltc2500_cfg_led_on  = (((LTC2500_DF_64 | LTC2500_SINC4_FILT)) | 0x03) # | (LTC2500_N_FACTOR << 16)
+ltc2500_cfg_led_off = (((LTC2500_DF_64 | LTC2500_SINC4_FILT))       )# | (LTC2500_N_FACTOR << 16)
+
+client.reg_write(LED_BASE, ltc2500_cfg_led_on)
 sleep(0.1)
-client.reg_write(LED_BASE, (N << 16) | 0x00) #Was 234
+client.reg_write(LED_BASE, ltc2500_cfg_led_off)
 sleep(0.1)
+
 
 
 client.reg_write(TUNING_WORD_BASE, tuning_word) # Sweep NCO!!!
 # Capture a sine wave
-client.reg_write(DATAPATH_CONTROL_BASE, DC2390_FIFO_ADCA_NYQ) # First capture ADC A
-data = sockit_ltc2500_to_signed32(sockit_capture(client, NUM_SAMPLES, trigger = 0, timeout = 0.0))
+client.reg_write(DATAPATH_CONTROL_BASE, DC2390_FIFO_ADCA_NYQ) # First capture ADC A, Nyquist
+data = sockit_ltc2500_to_signed32(sockit_capture(client, NUM_SAMPLES, trigger = TRIG_NOW, timeout = 1.0))
+client.reg_write(DATAPATH_CONTROL_BASE, DC2390_FIFO_ADCA_FIL) # First capture ADC A, Filtered
+datafilt = sockit_uns32_to_signed32(sockit_capture(client, NUM_SAMPLES / 8, trigger = TRIG_NOW, timeout = 1.0))
+
+
 data_nodc = data - np.average(data)
 #data_nodc *= np.blackman(NUM_SAMPLES)
 fftdata = np.abs(np.fft.fft(data_nodc)) / NUM_SAMPLES
@@ -132,13 +143,20 @@ plt.figure(pltnum)
 pltnum +=1
 plt.subplot(2, 1, 1)
 plt.plot(data)
+plt.plot(datafilt)
 plt.subplot(2, 1, 2)
 plt.plot(fftdb)
+
+atten = 20.0 * np.log10(np.std(datafilt) / np.std(data))
+print("Filtered data attenuation: " + str(atten) + "dB")
 
 data_for_pscopeA = data_nodc / 256.0
 
-client.reg_write(DATAPATH_CONTROL_BASE, DC2390_FIFO_ADCB_NYQ) # First capture ADC B
-data = sockit_ltc2500_to_signed32(sockit_capture(client, NUM_SAMPLES, trigger = 0, timeout = 0.0))
+client.reg_write(DATAPATH_CONTROL_BASE, DC2390_FIFO_ADCB_NYQ) # First capture ADC B, Nyquist
+data = sockit_ltc2500_to_signed32(sockit_capture(client, NUM_SAMPLES, trigger = TRIG_NOW, timeout = 1.0))
+client.reg_write(DATAPATH_CONTROL_BASE, DC2390_FIFO_ADCB_FIL) # First capture ADC A, Filtered
+datafilt = sockit_uns32_to_signed32(sockit_capture(client, NUM_SAMPLES / 8, trigger = TRIG_NOW, timeout = 1.0))
+
 data_nodc = data - np.average(data)
 #data_nodc *= np.blackman(NUM_SAMPLES)
 fftdata = np.abs(np.fft.fft(data_nodc)) / NUM_SAMPLES
@@ -147,8 +165,12 @@ plt.figure(pltnum)
 pltnum +=1
 plt.subplot(2, 1, 1)
 plt.plot(data)
+plt.plot(datafilt)
 plt.subplot(2, 1, 2)
 plt.plot(fftdb)
+
+atten = 20.0 * np.log10(np.std(datafilt) / np.std(data))
+print("Filtered data attenuation: " + str(atten) + "dB")
 
 data_for_pscopeB = data_nodc / 256.0
 
@@ -156,7 +178,7 @@ data_for_pscopeB = data_nodc / 256.0
 save_for_pscope("pscope_DC2390.adc",24 ,True, NUM_SAMPLES, "2390", "2500",
                 data_for_pscopeA, data_for_pscopeB)
 
-
+Linduino_Loopback_test(client)
 
 ## Okay, here goes!! Let's try to write into the LUT:
 #print("Writing out to LUT!")
