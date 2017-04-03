@@ -75,10 +75,7 @@ print alt_dot_product(c, d)
 
 
 
-zero_vector = np.ndarray(shape=(1024), dtype=complex) # Make a complex vector
-#for i in range(0, 1024):
-#    zero_vector[i] = 0 + 0j
-    
+zero_vector = np.ndarray(shape=(1024), dtype=complex) # Make a complex vector    
 xcorr = zero_vector
 
 '''############################'''
@@ -102,6 +99,8 @@ path_a_noise_fft_avg = zeros(num_points)
 path_b_noise_fft_avg = zeros(num_points)
 xcorr_avg = zeros(num_points)
 
+zero_vector = np.ndarray(shape=(num_points), dtype=complex) # Make a complex vector    
+xcorr = zero_vector
 
 
 for j in range(0, naverages):
