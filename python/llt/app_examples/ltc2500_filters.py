@@ -190,8 +190,13 @@ filt_flat_resp_mag_db = 20*np.log10(abs(filt_flat_resp_mag))
 haxis = np.linspace(0.0, FS, 2**20) # Horizontal axis
 
 # Plot frequency response, linear frequency axis
-lw = 4
+lw = 3
 plt.figure(2)
+plt.title("LTC2500-32 filter responses (DF " + DF_info.DF_txt + ")")
+plt.xlabel('Frequency (Hz)')
+plt.ylabel('Rejection (dB)')
+plt.axis([0, 16400, -100, 10])
+plt.show()
 plt.plot(haxis, filt_sinc1_resp_mag_db, linewidth=lw, color="red", zorder=1)
 plt.plot(haxis, filt_sinc2_resp_mag_db, linewidth=lw, color="orange",  zorder=1)
 plt.plot(haxis, filt_sinc3_resp_mag_db, linewidth=lw, color="green",  zorder=1)
@@ -200,11 +205,7 @@ plt.plot(haxis, filt_ssinc_resp_mag_db, linewidth=lw, color="purple",  zorder=1)
 plt.plot(haxis, filt_flat_resp_mag_db, linewidth=lw, color="black", zorder=1)
 
 
-plt.title("LTC2500-32 filter responses (DF " + DF_info.DF_txt + ")")
-plt.xlabel('Frequency (Hz)')
-plt.ylabel('Rejection (dB)')
-plt.axis([0, 16400, -100, 10])
-plt.show()
+
 
 
 
