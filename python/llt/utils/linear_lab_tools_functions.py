@@ -98,6 +98,13 @@ def upsample_zero_stuff(data, upsample_factor):
     for i in range (0, len(data)):
         upsample_data[upsample_factor*i] = data[i]
     return upsample_data
+	
+def downsample(data, downsample_factor):
+    # Starting with zeros makes things easy :)
+    downsample_data = np.zeros(len(data) / downsample_factor)
+    for i in range (0, len(downsample_data)):
+        downsample_data[i] = data[i * downsample_factor]
+    return downsample_data
 
 
 def linecount(fname): # A handy functon to count lines in a file.

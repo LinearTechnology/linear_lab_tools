@@ -76,31 +76,38 @@ ADC = 'U1'
 DF_info = DF256
 
 # UN-comment one to Select filter type.
-#FT_info = Filt_Type_information.FTSINC1
-#FT_info = Filt_Type_information.FTSINC2
-#FT_info = Filt_Type_information.FTSINC3
-#FT_info = Filt_Type_information.FTSINC4
-FT_info = FTSSINC
-#FT_info = Filt_Type_information.FT_FLAT
+#FT_info = FTSINC1
+#FT_info = FTSINC2
+#FT_info = FTSINC3
+FT_info = FTSINC4
+#FT_info = FTSSINC
+#FT_info = FT_FLAT
 
 # Set sample depth, for each frequency that is tested
 NUM_SAMPLES = 8192
 # Number of frequencies to plot
 NUM_FREQS = 64
 
-filt = []
+bins_per_point = 2
+
 filename = "../../../../common/ltc25xx_filters/" + FT_info.FT_txt + "_" + DF_info.DF_txt + ".txt"
 filelength = linecount(filename)
+filt = np.ndarray(filelength, dtype=float)
 print ("reading " + str(filelength) + " coefficients from file " + filename)
 # Read in coefficients from files
 with open(filename, 'r') as infile:
     for i in range(0, filelength):
         instring = infile.readline()
-        filt.append(float(instring))
+        filt[i] = float(instring)
 print('done reading filter coefficients!')
 
+filt /= sum(filt) # Normalize to unity gain
+filt_resp_full = freqz_by_fft_numpoints(filt, 2 ** 20)
 
-filt_resp = freqz_by_fft_numpoints(filt, 2 ** 20)
+filt_resp_full_db = 20 * np.log10(abs(filt_resp_full))
+
+filt_resp = downsample(filt_resp_full, 128*bins_per_point)
+filt_resp_db = 20 * np.log10(abs(filt_resp))
 
 
 # Plot out first bin time domain data, count bits for this point. Useful
@@ -120,8 +127,8 @@ SYSTEM_CLOCK_DIVIDER = 99 # Divide by 100, 500ksps Nyquist rate
 ###############################################################################
 # Global Constants
 ###############################################################################
-
-LUT_NCO_DIVIDER = 0xFFFF # NCO updates every cycle
+dac_div = 128 # DAC sample rate divisor, from master_clock
+LUT_NCO_DIVIDER = 0x10000 - dac_div # NCO updates every cycle
 nco_word_width = 32
 
 ###############################################################################
@@ -171,7 +178,8 @@ sleep(0.1)
 
 
 # Sweep the DAC freq and measure the filter respose
-filter_shape = []
+filt_shape_measured = []
+filt_shape_ideal = []
 freq_bin = []
 
 fig1 = plt.figure(1)
@@ -185,25 +193,27 @@ mng = plt.get_current_fig_manager()
 #mng.window.showMaximized()
 plt.ion() # Go interactive...
 
+sample_rate = master_clock / (SYSTEM_CLOCK_DIVIDER + 1) # 250ksps for 50M clock, 200 clocks per sample
+dac_sample_rate = master_clock / dac_div
+
+haxis = np.linspace(0.0, sample_rate, NUM_SAMPLES) # Horizontal axis, Hz
+
+lw = 4
+
 
 for x in range(0, NUM_FREQS):
     print("Data point: " + str(x))
     # Calculate the NCO to coherent bin
-    bin_number = (x+1)*8 # Number of cycles over the time record
-    bin_number = (x+1)*1 # Number of cycles over the time record
+    bin_number = (x + 1) * bins_per_point
     
-    # Produce different bin ranges based on DF
-    if DF_info.DF == 4:
-        bin_number *= 8 
-    elif DF_info.DF == 8:
-        bin_number *= 4 
-    elif DF_info.DF == 16:
-        bin_number *= 2
     
-    sample_rate = master_clock / (SYSTEM_CLOCK_DIVIDER + 1) # 250ksps for 50M clock, 200 clocks per sample
     cycles_per_sample = float(bin_number) / float(NUM_SAMPLES)
+    hz_per_bin = sample_rate / NUM_SAMPLES
+    sine_frequency = bin_number * hz_per_bin
+    
     cycles_per_dac_sample = cycles_per_sample / (SYSTEM_CLOCK_DIVIDER + 1)
     tuning_word = int(cycles_per_dac_sample * 2**nco_word_width)
+    tuning_word = int(2**nco_word_width * sine_frequency / dac_sample_rate)
     print("Tuning Word:" + str(tuning_word))
     print("Bin Number:" + str(bin_number) + " / " + str(NUM_SAMPLES/2))
     freq_bin.append(bin_number)
@@ -221,27 +231,37 @@ for x in range(0, NUM_FREQS):
     data -= np.average(data)
     
     # Apply windowing to data    
-    data = data * np.blackman(NUM_SAMPLES)    
+#    data = data * np.blackman(NUM_SAMPLES)    
     
     # Convert time domain data to frequncy domain
     fftdata = np.abs(np.fft.fft(data))
+    rms = np.std(data)
     
     if x == 0:
         max_amp = np.amax(fftdata)
+        max_rms = np.std(data)
     
     # Convert to dB
     fftdb = 20*np.log10(fftdata / max_amp)
-    amplitude = np.amax(fftdb[5:NUM_SAMPLES/2-1])
+    rmsdb = 20*np.log10(rms / max_rms)
+
+# Choose one method
+#    amplitude = np.amax(fftdb)
+    amplitude = rmsdb
+    
     print("Amplitude of filtered data: " + str(amplitude))
-    filter_shape.append(amplitude)
+    filt_shape_measured.append(amplitude)
+    filt_shape_ideal.append(filt_resp_full_db[(x+1) * 256 ])
 
     plt.cla()
     plt.title('LTC25xx Filter Shape')
     plt.xlabel("Bin")
     plt.ylabel("dB")
 
-    plt.plot(freq_bin, filter_shape, marker='o', linestyle='-', color="green")
+    plt.plot(haxis[1:x+2], filt_shape_measured, marker='o',markersize=15, linestyle='None', color="red")
+    plt.plot(haxis[1:x+2], filt_shape_ideal, marker='.', linestyle='-', linewidth=lw, color="blue")
     plt.show()
+    plt.axis([0, haxis[x+2], -100, 10])
     plt.pause(0.0001) # Small delay
 
 
@@ -269,7 +289,7 @@ for x in range(0, NUM_FREQS):
 
 # Plot the results
 #plt.figure(1)
-#plt.plot(freq_bin,filter_shape)
+#plt.plot(freq_bin,filt_shape_measured)
 #plt.title('LTC2512 Filter Shape')
 #plt.xlabel("Bin")
 #plt.ylabel("dB")
