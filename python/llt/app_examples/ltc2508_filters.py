@@ -168,20 +168,22 @@ sample_rate = 1000000.0
 bin_width = sample_rate / len(ssinc_256_mag)
 print ("bin width: " + str(bin_width))
 print ("1kHz bin: " + str(1000.0 / bin_width))
-print ("1kHz bin: " + str(2000.0 / bin_width))
+print ("1kHz bin: " + str(5000.0 / bin_width))
 
 wide_ssinc_256_mag = np.concatenate((ssinc_256_mag, ssinc_256_mag))
 first_order_response = np.ndarray(len(wide_ssinc_256_mag), dtype=float)
 second_order_response = np.ndarray(len(wide_ssinc_256_mag), dtype=float)
 cutoff_1st = 1000.0 / bin_width# 1000.0 # Bin number
-cutoff_2nd = 1000.0 / bin_width# 2000.0
+cutoff_2nd = 5000.0 / bin_width# 2000.0
 for i in range(0, len(wide_ssinc_256_mag)): # Generate first order response for each frequency in wide response
-    first_order_response[i] = 1.0 / (1.0 + (i/cutoff_1st)**2.0)**0.5 # Magnitude = 1/SQRT(1 + (f/fc)^2)
-    second_order_response[i] = 1.0 / (1.0 + (i/cutoff_2nd)**4.0)**0.5 # Magnitude = 1/SQRT(1 + (f/fc)^4)
+    first_order_response[i] = 1.0 / (1.0 + (i * bin_width /cutoff_1st)**2.0)**0.5 # Magnitude = 1/SQRT(1 + (f/fc)^2)
+    second_order_response[i] = 1.0 / (1.0 + (i * bin_width /cutoff_2nd)**4.0)**0.5 # Magnitude = 1/SQRT(1 + (f/fc)^4)
 
 
 
-x = np.linspace(0, len(wide_ssinc_256_mag) - 1, num=len(wide_ssinc_256_mag))
+# Create horizontal axis. The "wide" filter response represents DC to 2 x the sample rate.
+lw = 3
+x = np.linspace(0, (sample_rate * 2) - 1, num=len(wide_ssinc_256_mag))
 plt.figure(3)
 plt.title("First image of DF256 filter, along with analog AAF filter response")
 plt.axis([200, 0.75*len(wide_ssinc_256_mag), -150, 0])
@@ -190,11 +192,26 @@ plt.xlabel("Frequency (Hz)")
 #plt.loglog(wide_ssinc_256_mag)
 #plt.loglog(first_order_response)
 #plt.loglog(second_order_response)
-plt.semilogx(x, 20*np.log10(wide_ssinc_256_mag))
-plt.semilogx(x, 20*np.log10(first_order_response))
-plt.semilogx(x, 20*np.log10(second_order_response))
+
+wide_ssinc_256_mag_db = 20*np.log10(wide_ssinc_256_mag)
+first_order_response_db = 20*np.log10(first_order_response)
+second_order_response_db = 20*np.log10(second_order_response)
+
+plt.semilogx(x, wide_ssinc_256_mag_db, linewidth=lw, color="blue")
+plt.semilogx(x, first_order_response_db, linewidth=lw, color="green")
+plt.semilogx(x, second_order_response_db, linewidth=lw, color="red")
 #plt.loglog(np.multiply(wide_ssinc_256_mag, second_order_response))
-plt.tight_layout()
+#plt.tight_layout()
+
+# Write out to a file, for video shoot
+
+with open("aaf_design_example.csv", "w") as outfile:
+    for i in range(0, len(wide_ssinc_256_mag), 128):
+        outfile.write(str(x[i]) + "," +str(wide_ssinc_256_mag_db[i]) + "," +str(second_order_response_db[i]) + "\n")
+
+
+
+
 
 # Let's get a feel for what exactly each output data point represents. Each data point
 # is a weighted sum of samples from the SAR ADC, with weightings according to the
@@ -264,30 +281,34 @@ plt.show()
 # but the EFFECTIVE noise bandwidth is what we're after.
 # Next, we'll double check by actually integrating the filter's noise response.
 
-filter2check = ssinc_16384 # Choose which filter to check...
-filtermag2check = ssinc_16384_mag # And its magnitude response
-numpoints = 2**20 # Start with a million noisy data points, RMS = 1.0
-noisydata = np.random.normal(loc=0, scale=1.0, size=numpoints)
-rms_noise = np.std(noisydata) # Actual noise will vary a bit... double-check
-print("RMS noise of original data: " + str(rms_noise))
-filtered_data_16 = np.convolve(filter2check, noisydata, 'valid') # Filter the data
-filtered_noise = np.std(filtered_data_16) # Find RMS noise of filtered data
-print("RMS noise of filtered data: " + str(filtered_noise))
-print("noise was reduced by a factor of " + str(filtered_noise/rms_noise))
-print("Effective bandwidth of filter: " + str((filtered_noise/rms_noise)**2.0))
-# Now let's integrate the filter's magnitude response. Dig into the function
-# definition for details, but it basically squares the response, integrates,
-# then takes the square-root at each point. The second argument is the
-# bandwidth that each point represents, so we'll normalize to unity.
+# This takes a long time to run, so make it easy to switch this off
+run_noise_reduction_test = False
 
-integral = lltf.integrate_psd(filtermag2check, 1.0/len(filtermag2check))
-plt.figure(7)
-plt.title("Integrated Noise")
-plt.plot(integral)
-plt.show()
-# The last element is the total noise that "gets through" the filter
-enbw = integral[(len(integral))-1] ** 2.0
-print("Effective bandwidth by integrating PSD: " + str(enbw))
+if run_noise_reduction_test == True:
+    filter2check = ssinc_16384 # Choose which filter to check...
+    filtermag2check = ssinc_16384_mag # And its magnitude response
+    numpoints = 2**20 # Start with a million noisy data points, RMS = 1.0
+    noisydata = np.random.normal(loc=0, scale=1.0, size=numpoints)
+    rms_noise = np.std(noisydata) # Actual noise will vary a bit... double-check
+    print("RMS noise of original data: " + str(rms_noise))
+    filtered_data_16 = np.convolve(filter2check, noisydata, 'valid') # Filter the data
+    filtered_noise = np.std(filtered_data_16) # Find RMS noise of filtered data
+    print("RMS noise of filtered data: " + str(filtered_noise))
+    print("noise was reduced by a factor of " + str(filtered_noise/rms_noise))
+    print("Effective bandwidth of filter: " + str((filtered_noise/rms_noise)**2.0))
+    # Now let's integrate the filter's magnitude response. Dig into the function
+    # definition for details, but it basically squares the response, integrates,
+    # then takes the square-root at each point. The second argument is the
+    # bandwidth that each point represents, so we'll normalize to unity.
+    
+    integral = lltf.integrate_psd(filtermag2check, 1.0/len(filtermag2check))
+    plt.figure(7)
+    plt.title("Integrated Noise")
+    plt.plot(integral)
+    plt.show()
+    # The last element is the total noise that "gets through" the filter
+    enbw = integral[(len(integral))-1] ** 2.0
+    print("Effective bandwidth by integrating PSD: " + str(enbw))
 
 
 print "My program took", (time.time() - start_time), " seconds to run"
