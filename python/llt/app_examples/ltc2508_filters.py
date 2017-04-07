@@ -185,7 +185,7 @@ for i in range(0, len(wide_ssinc_256_mag)): # Generate first order response for 
 lw = 3
 x = np.linspace(0, (sample_rate * 2) - 1, num=len(wide_ssinc_256_mag))
 plt.figure(3)
-plt.title("First image of DF256 filter, along with analog AAF filter response")
+plt.title("AAF Filter design, SSINC 256, 5kHz 2-pole analog LPF")
 plt.axis([200, 0.75*len(wide_ssinc_256_mag), -150, 0])
 plt.ylabel("Rejection (dB)")
 plt.xlabel("Frequency (Hz)")
@@ -198,7 +198,7 @@ first_order_response_db = 20*np.log10(first_order_response)
 second_order_response_db = 20*np.log10(second_order_response)
 
 plt.semilogx(x, wide_ssinc_256_mag_db, linewidth=lw, color="blue")
-plt.semilogx(x, first_order_response_db, linewidth=lw, color="green")
+#plt.semilogx(x, first_order_response_db, linewidth=lw, color="green")
 plt.semilogx(x, second_order_response_db, linewidth=lw, color="red")
 #plt.loglog(np.multiply(wide_ssinc_256_mag, second_order_response))
 #plt.tight_layout()
@@ -206,7 +206,7 @@ plt.semilogx(x, second_order_response_db, linewidth=lw, color="red")
 # Write out to a file, for video shoot
 
 with open("aaf_design_example.csv", "w") as outfile:
-    for i in range(0, len(wide_ssinc_256_mag), 128):
+    for i in range(0, len(wide_ssinc_256_mag), 64):
         outfile.write(str(x[i]) + "," +str(wide_ssinc_256_mag_db[i]) + "," +str(second_order_response_db[i]) + "\n")
 
 

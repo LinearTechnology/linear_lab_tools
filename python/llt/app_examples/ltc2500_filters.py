@@ -187,7 +187,18 @@ filt_sinc4_resp_mag_db = 20*np.log10(abs(filt_sinc4_resp_mag))
 filt_ssinc_resp_mag_db = 20*np.log10(abs(filt_ssinc_resp_mag))
 filt_flat_resp_mag_db = 20*np.log10(abs(filt_flat_resp_mag))
 
+# Make vector of frequencies to plot / save against
 haxis = np.linspace(0.0, FS, 2**20) # Horizontal axis
+
+with open("LTC2500_filter_responses.csv", "w") as outfile:
+    for i in range(0, 16400):
+        outfile.write(str(haxis[i]) + "," + str(filt_sinc1_resp_mag_db[i]) + "," + str(filt_sinc2_resp_mag_db[i]) + ","  + str(filt_sinc3_resp_mag_db[i]) + ","
+                                          + str(filt_sinc4_resp_mag_db[i]) + "," + str(filt_ssinc_resp_mag_db[i]) + "," + str(filt_flat_resp_mag_db[i])  + "\n")
+
+
+
+
+
 
 # Plot frequency response, linear frequency axis
 lw = 3
