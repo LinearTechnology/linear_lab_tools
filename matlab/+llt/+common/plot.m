@@ -60,5 +60,5 @@ freq_domain_magnitude_db = 20*log10(freq_domain_magnitude/adc_amplitude);
 if verbose; fprintf('Plotting channel %d frequency domain.\n', channel); end
 
 figure(2*channel+2);
-title(sprintf('Ch %d: FFT', channel))
 plot(freq_domain_magnitude_db);
+title(sprintf('Ch %d: FFT', channel))
