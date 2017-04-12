@@ -32,7 +32,10 @@ function varargout = scatter(data, num_channels)
 if mod(length(data), num_channels) ~= 0
     error('Scatter:BadNChannels', 'nChannels doesn''t divide data length');
 end
-
+if num_channels == 1
+    varargout{1} = data;
+    return;
+end
 channels = cell(1, num_channels);
 for i = 1:num_channels
     channels{i} = data(i:num_channels:end);
