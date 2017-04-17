@@ -43,11 +43,11 @@ do_demo = false;
 if nargout == 0
     if ~exist('num_samples', 'var'); num_samples = 8 * 1024; end
     if ~exist('df', 'var'); df = 32; end
-    if ~exist('verify', 'var'); verify = true; end
+    if ~exist('verify', 'var'); verify = false; end
     % Note: Changing is_distributed_rd from false to true casus
     % one bad capture due to DC890 limitation.
-    if ~exist('is_distributed_rd', 'var'); is_distributed_rd = true; end
-    if ~exist('is_filtered_data', 'var'); is_filtered_data = true; end
+    if ~exist('is_distributed_rd', 'var'); is_distributed_rd = false; end
+    if ~exist('is_filtered_data', 'var'); is_filtered_data = false; end
     do_demo = true;
 end
 if ~exist('is_verbose', 'var'); is_verbose = do_demo; end

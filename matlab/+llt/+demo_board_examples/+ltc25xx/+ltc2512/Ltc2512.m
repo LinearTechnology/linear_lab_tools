@@ -138,8 +138,8 @@ classdef Ltc2512 < llt.common.Dc890
         function data = get_data_and_check_df(self, data)
             % figure out the expected metadata
             df_code = self.df_map(self.df);
-            check = bitshift(bitor(bitshift(df_code + 2, 4), 6), 24);
-            check_mask = 4278190080; % 0xFF000000
+            check = bitor(bitshift(df_code + 2, 4), 6);
+            check_mask = 255; % 0xFF
             
             % check metadata
             for d = data
