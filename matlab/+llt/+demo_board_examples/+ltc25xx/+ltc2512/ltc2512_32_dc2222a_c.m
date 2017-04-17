@@ -1,4 +1,4 @@
-% DC2222A-B / LTC2508 Interface Example
+% DC2222A-C / LTC2512 Interface Example
 %
 % This program demonstrates how to communicate with the LTC2320-16 demo board
 % using Matlab. Examples are provided for reading data captured by the ADC,
@@ -42,7 +42,7 @@ import llt.demo_board_examples.ltc25xx.ltc2512.Ltc2512
 do_demo = false;
 if nargout == 0
     if ~exist('num_samples', 'var'); num_samples = 8 * 1024; end
-    if ~exist('df', 'var'); df = 256; end
+    if ~exist('df', 'var'); df = 32; end
     if ~exist('verify', 'var'); verify = true; end
     % Note: Changing is_distributed_rd from false to true casus
     % one bad capture due to DC890 limitation.

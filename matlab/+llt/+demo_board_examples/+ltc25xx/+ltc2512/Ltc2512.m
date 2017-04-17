@@ -47,8 +47,8 @@ classdef Ltc2512 < llt.common.Dc890
     methods
         function self = Ltc2512(lcc, df, verify, is_distributed_rd, is_filtered_data, verbose)
             if ~exist('verbose', 'var'); verbose = false; end
-            self = self@llt.common.Dc890(lcc, 'DC2222A-B', 'CMOS', 1, false, ...
-                32, 32, true, [], verbose);
+            self = self@llt.common.Dc890(lcc, 'DC2222A-C', 'CMOS', 1, false, ...
+                24, 32, true, [], verbose);
             self.df_map = containers.Map([4, 8, 16, 32],[0,1,2,3]);
             self = self.config_cpld(df, verify, is_distributed_rd, is_filtered_data);
         end
@@ -148,7 +148,7 @@ classdef Ltc2512 < llt.common.Dc890
                 end
             end
             
-            data = llt.common.fix_data(bitshift(raw_data, -8), 24, 24, true);
+            data = llt.common.fix_data(bitshift(data, -8), 24, 24, true);
         end
         
         function [data, cm_data] = get_all_data(~, raw_data)
