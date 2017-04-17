@@ -185,9 +185,9 @@ freq_bin = []
 fig1 = plt.figure(1)
 plt.subplot(1, 1, 1)
 
-plt.title('LTC25xx Filter Shape')
-plt.xlabel("Bin")
-plt.ylabel("dB")
+plt.title('LTC2500 SINC4, DF256 Filter Response')
+plt.xlabel("Frequency (Hz)")
+plt.ylabel("Attenuation (dB)")
 plt.xlim([0,NUM_FREQS])
 mng = plt.get_current_fig_manager()
 #mng.window.showMaximized()
@@ -254,9 +254,9 @@ for x in range(0, NUM_FREQS):
     filt_shape_ideal.append(filt_resp_full_db[(x+1) * 256 ])
 
     plt.cla()
-    plt.title('LTC25xx Filter Shape')
-    plt.xlabel("Bin")
-    plt.ylabel("dB")
+    plt.title('LTC2500 SINC4, DF256 Filter Response')
+    plt.xlabel("Frequency (Hz)")
+    plt.ylabel("Attenuation (dB)")
 
     plt.plot(haxis[1:x+2], filt_shape_measured, marker='o',markersize=15, linestyle='None', color="red")
     plt.plot(haxis[1:x+2], filt_shape_ideal, marker='.', linestyle='-', linewidth=lw, color="blue")

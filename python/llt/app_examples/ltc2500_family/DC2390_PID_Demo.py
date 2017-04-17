@@ -17,7 +17,7 @@ from time import sleep
 from matplotlib import pyplot as plt
 # Okay, now the big one... this is the module that communicates with the SoCkit
 from llt.common.mem_func_client_2 import MemClient
-from DC2390_functions import *
+from llt.utils.DC2390_functions import *
 from llt.utils.sockit_system_functions import *
 
 # Get the host from the command line argument. Can be numeric or hostname.
@@ -27,10 +27,6 @@ HOST = sys.argv[1] if len(sys.argv) == 2 else '127.0.0.1'
 # Override
 #HOST = '10.54.6.24'
 #HOST = '192.168.1.231'
-
-FOS_TAU = 0x8000
-FOS_GAIN = 0x0002
-FOS_CLOCK = 4
 
 #SYSTEM_CLOCK_DIVIDER = 199
 SYSTEM_CLOCK_DIVIDER = 399
@@ -45,6 +41,12 @@ ADC_B_CAPTURE = 0x00
 CHANNEL = ADC_B_CAPTURE
 
 N = 7 #Number of samples to average (LTC2380-24)
+
+# Pulse generator parameters, input signal to the PID controller
+PULSE_LOW = 20000
+PULSE_HIGH = 100000
+PULSE_VAL = 50000
+
 
 nco_word_width = 32
 master_clock = 50000000
@@ -114,51 +116,56 @@ sleep(0.1)
 client.reg_write(TUNING_WORD_BASE, tuning_word) # Sweep NCO!!!
 
 
-# Parameters for PID example
-PID_KP = 0x0010
-PID_KI = 0x0040
-PID_KD = 0x0050
-
-PULSE_LOW = 20000
-PULSE_HIGH = 100000
-PULSE_VAL = 25000
-
-
-
-client.reg_write(PULSE_LOW_BASE, PULSE_LOW)
-client.reg_write(PULSE_HIGH_BASE, PULSE_HIGH)
-client.reg_write(PULSE_VAL_BASE, PULSE_VAL)
-
-client.reg_write(PID_KP_BASE, PID_KP)
-client.reg_write(PID_KI_BASE, PID_KI)
-client.reg_write(PID_KD_BASE, PID_KD)
-
-
-
-
-#PID controller
-client.reg_write(DATAPATH_CONTROL_BASE, datapath_word_pid)
-#data = capture(client, NUM_SAMPLES, trigger = 0, timeout = 0.0)
-data = sockit_ltc2500_to_signed32(sockit_capture(client, NUM_SAMPLES, trigger = TRIG_NOW, timeout = 1.0))
 plt.figure(pltnum)
-plt.plot(data, color="red")
+plt.ion() #Go interactive!
 
-PID_KP = 0x0010
-PID_KI = 0x0005
-PID_KD = 0x0005
-client.reg_write(PID_KP_BASE, PID_KP)
-client.reg_write(PID_KI_BASE, PID_KI)
-client.reg_write(PID_KD_BASE, PID_KD)
+continuous = True
 
-client.reg_write(DATAPATH_CONTROL_BASE, datapath_word_pid)
-#data = capture(client, NUM_SAMPLES, trigger = 0, timeout = 0.0)
-data = sockit_ltc2500_to_signed32(sockit_capture(client, NUM_SAMPLES, trigger = TRIG_NOW, timeout = 1.0))
-plt.figure(pltnum)
-pltnum +=1
-plt.xlim([0,1500])
-plt.ylim([-0.25e8, 1.25e8])
-plt.plot(data, color="blue")
-plt.show()
+while(True):
+    # Parameters for PID example
+
+    PID_KP = 0x0010
+    PID_KI = 0x0005
+    PID_KD = 0x0005    
+    client.reg_write(PULSE_LOW_BASE, PULSE_LOW)
+    client.reg_write(PULSE_HIGH_BASE, PULSE_HIGH)
+    client.reg_write(PULSE_VAL_BASE, PULSE_VAL)
+    
+    client.reg_write(PID_KP_BASE, PID_KP)
+    client.reg_write(PID_KI_BASE, PID_KI)
+    client.reg_write(PID_KD_BASE, PID_KD)
+    
+    #PID controller
+    client.reg_write(DATAPATH_CONTROL_BASE, datapath_word_pid)
+    #data = capture(client, NUM_SAMPLES, trigger = 0, timeout = 0.0)
+    data1 = sockit_ltc2500_to_signed32(sockit_capture(client, NUM_SAMPLES, trigger = TRIG_NOW, timeout = 1.0))
+    
+    PID_KP = 0x0010
+    PID_KI = 0x0040
+    PID_KD = 0x0050
+
+    client.reg_write(PID_KP_BASE, PID_KP)
+    client.reg_write(PID_KI_BASE, PID_KI)
+    client.reg_write(PID_KD_BASE, PID_KD)
+    
+    client.reg_write(DATAPATH_CONTROL_BASE, datapath_word_pid)
+    #data = capture(client, NUM_SAMPLES, trigger = 0, timeout = 0.0)
+    data2 = sockit_ltc2500_to_signed32(sockit_capture(client, NUM_SAMPLES, trigger = TRIG_NOW, timeout = 1.0))
+    
+    plt.cla()
+    plt.title('PID responses; RED: P=10,I=40,D=50\nBlue: P=10,I=5,D=5')
+    plt.xlabel("Sample Number)")
+    plt.ylabel("ADC code")
+    plt.plot(data1, linewidth=3, color="blue")
+    
+    plt.xlim([0,1000])
+    plt.ylim([-1.0e8, 4.5e8])
+    plt.plot(data2, linewidth=3, color="red")
+    plt.show()
+    plt.pause(0.0001) # Small delay
+    if(continuous == False):
+        break
+    sleep(1.0)
 
 
 ## Okay, here goes!! Let's try to write into the LUT:
