@@ -55,8 +55,8 @@ from llt.utils.DC2390_functions import * # Has filter DF, type information
 import llt.utils.linear_lab_tools_functions as lltf
 
 # Select downsample factor - DF4 to DF16384 (powers of 2)
-# 4, 8, 16, 32 correspond to the LTC2512
-# 256, 1024, 4096, 16384 correspond to the LTC2508
+# 4, 8, 16, 32 correspond to the LTC2512 (Flat passband filter type)
+# 256, 1024, 4096, 16384 correspond to the LTC2508 (SSinc filter type)
 
 DF_info = DF256
 
@@ -75,10 +75,7 @@ FS = 1000000 # Sample rate, for scaling horizontal axis
 
 start_time = time.time();
 
-
-
 # Sort of messy to read one by one, but each filter has a different length...
-
 
 filename = "../../../common/ltc25xx_filters/" + FTSINC1.FT_txt + "_" + DF_info.DF_txt + ".txt"
 filelength = lltf.linecount(filename)
@@ -196,10 +193,6 @@ with open("LTC2500_filter_responses.csv", "w") as outfile:
                                           + str(filt_sinc4_resp_mag_db[i]) + "," + str(filt_ssinc_resp_mag_db[i]) + "," + str(filt_flat_resp_mag_db[i])  + "\n")
 
 
-
-
-
-
 # Plot frequency response, linear frequency axis
 lw = 3
 plt.figure(2)
@@ -207,7 +200,6 @@ plt.title("LTC2500-32 filter responses (DF " + DF_info.DF_txt + ")")
 plt.xlabel('Frequency (Hz)')
 plt.ylabel('Rejection (dB)')
 plt.axis([0, 16400, -100, 10])
-plt.show()
 plt.plot(haxis, filt_sinc1_resp_mag_db, linewidth=lw, color="red", zorder=1)
 plt.plot(haxis, filt_sinc2_resp_mag_db, linewidth=lw, color="orange",  zorder=1)
 plt.plot(haxis, filt_sinc3_resp_mag_db, linewidth=lw, color="green",  zorder=1)
