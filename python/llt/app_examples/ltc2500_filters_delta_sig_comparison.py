@@ -54,151 +54,67 @@ import sys
 from llt.utils.DC2390_functions import * # Has filter DF, type information
 import llt.utils.linear_lab_tools_functions as lltf
 
-# Select downsample factor - DF4 to DF16384 (powers of 2)
-# 4, 8, 16, 32 correspond to the LTC2512
-# 256, 1024, 4096, 16384 correspond to the LTC2508
+start_time = time.time();
 
-DF_info = DF256
-
+# List of DF information
+DF_list = [DF4, DF8, DF16, DF32, DF64, DF128, DF256, DF512, DF1k, DF2k, DF4k, DF8k, DF16k]
 # List of filter type information
 FT_list = [FTSINC1, FTSINC2, FTSINC3, FTSINC4, FTSSINC, FT_FLAT]
 
-# UN-comment one to Select filter type.
-#FT_info = Filt_Type_information.FTSINC1
-#FT_info = Filt_Type_information.FTSINC2
-#FT_info = Filt_Type_information.FTSINC3
-#FT_info = Filt_Type_information.FTSINC4
-FT_info = FTSSINC
-#FT_info = Filt_Type_information.FT_FLAT
-
-FS = 1000000 # Sample rate, for scaling horizontal axis
-
-start_time = time.time();
+FS = 1000000 # Sample rate, for scaling horizontal frequency axis
 
 
+# Read all filter coefficients into a big 2-d list, calculate corresponding
+# magnitude responses, responses in dB. For each of these, the first index
+# represents the filter type, the second index represents the DF. For example:
+# filters[filter type][downsample factor][tap value]
 
-# Sort of messy to read one by one, but each filter has a different length...
+read_files = False
 
+if read_files == True:
+    filters          = [[[] for j in xrange(len(DF_list))] for i in xrange(len(FT_list))]
+    filt_resp_mag    = [[[] for j in xrange(len(DF_list))] for i in xrange(len(FT_list))]
+    filt_resp_mag_db = [[[] for j in xrange(len(DF_list))] for i in xrange(len(FT_list))]
+    ftnum = 0 # Handy numerical index
+    for ft in FT_list:
+        dfnum = 0 # Handy numerical index
+        for df in DF_list:
+            filename = "../../../common/ltc25xx_filters/" + ft.FT_txt + "_" + df.DF_txt + ".txt"
+            filelength = lltf.linecount(filename)
+            filters[ftnum][dfnum] = np.ndarray(filelength, dtype=float)
+            print ("reading " + str(filelength) + " coefficients from file " + filename)
+            with open(filename, 'r') as infile: # Read in coefficients from files
+                for i in range(0, filelength):
+                    instring = infile.readline()
+                    filters[ftnum][dfnum][i] = float(instring)
+            filters[ftnum][dfnum] /= sum(filters[ftnum][dfnum]) # Normalize to unity gain
+            filt_resp_mag[ftnum][dfnum] = lltf.freqz_by_fft_numpoints(filters[ftnum][dfnum], 2 ** 20) # Calculate magnitude response
+            filt_resp_mag_db[ftnum][dfnum] = 20*np.log10(abs(filt_resp_mag[ftnum][dfnum])) # Calculate response in dB
+            dfnum += 1
+        ftnum += 1
+    print ("Done reading in all files, calculating responses!!")
 
-filename = "../../../common/ltc25xx_filters/" + FTSINC1.FT_txt + "_" + DF_info.DF_txt + ".txt"
-filelength = lltf.linecount(filename)
-filt_sinc1 = np.ndarray(filelength, dtype=float)
-print ("reading " + str(filelength) + " coefficients from file " + filename)
-# Read in coefficients from files
-with open(filename, 'r') as infile:
-    for i in range(0, filelength):
-        instring = infile.readline()
-        filt_sinc1[i] = float(instring)
-print("done reading filter coefficients for " + FTSINC1.FT_txt + "!")
-
-filename = "../../../common/ltc25xx_filters/" + FTSINC2.FT_txt + "_" + DF_info.DF_txt + ".txt"
-filelength = lltf.linecount(filename)
-filt_sinc2 = np.ndarray(filelength, dtype=float)
-print ("reading " + str(filelength) + " coefficients from file " + filename)
-# Read in coefficients from files
-with open(filename, 'r') as infile:
-    for i in range(0, filelength):
-        instring = infile.readline()
-        filt_sinc2[i] = float(instring)
-print("done reading filter coefficients for " + FTSINC2.FT_txt + "!")
-
-filename = "../../../common/ltc25xx_filters/" + FTSINC3.FT_txt + "_" + DF_info.DF_txt + ".txt"
-filelength = lltf.linecount(filename)
-filt_sinc3 = np.ndarray(filelength, dtype=float)
-print ("reading " + str(filelength) + " coefficients from file " + filename)
-# Read in coefficients from files
-with open(filename, 'r') as infile:
-    for i in range(0, filelength):
-        instring = infile.readline()
-        filt_sinc3[i] = float(instring)
-print("done reading filter coefficients for " + FTSINC3.FT_txt + "!")
-
-filename = "../../../common/ltc25xx_filters/" + FTSINC4.FT_txt + "_" + DF_info.DF_txt + ".txt"
-filelength = lltf.linecount(filename)
-filt_sinc4 = np.ndarray(filelength, dtype=float)
-print ("reading " + str(filelength) + " coefficients from file " + filename)
-# Read in coefficients from files
-with open(filename, 'r') as infile:
-    for i in range(0, filelength):
-        instring = infile.readline()
-        filt_sinc4[i] = float(instring)
-print("done reading filter coefficients for " + FTSINC4.FT_txt + "!")
-
-filename = "../../../common/ltc25xx_filters/" + FTSSINC.FT_txt + "_" + DF_info.DF_txt + ".txt"
-filelength = lltf.linecount(filename)
-filt_ssinc = np.ndarray(filelength, dtype=float)
-print ("reading " + str(filelength) + " coefficients from file " + filename)
-# Read in coefficients from files
-with open(filename, 'r') as infile:
-    for i in range(0, filelength):
-        instring = infile.readline()
-        filt_ssinc[i] = float(instring)
-print("done reading filter coefficients for " + FTSSINC.FT_txt + "!")
-
-filename = "../../../common/ltc25xx_filters/" + FT_FLAT.FT_txt + "_" + DF_info.DF_txt + ".txt"
-filelength = lltf.linecount(filename)
-filt_flat = np.ndarray(filelength, dtype=float)
-print ("reading " + str(filelength) + " coefficients from file " + filename)
-# Read in coefficients from files
-with open(filename, 'r') as infile:
-    for i in range(0, filelength):
-        instring = infile.readline()
-        filt_flat[i] = float(instring)
-print("done reading filter coefficients for " + FT_FLAT.FT_txt + "!")
-
-
-
-
-filt_sinc1 /= sum(filt_sinc1) #Normalize to unity gain
-filt_sinc2 /= sum(filt_sinc2) #Normalize to unity gain
-filt_sinc3 /= sum(filt_sinc3) #Normalize to unity gain
-filt_sinc4 /= sum(filt_sinc4) #Normalize to unity gain
-filt_ssinc /= sum(filt_ssinc) #Normalize to unity gain
-filt_flat /= sum(filt_flat) #Normalize to unity gain
-print("Done normalizing!")
+# Create filter response of Variable-SINC filter, N=2, to represent the simplest
+# possible filter
+vsinc2 = np.ones(2)
+vsinc2 /= sum(vsinc2) #Normalize to unity gain
+vsinc_resp_mag = lltf.freqz_by_fft_numpoints(vsinc2, 2 ** 20) # Calculate magnitude response
+vsinc_resp_mag_db = 20*np.log10(abs(vsinc_resp_mag)) # Calculate response in dB
 
 # Plot the impulse responses on the same horizontal axis, with normalized
 # amplitude for a better visual picture...
 plt.figure(1)
-plt.title('impulse responses')
-plt.plot(filt_sinc1 / max(filt_sinc1))
-plt.plot(filt_sinc2 / max(filt_sinc2))
-plt.plot(filt_sinc3 / max(filt_sinc3))
-plt.plot(filt_sinc4 / max(filt_sinc4))
-plt.plot(filt_ssinc / max(filt_ssinc))
-plt.plot(filt_flat / max(filt_flat))
+plt.title('SSINC+Flat filters')
+for df in range(0, len(DF_list)):
+    plt.plot(filters[5][df] / max(filters[5][df]))
 plt.xlabel('tap number')
 plt.show()
 
-filt_sinc1_resp_mag = lltf.freqz_by_fft_numpoints(filt_sinc1, 2 ** 20)
-filt_sinc2_resp_mag = lltf.freqz_by_fft_numpoints(filt_sinc2, 2 ** 20)
-filt_sinc3_resp_mag = lltf.freqz_by_fft_numpoints(filt_sinc3, 2 ** 20)
-filt_sinc4_resp_mag = lltf.freqz_by_fft_numpoints(filt_sinc4, 2 ** 20)
-filt_ssinc_resp_mag = lltf.freqz_by_fft_numpoints(filt_ssinc, 2 ** 20)
-filt_flat_resp_mag = lltf.freqz_by_fft_numpoints(filt_flat, 2 ** 20)
-
-
-
-# Calculate response in dB, for later use...
-filt_sinc1_resp_mag_db = 20*np.log10(abs(filt_sinc1_resp_mag))
-filt_sinc2_resp_mag_db = 20*np.log10(abs(filt_sinc2_resp_mag))
-filt_sinc3_resp_mag_db = 20*np.log10(abs(filt_sinc3_resp_mag))
-filt_sinc4_resp_mag_db = 20*np.log10(abs(filt_sinc4_resp_mag))
-filt_ssinc_resp_mag_db = 20*np.log10(abs(filt_ssinc_resp_mag))
-filt_flat_resp_mag_db = 20*np.log10(abs(filt_flat_resp_mag))
 
 # Make vector of frequencies to plot / save against
 haxis = np.linspace(0.0, FS, 2**20) # Horizontal axis
 
-with open("LTC2500_filter_responses.csv", "w") as outfile:
-    for i in range(0, 16400):
-        outfile.write(str(haxis[i]) + "," + str(filt_sinc1_resp_mag_db[i]) + "," + str(filt_sinc2_resp_mag_db[i]) + ","  + str(filt_sinc3_resp_mag_db[i]) + ","
-                                          + str(filt_sinc4_resp_mag_db[i]) + "," + str(filt_ssinc_resp_mag_db[i]) + "," + str(filt_flat_resp_mag_db[i])  + "\n")
-
-
-
-
-
+color_list = ["red","orange"]
 
 # Plot frequency response, linear frequency axis
 lw = 3
@@ -206,16 +122,16 @@ plt.figure(2)
 plt.title("LTC2500-32 filter responses (DF " + DF_info.DF_txt + ")")
 plt.xlabel('Frequency (Hz)')
 plt.ylabel('Rejection (dB)')
-plt.axis([0, 16400, -100, 10])
+#plt.axis([0, 16400, -100, 10])
+plt.axis([100, 500000, -100, 10])
 plt.show()
-plt.plot(haxis, filt_sinc1_resp_mag_db, linewidth=lw, color="red", zorder=1)
-plt.plot(haxis, filt_sinc2_resp_mag_db, linewidth=lw, color="orange",  zorder=1)
-plt.plot(haxis, filt_sinc3_resp_mag_db, linewidth=lw, color="green",  zorder=1)
-plt.plot(haxis, filt_sinc4_resp_mag_db, linewidth=lw, color="blue",  zorder=1)
-plt.plot(haxis, filt_ssinc_resp_mag_db, linewidth=lw, color="purple",  zorder=1)
-plt.plot(haxis, filt_flat_resp_mag_db, linewidth=lw, color="black", zorder=1)
-
-
+plt.semilogx(haxis, vsinc_resp_mag_db, linewidth=lw, color="black", zorder=1)
+plt.semilogx(haxis, filt_resp_mag_db[0][6], linewidth=lw, color="red", zorder=1)
+plt.semilogx(haxis, filt_resp_mag_db[1][6], linewidth=lw, color="orange",  zorder=1)
+plt.semilogx(haxis, filt_resp_mag_db[2][6], linewidth=lw, color="green",  zorder=1)
+plt.semilogx(haxis, filt_resp_mag_db[3][6], linewidth=lw, color="blue",  zorder=1)
+plt.semilogx(haxis, filt_resp_mag_db[4][6], linewidth=lw, color="purple",  zorder=1)
+plt.semilogx(haxis, filt_resp_mag_db[5][6], linewidth=lw, color="black", zorder=1)
 
 
 
