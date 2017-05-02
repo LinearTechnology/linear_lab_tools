@@ -56,7 +56,7 @@ import llt.utils.linear_lab_tools_functions as lltf
 
 start_time = time.time();
 
-# List of DF information
+# List of DF information - see DC2390_functions module
 DF_list = [DF4, DF8, DF16, DF32, DF64, DF128, DF256, DF512, DF1k, DF2k, DF4k, DF8k, DF16k]
 # List of filter type information
 FT_list = [FTSINC1, FTSINC2, FTSINC3, FTSINC4, FTSSINC, FT_FLAT]
@@ -72,8 +72,11 @@ FS = 1000000 # Sample rate, for scaling horizontal frequency axis
 
 # Reading files and doing these calculations takes a while. Only need to do once
 # if you leave the console open.
-read_files = False
-#read_files = True
+
+try:
+    read_files # See if defined
+except: # if not, read files
+    read_files = True
 
 if read_files == True:
     filters          = [[[] for j in xrange(len(DF_list))] for i in xrange(len(FT_list))]
@@ -98,10 +101,12 @@ if read_files == True:
         ftnum += 1
     print ("Done reading in all coefficient files and calculating responses!!")
 
-# Create filter response of Variable-SINC filter, N=2, to represent the simplest
-# possible filter. (This mode is distinct from the other filters, no coefficient file.)
+read_files = False # So that we don't re-read files if run again.
+
+# Create filter response of Variable-SINC filter, N=2, to represent the simplest possible filter.
+# (This mode is distinct from the other filters, it doesn't have a coefficient file.)
 vsinc2 = np.ones(2) # Yup, that's it... just a couple of 1s!
-vsinc2 /= sum(vsinc2) #Normalize to unity gain
+vsinc2 /= sum(vsinc2) # Normalize to unity gain
 vsinc_resp_mag = lltf.freqz_by_fft_numpoints(vsinc2, 2 ** 20) # Calculate magnitude response
 vsinc_resp_mag_db = 20*np.log10(abs(vsinc_resp_mag)) # Calculate response in dB
 
@@ -110,9 +115,10 @@ vsinc_resp_mag_db = 20*np.log10(abs(vsinc_resp_mag)) # Calculate response in dB
 plt.figure(1)
 plt.cla()
 plt.ion()
+ftnum = 5 # SSINC + Flattening
 plt.title('SSINC+Flat filters')
 for df in range(0, len(DF_list)):
-    plt.plot(filters[5][df] / max(filters[5][df]))
+    plt.plot(filters[ftnum][df] / max(filters[5][df]))
 plt.xlabel('tap number')
 plt.show()
 
@@ -120,7 +126,7 @@ plt.show()
 # Make vector of frequencies to plot / save against
 haxis = np.linspace(0.0, FS, 2**20) # Horizontal axis
 
-color_list = ["red","orange"]
+color_list = ["red","orange", "green", "blue", "purple", "black"]
 
 # Plot frequency response, linear frequency axis
 lw = 1.5
@@ -134,21 +140,23 @@ plt.ylabel('Rejection (dB)')
 #plt.axis([0, 16400, -100, 10])
 plt.axis([20, 500000, -100, 5])
 # All DF256 filters, for section of video comparing all filter types
-#plt.semilogx(haxis, filt_resp_mag_db[0][6], linewidth=lw, color="red", zorder=1)
-#plt.semilogx(haxis, filt_resp_mag_db[1][6], linewidth=lw, color="orange",  zorder=1)
-#plt.semilogx(haxis, filt_resp_mag_db[2][6], linewidth=lw, color="green",  zorder=1)
-#plt.semilogx(haxis, filt_resp_mag_db[3][6], linewidth=lw, color="blue",  zorder=1)
-#plt.semilogx(haxis, filt_resp_mag_db[4][6], linewidth=lw, color="purple",  zorder=1)
-#plt.semilogx(haxis, filt_resp_mag_db[5][6], linewidth=lw, color="black", zorder=1)
+plt.semilogx(haxis, filt_resp_mag_db[0][6], linewidth=lw, color="red", zorder=1)
+plt.semilogx(haxis, filt_resp_mag_db[1][6], linewidth=lw, color="orange",  zorder=1)
+plt.semilogx(haxis, filt_resp_mag_db[2][6], linewidth=lw, color="green",  zorder=1)
+plt.semilogx(haxis, filt_resp_mag_db[3][6], linewidth=lw, color="blue",  zorder=1)
+plt.semilogx(haxis, filt_resp_mag_db[4][6], linewidth=lw, color="purple",  zorder=1)
+plt.semilogx(haxis, filt_resp_mag_db[5][6], linewidth=lw, color="black", zorder=1)
 
 # Selection of filters for section of video discussing versatility, compared
 # with delta sigma
 all_filter_plot = False
 if all_filter_plot == True:
+    plt.title("A wide selection of LTC2500-32 filter responses")
     plt.semilogx(haxis, vsinc_resp_mag_db, linewidth=lw, color="red", zorder=1) # Simple average of 2 points
     plt.semilogx(haxis, filt_resp_mag_db[5][6], linewidth=lw, color="black", zorder=1) # Example flat passband filter
     
-    for dfnum in [0, 2, 4, 6, 8, 10]:# range(0, 11):# [0, 6, 11]:
+    for dfnum in [0, 2, 4, 6, 8, 10]: # Not plotting all. If you do, the plot gets VERY dense!
+        # For the SINC1 filters, don't plot all points. Once again, things get very dense if you do.
         plt.semilogx(haxis[0:2**(24-dfnum)], filt_resp_mag_db[0][dfnum][0:2**(24-dfnum)], linewidth=lw, color="red", zorder=1) # Flat filter, DF4
         plt.semilogx(haxis, filt_resp_mag_db[1][dfnum], linewidth=lw, color="orange",  zorder=1)
         plt.semilogx(haxis, filt_resp_mag_db[2][dfnum], linewidth=lw, color="green",  zorder=1)
@@ -164,9 +172,9 @@ if filter_bw_plot == True:
     lw = 3
     plt.axis([500, 100000, -120, 5])
     plt.semilogx(haxis, filt_resp_mag_db[ftnum][2], linewidth=lw, color="red", zorder=1)
-#    plt.semilogx(haxis, filt_resp_mag_db[ftnum][3], linewidth=lw, color="orange", zorder=1)
-#    plt.semilogx(haxis, filt_resp_mag_db[ftnum][4], linewidth=lw, color="green", zorder=1)
-#    plt.semilogx(haxis, filt_resp_mag_db[ftnum][5], linewidth=lw, color="blue", zorder=1)
+    plt.semilogx(haxis, filt_resp_mag_db[ftnum][3], linewidth=lw, color="orange", zorder=1)
+    plt.semilogx(haxis, filt_resp_mag_db[ftnum][4], linewidth=lw, color="green", zorder=1)
+    plt.semilogx(haxis, filt_resp_mag_db[ftnum][5], linewidth=lw, color="blue", zorder=1)
 
 
 print "My program took", (time.time() - start_time), " seconds to run"
