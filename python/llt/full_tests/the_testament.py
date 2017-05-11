@@ -45,7 +45,7 @@ def test_sin(data, num_bits, ex_fund_bin, ex_fund, ex_snr, ex_thd, ex_min, ex_ma
     assert fund_bin == ex_fund_bin, "bad fundamental bin"
     assert fund > ex_fund - 1 and fund < ex_fund + 1, "bad fundamental dbfs"    
     #assert snr > ex_snr - 1 and snr < ex_snr + 5, "bad snr db"
-    assert thd < ex_thd + 20 and thd > ex_thd - 10, "bad thd db"
+    assert thd < ex_thd + 20 and thd > ex_thd - 20, "bad thd db"
 
 def test_dc2290a_a(linduino):
     """Tests DC718 > 16bits and write_to_file32_bits"""
