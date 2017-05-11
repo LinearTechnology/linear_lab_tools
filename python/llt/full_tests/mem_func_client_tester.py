@@ -58,7 +58,7 @@ from llt.utils.DC2390_functions import *
 HOST = sys.argv[1] if len(sys.argv) == 2 else '127.0.0.1'
 # Override here if desired
 #HOST = "192.168.1.231"
-HOST = "10.54.6.26"
+#HOST = "10.54.6.26"
 
 # Default script parameters
 demo_board = 2390 #UN comment one of these. Only use internal ramp for DC2390,
