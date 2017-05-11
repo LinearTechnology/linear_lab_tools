@@ -1,11 +1,10 @@
 // This is the main DLL file.
-
-#include "LtcControllerComm.h"
+#include "..\ltc_controller_comm\soc_kit.hpp"
 #include "..\ltc_controller_comm\high_speed.hpp"
 #include "..\ltc_controller_comm\dc1371.hpp"
 #include "..\ltc_controller_comm\dc718.hpp"
 #include "..\ltc_controller_comm\dc890.hpp"
-#include "..\ltc_controller_comm\soc_kit.hpp"
+#include "LtcControllerComm.h"
 #include "..\ltc_controller_comm\utilities.hpp"
 
 using linear::Dc1371;
