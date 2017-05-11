@@ -78,9 +78,6 @@
     <ClInclude Include="i_spi_send_only.hpp">
       <Filter>Interfaces</Filter>
     </ClInclude>
-    <ClInclude Include="tcp_client_socket.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="soc_kit.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -114,9 +111,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="dllmain.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="tcp_client_socket.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="soc_kit.cpp">
