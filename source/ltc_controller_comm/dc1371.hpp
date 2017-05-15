@@ -116,11 +116,11 @@ class Dc1371 : public ICollect,
     void SpiTransceive(uint8_t send_values[], uint8_t receive_values[], int num_values) override;
 
     // Convenience SPI functions with "address/value" mode
-    void SpiSendAtAddress(uint8_t address, uint8_t* values, int num_values) override;
+    void SpiSendAtAddress(uint8_t address, uint8_t values[], int num_values) override;
     void SpiSendAtAddress(uint8_t address, uint8_t value) override {
         SpiSendAtAddress(address, &value, 1);
     }
-    void    SpiReceiveAtAddress(uint8_t address, uint8_t* values, int num_values) override;
+    void    SpiReceiveAtAddress(uint8_t address, uint8_t values[], int num_values) override;
     uint8_t SpiReceiveAtAddress(uint8_t address) override {
         uint8_t value;
         SpiReceiveAtAddress(address, &value, 1);

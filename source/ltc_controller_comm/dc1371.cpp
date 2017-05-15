@@ -1,8 +1,8 @@
+#include "dc1371.hpp"
 #include <chrono>
-#include <thread>
 #include <exception>
 #include <fstream>
-#include "dc1371.hpp"
+#include <thread>
 #include "utilities.hpp"
 
 namespace linear {
@@ -18,28 +18,28 @@ using std::make_unique;
 using std::experimental::filesystem::exists;
 using std::experimental::filesystem::file_size;
 
-const DWORD ANSWER_SIGNTURE = 0x52446839;    // 9hDR -- answr signature
-const DWORD PASSWORD_SIGNTURE = 0x4B74694C;    // LitK -- passwd for commnds
-const char* PASSW_STRGTURE = "Litk";        // PASSW_SIGN as a string
-const DWORD PSTCH_IDLETURE = 0x1D497C11;    // idle code return
+const DWORD ANSWER_SIGNTURE   = 0x52446839;  // 9hDR -- answr signature
+const DWORD PASSWORD_SIGNTURE = 0x4B74694C;  // LitK -- passwd for commnds
+const char* PASSW_STRGTURE    = "Litk";      // PASSW_SIGN as a string
+const DWORD PSTCH_IDLETURE    = 0x1D497C11;  // idle code return
 
 enum : BYTE {
-    READ = 0x80,
+    READ  = 0x80,
     WRITE = 0x00,
     ABORT = 0xF8,
 };
 
 // BOARD_RESET args
 enum : BYTE {
-    DFU_LOADER = 0,
+    DFU_LOADER  = 0,
     RESET_BOARD = 1,
-    DETACH = 2,
+    DETACH      = 2,
 };
 
 enum : BYTE {
-    TRIGGER_NONE = 0,
+    TRIGGER_NONE  = 0,
     TRIGGER_START = 1,
-    TRIGGER_STOP = 2,
+    TRIGGER_STOP  = 2,
 };
 
 #undef ENUM_START
@@ -50,19 +50,20 @@ ENUM_DECLARATION;
 
 // Other constants
 
-const int SAMPLE_SIZE = 2;
-const int KILOSAMPLES = 1024;
-const int MAX_TOTAL_SAMPLES = 1024 * KILOSAMPLES;
+const int    SAMPLE_SIZE         = 2;
+const int    KILOSAMPLES         = 1024;
+const int    MAX_TOTAL_SAMPLES   = 1024 * KILOSAMPLES;
 const string Dc1371::DESCRIPTION = "DC1371A ADC Controller board";
 
-#define SPI_MUST_NOT_BE_TOO_LARGE(offset, maximum) if ((offset) > (maximum)) { throw invalid_argument("SPI transaction too large."); }
+#define SPI_MUST_NOT_BE_TOO_LARGE(offset, maximum) \
+    if ((offset) > (maximum)) { throw invalid_argument("SPI transaction too large."); }
 
 bool Dc1371::IsDc1371(char drive_letter) {
-    const int DRIVE_STRINGS_SIZE = 20;
-    char root_path_name[DRIVE_STRINGS_SIZE] = " :\\";
-    char volume_name[DRIVE_STRINGS_SIZE] = "";
-    char file_system_name[DRIVE_STRINGS_SIZE] = "";
-    DWORD dummy_value;
+    const int DRIVE_STRINGS_SIZE                   = 20;
+    char      root_path_name[DRIVE_STRINGS_SIZE]   = " :\\";
+    char      volume_name[DRIVE_STRINGS_SIZE]      = "";
+    char      file_system_name[DRIVE_STRINGS_SIZE] = "";
+    DWORD     dummy_value;
 
     root_path_name[0] = drive_letter;
     if (!GetVolumeInformationA(root_path_name, volume_name, DRIVE_STRINGS_SIZE, &dummy_value,
@@ -90,9 +91,7 @@ int Dc1371::GetNumControllers(int max_controllers) {
     for (char drive_letter = 'D'; drive_letter <= 'Z'; drive_letter++) {
         if (IsDc1371(drive_letter)) {
             ++num_controllers;
-            if (num_controllers >= max_controllers) {
-                break;
-            }
+            if (num_controllers >= max_controllers) { break; }
         }
     }
     return num_controllers;
@@ -106,9 +105,7 @@ vector<LccControllerInfo> Dc1371::ListControllers(int max_controllers) {
     for (char drive_letter = 'D'; drive_letter <= 'Z'; drive_letter++) {
         if (IsDc1371(drive_letter)) {
             info_list.push_back(MakeControllerInfo(drive_letter));
-            if (info_list.size() >= unsigned(max_controllers)) {
-                break;
-            }
+            if (info_list.size() >= unsigned(max_controllers)) { break; }
         }
     }
     return info_list;
@@ -116,7 +113,7 @@ vector<LccControllerInfo> Dc1371::ListControllers(int max_controllers) {
 
 string Dc1371::GetSerialNumber() {
     Reset();
-    Command command(Opcode::GET_INFO);
+    Command     command(Opcode::GET_INFO);
     CommandFile command_file(drive_letter);
     command_file.Write(command);
     char buffer[LCC_MAX_SERIAL_NUMBER_SIZE];
@@ -125,35 +122,32 @@ string Dc1371::GetSerialNumber() {
     return string(buffer);
 }
 
-void Dc1371::Reset() {
-    CommandFile(drive_letter).Write(Command(Opcode::COMMAND_RESET));
-}
+void Dc1371::Reset() { CommandFile(drive_letter).Write(Command(Opcode::COMMAND_RESET)); }
 
 uint8_t GetFpgaLoadIdFromFile(string fpga_filename) {
     // File names are "S2157.sqz", "S2175.sqz", "S2195.sqz", "S2274.sqz", "S9011.sqz"
 
     auto fpga_path = path(fpga_filename);
-    auto load = fpga_path.stem().u8string();
+    auto load      = fpga_path.stem().u8string();
     if ((load[0] & 0xDF) != 'S') {
         throw invalid_argument(fpga_filename + "is not a valid FPGA load file");
     }
 
-    
     long number = strtol(load.c_str() + 1, nullptr, 10);
 
     switch (number) {
-    case 2274:
-        return 1;
-    case 2175:
-        return 2;
-    case 2157:
-        return 3;
-    case 9011:
-        return 4;
-    case 2195:
-        return 5;
-    default:
-        throw invalid_argument(fpga_filename + "is not a valid FPGA load file");
+        case 2274:
+            return 1;
+        case 2175:
+            return 2;
+        case 2157:
+            return 3;
+        case 9011:
+            return 4;
+        case 2195:
+            return 5;
+        default:
+            throw invalid_argument(fpga_filename + "is not a valid FPGA load file");
     }
 }
 
@@ -179,24 +173,24 @@ bool Dc1371::FpgaGetIsLoaded(const string& fpga_filename) {
 
 void Dc1371::FpgaStartLoadFile(const path& fpga_path) {
     fpga_load_started = true;
-    auto load_id = GetFpgaLoadIdFromFile(fpga_path.u8string());
+    auto load_id      = GetFpgaLoadIdFromFile(fpga_path.u8string());
 
     path location;
     if (exists(fpga_path)) {
         location = fpga_path;
     } else {
-        location = GetInstallPath().append("fpga_loads").
-            append(fpga_path.stem()).replace_extension("sqz");
+        location = GetInstallPath()
+                           .append("fpga_loads")
+                           .append(fpga_path.stem())
+                           .replace_extension("sqz");
         if (!exists(location)) {
             throw runtime_error("Could not find file " + location.u8string());
         }
     }
 
     auto fpga_str = location.u8string();
-    auto size = file_size(location);
-    if (size < 1) {
-        throw runtime_error("Could not read file (or is empty) " + fpga_str);
-    }
+    auto size     = file_size(location);
+    if (size < 1) { throw runtime_error("Could not read file (or is empty) " + fpga_str); }
 
     // Original code calclulates a "tail" which is the last block and may be partial.
     // However the actual file read and send loop assumes the tail is a full block.
@@ -208,8 +202,7 @@ void Dc1371::FpgaStartLoadFile(const path& fpga_path) {
     command.header.SetNumBlocks(num_blocks);
     command.header.SetTail(BLOCK_SIZE);
 
-    fpga_load_info = make_unique<FpgaLoadInfo>(fpga_str, load_id,
-                     num_blocks, drive_letter);
+    fpga_load_info = make_unique<FpgaLoadInfo>(fpga_str, load_id, num_blocks, drive_letter);
 
     try {
         fpga_load_info->command_file.Write(command);
@@ -221,8 +214,8 @@ void Dc1371::FpgaStartLoadFile(const path& fpga_path) {
 
 void Dc1371::FpgaLoadChunk() {
     try {
-        auto send_blocks = std::min(MAX_BLOCKS, fpga_load_info->num_blocks);
-        auto send_bytes = send_blocks * BLOCK_SIZE;
+        auto     send_blocks = std::min(MAX_BLOCKS, fpga_load_info->num_blocks);
+        auto     send_bytes  = send_blocks * BLOCK_SIZE;
         ifstream input(fpga_load_info->file_path, ios::binary | ios::beg);
         if (!input.seekg(fpga_load_info->offset, ios::beg)) {
             throw runtime_error("Error reading file " + fpga_load_info->file_path.u8string());
@@ -279,20 +272,21 @@ void Dc1371::FpgaCancelLoad() {
 void Dc1371::DataStartCollect(int total_samples, Trigger trigger) {
     BYTE trigger_value = LCC_TRIGGER_NONE;
     switch (trigger) {
-    case Trigger::NONE:
-        initialize_ram = true;
-        break;
-    case Trigger::START_POSITIVE_EDGE:
-        trigger_value = LCC_TRIGGER_START_POSITIVE_EDGE;
-        initialize_ram = true;
-        break;
-    case Trigger::DC1371_STOP_NEGATIVE_EDGE:
-        trigger_value = LCC_TRIGGER_DC1371_STOP_NEGATIVE_EDGE;
-        initialize_ram = false;
-        break;
-    default:
-        throw invalid_argument(
-            "trigger must be NONE, START_ON_POSITIVE_EDGE or DC1371_STOP_ON_NEGATIVE_EDGE.");
+        case Trigger::NONE:
+            initialize_ram = true;
+            break;
+        case Trigger::START_POSITIVE_EDGE:
+            trigger_value  = LCC_TRIGGER_START_POSITIVE_EDGE;
+            initialize_ram = true;
+            break;
+        case Trigger::DC1371_STOP_NEGATIVE_EDGE:
+            trigger_value  = LCC_TRIGGER_DC1371_STOP_NEGATIVE_EDGE;
+            initialize_ram = false;
+            break;
+        default:
+            throw invalid_argument(
+                    "trigger must be NONE, START_ON_POSITIVE_EDGE or "
+                    "DC1371_STOP_ON_NEGATIVE_EDGE.");
     }
 
     auto total_bytes = total_samples * SAMPLE_SIZE;
@@ -311,7 +305,7 @@ void Dc1371::DataStartCollect(int total_samples, Trigger trigger) {
         command.Reset(Opcode::CONFIG);
         // the bit in the high byte enables setting the generic_config, the bit in the low byte
         // enables setting the demo_config
-        command.header.word_param = 0x0101;
+        command.header.word_param          = 0x0101;
         command.header.dword_param_1.value = generic_config;
         command.header.dword_param_2.value = demo_config;
         collect_command_file->Write(command);
@@ -329,12 +323,10 @@ void Dc1371::DataStartCollect(int total_samples, Trigger trigger) {
 }
 
 bool Dc1371::DataIsCollectDone() {
-    if (!collect_started) {
-        throw invalid_argument("No collect was started");
-    }
+    if (!collect_started) { throw invalid_argument("No collect was started"); }
     try {
         Command command(Opcode::COLLECT);
-        auto status = GetCommandResult(command, *(collect_command_file.get()));
+        auto    status = GetCommandResult(command, *(collect_command_file.get()));
         if (status == Dc1371Error::GOT_NAK) {
             return false;
         } else if (status == Dc1371Error::OK) {
@@ -366,21 +358,21 @@ int Dc1371::ReadBytes(uint8_t data[], int total_bytes) {
     }
 
     CommandFile command_file(drive_letter);
-    BlockFile block_file(drive_letter);
-    Command command(Opcode::READ_SRAM);
+    BlockFile   block_file(drive_letter);
+    Command     command(Opcode::READ_SRAM);
     command.header.byte_param = initialize_ram ? 0x01 : 0x00;
-    initialize_ram = false;
+    initialize_ram            = false;
     command.header.SetNumBlocks(total_blocks);
     command_file.Write(command);
     int bytes_read = 0;
 
     while (total_blocks > 0) {
         // these get changed by CheckCommandResult
-        command.header.opcode = Opcode::READ_SRAM;
+        command.header.opcode     = Opcode::READ_SRAM;
         command.header.byte_param = 0x00;
 
-        WORD num_blocks = std::min(MAX_BLOCKS, total_blocks);
-        int block_bytes = num_blocks * BLOCK_SIZE;
+        WORD num_blocks  = std::min(MAX_BLOCKS, total_blocks);
+        int  block_bytes = num_blocks * BLOCK_SIZE;
         block_file.Read(data, block_bytes);
 
         total_blocks -= num_blocks;
@@ -407,7 +399,7 @@ void Dc1371::SpiBufferLowerChipSelect(Command& command, int& offset) {
     offset += CHIP_SELECT_DOWN_COMMAND_SIZE;
 }
 
-void  Dc1371::SpiBufferRaiseChipSelect(Command& command, int& offset) {
+void Dc1371::SpiBufferRaiseChipSelect(Command& command, int& offset) {
     const int CHIP_SELECT_UP_COMMAND_SIZE = 2;
     SPI_MUST_NOT_BE_TOO_LARGE(offset + CHIP_SELECT_UP_COMMAND_SIZE, MAX_COMMAND_DATA);
     command.data[offset] = 'p';
@@ -416,12 +408,15 @@ void  Dc1371::SpiBufferRaiseChipSelect(Command& command, int& offset) {
     ++offset;
 }
 
-void  Dc1371::SpiBufferSendOrTranceive(Command& command, int& offset,
-                                       uint8_t send_values[], int num_values, bool is_send) {
+void Dc1371::SpiBufferSendOrTranceive(Command& command,
+                                      int&     offset,
+                                      uint8_t  send_values[],
+                                      int      num_values,
+                                      bool     is_send) {
     int command_size = 2 * num_values + 1;
     SPI_MUST_NOT_BE_TOO_LARGE(command_size, MAX_COMMAND_DATA);
     char* spi_chars = command.data + offset;
-    *spi_chars = is_send ? 'w' : 't';
+    *spi_chars      = is_send ? 'w' : 't';
     ++spi_chars;
     for (int i = 0; i < num_values; ++i) {
         sprintf_s(spi_chars, 3, "%02X", send_values[i]);
@@ -445,16 +440,18 @@ void Dc1371::SpiDoTransaction(Command& command, uint8_t* receive_values, int num
     CheckCommandResult(command, command_file, receive_values, num_values);
 }
 
-void Dc1371::CheckCommandResult(Command& command, CommandFile& command_file,
-                                uint8_t* receive_values, int num_values) {
+void Dc1371::CheckCommandResult(Command&     command,
+                                CommandFile& command_file,
+                                uint8_t*     receive_values,
+                                int          num_values) {
     auto status = GetCommandResult(command, command_file, receive_values, num_values);
-    if (status != Dc1371Error::OK) {
-        throw Dc1371Error("DC1371A reported an error.", status);
-    }
+    if (status != Dc1371Error::OK) { throw Dc1371Error("DC1371A reported an error.", status); }
 }
 
-uint8_t Dc1371::GetCommandResult(Command& command, CommandFile& command_file,
-                                 uint8_t* data, int num_data) {
+uint8_t Dc1371::GetCommandResult(Command&     command,
+                                 CommandFile& command_file,
+                                 uint8_t*     data,
+                                 int          num_data) {
     auto original_opcode = command.header.opcode;
     command.Reset(Opcode::NONE);
 
@@ -470,7 +467,8 @@ uint8_t Dc1371::GetCommandResult(Command& command, CommandFile& command_file,
 
     auto result = command.header.GetStatus();
     if ((result == Dc1371Error::OK) && (data != nullptr) && (num_data > 0)) {
-        safe_memcpy(data, num_data, command.data, std::min(num_data, narrow<int>(command.header.GetLength())));
+        safe_memcpy(data, num_data, command.data,
+                    std::min(num_data, narrow<int>(command.header.GetLength())));
     }
     return result;
 }
@@ -480,7 +478,7 @@ void Dc1371::SpiSend(uint8_t values[], int num_values) {
     ASSERT_POSITIVE(num_values);
 
     Command command(Opcode::SPI);
-    int offset = 0;
+    int     offset = 0;
     SpiBufferLowerChipSelect(command, offset);
     SpiBufferSendOrTranceive(command, offset, values, num_values, true);
     SpiBufferRaiseChipSelect(command, offset);
@@ -494,7 +492,7 @@ void Dc1371::SpiReceive(uint8_t values[], int num_values) {
     ASSERT_NOT_LARGER(num_values, MAX_SPI_READ_BYTES);
 
     Command command(Opcode::SPI);
-    int offset = 0;
+    int     offset = 0;
     SpiBufferLowerChipSelect(command, offset);
     SpiBufferReceive(command, offset, num_values);
     SpiBufferRaiseChipSelect(command, offset);
@@ -509,7 +507,7 @@ void Dc1371::SpiTransceive(uint8_t send_values[], uint8_t receive_values[], int 
     ASSERT_NOT_LARGER(num_values, MAX_SPI_READ_BYTES);
 
     Command command(Opcode::SPI);
-    int offset = 0;
+    int     offset = 0;
     SpiBufferLowerChipSelect(command, offset);
     SpiBufferSendOrTranceive(command, offset, send_values, num_values, false);
     SpiBufferRaiseChipSelect(command, offset);
@@ -517,25 +515,25 @@ void Dc1371::SpiTransceive(uint8_t send_values[], uint8_t receive_values[], int 
     SpiDoTransaction(command, receive_values, num_values);
 }
 
-void Dc1371::SpiSendAtAddress(uint8_t address, uint8_t* values, int num_values) {
+void Dc1371::SpiSendAtAddress(uint8_t address, uint8_t values[], int num_values) {
     ASSERT_NOT_NULL(values);
     ASSERT_POSITIVE(num_values);
 
     Command command(Opcode::SPI);
-    int offset = 0;
+    int     offset = 0;
     SpiBufferLowerChipSelect(command, offset);
     SpiBufferSendOrTranceive(command, offset, &address, 1, true);
     SpiBufferSendOrTranceive(command, offset, values, num_values, true);
     SpiBufferRaiseChipSelect(command, offset);
     SpiDoTransaction(command, nullptr, 0);
 }
-void Dc1371::SpiReceiveAtAddress(uint8_t address, uint8_t* values, int num_values) {
+void Dc1371::SpiReceiveAtAddress(uint8_t address, uint8_t values[], int num_values) {
     ASSERT_NOT_NULL(values);
     ASSERT_POSITIVE(num_values);
     ASSERT_NOT_LARGER(num_values, MAX_SPI_READ_BYTES);
 
     Command command(Opcode::SPI);
-    int offset = 0;
+    int     offset = 0;
     SpiBufferLowerChipSelect(command, offset);
     SpiBufferSendOrTranceive(command, offset, &address, 1, true);
     SpiBufferReceive(command, offset, num_values);
@@ -545,7 +543,7 @@ void Dc1371::SpiReceiveAtAddress(uint8_t address, uint8_t* values, int num_value
 
 void Dc1371::SpiSetCsState(SpiCsState chip_select_state) {
     Command command(Opcode::SPI);
-    int offset = 0;
+    int     offset = 0;
     if (chip_select_state == SpiCsState::LOW) {
         SpiBufferLowerChipSelect(command, offset);
     } else if (chip_select_state == SpiCsState::HIGH) {
@@ -560,7 +558,7 @@ void Dc1371::SpiSendNoChipSelect(uint8_t values[], int num_values) {
     ASSERT_NOT_NULL(values);
     ASSERT_POSITIVE(num_values);
     Command command(Opcode::SPI);
-    int offset = 0;
+    int     offset = 0;
     SpiBufferSendOrTranceive(command, offset, values, num_values, true);
     SpiDoTransaction(command, nullptr, 0);
 }
@@ -571,33 +569,33 @@ void Dc1371::SpiReceiveNoChipSelect(uint8_t values[], int num_values) {
     ASSERT_NOT_LARGER(num_values, MAX_SPI_READ_BYTES);
 
     Command command(Opcode::SPI);
-    int offset = 0;
+    int     offset = 0;
     SpiBufferReceive(command, offset, num_values);
     SpiDoTransaction(command, values, num_values);
 }
 
-void Dc1371::SpiTransceiveNoChipSelect(uint8_t send_values[], uint8_t receive_values[],
-                                       int num_values) {
+void Dc1371::SpiTransceiveNoChipSelect(uint8_t send_values[],
+                                       uint8_t receive_values[],
+                                       int     num_values) {
     ASSERT_NOT_NULL(send_values);
     ASSERT_NOT_NULL(receive_values);
     ASSERT_POSITIVE(num_values);
     ASSERT_NOT_LARGER(num_values, MAX_SPI_READ_BYTES);
 
     Command command(Opcode::SPI);
-    int offset = 0;
+    int     offset = 0;
     SpiBufferSendOrTranceive(command, offset, send_values, num_values, false);
     SpiDoTransaction(command, receive_values, num_values);
 }
 
-void Dc1371::EepromReadString(char * buffer, int buffer_size) {
+void Dc1371::EepromReadString(char* buffer, int buffer_size) {
     ASSERT_NOT_NULL(buffer);
     ASSERT_POSITIVE(buffer_size);
 
-    Command command(Opcode::GET_DEMO_ID);
+    Command     command(Opcode::GET_DEMO_ID);
     CommandFile command_file(drive_letter);
     command_file.Write(command);
     CheckCommandResult(command, command_file, reinterpret_cast<uint8_t*>(buffer), buffer_size);
     buffer[std::min(narrow<int>(command.header.GetLength()), buffer_size - 1)] = '\0';
 }
-
 }
