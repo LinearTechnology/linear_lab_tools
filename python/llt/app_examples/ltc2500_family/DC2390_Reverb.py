@@ -9,7 +9,7 @@ import sys # Needed so we can append paths
 from time import sleep # So we can make delays that humans can detect
 # Okay, now the big one... this is the module that communicates with the SoCkit
 from llt.common.mem_func_client_2 import MemClient
-from DC2390_functions import * # Register definitions live in this file
+from llt.utils.DC2390_functions import * # Register definitions live in this file
 from llt.utils.sockit_system_functions import * # More functions for talking to the SoCkit
 
 # Get the host from the command line argument. Can be numeric or hostname.
@@ -33,7 +33,7 @@ client = MemClient(host=HOST)
 # Configuring the clocks, which are provided from a crystal oscillator and
 # LTC6954 clock distribution divider / driver
 
-LTC6954_configure_default(client)
+LTC6954_configure(client)
 #Read FPGA type and revision
 rev_id = client.reg_read(REV_ID_BASE)
 type_id = rev_id & 0x0000FFFF

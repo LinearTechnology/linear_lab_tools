@@ -51,8 +51,8 @@ import sys #, os, socket, ctypes, struct
 from time import sleep
 import time
 # Okay, now the big one... this is the module that communicates with the SoCkit
-from llt.utils.mem_func_client import MemClient
-from DC2390_functions import *
+from llt.common.mem_func_client_2 import MemClient
+from llt.utils.DC2390_functions import *
 from LTC2758 import *
 
 
@@ -102,7 +102,7 @@ print("Setting up system parameters.\n");
 client.reg_write(SYSTEM_CLOCK_BASE, ((LUT_NCO_DIVIDER << 16) | SYSTEM_CLOCK_DIVIDER))
 client.reg_write(NUM_SAMPLES_BASE, NUM_NYQ_SAMPLES)
 
-LTC6954_configure_default(client)
+LTC6954_configure(client)
 
 
 LTC2758_write(client, LTC2748_DAC_A | 

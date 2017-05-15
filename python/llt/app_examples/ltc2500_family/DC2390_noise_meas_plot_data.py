@@ -49,8 +49,8 @@ import time
 import numpy as np
 from time import sleep
 from matplotlib import pyplot as plt
-import DC2390_functions as DC2390
-from llt.utils.mem_func_client import MemClient
+import llt.utils.DC2390_functions as DC2390
+from llt.common.mem_func_client_2 import MemClient
 
 
 ###############################################################################

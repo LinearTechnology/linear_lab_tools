@@ -15,8 +15,8 @@ import numpy as np
 from time import sleep
 from matplotlib import pyplot as plt
 # Okay, now the big one... this is the module that communicates with the SoCkit
-from llt.utils.mem_func_client import MemClient
-from DC2390_functions import *
+from llt.common.mem_func_client_2 import MemClient
+from llt.utils.DC2390_functions import *
 # Get the host from the command line argument. Can be numeric or hostname.
 #HOST = sys.argv.pop() if len(sys.argv) == 2 else '127.0.0.1'
 HOST = sys.argv[1] if len(sys.argv) == 2 else '127.0.0.1'
@@ -48,7 +48,6 @@ print("Setting up system parameters.\n");
 client.reg_write(SYSTEM_CLOCK_BASE, 0xFFFF0000 | SYSTEM_CLOCK_DIVIDER)
 client.reg_write(NUM_SAMPLES_BASE, NUM_SAMPLES)
 
-#LTC6954_configure_default(client)
 LTC6954_configure(client, 0x04)
 
 # Set the NCO to 1KHz

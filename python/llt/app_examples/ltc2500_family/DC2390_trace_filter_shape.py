@@ -50,8 +50,8 @@ import numpy as np
 from time import sleep
 from matplotlib import pyplot as plt
 # Okay, now the big one... this is the module that communicates with the SoCkit
-from llt.utils.mem_func_client import MemClient
-from DC2390_functions import *
+from llt.common.mem_func_client_2 import MemClient
+from llt.utils.DC2390_functions import *
 import time
 
 
@@ -97,7 +97,7 @@ print("Setting up system parameters.\n");
 client.reg_write(SYSTEM_CLOCK_BASE, ((LUT_NCO_DIVIDER << 16) | SYSTEM_CLOCK_DIVIDER))
 client.reg_write(NUM_SAMPLES_BASE, NUM_SAMPLES)
 
-LTC6954_configure_default(client)
+LTC6954_configure(client)
 
 # Set Mux for filtered data
 # Set Dac A for SIN and Dac B for LUT

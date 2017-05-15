@@ -47,7 +47,7 @@ import sys # os, socket, ctypes, struct
 import numpy as np
 from time import sleep
 from matplotlib import pyplot as plt
-import DC2390_functions as DC2390
+import llt.utils.DC2390_functions as DC2390
 from llt.common.mem_func_client_2 import MemClient
 from llt.utils.sockit_system_functions import *
 
