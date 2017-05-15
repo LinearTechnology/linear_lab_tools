@@ -1,8 +1,8 @@
 #pragma once
 
+#include <string>
 #include <utility>
 #include <vector>
-#include <string>
 using std::pair;
 using std::make_pair;
 using std::vector;
@@ -22,7 +22,7 @@ using std::ofstream;
 #endif
 
 #ifdef _WIN32
-#define WIN32_LEAN_AND_MEAN
+//#define WIN32_LEAN_AND_MEAN
 #define LIB_HANDLE HMODULE
 #else
 #define LIB_HANDLE void*
@@ -35,15 +35,15 @@ using std::ofstream;
 #ifndef LTC_CONTROLLER_COMM_API
 #define LTC_CONTROLLER_COMM_API
 #endif
-#include "ltc_controller_comm.h"
-#include "error.hpp"
 #include "controller.hpp"
+#include "error.hpp"
+#include "ltc_controller_comm.h"
 
 namespace linear {
 
 class FtdiError : public HardwareError {
-public:
-    FtdiError(const string& message, int error_code) : HardwareError(message, error_code) { }
+   public:
+    FtdiError(const string& message, int error_code) : HardwareError(message, error_code) {}
     string FullMessage() override {
         if (error_code < BAD_NEGATIVE) {
             error_code = BAD_NEGATIVE;
@@ -52,61 +52,53 @@ public:
         }
         return (string(what()) + " (FTDI error code: " + strings[error_code + 1] + ")");
     }
-#define ENUM_DECLARATION                                                   \
-        ENUM_START                                                         \
-        ENUM(BAD_NEGATIVE,                -1),                             \
-        ENUM(OK,                          FT_OK),                          \
-        ENUM(INVALID_HANDLE,              FT_INVALID_HANDLE),              \
-        ENUM(DEVICE_NOT_FOUND,            FT_DEVICE_NOT_FOUND),            \
-        ENUM(DEVICE_NOT_OPENED,           FT_DEVICE_NOT_OPENED),           \
-        ENUM(IO_ERROR,                    FT_IO_ERROR),                    \
-        ENUM(INSUFFICIENT_RESOURCES,      FT_INSUFFICIENT_RESOURCES),      \
-        ENUM(INVALID_PARAMETER,           FT_INVALID_PARAMETER),           \
-        ENUM(INVALID_BAUD_RATE,           FT_INVALID_BAUD_RATE),           \
-        ENUM(DEVICE_NOT_OPENED_FOR_ERASE, FT_DEVICE_NOT_OPENED_FOR_ERASE), \
-        ENUM(DEVICE_NOT_OPENED_FOR_WRITE, FT_DEVICE_NOT_OPENED_FOR_WRITE), \
-        ENUM(FAILED_TO_WRITE_DEVICE,      FT_FAILED_TO_WRITE_DEVICE),      \
-        ENUM(EEPROM_READ_FAILED,          FT_EEPROM_READ_FAILED),          \
-        ENUM(EEPROM_WRITE_FAILED,         FT_EEPROM_WRITE_FAILED),         \
-        ENUM(EEPROM_ERASE_FAILED,         FT_EEPROM_ERASE_FAILED),         \
-        ENUM(EEPROM_NOT_PRESENT,          FT_EEPROM_NOT_PRESENT),          \
-        ENUM(EEPROM_NOT_PROGRAMMED,       FT_EEPROM_NOT_PROGRAMMED),       \
-        ENUM(INVALID_ARGS,                FT_INVALID_ARGS),                \
-        ENUM(NOT_SUPPORTED,               FT_NOT_SUPPORTED),               \
-        ENUM(OTHER_ERROR,                 FT_OTHER_ERROR),                 \
-        ENUM(DEVICE_LIST_NOT_READY,       FT_DEVICE_LIST_NOT_READY),       \
-        ENUM(DLL_NOT_LOADED,              FT_DEVICE_LIST_NOT_READY + 1),   \
-        ENUM(SLAVE_DID_NOT_ACK,           FT_DEVICE_LIST_NOT_READY + 2),   \
-        ENUM(BAD_TOO_LARGE,               FT_DEVICE_LIST_NOT_READY + 3),   \
-        ENUM_END
+#undef ENUM_DECLARATION
+#define ENUM_DECLARATION                                                                \
+    ENUM_START                                                                          \
+    ENUM(BAD_NEGATIVE, -1), ENUM(OK, FT_OK), ENUM(INVALID_HANDLE, FT_INVALID_HANDLE),   \
+            ENUM(DEVICE_NOT_FOUND, FT_DEVICE_NOT_FOUND),                                \
+            ENUM(DEVICE_NOT_OPENED, FT_DEVICE_NOT_OPENED), ENUM(IO_ERROR, FT_IO_ERROR), \
+            ENUM(INSUFFICIENT_RESOURCES, FT_INSUFFICIENT_RESOURCES),                    \
+            ENUM(INVALID_PARAMETER, FT_INVALID_PARAMETER),                              \
+            ENUM(INVALID_BAUD_RATE, FT_INVALID_BAUD_RATE),                              \
+            ENUM(DEVICE_NOT_OPENED_FOR_ERASE, FT_DEVICE_NOT_OPENED_FOR_ERASE),          \
+            ENUM(DEVICE_NOT_OPENED_FOR_WRITE, FT_DEVICE_NOT_OPENED_FOR_WRITE),          \
+            ENUM(FAILED_TO_WRITE_DEVICE, FT_FAILED_TO_WRITE_DEVICE),                    \
+            ENUM(EEPROM_READ_FAILED, FT_EEPROM_READ_FAILED),                            \
+            ENUM(EEPROM_WRITE_FAILED, FT_EEPROM_WRITE_FAILED),                          \
+            ENUM(EEPROM_ERASE_FAILED, FT_EEPROM_ERASE_FAILED),                          \
+            ENUM(EEPROM_NOT_PRESENT, FT_EEPROM_NOT_PRESENT),                            \
+            ENUM(EEPROM_NOT_PROGRAMMED, FT_EEPROM_NOT_PROGRAMMED),                      \
+            ENUM(INVALID_ARGS, FT_INVALID_ARGS), ENUM(NOT_SUPPORTED, FT_NOT_SUPPORTED), \
+            ENUM(OTHER_ERROR, FT_OTHER_ERROR),                                          \
+            ENUM(DEVICE_LIST_NOT_READY, FT_DEVICE_LIST_NOT_READY),                      \
+            ENUM(DLL_NOT_LOADED, FT_DEVICE_LIST_NOT_READY + 1),                         \
+            ENUM(SLAVE_DID_NOT_ACK, FT_DEVICE_LIST_NOT_READY + 2),                      \
+            ENUM(BAD_TOO_LARGE, FT_DEVICE_LIST_NOT_READY + 3), ENUM_END
 #define ENUM_START enum {
 #define ENUM(name, value) name = value
-#define ENUM_END };
+#define ENUM_END \
+    }            \
+    ;
     ENUM_DECLARATION;
-private:
-    static const int NUM_ERRORS = BAD_TOO_LARGE + 2; // (+2 is for BAD_NEGATIVE and OK)
+
+   private:
+    static const int    NUM_ERRORS = BAD_TOO_LARGE + 2;  // (+2 is for BAD_NEGATIVE and OK)
     static const string strings[NUM_ERRORS];
 };
 
 class Ftdi {
-
 #ifdef TIMING
-    mutable ofstream timing_file { "linear_lab_tools_timing_file.txt" };
+    mutable ofstream                  timing_file{ "linear_lab_tools_timing_file.txt" };
     time_point<high_resolution_clock> start_time = high_resolution_clock::now();
-    double get_elapsed_seconds() const {
+    double                            get_elapsed_seconds() const {
         auto end_time = high_resolution_clock::now();
-        auto elapsed = end_time - start_time;
+        auto elapsed  = end_time - start_time;
         return duration_cast<duration<double>>(elapsed).count();
     }
-    string make_string(DWORD value) const {
-        return std::to_string(value);
-    }
-    string make_string(UCHAR value) const {
-        return std::to_string(value);
-    }
-    string make_string(USHORT value) const {
-        return std::to_string(value);
-    }
+    string make_string(DWORD value) const { return std::to_string(value); }
+    string make_string(UCHAR value) const { return std::to_string(value); }
+    string make_string(USHORT value) const { return std::to_string(value); }
     string make_string(void* value) const {
         auto data = reinterpret_cast<uint8_t*>(value);
         char buffer[16];
@@ -118,8 +110,8 @@ class Ftdi {
         auto time = get_elapsed_seconds();
         char buffer[1024];
 
-        _snprintf(buffer, _TRUNCATE, "Called LT_%s(%s, %s, %s, %s) at %13.6f seconds\n", function_name,
-                  make_string(arg_t).c_str(), make_string(arg_u).c_str(),
+        _snprintf(buffer, _TRUNCATE, "Called LT_%s(%s, %s, %s, %s) at %13.6f seconds\n",
+                  function_name, make_string(arg_t).c_str(), make_string(arg_u).c_str(),
                   make_string(arg_v).c_str(), make_string(arg_w).c_str(), time);
         timing_file.write(buffer, strlen(buffer));
     }
@@ -160,28 +152,26 @@ class Ftdi {
     }
 #endif
 
-public:
+   public:
     Ftdi() { LoadDll(); };
     ~Ftdi() { UnloadDll(); }
     Ftdi(const Ftdi&) = delete;
-    Ftdi(Ftdi&&) = delete;
+    Ftdi(Ftdi&&)      = delete;
     Ftdi& operator=(const Ftdi) = delete;
 
     static const int EEPROM_ID_STRING_SIZE = 50;
 
-    int GetNumControllers(int search_type, int max_controllers) const;
+    int                       GetNumControllers(int search_type, int max_controllers) const;
     vector<LccControllerInfo> ListControllers(int search_type, int max_controllers) const;
-    void LoadDll();
-    void UnloadDll();
+    void                      LoadDll();
+    void                      UnloadDll();
 
     void Close(FT_HANDLE handle) const {
 #ifdef TIMING
         write_timing("Close");
 #endif
         // don't throw errors on close (it ends up in destructors)
-        if (close != nullptr) {
-            close(handle);
-        }
+        if (close != nullptr) { close(handle); }
     }
 
     void OpenByIndex(WORD device_index, FT_HANDLE* handle) const {
@@ -229,8 +219,7 @@ public:
                     "Error setting timeouts");
     }
 
-    void SetUSBParameters(FT_HANDLE handle, ULONG in_transfer_size,
-                          ULONG out_transfer_size) const {
+    void SetUSBParameters(FT_HANDLE handle, ULONG in_transfer_size, ULONG out_transfer_size) const {
 #ifdef TIMING
         write_timing("SetUSBParameters", in_transfer_size, out_transfer_size);
 #endif
@@ -311,17 +300,23 @@ public:
         check_close(handle, set_flow_control(handle, flow_control, xon, xoff),
                     "Error setting flow control");
     }
-    void GetDeviceInfo(FT_HANDLE handle, FT_DEVICE* device_type, LPDWORD id,
-                       PCHAR serial_number, PCHAR description) const {
+    void GetDeviceInfo(FT_HANDLE  handle,
+                       FT_DEVICE* device_type,
+                       LPDWORD    id,
+                       PCHAR      serial_number,
+                       PCHAR      description) const {
 #ifdef TIMING
         write_timing("GetDeviceInfo");
 #endif
         check_library(get_device_info);
-        check_close(handle, get_device_info(handle, device_type, id, serial_number,
-                                            description, nullptr), "Error getting device info");
+        check_close(handle,
+                    get_device_info(handle, device_type, id, serial_number, description, nullptr),
+                    "Error getting device info");
     }
-    void GetStatus(FT_HANDLE handle, LPDWORD num_receive_bytes,
-                   LPDWORD num_send_bytes, LPDWORD event_dword) const {
+    void GetStatus(FT_HANDLE handle,
+                   LPDWORD   num_receive_bytes,
+                   LPDWORD   num_send_bytes,
+                   LPDWORD   event_dword) const {
 #ifdef TIMING
         write_timing("GetStatus");
 #endif
@@ -330,10 +325,10 @@ public:
                     "Error getting device status");
     }
     void EnableEventChar(FT_HANDLE handle, bool enable = true) const {
-        const UCHAR event_char = '\n';
-        const UCHAR error_char = '\0';
+        const UCHAR event_char   = '\n';
+        const UCHAR error_char   = '\0';
         const UCHAR error_enable = 0;
-        UCHAR event_enable = enable ? 1 : 0;
+        UCHAR       event_enable = enable ? 1 : 0;
 #ifdef TIMING
         write_timing("SetChars", event_char, event_enable, error_char, error_enable);
 #endif
@@ -345,12 +340,10 @@ public:
         check_library(set_chars);
         EnableEventChar(handle, false);
     }
-private:
 
+   private:
     void check(FT_STATUS result, const string& message) const {
-        if (result != FtdiError::OK) {
-            throw FtdiError(message, result);
-        }
+        if (result != FtdiError::OK) { throw FtdiError(message, result); }
     }
 
     void check_close(FT_HANDLE handle, FT_STATUS result, const string& message) const {
@@ -362,9 +355,7 @@ private:
 
     template <typename FuncPtr>
     void check_library(FuncPtr function) const {
-        if (function == nullptr) {
-            throw logic_error("FTDI DLL was not loaded.");
-        }
+        if (function == nullptr) { throw logic_error("FTDI DLL was not loaded."); }
     }
 
     void CreateDeviceInfoList(LPDWORD num_devices) const {
@@ -373,28 +364,30 @@ private:
     }
     void GetDeviceInfoList(FT_DEVICE_LIST_INFO_NODE* device_list, LPDWORD num_devices) const {
         check_library(get_device_info_list);
-        check(get_device_info_list(device_list, num_devices),
-              "Error getting device info list");
+        check(get_device_info_list(device_list, num_devices), "Error getting device info list");
     }
 
-    typedef FT_STATUS(WINAPI *CloseFunction)(FT_HANDLE);
-    typedef FT_STATUS(WINAPI *CreateDeviceInfoListFunction)(LPDWORD);
-    typedef FT_STATUS(WINAPI *GetDeviceInfoListFunction)(FT_DEVICE_LIST_INFO_NODE*, LPDWORD);
-    typedef FT_STATUS(WINAPI *OpenFunction)(int, FT_HANDLE*);
-    typedef FT_STATUS(WINAPI *OpenExFunction)(PVOID, DWORD, FT_HANDLE*);
-    typedef FT_STATUS(WINAPI *GetDriverVersionFunction)(FT_HANDLE, LPDWORD);
-    typedef FT_STATUS(WINAPI *GetLibraryVersionFunction)(LPDWORD);
-    typedef FT_STATUS(WINAPI *SetTimeoutsFunction)(FT_HANDLE, ULONG, ULONG);
-    typedef FT_STATUS(WINAPI *SetUSBParametersFunction)(FT_HANDLE, ULONG, ULONG);
-    typedef FT_STATUS(WINAPI *WriteFunction)(FT_HANDLE, PVOID, DWORD, LPDWORD);
-    typedef FT_STATUS(WINAPI *ReadFunction)(FT_HANDLE, PVOID, DWORD, LPDWORD);
-    typedef FT_STATUS(WINAPI *PurgeFunction)(FT_HANDLE, ULONG);
-    typedef FT_STATUS(WINAPI *SetBitModeFunction)(FT_HANDLE, UCHAR, UCHAR);
-    typedef FT_STATUS(WINAPI *SetLatencyTimerFunction)(FT_HANDLE, UCHAR);
-    typedef FT_STATUS(WINAPI *SetFlowControlFunction)(FT_HANDLE, USHORT, UCHAR, UCHAR);
-    typedef FT_STATUS(WINAPI *GetDeviceInfoFunction)(FT_HANDLE, FT_DEVICE*, LPDWORD, PCHAR, PCHAR, LPVOID);
-    typedef FT_STATUS(WINAPI *GetStatusFunction)(FT_HANDLE, DWORD*, DWORD*, DWORD*);
-    typedef FT_STATUS(WINAPI *SetCharsFunction)(FT_HANDLE, UCHAR, UCHAR, UCHAR, UCHAR);
+    Controller::Type GetBasicType(const string& serial_number) const;
+
+    typedef FT_STATUS(WINAPI* CloseFunction)(FT_HANDLE);
+    typedef FT_STATUS(WINAPI* CreateDeviceInfoListFunction)(LPDWORD);
+    typedef FT_STATUS(WINAPI* GetDeviceInfoListFunction)(FT_DEVICE_LIST_INFO_NODE*, LPDWORD);
+    typedef FT_STATUS(WINAPI* OpenFunction)(int, FT_HANDLE*);
+    typedef FT_STATUS(WINAPI* OpenExFunction)(PVOID, DWORD, FT_HANDLE*);
+    typedef FT_STATUS(WINAPI* GetDriverVersionFunction)(FT_HANDLE, LPDWORD);
+    typedef FT_STATUS(WINAPI* GetLibraryVersionFunction)(LPDWORD);
+    typedef FT_STATUS(WINAPI* SetTimeoutsFunction)(FT_HANDLE, ULONG, ULONG);
+    typedef FT_STATUS(WINAPI* SetUSBParametersFunction)(FT_HANDLE, ULONG, ULONG);
+    typedef FT_STATUS(WINAPI* WriteFunction)(FT_HANDLE, PVOID, DWORD, LPDWORD);
+    typedef FT_STATUS(WINAPI* ReadFunction)(FT_HANDLE, PVOID, DWORD, LPDWORD);
+    typedef FT_STATUS(WINAPI* PurgeFunction)(FT_HANDLE, ULONG);
+    typedef FT_STATUS(WINAPI* SetBitModeFunction)(FT_HANDLE, UCHAR, UCHAR);
+    typedef FT_STATUS(WINAPI* SetLatencyTimerFunction)(FT_HANDLE, UCHAR);
+    typedef FT_STATUS(WINAPI* SetFlowControlFunction)(FT_HANDLE, USHORT, UCHAR, UCHAR);
+    typedef FT_STATUS(
+            WINAPI* GetDeviceInfoFunction)(FT_HANDLE, FT_DEVICE*, LPDWORD, PCHAR, PCHAR, LPVOID);
+    typedef FT_STATUS(WINAPI* GetStatusFunction)(FT_HANDLE, DWORD*, DWORD*, DWORD*);
+    typedef FT_STATUS(WINAPI* SetCharsFunction)(FT_HANDLE, UCHAR, UCHAR, UCHAR, UCHAR);
 
     CloseFunction                close                   = nullptr;
     CreateDeviceInfoListFunction create_device_info_list = nullptr;
@@ -417,4 +410,3 @@ private:
     LIB_HANDLE                   ftdi                    = nullptr;
 };
 }
-

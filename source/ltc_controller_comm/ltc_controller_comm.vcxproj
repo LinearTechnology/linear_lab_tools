@@ -89,7 +89,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;LTCCONTROLLERCOMM_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;LTCCONTROLLERCOMM_EXPORTS;WIN32_LEAN_AND_MEAN;_WIN32_WINNT=0x0501;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(SolutionDir);$(SolutionDir)..\..\gsl;$(SolutionDir)..\..\asio-1.10.8\include</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
@@ -128,7 +128,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;LTCCONTROLLERCOMM_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;LTCCONTROLLERCOMM_EXPORTS;WIN32_LEAN_AND_MEAN;_WIN32_WINNT=0x0501;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(SolutionDir);$(SolutionDir)..\..\gsl;$(SolutionDir)..\..\asio-1.10.8\include</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
@@ -181,8 +181,10 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="basic_ftdi_controller.hpp" />
     <ClInclude Include="controller.hpp" />
     <ClInclude Include="dc1371.hpp" />
+    <ClInclude Include="dc590.hpp" />
     <ClInclude Include="dc718.hpp" />
     <ClInclude Include="dc890.hpp" />
     <ClInclude Include="error.hpp" />
@@ -206,7 +208,9 @@
     <ClInclude Include="utilities.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="basic_ftdi_controller.cpp" />
     <ClCompile Include="dc1371.cpp" />
+    <ClCompile Include="dc590.cpp" />
     <ClCompile Include="dc890.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="ftdi.cpp" />

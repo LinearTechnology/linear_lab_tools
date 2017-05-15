@@ -2,8 +2,8 @@
 
 #pragma once
 #include <msclr\marshal_cppstd.h>
-#include "../ltc_controller_comm/controller.hpp"
 #include <stdexcept>
+#include "../ltc_controller_comm/controller.hpp"
 
 using namespace System;
 using namespace System::Text;
@@ -17,94 +17,79 @@ using msclr::interop::marshal_as;
 
 namespace LtcControllerComm {
 
-public ref class HardwareException : Exception {
-public:
-    HardwareException() : Exception() { }
-    HardwareException(String^ message) : Exception(message) { }
-    HardwareException(String^ message, Exception^ inner) : Exception(message, inner) { }
+public
+ref class HardwareException : Exception {
+   public:
+    HardwareException() : Exception() {}
+    HardwareException(String ^ message) : Exception(message) {}
+    HardwareException(String ^ message, Exception ^ inner) : Exception(message, inner) {}
 };
 
-public ref class LogicException : Exception {
-public:
-    LogicException() : Exception() { }
-    LogicException(String^ message) : Exception(message) { }
-    LogicException(String^ message, Exception^ inner) : Exception(message, inner) { }
+public
+ref class LogicException : Exception {
+   public:
+    LogicException() : Exception() {}
+    LogicException(String ^ message) : Exception(message) {}
+    LogicException(String ^ message, Exception ^ inner) : Exception(message, inner) {}
 };
 
-public ref class Controller : IDisposable {
-public:
-    [FlagsAttribute]
-    enum class Type : int {
-        None = 0,
-        Dc1371 = 1,
-        Dc718 = 2,
-        Dc890 = 4,
+public
+ref class Controller : IDisposable {
+   public:
+    [FlagsAttribute] enum class Type : int {
+        None      = 0,
+        Dc1371    = 1,
+        Dc718     = 2,
+        Dc890     = 4,
         HighSpeed = 8,
-        SocKit = 16,
-        Unknown = -1
+        SocKit    = 16,
+        Unknown   = -1
     };
 
-    enum class ChipSelectState : int {
-        Low = 0,
-        High = 1
-    };
+    enum class ChipSelectState : int { Low = 0, High = 1 };
 
     enum class Trigger : int {
-        None = 0,
-        StartPositiveEdge = 1,
+        None                   = 0,
+        StartPositiveEdge      = 1,
         Dc890StartNegativeEdge = 2,
         Dc1371StopNegativeEdge = 3
     };
 
-    enum class BitMode : int {
-        Mpsse = 0x02,
-        Fifo = 0x40
-    };
+    enum class BitMode : int { Mpsse = 0x02, Fifo = 0x40 };
 
-    enum class ChipSelect : int {
-        One = 1,
-        Two = 2
-    };
+    enum class ChipSelect : int { One = 1, Two = 2 };
 
-internal:
-    static const int MaxDescriptionSize = 64;
-    static const int MaxSerialNumberSize = 16;
+    internal : static const int MaxDescriptionSize  = 64;
+    static const int            MaxSerialNumberSize = 16;
 
-public:
+   public:
     value struct Info {
-    public:
+       public:
         property Controller::Type Type {
-            Controller::Type get() {
-                return type;
-            }
+            Controller::Type get() { return type; }
         }
-        property String^ Description {
-            String^ get() {
-                return description;
-            }
-        }
-        property String^ SerialNumber {
-            String^ get() {
-                return serial_number;
-            }
-        }
+        property String ^ Description { String ^ get() { return description; } } property String ^
+                SerialNumber { String ^ get() { return serial_number; } }
 
-    internal:
-        Info(Controller::Type type, String^ description, String^ serial_number, UInt32 id) :
-            type(type), description(description), serial_number(serial_number), id(id) { }
+                internal : Info(Controller::Type type,
+                                String ^ description,
+                                String ^ serial_number,
+                                UInt32 id)
+                : type(type),
+                description(description), serial_number(serial_number), id(id) {}
         Controller::Type type;
-        String^ description;
-        String^ serial_number;
+        String ^ description;
+        String ^ serial_number;
         UInt32 id;
     };
 
-    static array<Controller::Info>^ GetControllerList(Type acceptableTypes);
+    static array<Controller::Info> ^ GetControllerList(Type acceptableTypes);
 
     Controller(Info controllerInfo);
 
-    String^ GetDescription();
+    String ^ GetDescription();
 
-    String^ GetSerialNumber();
+    String ^ GetSerialNumber();
 
     void Reset();
 
@@ -114,85 +99,45 @@ public:
 
     void DataSetLowByteFirst();
 
-    int DataSend(array<Byte>^ data, int start, int length);
-    int DataSend(array<Byte>^ data, int start) {
-        return DataSend(data, start, 0);
-    }
-    int DataSend(array<Byte>^ data) {
-        return DataSend(data, 0, 0);
-    }
+    int DataSend(array<Byte> ^ data, int start, int length);
+    int DataSend(array<Byte> ^ data, int start) { return DataSend(data, start, 0); }
+    int DataSend(array<Byte> ^ data) { return DataSend(data, 0, 0); }
 
-    int DataSend(array<UInt16>^ data, int start, int length);
-    int DataSend(array<UInt16>^ data, int start) {
-        return DataSend(data, start, 0);
-    }
-    int DataSend(array<UInt16>^ data) {
-        return DataSend(data, 0, 0);
-    }
+    int DataSend(array<UInt16> ^ data, int start, int length);
+    int DataSend(array<UInt16> ^ data, int start) { return DataSend(data, start, 0); }
+    int DataSend(array<UInt16> ^ data) { return DataSend(data, 0, 0); }
 
-    int DataSend(array<Int16>^ data, int start, int length);
-    int DataSend(array<Int16>^ data, int start) {
-        return DataSend(data, start, 0);
-    }
-    int DataSend(array<Int16>^ data) {
-        return DataSend(data, 0, 0);
-    }
+    int DataSend(array<Int16> ^ data, int start, int length);
+    int DataSend(array<Int16> ^ data, int start) { return DataSend(data, start, 0); }
+    int DataSend(array<Int16> ^ data) { return DataSend(data, 0, 0); }
 
-    int DataSend(array<UInt32>^ data, int start, int length);
-    int DataSend(array<UInt32>^ data, int start) {
-        return DataSend(data, start, 0);
-    }
-    int DataSend(array<UInt32>^ data) {
-        return DataSend(data, 0, 0);
-    }
+    int DataSend(array<UInt32> ^ data, int start, int length);
+    int DataSend(array<UInt32> ^ data, int start) { return DataSend(data, start, 0); }
+    int DataSend(array<UInt32> ^ data) { return DataSend(data, 0, 0); }
 
-    int DataSend(array<Int32>^ data, int start, int length);
-    int DataSend(array<Int32>^ data, int start) {
-        return DataSend(data, start, 0);
-    }
-    int DataSend(array<Int32>^ data) {
-        return DataSend(data, 0, 0);
-    }
+    int DataSend(array<Int32> ^ data, int start, int length);
+    int DataSend(array<Int32> ^ data, int start) { return DataSend(data, start, 0); }
+    int DataSend(array<Int32> ^ data) { return DataSend(data, 0, 0); }
 
-    int DataReceive(array<Byte>^ data, int start, int length);
-    int DataReceive(array<Byte>^ data, int start) {
-        return DataSend(data, start, 0);
-    }
-    int DataReceive(array<Byte>^ data) {
-        return DataSend(data, 0, 0);
-    }
+    int DataReceive(array<Byte> ^ data, int start, int length);
+    int DataReceive(array<Byte> ^ data, int start) { return DataSend(data, start, 0); }
+    int DataReceive(array<Byte> ^ data) { return DataSend(data, 0, 0); }
 
-    int DataReceive(array<UInt16>^ data, int start, int length);
-    int DataReceive(array<UInt16>^ data, int start) {
-        return DataSend(data, start, 0);
-    }
-    int DataReceive(array<UInt16>^ data) {
-        return DataSend(data, 0, 0);
-    }
+    int DataReceive(array<UInt16> ^ data, int start, int length);
+    int DataReceive(array<UInt16> ^ data, int start) { return DataSend(data, start, 0); }
+    int DataReceive(array<UInt16> ^ data) { return DataSend(data, 0, 0); }
 
-    int DataReceive(array<Int16>^ data, int start, int length);
-    int DataReceive(array<Int16>^ data, int start) {
-        return DataSend(data, start, 0);
-    }
-    int DataReceive(array<Int16>^ data) {
-        return DataSend(data, 0, 0);
-    }
+    int DataReceive(array<Int16> ^ data, int start, int length);
+    int DataReceive(array<Int16> ^ data, int start) { return DataSend(data, start, 0); }
+    int DataReceive(array<Int16> ^ data) { return DataSend(data, 0, 0); }
 
-    int DataReceive(array<UInt32>^ data, int start, int length);
-    int DataReceive(array<UInt32>^ data, int start) {
-        return DataSend(data, start, 0);
-    }
-    int DataReceive(array<UInt32>^ data) {
-        return DataSend(data, 0, 0);
-    }
+    int DataReceive(array<UInt32> ^ data, int start, int length);
+    int DataReceive(array<UInt32> ^ data, int start) { return DataSend(data, start, 0); }
+    int DataReceive(array<UInt32> ^ data) { return DataSend(data, 0, 0); }
 
-    int DataReceive(array<Int32>^ data, int start, int length);
-    int DataReceive(array<Int32>^ data, int start) {
-        return DataSend(data, start, 0);
-    }
-    int DataReceive(array<Int32>^ data) {
-        return DataSend(data, 0, 0);
-    }
+    int DataReceive(array<Int32> ^ data, int start, int length);
+    int DataReceive(array<Int32> ^ data, int start) { return DataSend(data, start, 0); }
+    int DataReceive(array<Int32> ^ data) { return DataSend(data, 0, 0); }
 
     void DataStartCollect(int totalSamples, Trigger trigger);
 
@@ -202,37 +147,37 @@ public:
 
     void DataSetCharacteristics(bool isMultichannel, int sampleBytes, bool isPositiveClock);
 
-    void SpiSend(array<Byte>^values);
+    void SpiSend(array<Byte> ^ values);
 
-    array<Byte>^ SpiReceive(int numBytes);
+    array<Byte> ^ SpiReceive(int numBytes);
 
-    array<Byte>^ SpiTransceive(array<Byte>^ sendValues);
+    array<Byte> ^ SpiTransceive(array<Byte> ^ sendValues);
 
     void SpiSendAtAddress(Byte address, Byte value);
 
-    void SpiSendAtAddress(Byte address, array<Byte>^ values);
+    void SpiSendAtAddress(Byte address, array<Byte> ^ values);
 
     Byte SpiReceiveAtAddress(Byte address);
 
-    array<Byte>^ SpiReceiveAtAddress(Byte address, int numBytes);
+    array<Byte> ^ SpiReceiveAtAddress(Byte address, int numBytes);
 
     void SpiSetCsState(ChipSelectState state);
 
-    void SpiSendNoChipSelect(array<Byte>^ values);
+    void SpiSendNoChipSelect(array<Byte> ^ values);
 
-    array<Byte>^ SpiReceiveNoChipSelect(int numBytes);
+    array<Byte> ^ SpiReceiveNoChipSelect(int numBytes);
 
-    array<Byte>^ SpiTransceiveNoChipSelect(array<Byte>^ sendValues);
+    array<Byte> ^ SpiTransceiveNoChipSelect(array<Byte> ^ sendValues);
 
-    bool FpgaGetIsLoaded(String^ fpgaFile);
+    bool FpgaGetIsLoaded(String ^ fpgaFile);
 
-    void FpgaLoadFile(String^ fpgaFile);
+    void FpgaLoadFile(String ^ fpgaFile);
 
-    int FpgaLoadFileChunked(String^ fpgaFile);
+    int FpgaLoadFileChunked(String ^ fpgaFile);
 
     void FpgaCancelLoad();
 
-    String^ EepromReadString();
+    String ^ EepromReadString();
 
     void HsPurgeIo();
 
@@ -276,22 +221,30 @@ public:
 
     void Dc890Flush();
 
+    int Dc590Write(String ^ tppStr);
+    int Dc590Write(array<Byte> ^ buffer);
+
+    String ^ Dc590Read(int numChars);
+    int Dc590Read(array<Byte> ^ buffer);
+
+    void Dc590Flush();
+
+    void Dc590SetEventChar(bool enable);
+
     ~Controller() {
         Cleanup();
         GC::SuppressFinalize(this);
     }
 
-    !Controller() {
-        Cleanup();
-    }
+    !Controller() { Cleanup(); }
 
-protected:
+   protected:
     virtual void Cleanup() {
         delete nativeController;
         nativeController = nullptr;
     }
 
-private:
+   private:
     linear::Controller* nativeController = nullptr;
 };
 }

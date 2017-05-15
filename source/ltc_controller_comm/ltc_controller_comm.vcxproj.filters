@@ -87,6 +87,12 @@
     <ClInclude Include="resource1.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="dc590.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="basic_ftdi_controller.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dc1371.cpp">
@@ -114,6 +120,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="soc_kit.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="dc590.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="basic_ftdi_controller.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

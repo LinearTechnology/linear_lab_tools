@@ -49,9 +49,8 @@
 //
 // // Now you can talk to your LTC controller board.
 
-
-#include <stdint.h>
 #include <stdbool.h>
+#include <stdint.h>
 
 #ifdef _WIN32
 #ifndef LTC_CONTROLLER_COMM_API
@@ -70,6 +69,7 @@ const int LCC_TYPE_DC718      = 0x00000002;
 const int LCC_TYPE_DC890      = 0x00000004;
 const int LCC_TYPE_HIGH_SPEED = 0x00000008;
 const int LCC_TYPE_SOC_KIT    = 0x00000010;
+const int LCC_TYPE_DC590      = 0x00000020;
 const int LCC_TYPE_UNKNOWN    = 0xFFFFFFFF;
 
 // SPI Chip select state
@@ -87,13 +87,13 @@ const int LCC_MAX_DESCRIPTION_SIZE   = 64;
 const int LCC_MAX_SERIAL_NUMBER_SIZE = 16;
 
 // Possible error return values, use LccGetErrorInfo for specific information.
-const int LCC_ERROR_OK            =  0; // No error.
-const int LCC_ERROR_HARDWARE      = -1; // A hardware error (controller I/O, maybe unplugged or no
+const int LCC_ERROR_OK       = 0;   // No error.
+const int LCC_ERROR_HARDWARE = -1;  // A hardware error (controller I/O, maybe unplugged or no
 // power?) this may have a device specific error code.
-const int LCC_ERROR_INVALID_ARG   = -2; // User passed in an invalid argument or did something bad.
-const int LCC_ERROR_LOGIC         = -3; // The DLL did something wrong.
-const int LCC_ERROR_NOT_SUPPORTED = -4; // The particular device does not support the operation.
-const int LCC_ERROR_UNKNOWN       = -5; // Caught an unexpected exception.
+const int LCC_ERROR_INVALID_ARG   = -2;  // User passed in an invalid argument or did something bad.
+const int LCC_ERROR_LOGIC         = -3;  // The DLL did something wrong.
+const int LCC_ERROR_NOT_SUPPORTED = -4;  // The particular device does not support the operation.
+const int LCC_ERROR_UNKNOWN       = -5;  // Caught an unexpected exception.
 
 // For high speed FPGA demo-board based controllers only.
 // mode argument to set_mode. For FIFO communication use BIT_MODE_FIFO, for
@@ -108,9 +108,9 @@ const int LCC_1371_CHIP_SELECT_TWO = 2;
 
 // Info for a found controller
 typedef struct LccControllerInfoStruct {
-    int type;
-    char description[LCC_MAX_DESCRIPTION_SIZE];
-    char serial_number[LCC_MAX_SERIAL_NUMBER_SIZE];
+    int      type;
+    char     description[LCC_MAX_DESCRIPTION_SIZE];
+    char     serial_number[LCC_MAX_SERIAL_NUMBER_SIZE];
     uint32_t id;
 } LccControllerInfo;
 
@@ -124,7 +124,8 @@ extern "C" {
 // Device list functions
 
 // Get the number of controllers plugged in, but see comments for next function.
-LTC_CONTROLLER_COMM_API int LccGetNumControllers(int controller_types, int max_controllers,
+LTC_CONTROLLER_COMM_API int LccGetNumControllers(int  controller_types,
+                                                 int  max_controllers,
                                                  int* num_controllers);
 
 // Using the number of devices from above, allocate an array of LccDeviceInfo structures,
@@ -133,8 +134,9 @@ LTC_CONTROLLER_COMM_API int LccGetNumControllers(int controller_types, int max_c
 // LccDeviceInfo structure and pass a pointer to it into the the function and use 1 for
 // num_devices, otherwise make an array of at least as many structures as you have devices
 // plugged in.
-LTC_CONTROLLER_COMM_API int LccGetControllerList(int controller_types,
-                                                 LccControllerInfo* controller_info_list, int num_controllers);
+LTC_CONTROLLER_COMM_API int LccGetControllerList(int                controller_types,
+                                                 LccControllerInfo* controller_info_list,
+                                                 int                num_controllers);
 
 // Returns a single LccController info given the type and ID of the controller. Cannot be used
 // with multiple types
@@ -146,7 +148,7 @@ LTC_CONTROLLER_COMM_API int LccGetControllerList(int controller_types,
 
 // Given a LccControllerInfo struct and a pointer to an LccHandle, this function initializes the
 // controller and sets the handle.
-LTC_CONTROLLER_COMM_API int LccInitController(LccHandle* handle,
+LTC_CONTROLLER_COMM_API int LccInitController(LccHandle*         handle,
                                               LccControllerInfo* controller_info);
 
 // This function MUST be called before the program exits to clean up the internal data structures.
@@ -154,12 +156,14 @@ LTC_CONTROLLER_COMM_API int LccInitController(LccHandle* handle,
 LTC_CONTROLLER_COMM_API int LccCleanup(LccHandle* handle);
 
 // Get controller description
-LTC_CONTROLLER_COMM_API int LccGetDescription(LccHandle handle, char* description_buffer,
-                                              int description_buffer_size);
+LTC_CONTROLLER_COMM_API int LccGetDescription(LccHandle handle,
+                                              char*     description_buffer,
+                                              int       description_buffer_size);
 
 // Get controller serial number
-LTC_CONTROLLER_COMM_API int LccGetSerialNumber(LccHandle handle, char* serial_number_buffer,
-                                               int serial_number_buffer_size);
+LTC_CONTROLLER_COMM_API int LccGetSerialNumber(LccHandle handle,
+                                               char*     serial_number_buffer,
+                                               int       serial_number_buffer_size);
 
 // Reset the controller
 // Not used with HighSpeed Controllers
@@ -174,8 +178,9 @@ LTC_CONTROLLER_COMM_API int LccClose(LccHandle handle);
 // size of the latest error message. Then allocate a char array and call again to get the
 // actual error. Or just use a biggish string (256 should be good). Make sure you pass in the
 // actual size of the string for buffer_size to prevent overflows.
-LTC_CONTROLLER_COMM_API int LccGetErrorInfo(LccHandle handle, char* message_buffer,
-                                            int buffer_size);
+LTC_CONTROLLER_COMM_API int LccGetErrorInfo(LccHandle handle,
+                                            char*     message_buffer,
+                                            int       buffer_size);
 
 // Bulk data transfer functions
 
@@ -191,34 +196,45 @@ LTC_CONTROLLER_COMM_API int LccDataSetLowByteFirst(LccHandle handle);
 
 // Send a stream of bytes.
 // Only used with HighSpeed controllers.
-LTC_CONTROLLER_COMM_API int LccDataSendBytes(LccHandle handle, uint8_t* values, int num_values,
-                                             int* num_sent);
+LTC_CONTROLLER_COMM_API int LccDataSendBytes(LccHandle handle,
+                                             uint8_t*  values,
+                                             int       num_values,
+                                             int*      num_sent);
 
 // Receive a stream of bytes.
-LTC_CONTROLLER_COMM_API int LccDataReceiveBytes(LccHandle handle, uint8_t* values,
-                                                int num_values, int* num_received);
+LTC_CONTROLLER_COMM_API int LccDataReceiveBytes(LccHandle handle,
+                                                uint8_t*  values,
+                                                int       num_values,
+                                                int*      num_received);
 
 // Send a stream of 16 bit values.
 // Only used with HighSpeed controllers.
-LTC_CONTROLLER_COMM_API int LccDataSendUint16Values(LccHandle handle, uint16_t* values,
-                                                    int num_values, int* num_bytes_sent);
+LTC_CONTROLLER_COMM_API int LccDataSendUint16Values(LccHandle handle,
+                                                    uint16_t* values,
+                                                    int       num_values,
+                                                    int*      num_bytes_sent);
 
 // Receive a stream of 16 bit values.
-LTC_CONTROLLER_COMM_API int LccDataReceiveUint16Values(LccHandle handle, uint16_t* values,
-                                                       int num_values, int* num_bytes_received);
+LTC_CONTROLLER_COMM_API int LccDataReceiveUint16Values(LccHandle handle,
+                                                       uint16_t* values,
+                                                       int       num_values,
+                                                       int*      num_bytes_received);
 
 // Send a stream of 32 bit values.
 // Only used with HighSpeed controllers.
-LTC_CONTROLLER_COMM_API int LccDataSendUint32Values(LccHandle handle, uint32_t* values,
-                                                    int num_values, int* num_bytes_sent);
+LTC_CONTROLLER_COMM_API int LccDataSendUint32Values(LccHandle handle,
+                                                    uint32_t* values,
+                                                    int       num_values,
+                                                    int*      num_bytes_sent);
 
 // Receive a stream of 32 bit values.
-LTC_CONTROLLER_COMM_API int LccDataReceiveUint32Values(LccHandle handle, uint32_t* values,
-                                                       int num_values, int* num_bytes_received);
+LTC_CONTROLLER_COMM_API int LccDataReceiveUint32Values(LccHandle handle,
+                                                       uint32_t* values,
+                                                       int       num_values,
+                                                       int*      num_bytes_received);
 
 // Start an ADC collection, works with DC1371, DC890, DC718
-LTC_CONTROLLER_COMM_API int LccDataStartCollect(LccHandle handle, int total_samples,
-                                                int trigger);
+LTC_CONTROLLER_COMM_API int LccDataStartCollect(LccHandle handle, int total_samples, int trigger);
 
 // Check if the ADC collection (DC1371, DC890, DC718)
 // returns an error if you didn't call LccDataStartCollect first
@@ -229,8 +245,10 @@ LTC_CONTROLLER_COMM_API int LccDataIsCollectDone(LccHandle handle, bool* is_done
 LTC_CONTROLLER_COMM_API int LccDataCancelCollect(LccHandle handle);
 
 // ADC collection characteristics (DC718 and DC890 only)
-LTC_CONTROLLER_COMM_API int LccDataSetCharacteristics(LccHandle handle, bool is_multichannel,
-                                                      int sample_bytes, bool is_positive_clock);
+LTC_CONTROLLER_COMM_API int LccDataSetCharacteristics(LccHandle handle,
+                                                      bool      is_multichannel,
+                                                      int       sample_bytes,
+                                                      bool      is_positive_clock);
 
 // SPI functions
 // The next three functions lower chip select, perform their function, and raise chip select.
@@ -242,13 +260,14 @@ LTC_CONTROLLER_COMM_API int LccSpiSendBytes(LccHandle handle, uint8_t* values, i
 
 // Receive arbitrary bytes over SPI
 // Not used with DC718 or DC890.
-LTC_CONTROLLER_COMM_API int LccSpiReceiveBytes(LccHandle handle, uint8_t* values,
-                                               int num_values);
+LTC_CONTROLLER_COMM_API int LccSpiReceiveBytes(LccHandle handle, uint8_t* values, int num_values);
 
 // Transceive arbitrary bytes over SPI
 // Not used with DC718 or DC890.
-LTC_CONTROLLER_COMM_API int LccSpiTransceiveBytes(LccHandle handle, uint8_t* send_values,
-                                                  uint8_t* receive_values, int num_values);
+LTC_CONTROLLER_COMM_API int LccSpiTransceiveBytes(LccHandle handle,
+                                                  uint8_t*  send_values,
+                                                  uint8_t*  receive_values,
+                                                  int       num_values);
 
 // Convenience SPI functions with address
 // Many (but not all) LTC products with a SPI interface use a "register map" convention where
@@ -265,24 +284,30 @@ LTC_CONTROLLER_COMM_API int LccSpiTransceiveBytes(LccHandle handle, uint8_t* sen
 // Send an address byte and data byte over SPI
 // Not used with DC718. Will cause a bunch of ineffective I2C traffic on a DC890 if the
 // demo-board does not have an I/O expander.
-LTC_CONTROLLER_COMM_API int LccSpiSendByteAtAddress(LccHandle handle, uint8_t address,
-                                                    uint8_t value);
+LTC_CONTROLLER_COMM_API int LccSpiSendByteAtAddress(LccHandle handle,
+                                                    uint8_t   address,
+                                                    uint8_t   value);
 
 // Send an address byte and multiple data bytes over SPI
 // Not used with DC718. Will cause a bunch of ineffective I2C traffic on a DC890 if the
 // demo-board does not have an I/O expander.
-LTC_CONTROLLER_COMM_API int LccSpiSendBytesAtAddress(LccHandle handle, uint8_t address,
-                                                     uint8_t* values, int num_values);
+LTC_CONTROLLER_COMM_API int LccSpiSendBytesAtAddress(LccHandle handle,
+                                                     uint8_t   address,
+                                                     uint8_t*  values,
+                                                     int       num_values);
 
 // Send an address byte and receive a data byte over SPI
 // Not used with DC718 or DC890
-LTC_CONTROLLER_COMM_API int LccSpiReceiveByteAtAddress(LccHandle handle, uint8_t address,
-                                                       uint8_t* value);
+LTC_CONTROLLER_COMM_API int LccSpiReceiveByteAtAddress(LccHandle handle,
+                                                       uint8_t   address,
+                                                       uint8_t*  value);
 
 // Send an address byte and receive multiple data bytes over SPI
 // Not used with DC718 or DC890
-LTC_CONTROLLER_COMM_API int LccSpiReceiveBytesAtAddress(LccHandle handle, uint8_t address,
-                                                        uint8_t* values, int num_values);
+LTC_CONTROLLER_COMM_API int LccSpiReceiveBytesAtAddress(LccHandle handle,
+                                                        uint8_t   address,
+                                                        uint8_t*  values,
+                                                        int       num_values);
 
 // Low level SPI functions
 // All the above SPI functions are built on top of these three functions, they allow full
@@ -296,18 +321,22 @@ LTC_CONTROLLER_COMM_API int LccSpiSetCsState(LccHandle handle, int chip_select_s
 // Send arbitrary bytes over SPI
 // Not used with DC718. Will cause a bunch of ineffective I2C traffic on a DC890 if the
 // demo-board does not have an I/O expander.
-LTC_CONTROLLER_COMM_API int LccSpiSendNoChipSelect(LccHandle handle, uint8_t* values,
-                                                   int num_values);
+LTC_CONTROLLER_COMM_API int LccSpiSendNoChipSelect(LccHandle handle,
+                                                   uint8_t*  values,
+                                                   int       num_values);
 
 // Receive arbitrary bytes over SPI
 // Not used with DC718 or DC890.
-LTC_CONTROLLER_COMM_API int LccSpiReceiveNoChipSelect(LccHandle handle, uint8_t* values,
-                                                      int num_values);
+LTC_CONTROLLER_COMM_API int LccSpiReceiveNoChipSelect(LccHandle handle,
+                                                      uint8_t*  values,
+                                                      int       num_values);
 
 // Transceive arbitrary bytes over SPI
 // Not used with DC718 or DC890.
 LTC_CONTROLLER_COMM_API int LccSpiTransceiveNoChipSelect(LccHandle handle,
-                                                         uint8_t * send_values, uint8_t* receive_values, int num_values);
+                                                         uint8_t*  send_values,
+                                                         uint8_t*  receive_values,
+                                                         int       num_values);
 
 // Fpga functions
 
@@ -315,8 +344,9 @@ LTC_CONTROLLER_COMM_API int LccSpiTransceiveNoChipSelect(LccHandle handle,
 // and without a revision ('r' followed by a number) so it ends up being something like 'DCMOS'
 // or 'S2175' (case insensitive)
 // Not used with HighSpeed controllers or DC718
-LTC_CONTROLLER_COMM_API int LccFpgaGetIsLoaded(LccHandle handle, const char* fpga_filename,
-                                               bool* is_loaded);
+LTC_CONTROLLER_COMM_API int LccFpgaGetIsLoaded(LccHandle   handle,
+                                               const char* fpga_filename,
+                                               bool*       is_loaded);
 
 // Load a particular FPGA file. fpga_filename is the base name, without extension
 // and without a revision ('r' followed by a number) so it ends up being something like 'DCMOS'
@@ -328,8 +358,9 @@ LTC_CONTROLLER_COMM_API int LccFpgaLoadFile(LccHandle handle, const char* fpga_f
 // like 'DCMOS' or 'S2175' (case insensitive).
 // The first call sets progress to a number, each subsequent call will cause progress to be set
 // to a SMALLER number. The process is finished when progress is 0.
-LTC_CONTROLLER_COMM_API int LccFpgaLoadFileChunked(LccHandle handle, const char* fpga_filename,
-                                                   int* progress);
+LTC_CONTROLLER_COMM_API int LccFpgaLoadFileChunked(LccHandle   handle,
+                                                   const char* fpga_filename,
+                                                   int*        progress);
 
 // Call this function if you abandon loading the FPGA file before all chunks are loaded.
 LTC_CONTROLLER_COMM_API int LccFpgaCancelLoad(LccHandle handle);
@@ -363,13 +394,15 @@ LTC_CONTROLLER_COMM_API int LccHsFpgaReadData(LccHandle handle, uint8_t* value);
 
 // Sets the address and writes a byte to it. Subsequent reads and writes will continue to go
 // to the new address.
-LTC_CONTROLLER_COMM_API int LccHsFpgaWriteDataAtAddress(LccHandle handle, uint8_t address,
-                                                        uint8_t value);
+LTC_CONTROLLER_COMM_API int LccHsFpgaWriteDataAtAddress(LccHandle handle,
+                                                        uint8_t   address,
+                                                        uint8_t   value);
 
 // Sets the address and reads a byte from it. Subsequent reads and writes will continue to go
 // to the new address.
-LTC_CONTROLLER_COMM_API int LccHsFpgaReadDataAtAddress(LccHandle handle, uint8_t address,
-                                                       uint8_t* value);
+LTC_CONTROLLER_COMM_API int LccHsFpgaReadDataAtAddress(LccHandle handle,
+                                                       uint8_t   address,
+                                                       uint8_t*  value);
 
 // Enables or disables the MPSSE master clock divide-by-5 (enabled by default)
 LTC_CONTROLLER_COMM_API int LccHsMpsseEnableDivideBy5(LccHandle handle, bool enable);
@@ -391,7 +424,7 @@ LTC_CONTROLLER_COMM_API int LccHsGpioReadLowByte(LccHandle handle, uint8_t* valu
 
 // Default FPGA register for the bit-banged I2C is 0x11 use this function to change it.
 LTC_CONTROLLER_COMM_API int LccHsFpgaEepromSetBitBangRegister(LccHandle handle,
-                                                              uint8_t register_address);
+                                                              uint8_t   register_address);
 
 ///////////////////////////
 // Functions for DC1371A //
@@ -422,8 +455,10 @@ LTC_CONTROLLER_COMM_API int Lcc890GpioSetByte(LccHandle handle, uint8_t byte);
 
 // Tells the bit-banged SPI routine which bit to use for CS, SCK and SDI. This MUST be called
 // before any SPI routines are called when using the DC890.
-LTC_CONTROLLER_COMM_API int Lcc890GpioSpiSetBits(LccHandle handle, int cs_bit,
-                                                 int sck_bit, int sdi_bit);
+LTC_CONTROLLER_COMM_API int Lcc890GpioSpiSetBits(LccHandle handle,
+                                                 int       cs_bit,
+                                                 int       sck_bit,
+                                                 int       sdi_bit);
 
 // Flush commands and clear IO buffers
 LTC_CONTROLLER_COMM_API int Lcc890Flush(LccHandle handle);
@@ -432,13 +467,26 @@ LTC_CONTROLLER_COMM_API int Lcc890Flush(LccHandle handle);
 // Functions for SocKit //
 //////////////////////////
 
-// There is no (good) way to "scan" for a SocKit board, you have to know the IP address. This 
-// function lets you get an LccControllerInfo struct from the IP address to pass to 
+// There is no (good) way to "scan" for a SocKit board, you have to know the IP address. This
+// function lets you get an LccControllerInfo struct from the IP address to pass to
 // LccInitController.
 LTC_CONTROLLER_COMM_API int LccSocKitInfoFromIp(const char* ip_address, LccControllerInfo* info);
 
 // Same as above but with a uint32 IP address
 LTC_CONTROLLER_COMM_API int LccSocKitInfoFromIntIp(uint32_t ip_address, LccControllerInfo* info);
+
+/////////////////////////
+// Functions for DC590 //
+/////////////////////////
+
+// Use these two functions to send arbitrary TPP strings and read the results.
+LTC_CONTROLLER_COMM_API int Lcc590Write(LccHandle handle, const uint8_t tpp_bytes[], int num_bytes);
+LTC_CONTROLLER_COMM_API int Lcc590Read(LccHandle handle, uint8_t buffer[], int buffer_size);
+
+// Flush the buffer.
+LTC_CONTROLLER_COMM_API int Lcc590Flush(LccHandle handle);
+// Enable or disable the event character
+LTC_CONTROLLER_COMM_API int Lcc590SetEventChar(LccHandle handle, bool enable);
 
 #ifdef __cplusplus
 }

@@ -89,7 +89,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;WIN32_LEAN_AND_MEAN;_WIN32_WINNT=0x0501;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <AdditionalIncludeDirectories>$(SolutionDir);$(SolutionDir)..\..\gsl;$(SolutionDir)..\..\asio-1.10.8\include</AdditionalIncludeDirectories>
     </ClCompile>
@@ -119,7 +119,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
-      <PreprocessorDefinitions>WIN32;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;WIN32_LEAN_AND_MEAN;_WIN32_WINNT=0x0501;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <AdditionalIncludeDirectories>$(SolutionDir);$(SolutionDir)..\..\gsl;$(SolutionDir)..\..\asio-1.10.8\include</AdditionalIncludeDirectories>
     </ClCompile>
@@ -151,8 +151,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\ltc_controller_comm\basic_ftdi_controller.hpp" />
     <ClInclude Include="..\ltc_controller_comm\controller.hpp" />
     <ClInclude Include="..\ltc_controller_comm\dc1371.hpp" />
+    <ClInclude Include="..\ltc_controller_comm\dc590.hpp" />
     <ClInclude Include="..\ltc_controller_comm\dc718.hpp" />
     <ClInclude Include="..\ltc_controller_comm\dc890.hpp" />
     <ClInclude Include="..\ltc_controller_comm\error.hpp" />
@@ -176,11 +178,17 @@
     <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\ltc_controller_comm\basic_ftdi_controller.cpp">
+      <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsManaged>
+    </ClCompile>
     <ClCompile Include="..\ltc_controller_comm\dc1371.cpp">
       <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsManaged>
       <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</CompileAsManaged>
       <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</CompileAsManaged>
       <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</CompileAsManaged>
+    </ClCompile>
+    <ClCompile Include="..\ltc_controller_comm\dc590.cpp">
+      <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsManaged>
     </ClCompile>
     <ClCompile Include="..\ltc_controller_comm\dc890.cpp">
       <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsManaged>

@@ -1,14 +1,15 @@
 #include <iostream>
 #include "../ltc_controller_comm/soc_kit.hpp"
+#include "ltc_controller_comm/utilities.hpp"
 
 using namespace linear;
 
 int main() {
     LccControllerInfo info;
-    strcpy(info.description, "SocKit");
-    strcpy(info.serial_number, "12345");
+    CopyToBuffer(info.description, LCC_MAX_DESCRIPTION_SIZE, "SocKit");
+    CopyToBuffer(info.serial_number, LCC_MAX_SERIAL_NUMBER_SIZE, "12345");
     info.type = LCC_TYPE_SOC_KIT;
-    info.id = 0x0A36025B;
+    info.id   = 0x0A36025B;
 
     SocKit sockit(info);
 
@@ -17,5 +18,4 @@ int main() {
     std::cout << "Reg = " << reg << "\n";
 
     sockit.Shutdown();
-
 }

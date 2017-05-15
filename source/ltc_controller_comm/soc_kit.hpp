@@ -116,10 +116,10 @@ class SocKit : public IDataReceive, public ICollect {
     SocKit(SocKit&& other)                 = default;
     SocKit& operator=(SocKit&& other) = default;
 
-    virtual Type   GetType() { return Type::SOC_KIT; }
-    virtual string GetDescription() { return DESCRIPTION; }
-    virtual string GetSerialNumber() { throw logic_error("Not implemented"); }
-    virtual void   EepromReadString(char* buffer, int buffer_size) {
+    Type   GetType() override { return Type::SOC_KIT; }
+    string GetDescription() override { return DESCRIPTION; }
+    string GetSerialNumber() override { throw logic_error("Not implemented"); }
+    void   EepromReadString(char* buffer, int buffer_size) override {
         throw logic_error("Not implemented");
     }
 
