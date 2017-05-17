@@ -40,11 +40,11 @@ classdef Ltc2320 < llt.common.Dc890
     end
     
     methods 
-        function self = Ltc2320(lcc, dc_number, num_channels, num_bites, is_verbose)
+        function self = Ltc2320(lcc, dc_number, num_channels, num_bits, is_verbose)
             if ~exist('is_verbose', 'var'); is_verbose = false; end
 
             self = self@llt.common.Dc890(lcc, dc_number, 'CMOS', num_channels, false, ...
-                num_bites, 32, true, [], is_verbose);
+                num_bits, 32, true, [], is_verbose);
         end
         
         function varargout = collect(self, num_samples, trigger, timeout, ...
