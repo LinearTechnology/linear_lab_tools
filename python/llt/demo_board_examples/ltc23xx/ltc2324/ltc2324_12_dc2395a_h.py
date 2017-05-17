@@ -41,7 +41,7 @@ def ltc2324_12_dc2395a_h(num_samples, verbose = False, do_plot = False,
                          do_write_to_file = False):
     with ltc2320.Ltc2320(dc_number = 'DC2395A-H', 
                          num_channels = 4,
-                         num_bits = 14,
+                         num_bits = 13, # 12-bit + sign
                          verbose = verbose) as controller:
         # You can call this multiple times with the same controller if you need to
         ch0, ch1, ch2, ch3 = controller.collect(num_samples, consts.TRIGGER_NONE)
