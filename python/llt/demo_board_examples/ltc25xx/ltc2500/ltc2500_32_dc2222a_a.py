@@ -242,7 +242,7 @@ class Dc2222aA(dc890.Demoboard):
         cm_data = funcs.fix_data(raw_data[:], 7, 7, True)
         cm_data = funcs.uint32_to_int32(cm_data)
         data = funcs.fix_data([int(d >> 7) for d in raw_data], 24, 24, True)
-        overflow = [(d & 0x080000000) != 0 for d in raw_data]        
+        overflow = [(d & 0x80000000) != 0 for d in raw_data]        
         return data, cm_data, overflow
         
     def fix_data(self, raw_data, is_randomized, is_alternate_bit):
