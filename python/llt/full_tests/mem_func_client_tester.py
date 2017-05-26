@@ -53,18 +53,17 @@ from matplotlib import pyplot as plt
 from llt.common.mem_func_client_2 import MemClient
 from llt.utils.sockit_system_functions import *
 from llt.utils.DC2390_functions import *
+from llt.utils.linear_lab_tools_functions import *
 
 # Get the host from the command line argument. Can be numeric or hostname.
 HOST = sys.argv[1] if len(sys.argv) == 2 else '127.0.0.1'
 # Override here if desired
 #HOST = "192.168.1.231"
-#HOST = "10.54.6.26"
+#HOST = "10.54.6.40"
 
 # Default script parameters
 demo_board = 2390 #UN comment one of these. Only use internal ramp for DC2390,
 #demo_board = 2512 # DC2512 can use either internal ramp or external 18-bit ramp generator.
-save_pscope_data = False
-grab_filtered_data = False
 mem_bw_test = False # Set to true to run a ramp test after ADC capture
 mem_bw_test_depth = 64 * 2**20
 
@@ -73,7 +72,7 @@ bits_18_ramp_test = True
 bit_counter = False
 plot_data = False
 
-numbits = 18 # Tested with LTC2386 / DC2290
+numbits = 18 # Tested with LTC2386 / DC2290. Also works with DC2390 / internal pattern
 NUM_SAMPLES = 2**20 #16 * 2**20 #65536 #131072 #8192
 
 internal_ramp = True # When exercising network functions, use internal test pattern.
@@ -83,47 +82,57 @@ internal_ramp = True # When exercising network functions, use internal test patt
 #downsample_factor = 64
 downsample_factor = 1
 
+
+reg_address = PID_KP_BASE # 0x60, This is basically an unused address for the 32bit capture (corresponds to KP, KI, KD for DC2390)
+reg_value = 0xB7 # A random starting value (Consider making a REAL random number in the future)
+mem_address = 0x88 # Starting address for external DDR3 memory
+mem_value = 0xB5 # A random starting value (Consider making a REAL random number in the future)
+num_reg_writes = 6 # We've got 6 benign registers starting at PID_KP_BASE
+num_mem_writes = 64 # Write to 3 consecutive registers/ DDR3 locations
+number_of_reads = 50
+starting_address = reg_address
+
+
+
+
+### IMPORTANT ###
+# setting dummy fundamentally changes what the daemon does. Functions that support
+# dummy operation will emulate what they normally do, except with no actual
+# interaction with the FPGA.
+#dummy = False
+dummy = True
+
+
 # This script is also used to test the DC2512 in production. Test pattern is
 # an 18-bit counter applied to the data bus. Linduino / QuikEval header must
 # have a 32-bit delay between MOSI and MISO - an LTC2668 demo board (DC2025)
 # can be used for this purpose.
 
-# MUX selection
+# MUX selection bitfields
 ADC_DATA       = 0x00000000
 FILTERED_ADC_DATA = 0x00000001
 RAMP_DATA  = 0x00000004
-
-# A function to return every df'th element of an array
-def downsample(array, df):
-    outarray = []
-    for i in range(len(array)/df):
-        outarray.append(array[i*df])
-    return outarray
     
 start_time = time.time();
 print('Starting client')
 client = MemClient(host=HOST)
-#Read FPGA type and revision
 
+#Read FPGA type and revision. This inherently checks the reg_read function
+# (see type_rev_check function definition)
+# Arguments are client (of course), expected FPGA load type, and minimum revision
 if demo_board == 2512:
     type_rev_check(client, 0x0001, 0x0104)
 elif demo_board == 2390:
     type_rev_check(client, 0xABCD, 0x1246)
-    LTC6954_configure(client, 4 )
+    # If we're using a DC2390, need to configure clocks
+    LTC6954_configure(client)
+    # And configure sample rate.
     client.reg_write(SYSTEM_CLOCK_BASE, 99) # 50MHz / (99 + 1) = 500ksps
     
 
-#rev_id = client.reg_read(REV_ID_BASE)
-#type_id = rev_id & 0x0000FFFF
-#rev = (rev_id >> 16) & 0x0000FFFF
-#print ('FPGA load type ID: %04X' % type_id)
-#print ('FPGA load revision: %04X' % rev)
-#if type_id != 0x0001:
-#    print("FPGA type is NOT 0x0001! Make sure you know what you're doing!")
-
 print ('Okay, now lets blink some lights and run some tests!!')
 
-client.reg_write(LED_BASE, 0x01)
+client.reg_write(LED_BASE, 0x01) # Blink a light.
 sleep(0.1)
 client.reg_write(LED_BASE, 0x00)
 sleep(0.1)
@@ -136,12 +145,12 @@ if(internal_ramp == True): # Using internal ramp generator, as opposed to
 else:
     client.reg_write(DATAPATH_CONTROL_BASE, ADC_DATA)
 
-data = sockit_uns32_to_signed32(sockit_capture(client, NUM_SAMPLES, trigger = TRIG_NOW, timeout = 2.0))
+data = sockit_uns32_to_signed32(sockit_capture(client, NUM_SAMPLES, trigger = TRIG_NOW, timeout = 2.5))
 
 xfer_time = time.time() - xfer_start_time
 print("Capture / xfer time: " + str(xfer_time) + " Seconds...")
 
-
+# Mask off upper bits, sign-extend
 if(numbits == 18):
     for i in range(0, NUM_SAMPLES):
         data[i] = (data[i] & 0x0003FFFF)
@@ -186,7 +195,7 @@ if(mem_bw_test == True):
     print("Number of errors: " + str(errors))
     client.reg_write(DATAPATH_CONTROL_BASE, ADC_DATA) # Set datapath back to ADC
     
-    
+
 if bits_18_ramp_test == True:
     seed = data[0]
     errors = 0
@@ -197,128 +206,143 @@ if bits_18_ramp_test == True:
             seed = -131072
         else:
             seed = data[i]
-    print("DC2512 Production test!!")
+    print("Ramp Test Result - ")
     print("Number of errors: " + str(errors))
     
-    Linduino_Loopback_test(client)
+# A simple test of auxilliary SPI operation
+Linduino_Loopback_test(client)
 
 
 
-# no need for any configuration
-verbose = True
-dummy = False
-error = 0
 
-reg_address = 0x60 # This is basically an unused address for the 32bit capture (corresponds to KP, KI, KD for DC2390)
-reg_value = 0xB7 # A random starting value (Consider making a REAL random number in the future)
-mem_address = 0x88 # Starting address for external DDR3 memory
-mem_value = 0xB5 # A random starting value (Consider making a REAL random number in the future)
-number_of_writes = 3 # Write to 3 consecutive registers/ DDR3 locations
-number_of_reads = 50
-starting_address = reg_address
 
+# Create arrays of data to write / read
 reg_values = []
 mem_values = []
-for i in range(0, number_of_writes):
+for i in range(0, num_reg_writes):
     reg_values.append(i*2)
+
+for i in range(0, num_mem_writes):
     mem_values.append(i*2)
 
 i2c_output_base_reg = 0x120
 i2c_input_base_reg = 0x140
 
-# Testing reg_write
-if(verbose == True):    print 'Writing 0x%X to register 0x%X...' %(reg_value, reg_address)
+print("Testing reg_write")
+print 'Writing 0x%X to register 0x%X...' %(reg_value, reg_address)
 written_address = client.reg_write(reg_address, reg_value, dummy)
 if (written_address != reg_address):    
     print 'ERROR in Register Write. Returned wrong address.'
-    error = error + 1
+
     
-# Testing reg_read
-if(verbose == True):    print 'Reading back register 0x%X...' % reg_address
+print("Testing reg_read")
+print 'Reading back register 0x%X...' % reg_address
 reg_value_read = client.reg_read(reg_address, dummy)
-if(verbose == True):    print 'Value at register 0x%X: 0x%X' % (reg_address, reg_value_read)
+print 'Value at register 0x%X: 0x%X' % (reg_address, reg_value_read)
 if(reg_value_read != reg_value):    
     print 'ERROR in Register Read. Returned wrong value.'
-    error = error + 1
-    
-print '** Tested Reg read and write. **\n'
 
-# Testing mem write
-if(verbose == True):    print 'Writing 0x%X to memory location 0x%X...' % (mem_value, mem_address)
+    
+print("** Tested Reg read and write. **\n")
+
+
+print("Testing reg write block")
+print 'Writing block of %d values to register location 0x%X...' % (num_reg_writes, reg_address)
+last_location = client.reg_write_block(reg_address, num_reg_writes, reg_values, dummy)
+print 'Last location written into: 0x%X' % last_location
+if(last_location != (reg_address + (num_reg_writes-1)*4)):
+    print 'ERROR in Reg Write Block. Returned wrong last location'
+
+print '** Tested reg_write_block. **\n'
+    
+print("Testing reg read block")
+values = client.reg_read_block(reg_address, num_reg_writes, dummy)
+print 'Reading out block of %d values from register location 0x%X... ' % (num_reg_writes, reg_address)
+print 'Values read out:'
+print values
+print '** Tested reg_read_block. **\n'
+
+
+
+
+
+
+
+
+
+
+print("Testing mem write")
+print 'Writing 0x%X to memory location 0x%X...' % (mem_value, mem_address)
 written_address = client.mem_write(mem_address, mem_value, dummy)
 if (written_address != mem_address):    
     print 'ERROR in Memory Write. Returned wrong address.'
-    error = error + 1
 
-# Testing mem read
-if(verbose == True):    print 'Reading back memory location 0x%X...'% mem_address
+
+print("Testing mem read")
+print 'Reading back memory location 0x%X...'% mem_address
 mem_value_read = client.mem_read(mem_address, dummy)
-if(verbose == True):    print 'Value at memory location 0x%X : 0x%X' % (mem_address, mem_value_read)
+print 'Value at memory location 0x%X : 0x%X' % (mem_address, mem_value_read)
 if(mem_value_read != mem_value):
     print 'ERROR in Memroy Read. Returned wrong value.'
-    error = error + 1
+
     
 print '** Tested Mem read and write. **\n'
 
-# Testing reg write block
-if(verbose == True):    print 'Writing block of %d values to register location 0x%X...' % (number_of_writes, starting_address)
-last_location = client.reg_write_block(starting_address, number_of_writes, reg_values, dummy)
-if(verbose == True):    print 'Last location written into: 0x%X' % last_location
-if(last_location != (starting_address + (number_of_writes-1)*4)):
-    print 'ERROR in Reg Write Block. Returned wrong last location'
-    error = error + 1
-print '** Tested reg_write_block. **\n'
-    
-# Testing reg read block
-values = client.reg_read_block(starting_address, number_of_reads, dummy)
-if(verbose):
-    print 'Reading out block of %d values from register location 0x%X... ' % (number_of_reads, starting_address)
-    print 'Values read out:'
-    print values
-print '** Tested reg_read_block. **\n'
+
 
 # Testing mem_write_block
-if(verbose == True):    print 'Writing block of %d values to memory location 0x%X...' % (number_of_writes, starting_address)
-last_location = client.mem_write_block(starting_address, number_of_writes, mem_values, dummy)
-if(verbose == True):    print 'Last location written into: 0x%X' % last_location
-if(last_location != (starting_address + (number_of_writes-1)*4)):
+print 'Writing block of %d values to memory location 0x%X...' % (num_mem_writes, starting_address)
+last_location = client.mem_write_block(starting_address, num_mem_writes, mem_values, dummy)
+print 'Last location written into: 0x%X' % last_location
+if(last_location != (starting_address + (num_mem_writes-1)*4)):
     print 'ERROR in Mem Write Block. Returned wrong last location'
-    error = error + 1
+
 print '** Tested mem_write_block. **\n'
 
 # Testing mem_read_block
-values = client.mem_read_block(starting_address, number_of_reads, dummy)
-if(verbose):
-    print 'Reading out block of %d values from memory location 0x%X... ' % (number_of_reads, starting_address)
-    print 'Values read out:'
-    print values
+values = client.mem_read_block(starting_address, num_mem_writes, dummy)
+
+# Testing mem_read_block as a bandwidth test
+print ("Bandwidth test!!")
+bwpoints = 2**21
+bwstarttime = time.time()
+client.mem_read_block(starting_address, bwpoints, dummy)
+bwtesttime = time.time() - bwstarttime
+print ("Read out %d points in %d seconds\n" %(bwpoints, bwtesttime))
+
+
+
+print 'Reading out block of %d values from memory location 0x%X... ' % (num_mem_writes, starting_address)
+print 'Values read out:'
+print values[:min(num_mem_writes, 32)]
 print '** Tested mem_read_block. **\n'
 
 # Testing mem_read_to_file
-if(verbose):    print 'Reading block of memory and writing into file...'
-client.mem_read_to_file(starting_address, number_of_reads, 'hello.txt', dummy)
+print 'Reading block of memory and writing into file...'
+client.mem_read_to_file(starting_address, num_mem_writes, 'hello.txt', dummy)
 print '** Tested mem_read_to_file. **\n'
 
 # Testing mem_write_from_file
-if(verbose):    print 'Reading a file and writing into memory...'
-client.mem_write_from_file(starting_address + 100, number_of_reads, 'hello.txt', dummy)
-values = client.mem_read_block(starting_address + 100, number_of_reads, dummy)
-if(verbose):
-    print 'Values read out:'
-    print values
+print 'Reading a file and writing into memory...'
+client.mem_write_from_file(starting_address + 100, num_mem_writes, 'hello.txt', dummy)
+values = client.mem_read_block(starting_address + 100, num_mem_writes, dummy)
+
+print 'Values read out:'
+print values[:min(num_mem_writes, 32)]
 print '** Tested mem_write_from_file**\n'
 
 # Testing file transfer
 file_to_read = "../../../common/ltc25xx_filters/ssinc_4.txt" # Grab a handy file that
 file_write_path = "/home/sockit/ssinc_4.txt" # we know exists, send to sockit's home dir.
-if(verbose):
-    print 'Transferring a file to deamon...'
-    print 'File to read: %s' % file_to_read
-    print 'File write path: %s' % file_write_path
+
+print 'Transferring a file to deamon...'
+print 'File to read: %s' % file_to_read
+print 'File write path: %s' % file_write_path
 client.file_transfer(file_to_read, file_write_path)
 print '**Tested File transfer**\n'
 
 # Testing DC590 commands - Non-dummy functions
+
 print 'TESTING DC590 COMMANDS'
 print 'Enter 0 to stop.'
 command = ""
@@ -331,7 +355,7 @@ while(command != "0"):
 # Testing Read EEPROM    
 print '\nReading EEPROM...'
 eeprom_id = client.read_eeprom_id(i2c_output_base_reg, i2c_input_base_reg)
-if(verbose):    print 'EEPROM ID string: %s' % eeprom_id
+print 'EEPROM ID string: %s' % eeprom_id
 print 'IC identified: %s' %(eeprom_id.split(','))[0]
 
 print '**Tested DC590 commands**\n'
@@ -359,12 +383,12 @@ print '**Tested DC590 commands**\n'
 #print 'I2C read EEPROM... ',
 #print client.i2c_read()
 #
-choice = raw_input('\nShutdown: y/n? ')
-if(choice == 'y'):
-    shut = client.shutdown(dummy = False)
-    print('Shutting down...' if shut == True else 'Shutdown Failed!')
+#choice = raw_input('\nShutdown: y/n? ')
+#if(choice == 'y'):
+#    shut = client.shutdown(dummy = False)
+#    print('Shutting down...' if shut == True else 'Shutdown Failed!')
     
-
+print("Enter \"client.shutdown()\" to shut board down")
 
 
 run_time = time.time() - start_time
