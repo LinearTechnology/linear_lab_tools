@@ -117,6 +117,8 @@ print ('First test - sweep a couple of sinewaves on ADC B')
 # will be at 1.5 * 500k / 512 = 1464.84375kHz.
 # SINC1 should be down 9dB, SINC4 should be down 54dB
 
+# 1953.125Hz
+
 ltc2500_cfg_led_on  = (((LTC2500_DF_64 | LTC2500_SINC4_FILT)) | 0x03) # | (LTC2500_N_FACTOR << 16)
 ltc2500_cfg_led_off = (((LTC2500_DF_64 | LTC2500_SINC4_FILT))       )# | (LTC2500_N_FACTOR << 16)
 
